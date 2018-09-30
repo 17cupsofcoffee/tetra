@@ -5,13 +5,10 @@ use sdl2::{
     VideoSubsystem,
 };
 use std::ffi::{CStr, CString};
-use std::fs::File;
-use std::io::prelude::*;
 use std::mem;
-use std::path::Path;
 use std::ptr;
 
-pub struct OpenGLDevice {
+pub struct GLDevice {
     _ctx: GLContext,
 
     current_vertex_buffer: GLuint,
@@ -21,8 +18,8 @@ pub struct OpenGLDevice {
     current_vertex_array: GLuint,
 }
 
-impl OpenGLDevice {
-    pub fn new(video: &VideoSubsystem, window: &Window) -> OpenGLDevice {
+impl GLDevice {
+    pub fn new(video: &VideoSubsystem, window: &Window) -> GLDevice {
         let gl_attr = video.gl_attr();
 
         // Force Core 3.2 profile - this is reasonably compatible.
@@ -63,7 +60,7 @@ impl OpenGLDevice {
                 CStr::from_ptr(gl::GetString(gl::VENDOR) as *const _).to_string_lossy()
             );
 
-            OpenGLDevice {
+            GLDevice {
                 _ctx,
 
                 current_vertex_buffer: 0,
@@ -82,12 +79,17 @@ impl OpenGLDevice {
         }
     }
 
-    pub fn new_vertex_buffer(&mut self, count: usize, stride: usize, usage: BufferUsage) -> Buffer {
+    pub fn new_vertex_buffer(
+        &mut self,
+        count: usize,
+        stride: usize,
+        usage: BufferUsage,
+    ) -> GLBuffer {
         unsafe {
             let mut id = 0;
             gl::GenBuffers(1, &mut id);
 
-            let buffer = Buffer { id, count, stride };
+            let buffer = GLBuffer { id, count, stride };
 
             self.bind_vertex_buffer(&buffer);
 
@@ -104,7 +106,7 @@ impl OpenGLDevice {
 
     pub fn set_vertex_buffer_attribute(
         &mut self,
-        buffer: &Buffer,
+        buffer: &GLBuffer,
         index: u32,
         size: i32,
         stride: usize,
@@ -128,7 +130,7 @@ impl OpenGLDevice {
         }
     }
 
-    pub fn set_vertex_buffer_data(&mut self, buffer: &Buffer, data: &[GLfloat], offset: usize) {
+    pub fn set_vertex_buffer_data(&mut self, buffer: &GLBuffer, data: &[GLfloat], offset: usize) {
         unsafe {
             assert!(offset + data.len() <= buffer.size());
 
@@ -145,12 +147,17 @@ impl OpenGLDevice {
         }
     }
 
-    pub fn new_index_buffer(&mut self, count: usize, stride: usize, usage: BufferUsage) -> Buffer {
+    pub fn new_index_buffer(
+        &mut self,
+        count: usize,
+        stride: usize,
+        usage: BufferUsage,
+    ) -> GLBuffer {
         unsafe {
             let mut id = 0;
             gl::GenBuffers(1, &mut id);
 
-            let buffer = Buffer { id, count, stride };
+            let buffer = GLBuffer { id, count, stride };
 
             self.bind_index_buffer(&buffer);
 
@@ -165,7 +172,7 @@ impl OpenGLDevice {
         }
     }
 
-    pub fn set_index_buffer_data(&mut self, buffer: &Buffer, data: &[GLuint], offset: usize) {
+    pub fn set_index_buffer_data(&mut self, buffer: &GLBuffer, data: &[GLuint], offset: usize) {
         unsafe {
             self.bind_index_buffer(buffer);
 
@@ -180,31 +187,33 @@ impl OpenGLDevice {
         }
     }
 
-    pub fn compile_program(&mut self, program: &ProgramBuilder) -> Program {
+    pub fn compile_program(&mut self, vertex_shader: &str, fragment_shader: &str) -> GLProgram {
         unsafe {
-            let id = gl::CreateProgram();
-            let mut shader_ids = Vec::with_capacity(program.shaders.len());
+            let vertex_buffer = CString::new(vertex_shader).unwrap();
+            let fragment_buffer = CString::new(fragment_shader).unwrap();
 
-            for (shader, shader_type) in &program.shaders {
-                let shader_id = gl::CreateShader((*shader_type).into());
-                gl::ShaderSource(shader_id, 1, &shader.as_ptr(), ptr::null());
-                gl::CompileShader(shader_id);
-                gl::AttachShader(id, shader_id);
+            let program_id = gl::CreateProgram();
 
-                shader_ids.push(shader_id);
-            }
+            let vertex_id = gl::CreateShader(gl::VERTEX_SHADER);
+            gl::ShaderSource(vertex_id, 1, &vertex_buffer.as_ptr(), ptr::null());
+            gl::CompileShader(vertex_id);
+            gl::AttachShader(program_id, vertex_id);
 
-            gl::LinkProgram(id);
+            let fragment_id = gl::CreateShader(gl::FRAGMENT_SHADER);
+            gl::ShaderSource(fragment_id, 1, &fragment_buffer.as_ptr(), ptr::null());
+            gl::CompileShader(fragment_id);
+            gl::AttachShader(program_id, fragment_id);
 
-            for shader_id in shader_ids {
-                gl::DeleteShader(shader_id);
-            }
+            gl::LinkProgram(program_id);
 
-            Program { id }
+            gl::DeleteShader(vertex_id);
+            gl::DeleteShader(fragment_id);
+
+            GLProgram { id: program_id }
         }
     }
 
-    pub fn set_uniform<T>(&mut self, program: &Program, name: &str, value: T)
+    pub fn set_uniform<T>(&mut self, program: &GLProgram, name: &str, value: T)
     where
         T: SetUniform,
     {
@@ -217,13 +226,13 @@ impl OpenGLDevice {
         }
     }
 
-    pub fn new_texture(&mut self, width: i32, height: i32) -> Texture {
+    pub fn new_texture(&mut self, width: i32, height: i32) -> GLTexture {
         // TODO: I don't think we need mipmaps?
         unsafe {
             let mut id = 0;
             gl::GenTextures(1, &mut id);
 
-            let texture = Texture { id };
+            let texture = GLTexture { id };
 
             self.bind_texture(&texture);
 
@@ -252,7 +261,7 @@ impl OpenGLDevice {
 
     pub fn set_texture_data(
         &mut self,
-        texture: &Texture,
+        texture: &GLTexture,
         data: &[u8],
         x: i32,
         y: i32,
@@ -278,10 +287,10 @@ impl OpenGLDevice {
 
     pub fn draw(
         &mut self,
-        vertex_buffer: &Buffer,
-        index_buffer: &Buffer,
-        program: &Program,
-        texture: &Texture,
+        vertex_buffer: &GLBuffer,
+        index_buffer: &GLBuffer,
+        program: &GLProgram,
+        texture: &GLTexture,
         count: usize,
     ) {
         unsafe {
@@ -299,7 +308,7 @@ impl OpenGLDevice {
         }
     }
 
-    fn bind_vertex_buffer(&mut self, buffer: &Buffer) {
+    fn bind_vertex_buffer(&mut self, buffer: &GLBuffer) {
         unsafe {
             if self.current_vertex_buffer != buffer.id {
                 gl::BindBuffer(gl::ARRAY_BUFFER, buffer.id);
@@ -308,7 +317,7 @@ impl OpenGLDevice {
         }
     }
 
-    fn bind_index_buffer(&mut self, buffer: &Buffer) {
+    fn bind_index_buffer(&mut self, buffer: &GLBuffer) {
         unsafe {
             if self.current_index_buffer != buffer.id {
                 gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, buffer.id);
@@ -317,7 +326,7 @@ impl OpenGLDevice {
         }
     }
 
-    fn bind_program(&mut self, program: &Program) {
+    fn bind_program(&mut self, program: &GLProgram) {
         unsafe {
             if self.current_program != program.id {
                 gl::UseProgram(program.id);
@@ -326,7 +335,7 @@ impl OpenGLDevice {
         }
     }
 
-    fn bind_texture(&mut self, texture: &Texture) {
+    fn bind_texture(&mut self, texture: &GLTexture) {
         unsafe {
             if self.current_texture != texture.id {
                 gl::ActiveTexture(gl::TEXTURE0);
@@ -337,7 +346,7 @@ impl OpenGLDevice {
     }
 }
 
-impl Drop for OpenGLDevice {
+impl Drop for GLDevice {
     fn drop(&mut self) {
         unsafe {
             gl::BindVertexArray(0);
@@ -361,19 +370,19 @@ impl From<BufferUsage> for GLenum {
     }
 }
 
-pub struct Buffer {
+pub struct GLBuffer {
     id: GLuint,
     count: usize,
     stride: usize,
 }
 
-impl Buffer {
+impl GLBuffer {
     fn size(&self) -> usize {
         self.count * self.stride
     }
 }
 
-impl Drop for Buffer {
+impl Drop for GLBuffer {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteBuffers(1, &self.id);
@@ -381,51 +390,11 @@ impl Drop for Buffer {
     }
 }
 
-#[derive(Clone, Copy)]
-pub enum ShaderType {
-    Vertex,
-    Fragment,
-}
-
-impl From<ShaderType> for GLenum {
-    fn from(shader_type: ShaderType) -> GLenum {
-        match shader_type {
-            ShaderType::Vertex => gl::VERTEX_SHADER,
-            ShaderType::Fragment => gl::FRAGMENT_SHADER,
-        }
-    }
-}
-
-#[derive(Default)]
-pub struct ProgramBuilder {
-    shaders: Vec<(CString, ShaderType)>,
-}
-
-impl ProgramBuilder {
-    pub fn new() -> ProgramBuilder {
-        ProgramBuilder {
-            shaders: Vec::with_capacity(2),
-        }
-    }
-
-    pub fn with_shader<P>(mut self, shader_type: ShaderType, path: P) -> ProgramBuilder
-    where
-        P: AsRef<Path>,
-    {
-        let mut shader_file = File::open(path).unwrap();
-        let mut buffer = String::new();
-        shader_file.read_to_string(&mut buffer).unwrap();
-        let c_buffer = CString::new(buffer).unwrap();
-        self.shaders.push((c_buffer, shader_type));
-        self
-    }
-}
-
-pub struct Program {
+pub struct GLProgram {
     id: GLuint,
 }
 
-impl Drop for Program {
+impl Drop for GLProgram {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteProgram(self.id);
@@ -458,11 +427,11 @@ where
     }
 }
 
-pub struct Texture {
+pub struct GLTexture {
     id: GLuint,
 }
 
-impl Drop for Texture {
+impl Drop for GLTexture {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteTextures(1, &self.id);

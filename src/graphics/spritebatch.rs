@@ -1,14 +1,14 @@
 use glm::Mat4;
-use image;
-use opengl::{Buffer, BufferUsage, Program, ProgramBuilder, ShaderType, Texture};
+use graphics::Texture;
+use opengl::{BufferUsage, GLBuffer};
 use util;
 use App;
 
 pub struct SpriteBatch {
     // GL handles
-    vertex_buffer: Buffer,
-    index_buffer: Buffer,
-    program: Program,
+    vertex_buffer: GLBuffer,
+    index_buffer: GLBuffer,
+
     texture: Texture,
 
     drawing: bool,
@@ -19,11 +19,11 @@ pub struct SpriteBatch {
 }
 
 impl SpriteBatch {
-    pub fn new(app: &mut App) -> SpriteBatch {
-        SpriteBatch::with_capacity(app, 1024)
+    pub fn new(app: &mut App, texture: Texture) -> SpriteBatch {
+        SpriteBatch::with_capacity(app, 1024, texture)
     }
 
-    pub fn with_capacity(app: &mut App, capacity: usize) -> SpriteBatch {
+    pub fn with_capacity(app: &mut App, capacity: usize, texture: Texture) -> SpriteBatch {
         assert!(
             capacity <= 8191,
             "Can't have more than 8191 sprites to a single buffer"
@@ -38,38 +38,22 @@ impl SpriteBatch {
             .map(|(i, vertex)| vertex + i as u32 / 6 * 4)
             .collect();
 
-        let program = app.graphics.compile_program(
-            &ProgramBuilder::new()
-                .with_shader(ShaderType::Vertex, "./resources/shader.vert")
-                .with_shader(ShaderType::Fragment, "./resources/shader.frag"),
-        );
-        app.graphics.set_uniform(&program, "sampler1", 0);
-
-        let vertex_buffer =
-            app.graphics
-                .new_vertex_buffer(capacity, 7 * 4, BufferUsage::DynamicDraw);
-        app.graphics
+        let vertex_buffer = app
+            .gl
+            .new_vertex_buffer(capacity, 7 * 4, BufferUsage::DynamicDraw);
+        app.gl
             .set_vertex_buffer_attribute(&vertex_buffer, 0, 4, 7, 0);
-        app.graphics
+        app.gl
             .set_vertex_buffer_attribute(&vertex_buffer, 1, 3, 7, 4);
 
         let index_buffer = app
-            .graphics
+            .gl
             .new_index_buffer(capacity, 6, BufferUsage::StaticDraw);
-        app.graphics
-            .set_index_buffer_data(&index_buffer, &indices, 0);
-
-        let image = image::open("./resources/test.png").unwrap().to_rgba();
-        let (width, height) = image.dimensions();
-
-        let texture = app.graphics.new_texture(width as i32, height as i32);
-        app.graphics
-            .set_texture_data(&texture, &image, 0, 0, width as i32, height as i32);
+        app.gl.set_index_buffer_data(&index_buffer, &indices, 0);
 
         SpriteBatch {
             vertex_buffer,
             index_buffer,
-            program,
             texture,
             drawing: false,
             vertices: Vec::with_capacity(capacity * 5),
@@ -138,17 +122,17 @@ impl SpriteBatch {
     pub fn flush(&mut self, app: &mut App) {
         assert!(self.drawing, "Spritebatch is not currently drawing");
 
-        app.graphics
-            .set_uniform(&self.program, "projection", &self.projection);
+        app.gl
+            .set_uniform(&self.texture.shader.handle, "projection", &self.projection);
 
-        app.graphics
+        app.gl
             .set_vertex_buffer_data(&self.vertex_buffer, &self.vertices, 0);
 
-        app.graphics.draw(
+        app.gl.draw(
             &self.vertex_buffer,
             &self.index_buffer,
-            &self.program,
-            &self.texture,
+            &self.texture.shader.handle,
+            &self.texture.handle,
             self.sprite_count,
         );
 

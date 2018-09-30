@@ -3,11 +3,11 @@ extern crate image;
 pub extern crate nalgebra_glm as glm;
 extern crate sdl2;
 
+pub mod graphics;
 mod opengl;
-pub mod spritebatch;
 pub mod util;
 
-use opengl::OpenGLDevice;
+use opengl::GLDevice;
 pub use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
 use sdl2::video::Window;
@@ -25,7 +25,7 @@ pub trait State {
 pub struct App {
     sdl: Sdl,
     pub window: Window,
-    pub graphics: OpenGLDevice,
+    pub gl: GLDevice,
 }
 
 impl App {
@@ -40,13 +40,9 @@ impl App {
             .build()
             .unwrap();
 
-        let graphics = OpenGLDevice::new(&video, &window);
+        let gl = GLDevice::new(&video, &window);
 
-        App {
-            sdl,
-            window,
-            graphics,
-        }
+        App { sdl, window, gl }
     }
 
     pub fn run<T: State>(&mut self, mut state: T) {
