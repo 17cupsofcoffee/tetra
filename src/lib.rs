@@ -29,12 +29,12 @@ pub struct App {
 }
 
 impl App {
-    pub fn new() -> App {
+    pub fn new(title: &str, width: u32, height: u32) -> App {
         let sdl = sdl2::init().unwrap();
         let video = sdl.video().unwrap();
 
         let window = video
-            .window("That one OpenGL thingy", 1280, 720)
+            .window(title, width, height)
             .position_centered()
             .opengl()
             .build()
@@ -75,11 +75,5 @@ impl App {
 
             self.window.gl_swap_window();
         }
-    }
-}
-
-impl Default for App {
-    fn default() -> Self {
-        Self::new()
     }
 }
