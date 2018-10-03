@@ -1,4 +1,3 @@
-use graphics::shader::Shader;
 use image;
 use opengl::GLTexture;
 use std::path::Path;
@@ -8,11 +7,10 @@ use App;
 #[derive(Clone)]
 pub struct Texture {
     pub(crate) handle: Rc<GLTexture>,
-    pub shader: Shader,
 }
 
 impl Texture {
-    pub fn new<P: AsRef<Path>>(app: &mut App, path: P, shader: Shader) -> Texture {
+    pub fn new<P: AsRef<Path>>(app: &mut App, path: P) -> Texture {
         let image = image::open(path).unwrap().to_rgba();
         let (width, height) = image.dimensions();
 
@@ -22,7 +20,6 @@ impl Texture {
 
         Texture {
             handle: Rc::new(texture),
-            shader,
         }
     }
 }

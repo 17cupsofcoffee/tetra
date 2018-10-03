@@ -1,5 +1,5 @@
 use glm::Mat4;
-use graphics::Texture;
+use graphics::{Shader, Texture};
 use opengl::{BufferUsage, GLBuffer};
 use util;
 use App;
@@ -14,6 +14,7 @@ pub struct SpriteBatch {
     index_buffer: GLBuffer,
 
     texture: Texture,
+    shader: Shader,
 
     drawing: bool,
     vertices: Vec<f32>,
@@ -23,11 +24,16 @@ pub struct SpriteBatch {
 }
 
 impl SpriteBatch {
-    pub fn new(app: &mut App, texture: Texture) -> SpriteBatch {
-        SpriteBatch::with_capacity(app, 1024, texture)
+    pub fn new(app: &mut App, texture: Texture, shader: Shader) -> SpriteBatch {
+        SpriteBatch::with_capacity(app, 1024, texture, shader)
     }
 
-    pub fn with_capacity(app: &mut App, capacity: usize, texture: Texture) -> SpriteBatch {
+    pub fn with_capacity(
+        app: &mut App,
+        capacity: usize,
+        texture: Texture,
+        shader: Shader,
+    ) -> SpriteBatch {
         assert!(
             capacity <= 8191,
             "Can't have more than 8191 sprites to a single buffer"
@@ -60,6 +66,7 @@ impl SpriteBatch {
             vertex_buffer,
             index_buffer,
             texture,
+            shader,
             drawing: false,
             vertices: Vec::with_capacity(capacity * VERTEX_STRIDE),
             sprite_count: 0,
@@ -128,7 +135,7 @@ impl SpriteBatch {
         assert!(self.drawing, "Spritebatch is not currently drawing");
 
         app.gl
-            .set_uniform(&self.texture.shader.handle, "projection", &self.projection);
+            .set_uniform(&self.shader.handle, "projection", &self.projection);
 
         app.gl
             .set_vertex_buffer_data(&self.vertex_buffer, &self.vertices, 0);
@@ -136,7 +143,7 @@ impl SpriteBatch {
         app.gl.draw(
             &self.vertex_buffer,
             &self.index_buffer,
-            &self.texture.shader.handle,
+            &self.shader.handle,
             &self.texture.handle,
             self.sprite_count,
         );
