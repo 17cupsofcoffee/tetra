@@ -4,6 +4,10 @@ use opengl::{BufferUsage, GLBuffer};
 use util;
 use App;
 
+const VERTEX_STRIDE: usize = 7;
+const INDEX_STRIDE: usize = 6;
+const INDEX_ARRAY: [u32; INDEX_STRIDE] = [0, 1, 2, 2, 3, 0];
+
 pub struct SpriteBatch {
     // GL handles
     vertex_buffer: GLBuffer,
@@ -29,26 +33,27 @@ impl SpriteBatch {
             "Can't have more than 8191 sprites to a single buffer"
         );
 
-        let indices_template: [u32; 6] = [0, 1, 2, 2, 3, 0];
-        let indices: Vec<u32> = indices_template
+        let indices: Vec<u32> = INDEX_ARRAY
             .iter()
             .cycle()
-            .take(capacity * 6)
+            .take(capacity * INDEX_STRIDE)
             .enumerate()
-            .map(|(i, vertex)| vertex + i as u32 / 6 * 4)
+            .map(|(i, vertex)| vertex + i as u32 / INDEX_STRIDE as u32 * 4)
             .collect();
 
-        let vertex_buffer = app
-            .gl
-            .new_vertex_buffer(capacity, 7 * 4, BufferUsage::DynamicDraw);
+        let vertex_buffer =
+            app.gl
+                .new_vertex_buffer(capacity, VERTEX_STRIDE * 4, BufferUsage::DynamicDraw);
+
         app.gl
-            .set_vertex_buffer_attribute(&vertex_buffer, 0, 4, 7, 0);
+            .set_vertex_buffer_attribute(&vertex_buffer, 0, 4, VERTEX_STRIDE, 0);
         app.gl
-            .set_vertex_buffer_attribute(&vertex_buffer, 1, 3, 7, 4);
+            .set_vertex_buffer_attribute(&vertex_buffer, 1, 3, VERTEX_STRIDE, 4);
 
         let index_buffer = app
             .gl
-            .new_index_buffer(capacity, 6, BufferUsage::StaticDraw);
+            .new_index_buffer(capacity, INDEX_STRIDE, BufferUsage::StaticDraw);
+
         app.gl.set_index_buffer_data(&index_buffer, &indices, 0);
 
         SpriteBatch {
@@ -56,7 +61,7 @@ impl SpriteBatch {
             index_buffer,
             texture,
             drawing: false,
-            vertices: Vec::with_capacity(capacity * 5),
+            vertices: Vec::with_capacity(capacity * VERTEX_STRIDE),
             sprite_count: 0,
             projection: util::ortho(0.0, 1280.0, 720.0, 0.0, -1.0, 1.0),
         }
