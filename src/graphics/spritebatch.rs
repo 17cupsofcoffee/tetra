@@ -62,6 +62,8 @@ impl SpriteBatch {
 
         app.gl.set_index_buffer_data(&index_buffer, &indices, 0);
 
+        let (width, height) = app.window.drawable_size();
+
         SpriteBatch {
             vertex_buffer,
             index_buffer,
@@ -70,7 +72,7 @@ impl SpriteBatch {
             drawing: false,
             vertices: Vec::with_capacity(capacity * VERTEX_STRIDE),
             sprite_count: 0,
-            projection: util::ortho(0.0, 1280.0, 720.0, 0.0, -1.0, 1.0),
+            projection: util::ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0),
         }
     }
 
