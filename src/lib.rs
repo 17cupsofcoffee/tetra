@@ -53,16 +53,16 @@ impl App {
         let tick_rate = util::f64_to_duration(TICK_RATE);
 
         loop {
-            let current_time = Instant::now();
-            let elapsed = current_time - last_time;
-            last_time = current_time;
-            lag += elapsed;
-
             for event in events.poll_iter() {
                 if !state.event(self, event) {
                     return;
                 }
             }
+
+            let current_time = Instant::now();
+            let elapsed = current_time - last_time;
+            last_time = current_time;
+            lag += elapsed;
 
             while lag >= tick_rate {
                 state.update(self);
