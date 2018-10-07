@@ -4,10 +4,9 @@ pub extern crate nalgebra_glm as glm;
 extern crate sdl2;
 
 pub mod graphics;
-mod opengl;
 pub mod util;
 
-use opengl::GLDevice;
+use graphics::opengl::GLDevice;
 pub use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
 use sdl2::video::Window;

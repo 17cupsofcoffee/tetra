@@ -1,5 +1,5 @@
+use graphics::opengl::GLTexture;
 use image;
-use opengl::GLTexture;
 use std::path::Path;
 use std::rc::Rc;
 use App;

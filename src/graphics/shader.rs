@@ -1,4 +1,4 @@
-use opengl::GLProgram;
+use graphics::opengl::GLProgram;
 use std::fs;
 use std::path::Path;
 use std::rc::Rc;

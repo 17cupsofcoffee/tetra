@@ -1,6 +1,6 @@
 use glm::Mat4;
+use graphics::opengl::{BufferUsage, GLBuffer};
 use graphics::{Shader, Texture};
-use opengl::{BufferUsage, GLBuffer};
 use util;
 use App;
 
