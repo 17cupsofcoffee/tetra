@@ -58,6 +58,15 @@ impl App {
 
         loop {
             for event in events.poll_iter() {
+                match event {
+                    Event::Quit { .. } => return, // TODO: Add a way to override this
+                    Event::KeyDown {
+                        keycode: Some(Keycode::Escape),
+                        ..
+                    } => return, // TODO: Make this an option,
+                    _ => {}
+                }
+
                 match state.event(self, event) {
                     Transition::None => {}
                     Transition::Quit => return,
