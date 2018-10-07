@@ -16,9 +16,14 @@ use std::time::{Duration, Instant};
 
 const TICK_RATE: f64 = 1.0 / 60.0;
 
+pub enum Transition {
+    None,
+    Quit,
+}
+
 pub trait State {
-    fn event(&mut self, app: &mut App, event: Event) -> bool;
-    fn update(&mut self, app: &mut App);
+    fn event(&mut self, app: &mut App, event: Event) -> Transition;
+    fn update(&mut self, app: &mut App) -> Transition;
     fn draw(&mut self, app: &mut App, dt: f64);
 }
 
@@ -54,8 +59,9 @@ impl App {
 
         loop {
             for event in events.poll_iter() {
-                if !state.event(self, event) {
-                    return;
+                match state.event(self, event) {
+                    Transition::None => {}
+                    Transition::Quit => return,
                 }
             }
 
@@ -65,7 +71,11 @@ impl App {
             lag += elapsed;
 
             while lag >= tick_rate {
-                state.update(self);
+                match state.update(self) {
+                    Transition::None => {}
+                    Transition::Quit => return,
+                }
+
                 lag -= tick_rate;
             }
 
