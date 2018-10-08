@@ -7,4 +7,4 @@ authors = ["Joe Clay <27cupsofcoffee@gmail.com>"]
 gl = "0.10.0"
 sdl2 = "0.31.0"
 image = "0.20.0"
-nalgebra-glm = "0.1.1"
+nalgebra-glm = "0.1.3"
