@@ -24,16 +24,11 @@ pub struct SpriteBatch {
 }
 
 impl SpriteBatch {
-    pub fn new(app: &mut App, texture: Texture, shader: Shader) -> SpriteBatch {
-        SpriteBatch::with_capacity(app, 1024, texture, shader)
+    pub fn new(app: &mut App, texture: Texture) -> SpriteBatch {
+        SpriteBatch::with_capacity(app, 1024, texture)
     }
 
-    pub fn with_capacity(
-        app: &mut App,
-        capacity: usize,
-        texture: Texture,
-        shader: Shader,
-    ) -> SpriteBatch {
+    pub fn with_capacity(app: &mut App, capacity: usize, texture: Texture) -> SpriteBatch {
         assert!(
             capacity <= 8191,
             "Can't have more than 8191 sprites to a single buffer"
@@ -68,7 +63,7 @@ impl SpriteBatch {
             vertex_buffer,
             index_buffer,
             texture,
-            shader,
+            shader: Shader::default(app),
             drawing: false,
             vertices: Vec::with_capacity(capacity * VERTEX_STRIDE),
             sprite_count: 0,
