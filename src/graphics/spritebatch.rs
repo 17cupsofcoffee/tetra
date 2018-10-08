@@ -19,6 +19,7 @@ pub struct SpriteBatch {
     drawing: bool,
     vertices: Vec<f32>,
     sprite_count: usize,
+    capacity: usize,
 
     projection: Mat4,
 }
@@ -67,6 +68,7 @@ impl SpriteBatch {
             drawing: false,
             vertices: Vec::with_capacity(capacity * VERTEX_STRIDE),
             sprite_count: 0,
+            capacity,
             projection: util::ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0),
         }
     }
@@ -79,6 +81,7 @@ impl SpriteBatch {
 
     pub fn draw(&mut self, x: f32, y: f32, width: f32, height: f32) {
         assert!(self.drawing, "Spritebatch is not currently drawing");
+        assert!(self.sprite_count < self.capacity, "Spritebatch is full");
 
         self.vertices.extend_from_slice(&[
             // top left
