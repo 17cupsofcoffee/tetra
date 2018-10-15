@@ -16,7 +16,6 @@ pub struct SpriteBatch {
     texture: Texture,
     shader: Shader,
 
-    drawing: bool,
     vertices: Vec<f32>,
     sprite_count: usize,
     capacity: usize,
@@ -65,7 +64,6 @@ impl SpriteBatch {
             index_buffer,
             texture,
             shader: Shader::default(app),
-            drawing: false,
             vertices: Vec::with_capacity(capacity * VERTEX_STRIDE),
             sprite_count: 0,
             capacity,
@@ -73,14 +71,7 @@ impl SpriteBatch {
         }
     }
 
-    pub fn begin(&mut self) {
-        assert!(!self.drawing, "Spritebatch is already drawing");
-
-        self.drawing = true;
-    }
-
-    pub fn draw(&mut self, x: f32, y: f32, width: f32, height: f32) {
-        assert!(self.drawing, "Spritebatch is not currently drawing");
+    pub fn push(&mut self, x: f32, y: f32, width: f32, height: f32) {
         assert!(self.sprite_count < self.capacity, "Spritebatch is full");
 
         self.vertices.extend_from_slice(&[
@@ -121,33 +112,27 @@ impl SpriteBatch {
         self.sprite_count += 1;
     }
 
-    pub fn end(&mut self, app: &mut App) {
-        assert!(self.drawing, "Spritebatch is not currently drawing");
-
+    pub fn draw(&mut self, app: &mut App) {
         if self.sprite_count > 0 {
-            self.flush(app);
-        }
+            app.gl
+                .set_uniform(&self.shader.handle, "projection", &self.projection);
 
-        self.drawing = false;
+            app.gl
+                .set_vertex_buffer_data(&self.vertex_buffer, &self.vertices, 0);
+
+            app.gl.draw(
+                &self.vertex_buffer,
+                &self.index_buffer,
+                &self.shader.handle,
+                &self.texture.handle,
+                self.sprite_count,
+            );
+
+            self.clear();
+        }
     }
 
-    pub fn flush(&mut self, app: &mut App) {
-        assert!(self.drawing, "Spritebatch is not currently drawing");
-
-        app.gl
-            .set_uniform(&self.shader.handle, "projection", &self.projection);
-
-        app.gl
-            .set_vertex_buffer_data(&self.vertex_buffer, &self.vertices, 0);
-
-        app.gl.draw(
-            &self.vertex_buffer,
-            &self.index_buffer,
-            &self.shader.handle,
-            &self.texture.handle,
-            self.sprite_count,
-        );
-
+    pub fn clear(&mut self) {
         self.vertices.clear();
         self.sprite_count = 0;
     }
