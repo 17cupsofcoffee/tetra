@@ -13,8 +13,6 @@ use sdl2::video::Window;
 use sdl2::Sdl;
 use std::time::{Duration, Instant};
 
-const TICK_RATE: f64 = 1.0 / 60.0;
-
 pub trait State {
     fn event(&mut self, app: &mut App, event: Event);
     fn update(&mut self, app: &mut App);
@@ -26,6 +24,7 @@ pub struct App {
     pub window: Window,
     pub gl: GLDevice,
     running: bool,
+    tick_rate: f64,
 }
 
 impl App {
@@ -47,6 +46,7 @@ impl App {
             window,
             gl,
             running: false,
+            tick_rate: 1.0 / 60.0,
         }
     }
 
@@ -55,7 +55,7 @@ impl App {
 
         let mut last_time = Instant::now();
         let mut lag = Duration::from_secs(0);
-        let tick_rate = util::f64_to_duration(TICK_RATE);
+        let tick_rate = util::f64_to_duration(self.tick_rate);
 
         self.running = true;
 
@@ -83,7 +83,7 @@ impl App {
                 lag -= tick_rate;
             }
 
-            let dt = util::duration_to_f64(lag) / TICK_RATE;
+            let dt = util::duration_to_f64(lag) / self.tick_rate;
 
             state.draw(self, dt);
 
