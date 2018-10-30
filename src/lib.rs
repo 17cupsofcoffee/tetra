@@ -15,14 +15,9 @@ use std::time::{Duration, Instant};
 
 const TICK_RATE: f64 = 1.0 / 60.0;
 
-pub enum Transition {
-    None,
-    Quit,
-}
-
 pub trait State {
-    fn event(&mut self, app: &mut App, event: Event) -> Transition;
-    fn update(&mut self, app: &mut App) -> Transition;
+    fn event(&mut self, app: &mut App, event: Event);
+    fn update(&mut self, app: &mut App);
     fn draw(&mut self, app: &mut App, dt: f64);
 }
 
@@ -30,6 +25,7 @@ pub struct App {
     sdl: Sdl,
     pub window: Window,
     pub gl: GLDevice,
+    running: bool,
 }
 
 impl App {
@@ -46,7 +42,12 @@ impl App {
 
         let gl = GLDevice::new(&video, &window);
 
-        App { sdl, window, gl }
+        App {
+            sdl,
+            window,
+            gl,
+            running: false,
+        }
     }
 
     pub fn run<T: State>(&mut self, mut state: T) {
@@ -56,21 +57,20 @@ impl App {
         let mut lag = Duration::from_secs(0);
         let tick_rate = util::f64_to_duration(TICK_RATE);
 
-        loop {
+        self.running = true;
+
+        while self.running {
             for event in events.poll_iter() {
                 match event {
-                    Event::Quit { .. } => return, // TODO: Add a way to override this
+                    Event::Quit { .. } => self.running = false, // TODO: Add a way to override this
                     Event::KeyDown {
                         keycode: Some(Keycode::Escape),
                         ..
-                    } => return, // TODO: Make this an option,
+                    } => self.running = false, // TODO: Make this an option,
                     _ => {}
                 }
 
-                match state.event(self, event) {
-                    Transition::None => {}
-                    Transition::Quit => return,
-                }
+                state.event(self, event);
             }
 
             let current_time = Instant::now();
@@ -79,11 +79,7 @@ impl App {
             lag += elapsed;
 
             while lag >= tick_rate {
-                match state.update(self) {
-                    Transition::None => {}
-                    Transition::Quit => return,
-                }
-
+                state.update(self);
                 lag -= tick_rate;
             }
 
@@ -93,5 +89,9 @@ impl App {
 
             self.window.gl_swap_window();
         }
+    }
+
+    pub fn quit(&mut self) {
+        self.running = false;
     }
 }
