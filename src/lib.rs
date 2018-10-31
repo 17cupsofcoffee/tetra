@@ -27,13 +27,38 @@ pub struct Context {
     tick_rate: f64,
 }
 
-impl Context {
-    pub fn new(title: &str, width: u32, height: u32) -> Context {
+pub struct ContextBuilder<'a> {
+    title: &'a str,
+    width: u32,
+    height: u32,
+}
+
+impl<'a> ContextBuilder<'a> {
+    pub fn new() -> ContextBuilder<'a> {
+        ContextBuilder {
+            title: "Tetra",
+            width: 1280,
+            height: 720,
+        }
+    }
+
+    pub fn title(mut self, title: &'a str) -> ContextBuilder<'a> {
+        self.title = title;
+        self
+    }
+
+    pub fn window_size(mut self, width: u32, height: u32) -> ContextBuilder<'a> {
+        self.width = width;
+        self.height = height;
+        self
+    }
+
+    pub fn build(self) -> Context {
         let sdl = sdl2::init().unwrap();
         let video = sdl.video().unwrap();
 
         let window = video
-            .window(title, width, height)
+            .window(self.title, self.width, self.height)
             .position_centered()
             .opengl()
             .build()
