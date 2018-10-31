@@ -6,6 +6,7 @@ extern crate sdl2;
 pub mod graphics;
 pub mod util;
 
+use glm::Mat4;
 use graphics::opengl::GLDevice;
 pub use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
@@ -25,6 +26,7 @@ pub struct Context {
     pub gl: GLDevice,
     running: bool,
     tick_rate: f64,
+    pub(crate) projection_matrix: Mat4,
 }
 
 pub struct ContextBuilder<'a> {
@@ -72,6 +74,14 @@ impl<'a> ContextBuilder<'a> {
             gl,
             running: false,
             tick_rate: 1.0 / 60.0,
+            projection_matrix: util::ortho(
+                0.0,
+                self.width as f32,
+                self.height as f32,
+                0.0,
+                -1.0,
+                1.0,
+            ),
         }
     }
 }

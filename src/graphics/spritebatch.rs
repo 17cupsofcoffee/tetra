@@ -1,7 +1,5 @@
-use glm::Mat4;
 use graphics::opengl::{BufferUsage, GLBuffer};
 use graphics::{Shader, Texture};
-use util;
 use Context;
 
 const VERTEX_STRIDE: usize = 7;
@@ -19,8 +17,6 @@ pub struct SpriteBatch {
     vertices: Vec<f32>,
     sprite_count: usize,
     capacity: usize,
-
-    projection: Mat4,
 }
 
 impl SpriteBatch {
@@ -57,8 +53,6 @@ impl SpriteBatch {
 
         ctx.gl.set_index_buffer_data(&index_buffer, &indices, 0);
 
-        let (width, height) = ctx.window.drawable_size();
-
         SpriteBatch {
             vertex_buffer,
             index_buffer,
@@ -67,7 +61,6 @@ impl SpriteBatch {
             vertices: Vec::with_capacity(capacity * VERTEX_STRIDE),
             sprite_count: 0,
             capacity,
-            projection: util::ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0),
         }
     }
 
@@ -115,7 +108,7 @@ impl SpriteBatch {
     pub fn draw(&mut self, ctx: &mut Context) {
         if self.sprite_count > 0 {
             ctx.gl
-                .set_uniform(&self.shader.handle, "projection", &self.projection);
+                .set_uniform(&self.shader.handle, "projection", &ctx.projection_matrix);
 
             ctx.gl
                 .set_vertex_buffer_data(&self.vertex_buffer, &self.vertices, 0);
