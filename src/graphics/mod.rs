@@ -9,8 +9,8 @@ pub use self::shader::Shader;
 pub use self::spritebatch::SpriteBatch;
 pub use self::texture::Texture;
 
-use App;
+use Context;
 
-pub fn clear(app: &mut App, color: Color) {
-    app.gl.clear(color.r, color.g, color.b, color.a);
+pub fn clear(ctx: &mut Context, color: Color) {
+    ctx.gl.clear(color.r, color.g, color.b, color.a);
 }

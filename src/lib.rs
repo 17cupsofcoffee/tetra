@@ -14,12 +14,12 @@ use sdl2::Sdl;
 use std::time::{Duration, Instant};
 
 pub trait State {
-    fn event(&mut self, app: &mut App, event: Event);
-    fn update(&mut self, app: &mut App);
-    fn draw(&mut self, app: &mut App, dt: f64);
+    fn event(&mut self, ctx: &mut Context, event: Event);
+    fn update(&mut self, ctx: &mut Context);
+    fn draw(&mut self, ctx: &mut Context, dt: f64);
 }
 
-pub struct App {
+pub struct Context {
     sdl: Sdl,
     pub window: Window,
     pub gl: GLDevice,
@@ -27,8 +27,8 @@ pub struct App {
     tick_rate: f64,
 }
 
-impl App {
-    pub fn new(title: &str, width: u32, height: u32) -> App {
+impl Context {
+    pub fn new(title: &str, width: u32, height: u32) -> Context {
         let sdl = sdl2::init().unwrap();
         let video = sdl.video().unwrap();
 
@@ -41,7 +41,7 @@ impl App {
 
         let gl = GLDevice::new(&video, &window);
 
-        App {
+        Context {
             sdl,
             window,
             gl,
@@ -49,49 +49,49 @@ impl App {
             tick_rate: 1.0 / 60.0,
         }
     }
+}
 
-    pub fn run<T: State>(&mut self, mut state: T) {
-        let mut events = self.sdl.event_pump().unwrap();
+pub fn run<T: State>(ctx: &mut Context, state: &mut T) {
+    let mut events = ctx.sdl.event_pump().unwrap();
 
-        let mut last_time = Instant::now();
-        let mut lag = Duration::from_secs(0);
-        let tick_rate = util::f64_to_duration(self.tick_rate);
+    let mut last_time = Instant::now();
+    let mut lag = Duration::from_secs(0);
+    let tick_rate = util::f64_to_duration(ctx.tick_rate);
 
-        self.running = true;
+    ctx.running = true;
 
-        while self.running {
-            for event in events.poll_iter() {
-                match event {
-                    Event::Quit { .. } => self.running = false, // TODO: Add a way to override this
-                    Event::KeyDown {
-                        keycode: Some(Keycode::Escape),
-                        ..
-                    } => self.running = false, // TODO: Make this an option,
-                    _ => {}
-                }
-
-                state.event(self, event);
+    while ctx.running {
+        for event in events.poll_iter() {
+            match event {
+                Event::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
+                Event::KeyDown {
+                    keycode: Some(Keycode::Escape),
+                    ..
+                } => ctx.running = false, // TODO: Make this an option,
+                _ => {}
             }
 
-            let current_time = Instant::now();
-            let elapsed = current_time - last_time;
-            last_time = current_time;
-            lag += elapsed;
-
-            while lag >= tick_rate {
-                state.update(self);
-                lag -= tick_rate;
-            }
-
-            let dt = util::duration_to_f64(lag) / self.tick_rate;
-
-            state.draw(self, dt);
-
-            self.window.gl_swap_window();
+            state.event(ctx, event);
         }
-    }
 
-    pub fn quit(&mut self) {
-        self.running = false;
+        let current_time = Instant::now();
+        let elapsed = current_time - last_time;
+        last_time = current_time;
+        lag += elapsed;
+
+        while lag >= tick_rate {
+            state.update(ctx);
+            lag -= tick_rate;
+        }
+
+        let dt = util::duration_to_f64(lag) / ctx.tick_rate;
+
+        state.draw(ctx, dt);
+
+        ctx.window.gl_swap_window();
     }
+}
+
+pub fn quit(ctx: &mut Context) {
+    ctx.running = false;
 }
