@@ -8,6 +8,7 @@ pub mod util;
 
 use glm::Mat4;
 use graphics::opengl::GLDevice;
+use graphics::RenderState;
 pub use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
 use sdl2::video::Window;
@@ -24,6 +25,7 @@ pub struct Context {
     sdl: Sdl,
     pub window: Window,
     pub gl: GLDevice,
+    pub render_state: RenderState,
     running: bool,
     tick_rate: f64,
     pub(crate) projection_matrix: Mat4,
@@ -66,12 +68,14 @@ impl<'a> ContextBuilder<'a> {
             .build()
             .unwrap();
 
-        let gl = GLDevice::new(&video, &window);
+        let mut gl = GLDevice::new(&video, &window);
+        let render_state = RenderState::new(&mut gl);
 
         Context {
             sdl,
             window,
             gl,
+            render_state,
             running: false,
             tick_rate: 1.0 / 60.0,
             projection_matrix: util::ortho(
@@ -122,6 +126,8 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) {
         let dt = util::duration_to_f64(lag) / ctx.tick_rate;
 
         state.draw(ctx, dt);
+
+        graphics::flush(ctx);
 
         ctx.window.gl_swap_window();
     }

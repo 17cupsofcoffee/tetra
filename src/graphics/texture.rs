@@ -4,7 +4,7 @@ use std::path::Path;
 use std::rc::Rc;
 use Context;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Texture {
     pub(crate) handle: Rc<GLTexture>,
 }

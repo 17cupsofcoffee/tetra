@@ -390,6 +390,7 @@ impl Drop for GLBuffer {
     }
 }
 
+#[derive(PartialEq)]
 pub struct GLProgram {
     id: GLuint,
 }
@@ -427,6 +428,7 @@ where
     }
 }
 
+#[derive(PartialEq)]
 pub struct GLTexture {
     id: GLuint,
 }
