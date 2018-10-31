@@ -7,6 +7,8 @@ use Context;
 #[derive(Clone, PartialEq)]
 pub struct Texture {
     pub(crate) handle: Rc<GLTexture>,
+    pub width: i32,
+    pub height: i32,
 }
 
 impl Texture {
@@ -20,6 +22,8 @@ impl Texture {
 
         Texture {
             handle: Rc::new(texture),
+            width: width as i32,
+            height: height as i32,
         }
     }
 }

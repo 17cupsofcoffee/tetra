@@ -67,7 +67,7 @@ pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
-pub fn draw(ctx: &mut Context, texture: &Texture, x: f32, y: f32, width: f32, height: f32) {
+pub fn draw(ctx: &mut Context, texture: &Texture, x: f32, y: f32) {
     match ctx.render_state.texture {
         Some(ref inner) if inner == texture => {}
         None => {
@@ -95,22 +95,22 @@ pub fn draw(ctx: &mut Context, texture: &Texture, x: f32, y: f32, width: f32, he
         1.0,
         // bottom left
         x,
-        y + height,
+        y + texture.width as f32,
         0.0,
         1.0,
         1.0,
         1.0,
         1.0,
         // bottom right
-        x + width,
-        y + height,
+        x + texture.width as f32,
+        y + texture.height as f32,
         1.0,
         1.0,
         1.0,
         1.0,
         1.0,
         // top right
-        x + width,
+        x + texture.width as f32,
         y,
         1.0,
         0.0,
