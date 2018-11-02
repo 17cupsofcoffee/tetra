@@ -8,6 +8,7 @@ pub use self::shader::Shader;
 pub use self::texture::Texture;
 
 use self::opengl::{BufferUsage, GLBuffer, GLDevice};
+use glm::Vec2;
 use Context;
 
 const SPRITE_CAPACITY: usize = 1024;
@@ -63,11 +64,57 @@ impl RenderState {
     }
 }
 
+#[derive(Copy, Clone)]
+pub struct Rectangle<T = f32> {
+    pub x: T,
+    pub y: T,
+    pub width: T,
+    pub height: T,
+}
+
+impl<T> Rectangle<T> {
+    pub fn new(x: T, y: T, width: T, height: T) -> Rectangle<T> {
+        Rectangle {
+            x,
+            y,
+            width,
+            height,
+        }
+    }
+}
+
+pub struct DrawParams {
+    pub position: Vec2,
+    pub scale: Vec2,
+    pub color: Color,
+    pub clip: Option<Rectangle>,
+}
+
+impl Default for DrawParams {
+    fn default() -> DrawParams {
+        DrawParams {
+            position: Vec2::new(0.0, 0.0),
+            scale: Vec2::new(1.0, 1.0),
+            color: Color::rgb(1.0, 1.0, 1.0),
+            clip: None,
+        }
+    }
+}
+
+impl From<Vec2> for DrawParams {
+    fn from(position: Vec2) -> DrawParams {
+        DrawParams {
+            position,
+            ..DrawParams::default()
+        }
+    }
+}
+
 pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
-pub fn draw(ctx: &mut Context, texture: &Texture, x: f32, y: f32) {
+pub fn draw<T: Into<DrawParams>>(ctx: &mut Context, texture: &Texture, params: T) {
     match ctx.render_state.texture {
         Some(ref inner) if inner == texture => {}
         None => {
@@ -84,39 +131,47 @@ pub fn draw(ctx: &mut Context, texture: &Texture, x: f32, y: f32) {
         "Renderer is full"
     );
 
+    let params = params.into();
+
+    let texture_width = texture.width as f32;
+    let texture_height = texture.height as f32;
+    let clip = params
+        .clip
+        .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));
+
     ctx.render_state.vertices.extend_from_slice(&[
         // top left
-        x,
-        y,
-        0.0,
-        0.0,
-        1.0,
-        1.0,
-        1.0,
+        params.position.x,
+        params.position.y,
+        clip.x / texture_width,
+        clip.y / texture_height,
+        params.color.r,
+        params.color.g,
+        params.color.b,
         // bottom left
-        x,
-        y + texture.width as f32,
-        0.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
+        params.position.x,
+        params.position.y + (texture_width * params.scale.x),
+        clip.x / texture_width,
+        clip.height / texture_height,
+        params.color.r,
+        params.color.g,
+        params.color.b,
         // bottom right
-        x + texture.width as f32,
-        y + texture.height as f32,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
+        params.position.x + (texture_width * params.scale.x),
+        params.position.y + (texture_height * params.scale.y),
+        clip.width / texture_width,
+        clip.height / texture_height,
+        params.color.r,
+        params.color.g,
+        params.color.b,
         // top right
-        x + texture.width as f32,
-        y,
-        1.0,
-        0.0,
-        1.0,
-        1.0,
-        1.0,
+        params.position.x + (texture_width * params.scale.x),
+        params.position.y,
+        clip.width / texture_width,
+        clip.y / texture_height,
+        params.color.r,
+        params.color.g,
+        params.color.b,
     ]);
 
     ctx.render_state.sprite_count += 1;
