@@ -84,18 +84,18 @@ impl GLDevice {
         count: usize,
         stride: usize,
         usage: BufferUsage,
-    ) -> GLBuffer {
+    ) -> GLVertexBuffer {
         unsafe {
             let mut id = 0;
             gl::GenBuffers(1, &mut id);
 
-            let buffer = GLBuffer { id, count, stride };
+            let buffer = GLVertexBuffer { id, count, stride };
 
             self.bind_vertex_buffer(&buffer);
 
             gl::BufferData(
                 gl::ARRAY_BUFFER,
-                (buffer.size() * mem::size_of::<GLfloat>()) as GLsizeiptr,
+                (count * mem::size_of::<GLfloat>()) as GLsizeiptr,
                 ptr::null() as *const GLvoid,
                 usage.into(),
             );
@@ -106,7 +106,7 @@ impl GLDevice {
 
     pub fn set_vertex_buffer_attribute(
         &mut self,
-        buffer: &GLBuffer,
+        buffer: &GLVertexBuffer,
         index: u32,
         size: i32,
         offset: usize,
@@ -129,9 +129,14 @@ impl GLDevice {
         }
     }
 
-    pub fn set_vertex_buffer_data(&mut self, buffer: &GLBuffer, data: &[GLfloat], offset: usize) {
+    pub fn set_vertex_buffer_data(
+        &mut self,
+        buffer: &GLVertexBuffer,
+        data: &[GLfloat],
+        offset: usize,
+    ) {
         unsafe {
-            assert!(offset + data.len() <= buffer.size());
+            assert!(offset + data.len() <= buffer.count);
 
             self.bind_vertex_buffer(buffer);
 
@@ -146,23 +151,18 @@ impl GLDevice {
         }
     }
 
-    pub fn new_index_buffer(
-        &mut self,
-        count: usize,
-        stride: usize,
-        usage: BufferUsage,
-    ) -> GLBuffer {
+    pub fn new_index_buffer(&mut self, count: usize, usage: BufferUsage) -> GLIndexBuffer {
         unsafe {
             let mut id = 0;
             gl::GenBuffers(1, &mut id);
 
-            let buffer = GLBuffer { id, count, stride };
+            let buffer = GLIndexBuffer { id, count };
 
             self.bind_index_buffer(&buffer);
 
             gl::BufferData(
                 gl::ELEMENT_ARRAY_BUFFER,
-                (buffer.size() * mem::size_of::<GLuint>()) as GLsizeiptr,
+                (count * mem::size_of::<GLuint>()) as GLsizeiptr,
                 ptr::null() as *const GLvoid,
                 usage.into(),
             );
@@ -171,7 +171,12 @@ impl GLDevice {
         }
     }
 
-    pub fn set_index_buffer_data(&mut self, buffer: &GLBuffer, data: &[GLuint], offset: usize) {
+    pub fn set_index_buffer_data(
+        &mut self,
+        buffer: &GLIndexBuffer,
+        data: &[GLuint],
+        offset: usize,
+    ) {
         unsafe {
             self.bind_index_buffer(buffer);
 
@@ -286,8 +291,8 @@ impl GLDevice {
 
     pub fn draw(
         &mut self,
-        vertex_buffer: &GLBuffer,
-        index_buffer: &GLBuffer,
+        vertex_buffer: &GLVertexBuffer,
+        index_buffer: &GLIndexBuffer,
         program: &GLProgram,
         texture: &GLTexture,
         count: usize,
@@ -300,14 +305,14 @@ impl GLDevice {
 
             gl::DrawElements(
                 gl::TRIANGLES,
-                (count * index_buffer.stride) as GLsizei,
+                count as GLsizei,
                 gl::UNSIGNED_INT,
                 ptr::null(),
             );
         }
     }
 
-    fn bind_vertex_buffer(&mut self, buffer: &GLBuffer) {
+    fn bind_vertex_buffer(&mut self, buffer: &GLVertexBuffer) {
         unsafe {
             if self.current_vertex_buffer != buffer.id {
                 gl::BindBuffer(gl::ARRAY_BUFFER, buffer.id);
@@ -316,7 +321,7 @@ impl GLDevice {
         }
     }
 
-    fn bind_index_buffer(&mut self, buffer: &GLBuffer) {
+    fn bind_index_buffer(&mut self, buffer: &GLIndexBuffer) {
         unsafe {
             if self.current_index_buffer != buffer.id {
                 gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, buffer.id);
@@ -369,19 +374,26 @@ impl From<BufferUsage> for GLenum {
     }
 }
 
-pub struct GLBuffer {
+pub struct GLVertexBuffer {
     id: GLuint,
     count: usize,
     stride: usize,
 }
 
-impl GLBuffer {
-    fn size(&self) -> usize {
-        self.count * self.stride
+impl Drop for GLVertexBuffer {
+    fn drop(&mut self) {
+        unsafe {
+            gl::DeleteBuffers(1, &self.id);
+        }
     }
 }
 
-impl Drop for GLBuffer {
+pub struct GLIndexBuffer {
+    id: GLuint,
+    count: usize,
+}
+
+impl Drop for GLIndexBuffer {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteBuffers(1, &self.id);

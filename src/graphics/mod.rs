@@ -7,7 +7,7 @@ pub use self::color::Color;
 pub use self::shader::Shader;
 pub use self::texture::Texture;
 
-use self::opengl::{BufferUsage, GLBuffer, GLDevice};
+use self::opengl::{BufferUsage, GLDevice, GLIndexBuffer, GLVertexBuffer};
 use glm::Vec2;
 use Context;
 
@@ -17,8 +17,8 @@ const INDEX_STRIDE: usize = 6;
 const INDEX_ARRAY: [u32; INDEX_STRIDE] = [0, 1, 2, 2, 3, 0];
 
 pub struct RenderState {
-    vertex_buffer: GLBuffer,
-    index_buffer: GLBuffer,
+    vertex_buffer: GLVertexBuffer,
+    index_buffer: GLIndexBuffer,
     texture: Option<Texture>,
     shader: Option<Shader>,
     vertices: Vec<f32>,
@@ -41,14 +41,17 @@ impl RenderState {
             .map(|(i, vertex)| vertex + i as u32 / INDEX_STRIDE as u32 * 4)
             .collect();
 
-        let vertex_buffer =
-            device.new_vertex_buffer(SPRITE_CAPACITY * 4, VERTEX_STRIDE, BufferUsage::DynamicDraw);
+        let vertex_buffer = device.new_vertex_buffer(
+            SPRITE_CAPACITY * 4 * VERTEX_STRIDE,
+            VERTEX_STRIDE,
+            BufferUsage::DynamicDraw,
+        );
 
         device.set_vertex_buffer_attribute(&vertex_buffer, 0, 4, 0);
         device.set_vertex_buffer_attribute(&vertex_buffer, 1, 3, 4);
 
         let index_buffer =
-            device.new_index_buffer(SPRITE_CAPACITY, INDEX_STRIDE, BufferUsage::StaticDraw);
+            device.new_index_buffer(SPRITE_CAPACITY * INDEX_STRIDE, BufferUsage::StaticDraw);
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
@@ -205,7 +208,7 @@ pub fn flush(ctx: &mut Context) {
             &ctx.render_state.index_buffer,
             &shader.handle,
             &texture.handle,
-            ctx.render_state.sprite_count,
+            ctx.render_state.sprite_count * INDEX_STRIDE,
         );
 
         ctx.render_state.vertices.clear();
