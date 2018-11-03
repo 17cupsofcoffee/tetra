@@ -42,7 +42,7 @@ impl RenderState {
             .collect();
 
         let vertex_buffer =
-            device.new_vertex_buffer(SPRITE_CAPACITY, VERTEX_STRIDE * 4, BufferUsage::DynamicDraw);
+            device.new_vertex_buffer(SPRITE_CAPACITY * 4, VERTEX_STRIDE, BufferUsage::DynamicDraw);
 
         device.set_vertex_buffer_attribute(&vertex_buffer, 0, 4, VERTEX_STRIDE, 0);
         device.set_vertex_buffer_attribute(&vertex_buffer, 1, 3, VERTEX_STRIDE, 4);
@@ -57,7 +57,7 @@ impl RenderState {
             index_buffer,
             texture: None,
             shader: None,
-            vertices: Vec::with_capacity(SPRITE_CAPACITY * VERTEX_STRIDE),
+            vertices: Vec::with_capacity(SPRITE_CAPACITY * 4 * VERTEX_STRIDE),
             sprite_count: 0,
             capacity: SPRITE_CAPACITY,
         }
