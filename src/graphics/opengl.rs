@@ -178,6 +178,8 @@ impl GLDevice {
         offset: usize,
     ) {
         unsafe {
+            assert!(offset + data.len() <= buffer.count);
+
             self.bind_index_buffer(buffer);
 
             // TODO: What if we want to discard what's already there?
