@@ -44,8 +44,8 @@ impl RenderState {
         let vertex_buffer =
             device.new_vertex_buffer(SPRITE_CAPACITY * 4, VERTEX_STRIDE, BufferUsage::DynamicDraw);
 
-        device.set_vertex_buffer_attribute(&vertex_buffer, 0, 4, VERTEX_STRIDE, 0);
-        device.set_vertex_buffer_attribute(&vertex_buffer, 1, 3, VERTEX_STRIDE, 4);
+        device.set_vertex_buffer_attribute(&vertex_buffer, 0, 4, 0);
+        device.set_vertex_buffer_attribute(&vertex_buffer, 1, 3, 4);
 
         let index_buffer =
             device.new_index_buffer(SPRITE_CAPACITY, INDEX_STRIDE, BufferUsage::StaticDraw);

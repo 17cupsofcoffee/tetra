@@ -109,7 +109,6 @@ impl GLDevice {
         buffer: &GLBuffer,
         index: u32,
         size: i32,
-        stride: usize,
         offset: usize,
     ) {
         // TODO: This feels a bit unergonomic...
@@ -122,7 +121,7 @@ impl GLDevice {
                 size,
                 gl::FLOAT,
                 gl::FALSE,
-                (stride * mem::size_of::<GLfloat>()) as GLsizei,
+                (buffer.stride * mem::size_of::<GLfloat>()) as GLsizei,
                 (offset * mem::size_of::<GLfloat>()) as *const _,
             );
 
