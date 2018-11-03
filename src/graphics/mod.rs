@@ -115,16 +115,7 @@ pub fn clear(ctx: &mut Context, color: Color) {
 }
 
 pub fn draw<T: Into<DrawParams>>(ctx: &mut Context, texture: &Texture, params: T) {
-    match ctx.render_state.texture {
-        Some(ref inner) if inner == texture => {}
-        None => {
-            ctx.render_state.texture = Some(texture.clone());
-        }
-        _ => {
-            ctx.render_state.texture = Some(texture.clone());
-            flush(ctx);
-        }
-    }
+    set_texture(ctx, texture);
 
     assert!(
         ctx.render_state.sprite_count < ctx.render_state.capacity,
@@ -175,6 +166,19 @@ pub fn draw<T: Into<DrawParams>>(ctx: &mut Context, texture: &Texture, params: T
     ]);
 
     ctx.render_state.sprite_count += 1;
+}
+
+pub fn set_texture(ctx: &mut Context, texture: &Texture) {
+    match ctx.render_state.texture {
+        Some(ref inner) if inner == texture => {}
+        None => {
+            ctx.render_state.texture = Some(texture.clone());
+        }
+        _ => {
+            ctx.render_state.texture = Some(texture.clone());
+            flush(ctx);
+        }
+    }
 }
 
 pub fn flush(ctx: &mut Context) {
