@@ -100,6 +100,11 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) {
     ctx.running = true;
 
     while ctx.running {
+        let current_time = Instant::now();
+        let elapsed = current_time - last_time;
+        last_time = current_time;
+        lag += elapsed;
+
         for event in events.poll_iter() {
             match event {
                 Event::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
@@ -112,11 +117,6 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) {
 
             state.event(ctx, event);
         }
-
-        let current_time = Instant::now();
-        let elapsed = current_time - last_time;
-        last_time = current_time;
-        lag += elapsed;
 
         while lag >= tick_rate {
             state.update(ctx);
