@@ -137,6 +137,8 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) {
         graphics::flush(ctx);
 
         ctx.window.gl_swap_window();
+
+        std::thread::yield_now();
     }
 }
 
