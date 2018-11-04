@@ -35,6 +35,7 @@ pub struct ContextBuilder<'a> {
     title: &'a str,
     width: u32,
     height: u32,
+    vsync: bool,
 }
 
 impl<'a> ContextBuilder<'a> {
@@ -43,6 +44,7 @@ impl<'a> ContextBuilder<'a> {
             title: "Tetra",
             width: 1280,
             height: 720,
+            vsync: true,
         }
     }
 
@@ -57,6 +59,11 @@ impl<'a> ContextBuilder<'a> {
         self
     }
 
+    pub fn vsync(mut self, vsync: bool) -> ContextBuilder<'a> {
+        self.vsync = vsync;
+        self
+    }
+
     pub fn build(self) -> Context {
         let sdl = sdl2::init().unwrap();
         let video = sdl.video().unwrap();
@@ -68,7 +75,7 @@ impl<'a> ContextBuilder<'a> {
             .build()
             .unwrap();
 
-        let mut gl = GLDevice::new(&video, &window);
+        let mut gl = GLDevice::new(&video, &window, self.vsync);
         let render_state = RenderState::new(&mut gl);
 
         Context {

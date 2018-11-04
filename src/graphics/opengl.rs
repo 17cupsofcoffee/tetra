@@ -19,7 +19,7 @@ pub struct GLDevice {
 }
 
 impl GLDevice {
-    pub fn new(video: &VideoSubsystem, window: &Window) -> GLDevice {
+    pub fn new(video: &VideoSubsystem, window: &Window, vsync: bool) -> GLDevice {
         let gl_attr = video.gl_attr();
 
         // Force Core 3.2 profile - this is reasonably compatible.
@@ -32,6 +32,8 @@ impl GLDevice {
         // Assert we actually got the profile we asked for!
         debug_assert_eq!(gl_attr.context_profile(), GLProfile::Core);
         debug_assert_eq!(gl_attr.context_version(), (3, 2));
+
+        video.gl_set_swap_interval(if vsync { 1 } else { 0 });
 
         let mut current_vertex_array = 0;
 
@@ -59,6 +61,8 @@ impl GLDevice {
                 "OpenGL Vendor: {}",
                 CStr::from_ptr(gl::GetString(gl::VENDOR) as *const _).to_string_lossy()
             );
+
+            println!("Swap Interval: {:?}", video.gl_get_swap_interval());
 
             GLDevice {
                 _ctx,
