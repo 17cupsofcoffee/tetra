@@ -117,6 +117,16 @@ pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
+fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, color: Color) {
+    ctx.render_state.vertices.push(x);
+    ctx.render_state.vertices.push(y);
+    ctx.render_state.vertices.push(u);
+    ctx.render_state.vertices.push(v);
+    ctx.render_state.vertices.push(color.r);
+    ctx.render_state.vertices.push(color.g);
+    ctx.render_state.vertices.push(color.b);
+}
+
 pub fn draw<T: Into<DrawParams>>(ctx: &mut Context, texture: &Texture, params: T) {
     set_texture(ctx, texture);
 
@@ -133,40 +143,19 @@ pub fn draw<T: Into<DrawParams>>(ctx: &mut Context, texture: &Texture, params: T
         .clip
         .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));
 
-    ctx.render_state.vertices.extend_from_slice(&[
-        // top left
-        params.position.x,
-        params.position.y,
-        clip.x / texture_width,
-        clip.y / texture_height,
-        params.color.r,
-        params.color.g,
-        params.color.b,
-        // bottom left
-        params.position.x,
-        params.position.y + (clip.width * params.scale.x),
-        clip.x / texture_width,
-        (clip.y + clip.height) / texture_height,
-        params.color.r,
-        params.color.g,
-        params.color.b,
-        // bottom right
-        params.position.x + (clip.width * params.scale.x),
-        params.position.y + (clip.height * params.scale.y),
-        (clip.x + clip.width) / texture_width,
-        (clip.y + clip.height) / texture_height,
-        params.color.r,
-        params.color.g,
-        params.color.b,
-        // top right
-        params.position.x + (clip.width * params.scale.x),
-        params.position.y,
-        (clip.x + clip.width) / texture_width,
-        clip.y / texture_height,
-        params.color.r,
-        params.color.g,
-        params.color.b,
-    ]);
+    let x1 = params.position.x;
+    let x2 = params.position.x + (clip.width * params.scale.x);
+    let y1 = params.position.y;
+    let y2 = params.position.y + (clip.height * params.scale.y);
+    let u1 = clip.x / texture_width;
+    let u2 = (clip.x + clip.width) / texture_width;
+    let v1 = clip.y / texture_height;
+    let v2 = (clip.y + clip.height) / texture_height;
+
+    push_vertex(ctx, x1, y1, u1, v1, params.color);
+    push_vertex(ctx, x1, y2, u1, v2, params.color);
+    push_vertex(ctx, x2, y2, u2, v2, params.color);
+    push_vertex(ctx, x2, y1, u2, v1, params.color);
 
     ctx.render_state.sprite_count += 1;
 }
