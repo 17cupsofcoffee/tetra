@@ -15,6 +15,8 @@ const SPRITE_CAPACITY: usize = 1024;
 const VERTEX_STRIDE: usize = 7;
 const INDEX_STRIDE: usize = 6;
 const INDEX_ARRAY: [u32; INDEX_STRIDE] = [0, 1, 2, 2, 3, 0];
+const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
+const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 
 pub struct RenderState {
     vertex_buffer: GLVertexBuffer,
@@ -177,7 +179,8 @@ pub fn flush(ctx: &mut Context) {
     if ctx.render_state.sprite_count > 0 && ctx.render_state.texture.is_some() {
         if ctx.render_state.shader.is_none() {
             // TODO: We only need to compile this once
-            ctx.render_state.shader = Some(Shader::default(ctx));
+            ctx.render_state.shader =
+                Some(Shader::new(ctx, DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER).unwrap());
         }
 
         let texture = ctx.render_state.texture.as_ref().unwrap();

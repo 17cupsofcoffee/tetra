@@ -1,11 +1,9 @@
+use error::{Result, TetraError};
 use graphics::opengl::GLProgram;
 use std::fs;
 use std::path::Path;
 use std::rc::Rc;
 use Context;
-
-pub const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
-pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 
 #[derive(Clone)]
 pub struct Shader {
@@ -13,28 +11,24 @@ pub struct Shader {
 }
 
 impl Shader {
-    pub fn new(ctx: &mut Context, vertex_shader: &str, fragment_shader: &str) -> Shader {
+    pub fn new(ctx: &mut Context, vertex_shader: &str, fragment_shader: &str) -> Result<Shader> {
+        // TODO: If this fails, we need to actually return an error instead of crashing
         let program = ctx.gl.compile_program(vertex_shader, fragment_shader);
 
-        Shader {
+        Ok(Shader {
             handle: Rc::new(program),
-        }
+        })
     }
 
     pub fn from_file<P: AsRef<Path>>(
         ctx: &mut Context,
         vertex_path: P,
         fragment_path: P,
-    ) -> Shader {
+    ) -> Result<Shader> {
         Shader::new(
             ctx,
-            &fs::read_to_string(vertex_path).unwrap(),
-            &fs::read_to_string(fragment_path).unwrap(),
+            &fs::read_to_string(vertex_path).map_err(TetraError::Io)?,
+            &fs::read_to_string(fragment_path).map_err(TetraError::Io)?,
         )
-    }
-
-    pub fn default(ctx: &mut Context) -> Shader {
-        // TODO: Could we make this a lazy static?
-        Shader::new(ctx, DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER)
     }
 }

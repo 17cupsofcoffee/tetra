@@ -1,3 +1,4 @@
+use error::{Result, TetraError};
 use gl::{self, types::*};
 use glm::Mat4;
 use sdl2::{
@@ -19,14 +20,14 @@ pub struct GLDevice {
 }
 
 impl GLDevice {
-    pub fn new(video: &VideoSubsystem, window: &Window, vsync: bool) -> GLDevice {
+    pub fn new(video: &VideoSubsystem, window: &Window, vsync: bool) -> Result<GLDevice> {
         let gl_attr = video.gl_attr();
 
         // Force Core 3.2 profile - this is reasonably compatible.
         gl_attr.set_context_profile(GLProfile::Core);
         gl_attr.set_context_version(3, 2);
 
-        let _ctx = window.gl_create_context().unwrap();
+        let _ctx = window.gl_create_context().map_err(TetraError::OpenGl)?;
         gl::load_with(|name| video.gl_get_proc_address(name) as *const _);
 
         // Assert we actually got the profile we asked for!
@@ -64,7 +65,7 @@ impl GLDevice {
 
             println!("Swap Interval: {:?}", video.gl_get_swap_interval());
 
-            GLDevice {
+            Ok(GLDevice {
                 _ctx,
 
                 current_vertex_buffer: 0,
@@ -72,7 +73,7 @@ impl GLDevice {
                 current_program: 0,
                 current_texture: 0,
                 current_vertex_array,
-            }
+            })
         }
     }
 

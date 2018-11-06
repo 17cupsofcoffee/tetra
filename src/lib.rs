@@ -3,9 +3,11 @@ extern crate image;
 pub extern crate nalgebra_glm as glm;
 extern crate sdl2;
 
+pub mod error;
 pub mod graphics;
 pub mod util;
 
+use error::{Result, TetraError};
 use glm::Mat4;
 use graphics::opengl::GLDevice;
 use graphics::RenderState;
@@ -64,21 +66,21 @@ impl<'a> ContextBuilder<'a> {
         self
     }
 
-    pub fn build(self) -> Context {
-        let sdl = sdl2::init().unwrap();
-        let video = sdl.video().unwrap();
+    pub fn build(self) -> Result<Context> {
+        let sdl = sdl2::init().map_err(TetraError::Sdl)?;
+        let video = sdl.video().map_err(TetraError::Sdl)?;
 
         let window = video
             .window(self.title, self.width, self.height)
             .position_centered()
             .opengl()
             .build()
-            .unwrap();
+            .map_err(|e| TetraError::Sdl(e.to_string()))?; // TODO: This could probably be cleaner
 
-        let mut gl = GLDevice::new(&video, &window, self.vsync);
+        let mut gl = GLDevice::new(&video, &window, self.vsync)?;
         let render_state = RenderState::new(&mut gl);
 
-        Context {
+        Ok(Context {
             sdl,
             window,
             gl,
@@ -93,12 +95,12 @@ impl<'a> ContextBuilder<'a> {
                 -1.0,
                 1.0,
             ),
-        }
+        })
     }
 }
 
-pub fn run<T: State>(ctx: &mut Context, state: &mut T) {
-    let mut events = ctx.sdl.event_pump().unwrap();
+pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
+    let mut events = ctx.sdl.event_pump().map_err(TetraError::Sdl)?;
 
     let mut last_time = Instant::now();
     let mut lag = Duration::from_secs(0);
@@ -140,6 +142,8 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) {
 
         std::thread::yield_now();
     }
+
+    Ok(())
 }
 
 pub fn quit(ctx: &mut Context) {
