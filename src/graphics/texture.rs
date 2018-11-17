@@ -5,6 +5,7 @@ use image;
 
 use error::{Result, TetraError};
 use graphics::opengl::GLTexture;
+use graphics::{self, DrawParams, Drawable, Rectangle};
 use Context;
 
 #[derive(Clone, PartialEq)]
@@ -28,5 +29,40 @@ impl Texture {
             width: width as i32,
             height: height as i32,
         })
+    }
+}
+
+impl Drawable for Texture {
+    fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
+        graphics::set_texture(ctx, self);
+
+        assert!(
+            ctx.render_state.sprite_count < ctx.render_state.capacity,
+            "Renderer is full"
+        );
+
+        let params = params.into();
+
+        let texture_width = self.width as f32;
+        let texture_height = self.height as f32;
+        let clip = params
+            .clip
+            .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));
+
+        let x1 = params.position.x;
+        let x2 = params.position.x + (clip.width * params.scale.x);
+        let y1 = params.position.y;
+        let y2 = params.position.y + (clip.height * params.scale.y);
+        let u1 = clip.x / texture_width;
+        let u2 = (clip.x + clip.width) / texture_width;
+        let v1 = clip.y / texture_height;
+        let v2 = (clip.y + clip.height) / texture_height;
+
+        graphics::push_vertex(ctx, x1, y1, u1, v1, params.color);
+        graphics::push_vertex(ctx, x1, y2, u1, v2, params.color);
+        graphics::push_vertex(ctx, x2, y2, u2, v2, params.color);
+        graphics::push_vertex(ctx, x2, y1, u2, v1, params.color);
+
+        ctx.render_state.sprite_count += 1;
     }
 }

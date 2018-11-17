@@ -115,11 +115,15 @@ impl From<Vec2> for DrawParams {
     }
 }
 
+pub trait Drawable {
+    fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T);
+}
+
 pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
-fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, color: Color) {
+pub(crate) fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, color: Color) {
     ctx.render_state.vertices.push(x);
     ctx.render_state.vertices.push(y);
     ctx.render_state.vertices.push(u);
@@ -129,37 +133,8 @@ fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, color: Color) 
     ctx.render_state.vertices.push(color.b);
 }
 
-pub fn draw<T: Into<DrawParams>>(ctx: &mut Context, texture: &Texture, params: T) {
-    set_texture(ctx, texture);
-
-    assert!(
-        ctx.render_state.sprite_count < ctx.render_state.capacity,
-        "Renderer is full"
-    );
-
-    let params = params.into();
-
-    let texture_width = texture.width as f32;
-    let texture_height = texture.height as f32;
-    let clip = params
-        .clip
-        .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));
-
-    let x1 = params.position.x;
-    let x2 = params.position.x + (clip.width * params.scale.x);
-    let y1 = params.position.y;
-    let y2 = params.position.y + (clip.height * params.scale.y);
-    let u1 = clip.x / texture_width;
-    let u2 = (clip.x + clip.width) / texture_width;
-    let v1 = clip.y / texture_height;
-    let v2 = (clip.y + clip.height) / texture_height;
-
-    push_vertex(ctx, x1, y1, u1, v1, params.color);
-    push_vertex(ctx, x1, y2, u1, v2, params.color);
-    push_vertex(ctx, x2, y2, u2, v2, params.color);
-    push_vertex(ctx, x2, y1, u2, v1, params.color);
-
-    ctx.render_state.sprite_count += 1;
+pub fn draw<D: Drawable, P: Into<DrawParams>>(ctx: &mut Context, drawable: &D, params: P) {
+    drawable.draw(ctx, params);
 }
 
 pub fn set_texture(ctx: &mut Context, texture: &Texture) {
