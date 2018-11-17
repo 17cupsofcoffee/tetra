@@ -42,6 +42,7 @@ pub struct ContextBuilder<'a> {
     title: &'a str,
     width: u32,
     height: u32,
+    scale: u32,
     vsync: bool,
     quit_on_escape: bool,
 }
@@ -52,6 +53,7 @@ impl<'a> ContextBuilder<'a> {
             title: "Tetra",
             width: 1280,
             height: 720,
+            scale: 1,
             vsync: true,
             quit_on_escape: false,
         }
@@ -62,9 +64,14 @@ impl<'a> ContextBuilder<'a> {
         self
     }
 
-    pub fn window_size(mut self, width: u32, height: u32) -> ContextBuilder<'a> {
+    pub fn size(mut self, width: u32, height: u32) -> ContextBuilder<'a> {
         self.width = width;
         self.height = height;
+        self
+    }
+
+    pub fn scale(mut self, scale: u32) -> ContextBuilder<'a> {
+        self.scale = scale;
         self
     }
 
@@ -83,8 +90,11 @@ impl<'a> ContextBuilder<'a> {
         let video = sdl.video().map_err(TetraError::Sdl)?;
 
         let window = video
-            .window(self.title, self.width, self.height)
-            .position_centered()
+            .window(
+                self.title,
+                self.width * self.scale,
+                self.height * self.scale,
+            ).position_centered()
             .opengl()
             .build()
             .map_err(|e| TetraError::Sdl(e.to_string()))?; // TODO: This could probably be cleaner
