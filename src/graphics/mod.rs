@@ -100,7 +100,7 @@ impl Default for DrawParams {
         DrawParams {
             position: Vec2::new(0.0, 0.0),
             scale: Vec2::new(1.0, 1.0),
-            color: Color::rgb(1.0, 1.0, 1.0),
+            color: color::WHITE,
             clip: None,
         }
     }
