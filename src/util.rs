@@ -1,5 +1,6 @@
-use glm::Mat4;
 use std::time::Duration;
+
+use glm::Mat4;
 
 pub fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Mat4 {
     // Taken from GGEZ - nalgebra doesn't like upside-down projections

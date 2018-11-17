@@ -1,8 +1,9 @@
-use error::{Result, TetraError};
-use graphics::opengl::GLProgram;
 use std::fs;
 use std::path::Path;
 use std::rc::Rc;
+
+use error::{Result, TetraError};
+use graphics::opengl::GLProgram;
 use Context;
 
 #[derive(Clone)]

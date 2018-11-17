@@ -3,12 +3,12 @@ pub mod opengl;
 pub mod shader;
 pub mod texture;
 
+use glm::Vec2;
+
 pub use self::color::Color;
 pub use self::shader::Shader;
 pub use self::texture::Texture;
-
-use self::opengl::{BufferUsage, GLDevice, GLIndexBuffer, GLVertexBuffer};
-use glm::Vec2;
+use graphics::opengl::{BufferUsage, GLDevice, GLIndexBuffer, GLVertexBuffer};
 use Context;
 
 const SPRITE_CAPACITY: usize = 1024;

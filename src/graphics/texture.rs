@@ -1,8 +1,10 @@
-use error::{Result, TetraError};
-use graphics::opengl::GLTexture;
-use image;
 use std::path::Path;
 use std::rc::Rc;
+
+use image;
+
+use error::{Result, TetraError};
+use graphics::opengl::GLTexture;
 use Context;
 
 #[derive(Clone, PartialEq)]

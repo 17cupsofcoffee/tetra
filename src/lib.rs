@@ -8,16 +8,18 @@ pub mod graphics;
 pub mod input;
 pub mod util;
 
-use error::{Result, TetraError};
+use std::time::{Duration, Instant};
+
 use glm::{Mat4, Vec2};
-use graphics::opengl::GLDevice;
-use graphics::RenderState;
-use input::InputContext;
 use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode as Key;
 use sdl2::video::Window;
 use sdl2::Sdl;
-use std::time::{Duration, Instant};
+
+use error::{Result, TetraError};
+use graphics::opengl::GLDevice;
+use graphics::RenderState;
+use input::InputContext;
 
 pub trait State {
     fn update(&mut self, ctx: &mut Context);
