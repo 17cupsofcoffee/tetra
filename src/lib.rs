@@ -29,6 +29,7 @@ pub struct Context {
     pub gl: GLDevice,
     pub render_state: RenderState,
     running: bool,
+    quit_on_escape: bool,
     tick_rate: f64,
     pub(crate) projection_matrix: Mat4,
     pub(crate) current_key_state: [bool; 322],
@@ -40,6 +41,7 @@ pub struct ContextBuilder<'a> {
     width: u32,
     height: u32,
     vsync: bool,
+    quit_on_escape: bool,
 }
 
 impl<'a> ContextBuilder<'a> {
@@ -49,6 +51,7 @@ impl<'a> ContextBuilder<'a> {
             width: 1280,
             height: 720,
             vsync: true,
+            quit_on_escape: false,
         }
     }
 
@@ -65,6 +68,11 @@ impl<'a> ContextBuilder<'a> {
 
     pub fn vsync(mut self, vsync: bool) -> ContextBuilder<'a> {
         self.vsync = vsync;
+        self
+    }
+
+    pub fn quit_on_escape(mut self, quit_on_escape: bool) -> ContextBuilder<'a> {
+        self.quit_on_escape = quit_on_escape;
         self
     }
 
@@ -88,6 +96,7 @@ impl<'a> ContextBuilder<'a> {
             gl,
             render_state,
             running: false,
+            quit_on_escape: self.quit_on_escape,
             tick_rate: 1.0 / 60.0,
             projection_matrix: util::ortho(
                 0.0,
@@ -127,7 +136,9 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
                     keycode: Some(k), ..
                 } => {
                     if let Keycode::Escape = k {
-                        ctx.running = false; // TODO: Make this an option,
+                        if ctx.quit_on_escape {
+                            ctx.running = false;
+                        }
                     }
 
                     ctx.current_key_state[k as usize] = true;
