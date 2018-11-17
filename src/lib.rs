@@ -12,8 +12,8 @@ use error::{Result, TetraError};
 use glm::Mat4;
 use graphics::opengl::GLDevice;
 use graphics::RenderState;
-pub use sdl2::event::Event;
-pub use sdl2::keyboard::Keycode;
+use sdl2::event::Event;
+pub use sdl2::keyboard::Keycode as Key;
 use sdl2::video::Window;
 use sdl2::Sdl;
 use std::time::{Duration, Instant};
@@ -135,7 +135,7 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
                 Event::KeyDown {
                     keycode: Some(k), ..
                 } => {
-                    if let Keycode::Escape = k {
+                    if let Key::Escape = k {
                         if ctx.quit_on_escape {
                             ctx.running = false;
                         }
