@@ -5,6 +5,7 @@ extern crate sdl2;
 
 pub mod error;
 pub mod graphics;
+pub mod input;
 pub mod util;
 
 use error::{Result, TetraError};
@@ -18,7 +19,6 @@ use sdl2::Sdl;
 use std::time::{Duration, Instant};
 
 pub trait State {
-    fn event(&mut self, ctx: &mut Context, event: Event);
     fn update(&mut self, ctx: &mut Context);
     fn draw(&mut self, ctx: &mut Context, dt: f64);
 }
@@ -31,6 +31,8 @@ pub struct Context {
     running: bool,
     tick_rate: f64,
     pub(crate) projection_matrix: Mat4,
+    pub(crate) current_key_state: [bool; 322],
+    pub(crate) previous_key_state: [bool; 322],
 }
 
 pub struct ContextBuilder<'a> {
@@ -95,6 +97,8 @@ impl<'a> ContextBuilder<'a> {
                 -1.0,
                 1.0,
             ),
+            current_key_state: [false; 322],
+            previous_key_state: [false; 322],
         })
     }
 }
@@ -114,17 +118,27 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
         last_time = current_time;
         lag += elapsed;
 
+        ctx.previous_key_state = ctx.current_key_state;
+
         for event in events.poll_iter() {
             match event {
                 Event::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
                 Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => ctx.running = false, // TODO: Make this an option,
+                    keycode: Some(k), ..
+                } => {
+                    if let Keycode::Escape = k {
+                        ctx.running = false; // TODO: Make this an option,
+                    }
+
+                    ctx.current_key_state[k as usize] = true;
+                }
+                Event::KeyUp {
+                    keycode: Some(k), ..
+                } => {
+                    ctx.current_key_state[k as usize] = false;
+                }
                 _ => {}
             }
-
-            state.event(ctx, event);
         }
 
         while lag >= tick_rate {
