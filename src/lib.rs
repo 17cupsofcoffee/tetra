@@ -9,9 +9,10 @@ pub mod input;
 pub mod util;
 
 use error::{Result, TetraError};
-use glm::Mat4;
+use glm::{Mat4, Vec2};
 use graphics::opengl::GLDevice;
 use graphics::RenderState;
+use input::InputContext;
 use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode as Key;
 use sdl2::video::Window;
@@ -32,8 +33,7 @@ pub struct Context {
     quit_on_escape: bool,
     tick_rate: f64,
     pub(crate) projection_matrix: Mat4,
-    pub(crate) current_key_state: [bool; 322],
-    pub(crate) previous_key_state: [bool; 322],
+    input: InputContext,
 }
 
 pub struct ContextBuilder<'a> {
@@ -106,8 +106,7 @@ impl<'a> ContextBuilder<'a> {
                 -1.0,
                 1.0,
             ),
-            current_key_state: [false; 322],
-            previous_key_state: [false; 322],
+            input: InputContext::new(),
         })
     }
 }
@@ -127,7 +126,7 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
         last_time = current_time;
         lag += elapsed;
 
-        ctx.previous_key_state = ctx.current_key_state;
+        ctx.input.previous_key_state = ctx.input.current_key_state;
 
         for event in events.poll_iter() {
             match event {
@@ -141,12 +140,15 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
                         }
                     }
 
-                    ctx.current_key_state[k as usize] = true;
+                    ctx.input.current_key_state[k as usize] = true;
                 }
                 Event::KeyUp {
                     keycode: Some(k), ..
                 } => {
-                    ctx.current_key_state[k as usize] = false;
+                    ctx.input.current_key_state[k as usize] = false;
+                }
+                Event::MouseMotion { x, y, .. } => {
+                    ctx.input.mouse_position = Vec2::new(x as f32, y as f32)
                 }
                 _ => {}
             }
