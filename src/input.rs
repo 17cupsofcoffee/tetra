@@ -29,14 +29,12 @@ pub fn is_key_up(ctx: &Context, keycode: Keycode) -> bool {
 
 pub fn is_key_pressed(ctx: &Context, keycode: Keycode) -> bool {
     let i = keycode as usize;
-    ctx.input.current_key_state[i]
-        && ctx.input.current_key_state[i] != ctx.input.previous_key_state[i]
+    !ctx.input.previous_key_state[i] && ctx.input.current_key_state[i]
 }
 
 pub fn is_key_released(ctx: &Context, keycode: Keycode) -> bool {
     let i = keycode as usize;
-    !ctx.input.current_key_state[i]
-        && ctx.input.current_key_state[i] != ctx.input.previous_key_state[i]
+    ctx.input.previous_key_state[i] && !ctx.input.current_key_state[i]
 }
 
 pub fn get_mouse_position(ctx: &Context) -> Vec2 {
