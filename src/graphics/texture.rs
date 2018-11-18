@@ -49,14 +49,39 @@ impl Drawable for Texture {
             .clip
             .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));
 
-        let x1 = params.position.x;
-        let x2 = params.position.x + (clip.width * params.scale.x);
-        let y1 = params.position.y;
-        let y2 = params.position.y + (clip.height * params.scale.y);
-        let u1 = clip.x / texture_width;
-        let u2 = (clip.x + clip.width) / texture_width;
-        let v1 = clip.y / texture_height;
-        let v2 = (clip.y + clip.height) / texture_height;
+        // TODO: I feel like there must be a cleaner way of determining the winding order...
+
+        let (x1, x2, u1, u2) = if params.scale.x >= 0.0 {
+            (
+                params.position.x,
+                params.position.x + (clip.width * params.scale.x),
+                clip.x / texture_width,
+                (clip.x + clip.width) / texture_width,
+            )
+        } else {
+            (
+                params.position.x + (clip.width * params.scale.x),
+                params.position.x,
+                (clip.x + clip.width) / texture_width,
+                clip.x / texture_width,
+            )
+        };
+
+        let (y1, y2, v1, v2) = if params.scale.y >= 0.0 {
+            (
+                params.position.y,
+                params.position.y + (clip.height * params.scale.y),
+                clip.y / texture_height,
+                (clip.y + clip.height) / texture_height,
+            )
+        } else {
+            (
+                params.position.y + (clip.height * params.scale.y),
+                params.position.y,
+                (clip.y + clip.height) / texture_height,
+                clip.y / texture_height,
+            )
+        };
 
         graphics::push_vertex(ctx, x1, y1, u1, v1, params.color);
         graphics::push_vertex(ctx, x1, y2, u1, v2, params.color);
