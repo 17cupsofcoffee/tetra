@@ -3,12 +3,13 @@ pub mod opengl;
 pub mod shader;
 pub mod texture;
 
-use glm::Vec2;
+use glm::{Mat4, Vec2};
 
 pub use self::color::Color;
 pub use self::shader::Shader;
 pub use self::texture::Texture;
 use graphics::opengl::{BufferUsage, GLDevice, GLIndexBuffer, GLProgram, GLVertexBuffer};
+use util;
 use Context;
 
 const SPRITE_CAPACITY: usize = 1024;
@@ -24,13 +25,14 @@ pub struct RenderState {
     texture: Option<Texture>,
     shader: Option<Shader>,
     default_shader: GLProgram,
+    projection_matrix: Mat4,
     vertices: Vec<f32>,
     sprite_count: usize,
     capacity: usize,
 }
 
 impl RenderState {
-    pub fn new(device: &mut GLDevice) -> RenderState {
+    pub fn new(device: &mut GLDevice, width: f32, height: f32) -> RenderState {
         assert!(
             SPRITE_CAPACITY <= 8191,
             "Can't have more than 8191 sprites to a single buffer"
@@ -66,6 +68,7 @@ impl RenderState {
             texture: None,
             shader: None,
             default_shader,
+            projection_matrix: util::ortho(0.0, width, height, 0.0, -1.0, 1.0),
             vertices: Vec::with_capacity(SPRITE_CAPACITY * 4 * VERTEX_STRIDE),
             sprite_count: 0,
             capacity: SPRITE_CAPACITY,
@@ -163,8 +166,11 @@ pub fn flush(ctx: &mut Context) {
             .map(|s| &*s.handle)
             .unwrap_or(&ctx.render_state.default_shader);
 
-        ctx.gl
-            .set_uniform(shader_handle, "projection", &ctx.projection_matrix);
+        ctx.gl.set_uniform(
+            shader_handle,
+            "projection",
+            &ctx.render_state.projection_matrix,
+        );
 
         ctx.gl.set_vertex_buffer_data(
             &ctx.render_state.vertex_buffer,

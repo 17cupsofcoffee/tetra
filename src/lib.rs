@@ -10,7 +10,7 @@ pub mod util;
 
 use std::time::{Duration, Instant};
 
-use glm::{Mat4, Vec2};
+use glm::Vec2;
 use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode as Key;
 use sdl2::video::Window;
@@ -34,7 +34,6 @@ pub struct Context {
     running: bool,
     quit_on_escape: bool,
     tick_rate: f64,
-    pub(crate) projection_matrix: Mat4,
     input: InputContext,
 }
 
@@ -100,7 +99,7 @@ impl<'a> ContextBuilder<'a> {
             .map_err(|e| TetraError::Sdl(e.to_string()))?; // TODO: This could probably be cleaner
 
         let mut gl = GLDevice::new(&video, &window, self.vsync)?;
-        let render_state = RenderState::new(&mut gl);
+        let render_state = RenderState::new(&mut gl, self.width as f32, self.height as f32);
 
         Ok(Context {
             sdl,
@@ -110,14 +109,6 @@ impl<'a> ContextBuilder<'a> {
             running: false,
             quit_on_escape: self.quit_on_escape,
             tick_rate: 1.0 / 60.0,
-            projection_matrix: util::ortho(
-                0.0,
-                self.width as f32,
-                self.height as f32,
-                0.0,
-                -1.0,
-                1.0,
-            ),
             input: InputContext::new(),
         })
     }
