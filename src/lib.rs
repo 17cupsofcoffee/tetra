@@ -157,6 +157,8 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
                 Event::KeyUp {
                     keycode: Some(k), ..
                 } => {
+                    // TODO: This can cause some inputs to be missed at low tick rates.
+                    // Could consider buffering input releases like Otter2D does?
                     ctx.input.current_key_state[k as usize] = false;
                 }
                 Event::MouseMotion { x, y, .. } => {
