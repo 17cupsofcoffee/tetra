@@ -8,7 +8,7 @@ use glm::Vec2;
 pub use self::color::Color;
 pub use self::shader::Shader;
 pub use self::texture::Texture;
-use graphics::opengl::{BufferUsage, GLDevice, GLIndexBuffer, GLVertexBuffer};
+use graphics::opengl::{BufferUsage, GLDevice, GLIndexBuffer, GLProgram, GLVertexBuffer};
 use Context;
 
 const SPRITE_CAPACITY: usize = 1024;
@@ -23,6 +23,7 @@ pub struct RenderState {
     index_buffer: GLIndexBuffer,
     texture: Option<Texture>,
     shader: Option<Shader>,
+    default_shader: GLProgram,
     vertices: Vec<f32>,
     sprite_count: usize,
     capacity: usize,
@@ -57,11 +58,14 @@ impl RenderState {
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
+        let default_shader = device.compile_program(DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER);
+
         RenderState {
             vertex_buffer,
             index_buffer,
             texture: None,
             shader: None,
+            default_shader,
             vertices: Vec::with_capacity(SPRITE_CAPACITY * 4 * VERTEX_STRIDE),
             sprite_count: 0,
             capacity: SPRITE_CAPACITY,
@@ -152,17 +156,15 @@ pub fn set_texture(ctx: &mut Context, texture: &Texture) {
 
 pub fn flush(ctx: &mut Context) {
     if ctx.render_state.sprite_count > 0 && ctx.render_state.texture.is_some() {
-        if ctx.render_state.shader.is_none() {
-            // TODO: We only need to compile this once
-            ctx.render_state.shader =
-                Some(Shader::new(ctx, DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER).unwrap());
-        }
-
-        let texture = ctx.render_state.texture.as_ref().unwrap();
-        let shader = ctx.render_state.shader.as_ref().unwrap();
+        let shader_handle = ctx
+            .render_state
+            .shader
+            .as_ref()
+            .map(|s| &*s.handle)
+            .unwrap_or(&ctx.render_state.default_shader);
 
         ctx.gl
-            .set_uniform(&shader.handle, "projection", &ctx.projection_matrix);
+            .set_uniform(shader_handle, "projection", &ctx.projection_matrix);
 
         ctx.gl.set_vertex_buffer_data(
             &ctx.render_state.vertex_buffer,
@@ -170,10 +172,12 @@ pub fn flush(ctx: &mut Context) {
             0,
         );
 
+        let texture = ctx.render_state.texture.as_ref().unwrap();
+
         ctx.gl.draw(
             &ctx.render_state.vertex_buffer,
             &ctx.render_state.index_buffer,
-            &shader.handle,
+            shader_handle,
             &texture.handle,
             ctx.render_state.sprite_count * INDEX_STRIDE,
         );
