@@ -50,18 +50,19 @@ impl Drawable for Texture {
             .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));
 
         // TODO: I feel like there must be a cleaner way of determining the winding order...
+        // TODO: We could probably use GLM to do this with vector math, too
 
         let (x1, x2, u1, u2) = if params.scale.x >= 0.0 {
             (
-                params.position.x,
-                params.position.x + (clip.width * params.scale.x),
+                params.position.x - params.origin.x,
+                params.position.x - params.origin.x + (clip.width * params.scale.x),
                 clip.x / texture_width,
                 (clip.x + clip.width) / texture_width,
             )
         } else {
             (
-                params.position.x + (clip.width * params.scale.x),
-                params.position.x,
+                params.position.x + params.origin.x + (clip.width * params.scale.x),
+                params.position.x + params.origin.x,
                 (clip.x + clip.width) / texture_width,
                 clip.x / texture_width,
             )
@@ -69,15 +70,15 @@ impl Drawable for Texture {
 
         let (y1, y2, v1, v2) = if params.scale.y >= 0.0 {
             (
-                params.position.y,
-                params.position.y + (clip.height * params.scale.y),
+                params.position.y - params.origin.y,
+                params.position.y - params.origin.y + (clip.height * params.scale.y),
                 clip.y / texture_height,
                 (clip.y + clip.height) / texture_height,
             )
         } else {
             (
-                params.position.y + (clip.height * params.scale.y),
-                params.position.y,
+                params.position.y + params.origin.y + (clip.height * params.scale.y),
+                params.position.y + params.origin.y,
                 (clip.y + clip.height) / texture_height,
                 clip.y / texture_height,
             )

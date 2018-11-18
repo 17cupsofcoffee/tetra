@@ -98,6 +98,7 @@ impl<T> Rectangle<T> {
 pub struct DrawParams {
     pub position: Vec2,
     pub scale: Vec2,
+    pub origin: Vec2,
     pub color: Color,
     pub clip: Option<Rectangle>,
 }
@@ -107,6 +108,7 @@ impl Default for DrawParams {
         DrawParams {
             position: Vec2::new(0.0, 0.0),
             scale: Vec2::new(1.0, 1.0),
+            origin: Vec2::new(0.0, 0.0),
             color: color::WHITE,
             clip: None,
         }
