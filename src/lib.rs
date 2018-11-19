@@ -6,7 +6,7 @@ extern crate sdl2;
 pub mod error;
 pub mod graphics;
 pub mod input;
-pub mod util;
+pub mod time;
 
 use std::time::{Duration, Instant};
 
@@ -119,7 +119,7 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
 
     let mut last_time = Instant::now();
     let mut lag = Duration::from_secs(0);
-    let tick_rate = util::f64_to_duration(ctx.tick_rate);
+    let tick_rate = time::f64_to_duration(ctx.tick_rate);
 
     ctx.running = true;
 
@@ -164,7 +164,7 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
             lag -= tick_rate;
         }
 
-        let dt = util::duration_to_f64(lag) / ctx.tick_rate;
+        let dt = time::duration_to_f64(lag) / ctx.tick_rate;
 
         state.draw(ctx, dt);
 

@@ -9,7 +9,6 @@ pub use self::color::Color;
 pub use self::shader::Shader;
 pub use self::texture::Texture;
 use graphics::opengl::{BufferUsage, GLDevice, GLIndexBuffer, GLProgram, GLVertexBuffer};
-use util;
 use Context;
 
 const SPRITE_CAPACITY: usize = 1024;
@@ -68,7 +67,7 @@ impl RenderState {
             texture: None,
             shader: None,
             default_shader,
-            projection_matrix: util::ortho(0.0, width, height, 0.0, -1.0, 1.0),
+            projection_matrix: ortho(0.0, width, height, 0.0, -1.0, 1.0),
             vertices: Vec::with_capacity(SPRITE_CAPACITY * 4 * VERTEX_STRIDE),
             sprite_count: 0,
             capacity: SPRITE_CAPACITY,
@@ -224,4 +223,31 @@ pub fn flush(ctx: &mut Context) {
         ctx.render_state.vertices.clear();
         ctx.render_state.sprite_count = 0;
     }
+}
+
+fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Mat4 {
+    // Taken from GGEZ - nalgebra doesn't like upside-down projections
+    let c0r0 = 2.0 / (right - left);
+    let c0r1 = 0.0;
+    let c0r2 = 0.0;
+    let c0r3 = 0.0;
+    let c1r0 = 0.0;
+    let c1r1 = 2.0 / (top - bottom);
+    let c1r2 = 0.0;
+    let c1r3 = 0.0;
+    let c2r0 = 0.0;
+    let c2r1 = 0.0;
+    let c2r2 = -2.0 / (far - near);
+    let c2r3 = 0.0;
+    let c3r0 = -(right + left) / (right - left);
+    let c3r1 = -(top + bottom) / (top - bottom);
+    let c3r2 = -(far + near) / (far - near);
+    let c3r3 = 1.0;
+
+    Mat4::from([
+        [c0r0, c0r1, c0r2, c0r3],
+        [c1r0, c1r1, c1r2, c1r3],
+        [c2r0, c2r1, c2r2, c2r3],
+        [c3r0, c3r1, c3r2, c3r3],
+    ])
 }
