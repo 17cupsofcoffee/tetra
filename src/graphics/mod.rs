@@ -103,6 +103,37 @@ pub struct DrawParams {
     pub clip: Option<Rectangle>,
 }
 
+impl DrawParams {
+    pub fn new() -> DrawParams {
+        DrawParams::default()
+    }
+
+    pub fn position(mut self, position: Vec2) -> DrawParams {
+        self.position = position;
+        self
+    }
+
+    pub fn scale(mut self, scale: Vec2) -> DrawParams {
+        self.scale = scale;
+        self
+    }
+
+    pub fn origin(mut self, origin: Vec2) -> DrawParams {
+        self.origin = origin;
+        self
+    }
+
+    pub fn color(mut self, color: Color) -> DrawParams {
+        self.color = color;
+        self
+    }
+
+    pub fn clip(mut self, clip: Rectangle) -> DrawParams {
+        self.clip = Some(clip);
+        self
+    }
+}
+
 impl Default for DrawParams {
     fn default() -> DrawParams {
         DrawParams {
