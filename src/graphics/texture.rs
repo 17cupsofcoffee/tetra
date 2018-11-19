@@ -11,8 +11,6 @@ use Context;
 #[derive(Clone, PartialEq)]
 pub struct Texture {
     pub(crate) handle: Rc<GLTexture>,
-    pub width: i32,
-    pub height: i32,
 }
 
 impl Texture {
@@ -26,8 +24,6 @@ impl Texture {
 
         Ok(Texture {
             handle: Rc::new(texture),
-            width: width as i32,
-            height: height as i32,
         })
     }
 }
@@ -43,8 +39,8 @@ impl Drawable for Texture {
 
         let params = params.into();
 
-        let texture_width = self.width as f32;
-        let texture_height = self.height as f32;
+        let texture_width = self.handle.width() as f32;
+        let texture_height = self.handle.height() as f32;
         let clip = params
             .clip
             .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));

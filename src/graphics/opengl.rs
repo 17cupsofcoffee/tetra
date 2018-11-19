@@ -243,7 +243,7 @@ impl GLDevice {
             let mut id = 0;
             gl::GenTextures(1, &mut id);
 
-            let texture = GLTexture { id };
+            let texture = GLTexture { id, width, height };
 
             self.bind_texture(&texture);
 
@@ -446,9 +446,26 @@ where
     }
 }
 
-#[derive(PartialEq)]
 pub struct GLTexture {
     id: GLuint,
+    width: i32,
+    height: i32,
+}
+
+impl GLTexture {
+    pub fn width(&self) -> i32 {
+        self.width
+    }
+
+    pub fn height(&self) -> i32 {
+        self.height
+    }
+}
+
+impl PartialEq for GLTexture {
+    fn eq(&self, other: &GLTexture) -> bool {
+        self.id == other.id
+    }
 }
 
 impl Drop for GLTexture {
