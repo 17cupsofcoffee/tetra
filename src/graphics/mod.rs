@@ -18,7 +18,7 @@ const INDEX_ARRAY: [u32; INDEX_STRIDE] = [0, 1, 2, 2, 3, 0];
 const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
 const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 
-pub struct RenderState {
+pub struct GraphicsContext {
     vertex_buffer: GLVertexBuffer,
     index_buffer: GLIndexBuffer,
     texture: Option<Texture>,
@@ -30,8 +30,8 @@ pub struct RenderState {
     capacity: usize,
 }
 
-impl RenderState {
-    pub fn new(device: &mut GLDevice, width: f32, height: f32) -> RenderState {
+impl GraphicsContext {
+    pub fn new(device: &mut GLDevice, width: f32, height: f32) -> GraphicsContext {
         assert!(
             SPRITE_CAPACITY <= 8191,
             "Can't have more than 8191 sprites to a single buffer"
@@ -61,7 +61,7 @@ impl RenderState {
 
         let default_shader = device.compile_program(DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER);
 
-        RenderState {
+        GraphicsContext {
             vertex_buffer,
             index_buffer,
             texture: None,
@@ -163,13 +163,13 @@ pub fn clear(ctx: &mut Context, color: Color) {
 }
 
 pub(crate) fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, color: Color) {
-    ctx.render_state.vertices.push(x);
-    ctx.render_state.vertices.push(y);
-    ctx.render_state.vertices.push(u);
-    ctx.render_state.vertices.push(v);
-    ctx.render_state.vertices.push(color.r);
-    ctx.render_state.vertices.push(color.g);
-    ctx.render_state.vertices.push(color.b);
+    ctx.graphics.vertices.push(x);
+    ctx.graphics.vertices.push(y);
+    ctx.graphics.vertices.push(u);
+    ctx.graphics.vertices.push(v);
+    ctx.graphics.vertices.push(color.r);
+    ctx.graphics.vertices.push(color.g);
+    ctx.graphics.vertices.push(color.b);
 }
 
 pub fn draw<D: Drawable, P: Into<DrawParams>>(ctx: &mut Context, drawable: &D, params: P) {
@@ -177,51 +177,45 @@ pub fn draw<D: Drawable, P: Into<DrawParams>>(ctx: &mut Context, drawable: &D, p
 }
 
 pub fn set_texture(ctx: &mut Context, texture: &Texture) {
-    match ctx.render_state.texture {
+    match ctx.graphics.texture {
         Some(ref inner) if inner == texture => {}
         None => {
-            ctx.render_state.texture = Some(texture.clone());
+            ctx.graphics.texture = Some(texture.clone());
         }
         _ => {
-            ctx.render_state.texture = Some(texture.clone());
+            ctx.graphics.texture = Some(texture.clone());
             flush(ctx);
         }
     }
 }
 
 pub fn flush(ctx: &mut Context) {
-    if ctx.render_state.sprite_count > 0 && ctx.render_state.texture.is_some() {
+    if ctx.graphics.sprite_count > 0 && ctx.graphics.texture.is_some() {
         let shader_handle = ctx
-            .render_state
+            .graphics
             .shader
             .as_ref()
             .map(|s| &*s.handle)
-            .unwrap_or(&ctx.render_state.default_shader);
+            .unwrap_or(&ctx.graphics.default_shader);
 
-        ctx.gl.set_uniform(
-            shader_handle,
-            "projection",
-            &ctx.render_state.projection_matrix,
-        );
+        ctx.gl
+            .set_uniform(shader_handle, "projection", &ctx.graphics.projection_matrix);
 
-        ctx.gl.set_vertex_buffer_data(
-            &ctx.render_state.vertex_buffer,
-            &ctx.render_state.vertices,
-            0,
-        );
+        ctx.gl
+            .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertices, 0);
 
-        let texture = ctx.render_state.texture.as_ref().unwrap();
+        let texture = ctx.graphics.texture.as_ref().unwrap();
 
         ctx.gl.draw(
-            &ctx.render_state.vertex_buffer,
-            &ctx.render_state.index_buffer,
+            &ctx.graphics.vertex_buffer,
+            &ctx.graphics.index_buffer,
             shader_handle,
             &texture.handle,
-            ctx.render_state.sprite_count * INDEX_STRIDE,
+            ctx.graphics.sprite_count * INDEX_STRIDE,
         );
 
-        ctx.render_state.vertices.clear();
-        ctx.render_state.sprite_count = 0;
+        ctx.graphics.vertices.clear();
+        ctx.graphics.sprite_count = 0;
     }
 }
 

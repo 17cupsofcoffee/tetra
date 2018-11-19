@@ -18,7 +18,7 @@ use sdl2::Sdl;
 
 use error::{Result, TetraError};
 use graphics::opengl::GLDevice;
-use graphics::RenderState;
+use graphics::GraphicsContext;
 use input::InputContext;
 
 pub trait State {
@@ -28,13 +28,14 @@ pub trait State {
 
 pub struct Context {
     sdl: Sdl,
-    pub window: Window,
-    pub gl: GLDevice,
-    pub render_state: RenderState,
+    window: Window,
+    gl: GLDevice,
+    graphics: GraphicsContext,
+    input: InputContext,
+
     running: bool,
     quit_on_escape: bool,
     tick_rate: f64,
-    input: InputContext,
 }
 
 pub struct ContextBuilder<'a> {
@@ -99,17 +100,19 @@ impl<'a> ContextBuilder<'a> {
             .map_err(|e| TetraError::Sdl(e.to_string()))?; // TODO: This could probably be cleaner
 
         let mut gl = GLDevice::new(&video, &window, self.vsync)?;
-        let render_state = RenderState::new(&mut gl, self.width as f32, self.height as f32);
+        let graphics = GraphicsContext::new(&mut gl, self.width as f32, self.height as f32);
+        let input = InputContext::new();
 
         Ok(Context {
             sdl,
             window,
             gl,
-            render_state,
+            graphics,
+            input,
+
             running: false,
             quit_on_escape: self.quit_on_escape,
             tick_rate: 1.0 / 60.0,
-            input: InputContext::new(),
         })
     }
 }

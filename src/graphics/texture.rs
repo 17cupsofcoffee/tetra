@@ -33,7 +33,7 @@ impl Drawable for Texture {
         graphics::set_texture(ctx, self);
 
         assert!(
-            ctx.render_state.sprite_count < ctx.render_state.capacity,
+            ctx.graphics.sprite_count < ctx.graphics.capacity,
             "Renderer is full"
         );
 
@@ -85,6 +85,6 @@ impl Drawable for Texture {
         graphics::push_vertex(ctx, x2, y2, u2, v2, params.color);
         graphics::push_vertex(ctx, x2, y1, u2, v1, params.color);
 
-        ctx.render_state.sprite_count += 1;
+        ctx.graphics.sprite_count += 1;
     }
 }
