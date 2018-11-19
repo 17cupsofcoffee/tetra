@@ -1,7 +1,7 @@
 use glm::Vec2;
-use sdl2::keyboard::Keycode;
 
 use Context;
+use Key;
 
 pub(crate) struct InputContext {
     pub(crate) current_key_state: [bool; 322],
@@ -19,21 +19,21 @@ impl InputContext {
     }
 }
 
-pub fn is_key_down(ctx: &Context, keycode: Keycode) -> bool {
-    ctx.input.current_key_state[keycode as usize]
+pub fn is_key_down(ctx: &Context, key: Key) -> bool {
+    ctx.input.current_key_state[key as usize]
 }
 
-pub fn is_key_up(ctx: &Context, keycode: Keycode) -> bool {
-    !ctx.input.current_key_state[keycode as usize]
+pub fn is_key_up(ctx: &Context, key: Key) -> bool {
+    !ctx.input.current_key_state[key as usize]
 }
 
-pub fn is_key_pressed(ctx: &Context, keycode: Keycode) -> bool {
-    let i = keycode as usize;
+pub fn is_key_pressed(ctx: &Context, key: Key) -> bool {
+    let i = key as usize;
     !ctx.input.previous_key_state[i] && ctx.input.current_key_state[i]
 }
 
-pub fn is_key_released(ctx: &Context, keycode: Keycode) -> bool {
-    let i = keycode as usize;
+pub fn is_key_released(ctx: &Context, key: Key) -> bool {
+    let i = key as usize;
     ctx.input.previous_key_state[i] && !ctx.input.current_key_state[i]
 }
 
