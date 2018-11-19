@@ -26,6 +26,12 @@ impl Texture {
             handle: Rc::new(texture),
         })
     }
+
+    pub(crate) fn from_handle(handle: GLTexture) -> Texture {
+        Texture {
+            handle: Rc::new(handle),
+        }
+    }
 }
 
 impl Drawable for Texture {
