@@ -242,25 +242,24 @@ pub fn flush(ctx: &mut Context) {
 pub fn present(ctx: &mut Context) {
     flush(ctx);
 
+    let screen_width = ctx.graphics.width * ctx.graphics.scale;
+    let screen_height = ctx.graphics.height * ctx.graphics.scale;
+
     ctx.gl.bind_default_frame_buffer();
-    ctx.gl.set_viewport(
-        0,
-        0,
-        ctx.graphics.width * ctx.graphics.scale,
-        ctx.graphics.height * ctx.graphics.scale,
-    );
+    ctx.gl.set_viewport(0, 0, screen_width, screen_height);
 
     let previous_texture = std::mem::replace(
         &mut ctx.graphics.texture,
         Some(ctx.graphics.frame_buffer_texture.clone()),
     );
 
-    let previous_matrix = std::mem::replace(&mut ctx.graphics.projection_matrix, Mat4::identity());
+    let width = ctx.graphics.width as f32;
+    let height = ctx.graphics.height as f32;
 
-    push_vertex(ctx, -1.0, 1.0, 0.0, 1.0, color::WHITE);
-    push_vertex(ctx, -1.0, -1.0, 0.0, 0.0, color::WHITE);
-    push_vertex(ctx, 1.0, -1.0, 1.0, 0.0, color::WHITE);
-    push_vertex(ctx, 1.0, 1.0, 1.0, 1.0, color::WHITE);
+    push_vertex(ctx, 0.0, 0.0, 0.0, 1.0, color::WHITE);
+    push_vertex(ctx, 0.0, height, 0.0, 0.0, color::WHITE);
+    push_vertex(ctx, width, height, 1.0, 0.0, color::WHITE);
+    push_vertex(ctx, width, 0.0, 1.0, 1.0, color::WHITE);
 
     ctx.graphics.sprite_count += 1;
 
@@ -271,7 +270,6 @@ pub fn present(ctx: &mut Context) {
         .set_viewport(0, 0, ctx.graphics.width, ctx.graphics.height);
 
     ctx.graphics.texture = previous_texture;
-    ctx.graphics.projection_matrix = previous_matrix;
 }
 
 fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Mat4 {
