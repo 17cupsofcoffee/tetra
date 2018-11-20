@@ -265,6 +265,8 @@ pub fn present(ctx: &mut Context) {
 
     flush(ctx);
 
+    ctx.window.gl_swap_window();
+
     ctx.gl.bind_frame_buffer(&ctx.graphics.frame_buffer);
     ctx.gl
         .set_viewport(0, 0, ctx.graphics.width, ctx.graphics.height);
