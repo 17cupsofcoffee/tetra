@@ -247,6 +247,7 @@ pub fn present(ctx: &mut Context) {
 
     ctx.gl.bind_default_frame_buffer();
     ctx.gl.set_viewport(0, 0, screen_width, screen_height);
+    clear(ctx, color::BLACK);
 
     let previous_texture = std::mem::replace(
         &mut ctx.graphics.texture,
