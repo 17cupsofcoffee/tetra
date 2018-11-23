@@ -48,7 +48,7 @@ impl GraphicsContext {
         let frame_buffer = device.new_frame_buffer();
         let frame_buffer_texture = Texture::from_handle(device.new_texture(width, height));
 
-        device.attach_texture_to_frame_buffer(&frame_buffer, &frame_buffer_texture.handle);
+        device.attach_texture_to_frame_buffer(&frame_buffer, &frame_buffer_texture.handle, false);
         device.set_viewport(0, 0, width, height);
 
         let indices: Vec<u32> = INDEX_ARRAY

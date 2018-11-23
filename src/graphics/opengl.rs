@@ -301,8 +301,11 @@ impl GLDevice {
         &mut self,
         frame_buffer: &GLFrameBuffer,
         texture: &GLTexture,
+        rebind_previous: bool,
     ) {
         unsafe {
+            let previous_id = self.current_frame_buffer;
+
             self.bind_frame_buffer(frame_buffer);
 
             gl::FramebufferTexture2D(
@@ -312,6 +315,11 @@ impl GLDevice {
                 texture.id,
                 0,
             );
+
+            if rebind_previous {
+                gl::BindFramebuffer(gl::FRAMEBUFFER, previous_id);
+                self.current_frame_buffer = previous_id;
+            }
         }
     }
 
