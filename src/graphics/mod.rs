@@ -250,30 +250,35 @@ pub fn present(ctx: &mut Context) {
     ctx.gl.set_viewport(0, 0, screen_width, screen_height);
     clear(ctx, color::BLACK);
 
-    let previous_texture = std::mem::replace(
-        &mut ctx.graphics.texture,
-        Some(ctx.graphics.framebuffer_texture.clone()),
+    push_vertex(ctx, -1.0, 1.0, 0.0, 1.0, color::WHITE);
+    push_vertex(ctx, -1.0, -1.0, 0.0, 0.0, color::WHITE);
+    push_vertex(ctx, 1.0, -1.0, 1.0, 0.0, color::WHITE);
+    push_vertex(ctx, 1.0, 1.0, 1.0, 1.0, color::WHITE);
+
+    ctx.gl.set_uniform(
+        &ctx.graphics.default_shader.handle,
+        "projection",
+        Mat4::identity(),
     );
 
-    let width = ctx.graphics.width as f32;
-    let height = ctx.graphics.height as f32;
+    ctx.gl
+        .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertices, 0);
 
-    push_vertex(ctx, 0.0, 0.0, 0.0, 1.0, color::WHITE);
-    push_vertex(ctx, 0.0, height, 0.0, 0.0, color::WHITE);
-    push_vertex(ctx, width, height, 1.0, 0.0, color::WHITE);
-    push_vertex(ctx, width, 0.0, 1.0, 1.0, color::WHITE);
+    ctx.gl.draw(
+        &ctx.graphics.vertex_buffer,
+        &ctx.graphics.index_buffer,
+        &ctx.graphics.default_shader.handle,
+        &ctx.graphics.framebuffer_texture.handle,
+        INDEX_STRIDE,
+    );
 
-    ctx.graphics.sprite_count += 1;
-
-    flush(ctx);
+    ctx.graphics.vertices.clear();
 
     ctx.window.gl_swap_window();
 
     ctx.gl.bind_framebuffer(&ctx.graphics.framebuffer);
     ctx.gl
         .set_viewport(0, 0, ctx.graphics.width, ctx.graphics.height);
-
-    ctx.graphics.texture = previous_texture;
 }
 
 fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Mat4 {
