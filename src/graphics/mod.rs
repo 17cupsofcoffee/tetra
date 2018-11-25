@@ -9,7 +9,7 @@ pub use self::color::Color;
 pub use self::shader::Shader;
 pub use self::texture::Texture;
 use graphics::opengl::{
-    BufferUsage, GLDevice, GLFrameBuffer, GLIndexBuffer, GLProgram, GLVertexBuffer,
+    BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLProgram, GLVertexBuffer,
 };
 use Context;
 
@@ -23,8 +23,8 @@ const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 pub struct GraphicsContext {
     vertex_buffer: GLVertexBuffer,
     index_buffer: GLIndexBuffer,
-    frame_buffer: GLFrameBuffer,
-    frame_buffer_texture: Texture,
+    framebuffer: GLFramebuffer,
+    framebuffer_texture: Texture,
     texture: Option<Texture>,
     shader: Option<Shader>,
     default_shader: GLProgram,
@@ -45,10 +45,10 @@ impl GraphicsContext {
             "Can't have more than 8191 sprites to a single buffer"
         );
 
-        let frame_buffer = device.new_frame_buffer();
-        let frame_buffer_texture = Texture::from_handle(device.new_texture(width, height));
+        let framebuffer = device.new_framebuffer();
+        let framebuffer_texture = Texture::from_handle(device.new_texture(width, height));
 
-        device.attach_texture_to_frame_buffer(&frame_buffer, &frame_buffer_texture.handle, false);
+        device.attach_texture_to_framebuffer(&framebuffer, &framebuffer_texture.handle, false);
         device.set_viewport(0, 0, width, height);
 
         let indices: Vec<u32> = INDEX_ARRAY
@@ -78,8 +78,8 @@ impl GraphicsContext {
         GraphicsContext {
             vertex_buffer,
             index_buffer,
-            frame_buffer,
-            frame_buffer_texture,
+            framebuffer,
+            framebuffer_texture,
             texture: None,
             shader: None,
             default_shader,
@@ -245,13 +245,13 @@ pub fn present(ctx: &mut Context) {
     let screen_width = ctx.graphics.width * ctx.graphics.scale;
     let screen_height = ctx.graphics.height * ctx.graphics.scale;
 
-    ctx.gl.bind_default_frame_buffer();
+    ctx.gl.bind_default_framebuffer();
     ctx.gl.set_viewport(0, 0, screen_width, screen_height);
     clear(ctx, color::BLACK);
 
     let previous_texture = std::mem::replace(
         &mut ctx.graphics.texture,
-        Some(ctx.graphics.frame_buffer_texture.clone()),
+        Some(ctx.graphics.framebuffer_texture.clone()),
     );
 
     let width = ctx.graphics.width as f32;
@@ -268,7 +268,7 @@ pub fn present(ctx: &mut Context) {
 
     ctx.window.gl_swap_window();
 
-    ctx.gl.bind_frame_buffer(&ctx.graphics.frame_buffer);
+    ctx.gl.bind_framebuffer(&ctx.graphics.framebuffer);
     ctx.gl
         .set_viewport(0, 0, ctx.graphics.width, ctx.graphics.height);
 
