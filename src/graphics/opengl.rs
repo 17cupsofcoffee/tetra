@@ -352,7 +352,7 @@ impl GLDevice {
         }
     }
 
-    fn bind_vertex_buffer(&mut self, buffer: &GLVertexBuffer) {
+    pub fn bind_vertex_buffer(&mut self, buffer: &GLVertexBuffer) {
         unsafe {
             if self.current_vertex_buffer != buffer.id {
                 gl::BindBuffer(gl::ARRAY_BUFFER, buffer.id);
@@ -361,7 +361,7 @@ impl GLDevice {
         }
     }
 
-    fn bind_index_buffer(&mut self, buffer: &GLIndexBuffer) {
+    pub fn bind_index_buffer(&mut self, buffer: &GLIndexBuffer) {
         unsafe {
             if self.current_index_buffer != buffer.id {
                 gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, buffer.id);
@@ -370,7 +370,7 @@ impl GLDevice {
         }
     }
 
-    fn bind_program(&mut self, program: &GLProgram) {
+    pub fn bind_program(&mut self, program: &GLProgram) {
         unsafe {
             if self.current_program != program.id {
                 gl::UseProgram(program.id);
@@ -379,7 +379,7 @@ impl GLDevice {
         }
     }
 
-    fn bind_texture(&mut self, texture: &GLTexture) {
+    pub fn bind_texture(&mut self, texture: &GLTexture) {
         unsafe {
             if self.current_texture != texture.id {
                 gl::ActiveTexture(gl::TEXTURE0);
