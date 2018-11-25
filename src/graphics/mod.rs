@@ -1,13 +1,15 @@
+pub mod animation;
 pub mod color;
 pub mod opengl;
 pub mod shader;
 pub mod texture;
 
-use glm::{Mat4, Vec2};
-
+pub use self::animation::Animation;
 pub use self::color::Color;
 pub use self::shader::Shader;
 pub use self::texture::Texture;
+
+use glm::{Mat4, Vec2};
 use graphics::opengl::{BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer};
 use Context;
 
@@ -96,21 +98,61 @@ impl GraphicsContext {
 }
 
 #[derive(Copy, Clone)]
-pub struct Rectangle<T = f32> {
-    pub x: T,
-    pub y: T,
-    pub width: T,
-    pub height: T,
+pub struct Rectangle {
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
 }
 
-impl<T> Rectangle<T> {
-    pub fn new(x: T, y: T, width: T, height: T) -> Rectangle<T> {
+impl Rectangle {
+    pub fn new(x: f32, y: f32, width: f32, height: f32) -> Rectangle {
         Rectangle {
             x,
             y,
             width,
             height,
         }
+    }
+
+    pub fn row(x: f32, y: f32, width: f32, height: f32) -> impl Iterator<Item = Rectangle> {
+        RectangleRow {
+            next_rect: Rectangle::new(x, y, width, height),
+        }
+    }
+
+    pub fn column(x: f32, y: f32, width: f32, height: f32) -> impl Iterator<Item = Rectangle> {
+        RectangleColumn {
+            next_rect: Rectangle::new(x, y, width, height),
+        }
+    }
+}
+
+struct RectangleRow {
+    next_rect: Rectangle,
+}
+
+impl Iterator for RectangleRow {
+    type Item = Rectangle;
+
+    fn next(&mut self) -> Option<Rectangle> {
+        let current_rect = self.next_rect;
+        self.next_rect.x += self.next_rect.width;
+        Some(current_rect)
+    }
+}
+
+struct RectangleColumn {
+    next_rect: Rectangle,
+}
+
+impl Iterator for RectangleColumn {
+    type Item = Rectangle;
+
+    fn next(&mut self) -> Option<Rectangle> {
+        let current_rect = self.next_rect;
+        self.next_rect.y += self.next_rect.height;
+        Some(current_rect)
     }
 }
 
