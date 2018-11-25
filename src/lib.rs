@@ -100,7 +100,12 @@ impl<'a> ContextBuilder<'a> {
             .map_err(|e| TetraError::Sdl(e.to_string()))?; // TODO: This could probably be cleaner
 
         let mut gl = GLDevice::new(&video, &window, self.vsync)?;
-        let graphics = GraphicsContext::new(&mut gl, self.width as f32, self.height as f32);
+        let graphics = GraphicsContext::new(
+            &mut gl,
+            self.width as i32,
+            self.height as i32,
+            self.scale as i32,
+        );
         let input = InputContext::new();
 
         Ok(Context {
@@ -171,9 +176,7 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
 
         state.draw(ctx, dt);
 
-        graphics::flush(ctx);
-
-        ctx.window.gl_swap_window();
+        graphics::present(ctx);
 
         std::thread::yield_now();
     }

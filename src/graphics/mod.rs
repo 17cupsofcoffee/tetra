@@ -8,7 +8,7 @@ use glm::{Mat4, Vec2};
 pub use self::color::Color;
 pub use self::shader::Shader;
 pub use self::texture::Texture;
-use graphics::opengl::{BufferUsage, GLDevice, GLIndexBuffer, GLProgram, GLVertexBuffer};
+use graphics::opengl::{BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer};
 use Context;
 
 const SPRITE_CAPACITY: usize = 1024;
@@ -21,21 +21,33 @@ const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 pub struct GraphicsContext {
     vertex_buffer: GLVertexBuffer,
     index_buffer: GLIndexBuffer,
+    framebuffer: GLFramebuffer,
+    framebuffer_texture: Texture,
     texture: Option<Texture>,
     shader: Option<Shader>,
-    default_shader: GLProgram,
+    default_shader: Shader,
     projection_matrix: Mat4,
     vertices: Vec<f32>,
     sprite_count: usize,
     capacity: usize,
+
+    width: i32,
+    height: i32,
+    scale: i32,
 }
 
 impl GraphicsContext {
-    pub fn new(device: &mut GLDevice, width: f32, height: f32) -> GraphicsContext {
+    pub fn new(device: &mut GLDevice, width: i32, height: i32, scale: i32) -> GraphicsContext {
         assert!(
             SPRITE_CAPACITY <= 8191,
             "Can't have more than 8191 sprites to a single buffer"
         );
+
+        let framebuffer = device.new_framebuffer();
+        let framebuffer_texture = Texture::from_handle(device.new_texture(width, height));
+
+        device.attach_texture_to_framebuffer(&framebuffer, &framebuffer_texture.handle, false);
+        device.set_viewport(0, 0, width, height);
 
         let indices: Vec<u32> = INDEX_ARRAY
             .iter()
@@ -59,18 +71,26 @@ impl GraphicsContext {
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
-        let default_shader = device.compile_program(DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER);
+        let default_shader = Shader::from_handle(
+            device.compile_program(DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER),
+        );
 
         GraphicsContext {
             vertex_buffer,
             index_buffer,
+            framebuffer,
+            framebuffer_texture,
             texture: None,
             shader: None,
             default_shader,
-            projection_matrix: ortho(0.0, width, height, 0.0, -1.0, 1.0),
+            projection_matrix: ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0),
             vertices: Vec::with_capacity(SPRITE_CAPACITY * 4 * VERTEX_STRIDE),
             sprite_count: 0,
             capacity: SPRITE_CAPACITY,
+
+            width,
+            height,
+            scale,
         }
     }
 }
@@ -191,25 +211,26 @@ pub fn set_texture(ctx: &mut Context, texture: &Texture) {
 
 pub fn flush(ctx: &mut Context) {
     if ctx.graphics.sprite_count > 0 && ctx.graphics.texture.is_some() {
-        let shader_handle = ctx
+        let texture = ctx.graphics.texture.as_ref().unwrap();
+        let shader = ctx
             .graphics
             .shader
             .as_ref()
-            .map(|s| &*s.handle)
             .unwrap_or(&ctx.graphics.default_shader);
 
-        ctx.gl
-            .set_uniform(shader_handle, "projection", &ctx.graphics.projection_matrix);
+        ctx.gl.set_uniform(
+            &shader.handle,
+            "projection",
+            &ctx.graphics.projection_matrix,
+        );
 
         ctx.gl
             .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertices, 0);
 
-        let texture = ctx.graphics.texture.as_ref().unwrap();
-
         ctx.gl.draw(
             &ctx.graphics.vertex_buffer,
             &ctx.graphics.index_buffer,
-            shader_handle,
+            &shader.handle,
             &texture.handle,
             ctx.graphics.sprite_count * INDEX_STRIDE,
         );
@@ -217,6 +238,47 @@ pub fn flush(ctx: &mut Context) {
         ctx.graphics.vertices.clear();
         ctx.graphics.sprite_count = 0;
     }
+}
+
+pub fn present(ctx: &mut Context) {
+    flush(ctx);
+
+    let screen_width = ctx.graphics.width * ctx.graphics.scale;
+    let screen_height = ctx.graphics.height * ctx.graphics.scale;
+
+    ctx.gl.bind_default_framebuffer();
+    ctx.gl.set_viewport(0, 0, screen_width, screen_height);
+    clear(ctx, color::BLACK);
+
+    push_vertex(ctx, -1.0, 1.0, 0.0, 1.0, color::WHITE);
+    push_vertex(ctx, -1.0, -1.0, 0.0, 0.0, color::WHITE);
+    push_vertex(ctx, 1.0, -1.0, 1.0, 0.0, color::WHITE);
+    push_vertex(ctx, 1.0, 1.0, 1.0, 1.0, color::WHITE);
+
+    ctx.gl.set_uniform(
+        &ctx.graphics.default_shader.handle,
+        "projection",
+        Mat4::identity(),
+    );
+
+    ctx.gl
+        .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertices, 0);
+
+    ctx.gl.draw(
+        &ctx.graphics.vertex_buffer,
+        &ctx.graphics.index_buffer,
+        &ctx.graphics.default_shader.handle,
+        &ctx.graphics.framebuffer_texture.handle,
+        INDEX_STRIDE,
+    );
+
+    ctx.graphics.vertices.clear();
+
+    ctx.window.gl_swap_window();
+
+    ctx.gl.bind_framebuffer(&ctx.graphics.framebuffer);
+    ctx.gl
+        .set_viewport(0, 0, ctx.graphics.width, ctx.graphics.height);
 }
 
 fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Mat4 {

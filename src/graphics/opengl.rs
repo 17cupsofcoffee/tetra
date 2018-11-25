@@ -2,7 +2,7 @@ use error::{Result, TetraError};
 use gl::{self, types::*};
 use glm::Mat4;
 use sdl2::{
-    video::{GLContext, GLProfile, Window},
+    video::{GLContext, Window},
     VideoSubsystem,
 };
 use std::ffi::{CStr, CString};
@@ -16,23 +16,14 @@ pub struct GLDevice {
     current_index_buffer: GLuint,
     current_program: GLuint,
     current_texture: GLuint,
+    current_framebuffer: GLuint,
     current_vertex_array: GLuint,
 }
 
 impl GLDevice {
     pub fn new(video: &VideoSubsystem, window: &Window, vsync: bool) -> Result<GLDevice> {
-        let gl_attr = video.gl_attr();
-
-        // Force Core 3.2 profile - this is reasonably compatible.
-        gl_attr.set_context_profile(GLProfile::Core);
-        gl_attr.set_context_version(3, 2);
-
         let _ctx = window.gl_create_context().map_err(TetraError::OpenGl)?;
         gl::load_with(|name| video.gl_get_proc_address(name) as *const _);
-
-        // Assert we actually got the profile we asked for!
-        debug_assert_eq!(gl_attr.context_profile(), GLProfile::Core);
-        debug_assert_eq!(gl_attr.context_version(), (3, 2));
 
         video.gl_set_swap_interval(if vsync { 1 } else { 0 });
 
@@ -72,6 +63,7 @@ impl GLDevice {
                 current_index_buffer: 0,
                 current_program: 0,
                 current_texture: 0,
+                current_framebuffer: 0,
                 current_vertex_array,
             })
         }
@@ -296,6 +288,47 @@ impl GLDevice {
         }
     }
 
+    pub fn new_framebuffer(&mut self) -> GLFramebuffer {
+        unsafe {
+            let mut id = 0;
+            gl::GenFramebuffers(1, &mut id);
+
+            GLFramebuffer { id }
+        }
+    }
+
+    pub fn attach_texture_to_framebuffer(
+        &mut self,
+        framebuffer: &GLFramebuffer,
+        texture: &GLTexture,
+        rebind_previous: bool,
+    ) {
+        unsafe {
+            let previous_id = self.current_framebuffer;
+
+            self.bind_framebuffer(framebuffer);
+
+            gl::FramebufferTexture2D(
+                gl::FRAMEBUFFER,
+                gl::COLOR_ATTACHMENT0,
+                gl::TEXTURE_2D,
+                texture.id,
+                0,
+            );
+
+            if rebind_previous {
+                gl::BindFramebuffer(gl::FRAMEBUFFER, previous_id);
+                self.current_framebuffer = previous_id;
+            }
+        }
+    }
+
+    pub fn set_viewport(&mut self, x: i32, y: i32, width: i32, height: i32) {
+        unsafe {
+            gl::Viewport(x, y, width, height);
+        }
+    }
+
     pub fn draw(
         &mut self,
         vertex_buffer: &GLVertexBuffer,
@@ -319,7 +352,7 @@ impl GLDevice {
         }
     }
 
-    fn bind_vertex_buffer(&mut self, buffer: &GLVertexBuffer) {
+    pub fn bind_vertex_buffer(&mut self, buffer: &GLVertexBuffer) {
         unsafe {
             if self.current_vertex_buffer != buffer.id {
                 gl::BindBuffer(gl::ARRAY_BUFFER, buffer.id);
@@ -328,7 +361,7 @@ impl GLDevice {
         }
     }
 
-    fn bind_index_buffer(&mut self, buffer: &GLIndexBuffer) {
+    pub fn bind_index_buffer(&mut self, buffer: &GLIndexBuffer) {
         unsafe {
             if self.current_index_buffer != buffer.id {
                 gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, buffer.id);
@@ -337,7 +370,7 @@ impl GLDevice {
         }
     }
 
-    fn bind_program(&mut self, program: &GLProgram) {
+    pub fn bind_program(&mut self, program: &GLProgram) {
         unsafe {
             if self.current_program != program.id {
                 gl::UseProgram(program.id);
@@ -346,12 +379,30 @@ impl GLDevice {
         }
     }
 
-    fn bind_texture(&mut self, texture: &GLTexture) {
+    pub fn bind_texture(&mut self, texture: &GLTexture) {
         unsafe {
             if self.current_texture != texture.id {
                 gl::ActiveTexture(gl::TEXTURE0);
                 gl::BindTexture(gl::TEXTURE_2D, texture.id);
                 self.current_texture = texture.id;
+            }
+        }
+    }
+
+    pub fn bind_framebuffer(&mut self, framebuffer: &GLFramebuffer) {
+        unsafe {
+            if self.current_framebuffer != framebuffer.id {
+                gl::BindFramebuffer(gl::FRAMEBUFFER, framebuffer.id);
+                self.current_framebuffer = framebuffer.id;
+            }
+        }
+    }
+
+    pub fn bind_default_framebuffer(&mut self) {
+        unsafe {
+            if self.current_framebuffer != 0 {
+                gl::BindFramebuffer(gl::FRAMEBUFFER, 0);
+                self.current_framebuffer = 0;
             }
         }
     }
@@ -472,6 +523,19 @@ impl Drop for GLTexture {
     fn drop(&mut self) {
         unsafe {
             gl::DeleteTextures(1, &self.id);
+        }
+    }
+}
+
+#[derive(PartialEq)]
+pub struct GLFramebuffer {
+    id: GLuint,
+}
+
+impl Drop for GLFramebuffer {
+    fn drop(&mut self) {
+        unsafe {
+            gl::DeleteFramebuffers(1, &self.id);
         }
     }
 }
