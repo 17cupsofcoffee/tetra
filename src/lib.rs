@@ -137,8 +137,6 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
         last_time = current_time;
         lag += elapsed;
 
-        ctx.input.previous_key_state = ctx.input.current_key_state;
-
         for event in events.poll_iter() {
             match event {
                 Event::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
@@ -169,6 +167,7 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
 
         while lag >= tick_rate {
             state.update(ctx);
+            ctx.input.previous_key_state = ctx.input.current_key_state;
             lag -= tick_rate;
         }
 
