@@ -8,9 +8,7 @@ use glm::{Mat4, Vec2};
 pub use self::color::Color;
 pub use self::shader::Shader;
 pub use self::texture::Texture;
-use graphics::opengl::{
-    BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLProgram, GLVertexBuffer,
-};
+use graphics::opengl::{BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer};
 use Context;
 
 const SPRITE_CAPACITY: usize = 1024;
@@ -27,7 +25,7 @@ pub struct GraphicsContext {
     framebuffer_texture: Texture,
     texture: Option<Texture>,
     shader: Option<Shader>,
-    default_shader: GLProgram,
+    default_shader: Shader,
     projection_matrix: Mat4,
     vertices: Vec<f32>,
     sprite_count: usize,
@@ -73,7 +71,9 @@ impl GraphicsContext {
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
-        let default_shader = device.compile_program(DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER);
+        let default_shader = Shader::from_handle(
+            device.compile_program(DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER),
+        );
 
         GraphicsContext {
             vertex_buffer,
@@ -211,25 +211,26 @@ pub fn set_texture(ctx: &mut Context, texture: &Texture) {
 
 pub fn flush(ctx: &mut Context) {
     if ctx.graphics.sprite_count > 0 && ctx.graphics.texture.is_some() {
-        let shader_handle = ctx
+        let texture = ctx.graphics.texture.as_ref().unwrap();
+        let shader = ctx
             .graphics
             .shader
             .as_ref()
-            .map(|s| &*s.handle)
             .unwrap_or(&ctx.graphics.default_shader);
 
-        ctx.gl
-            .set_uniform(shader_handle, "projection", &ctx.graphics.projection_matrix);
+        ctx.gl.set_uniform(
+            &shader.handle,
+            "projection",
+            &ctx.graphics.projection_matrix,
+        );
 
         ctx.gl
             .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertices, 0);
 
-        let texture = ctx.graphics.texture.as_ref().unwrap();
-
         ctx.gl.draw(
             &ctx.graphics.vertex_buffer,
             &ctx.graphics.index_buffer,
-            shader_handle,
+            &shader.handle,
             &texture.handle,
             ctx.graphics.sprite_count * INDEX_STRIDE,
         );

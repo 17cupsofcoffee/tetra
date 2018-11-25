@@ -22,9 +22,7 @@ impl Texture {
         ctx.gl
             .set_texture_data(&texture, &image, 0, 0, width as i32, height as i32);
 
-        Ok(Texture {
-            handle: Rc::new(texture),
-        })
+        Ok(Texture::from_handle(texture))
     }
 
     pub(crate) fn from_handle(handle: GLTexture) -> Texture {

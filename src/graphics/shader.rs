@@ -12,13 +12,9 @@ pub struct Shader {
 }
 
 impl Shader {
-    pub fn new(ctx: &mut Context, vertex_shader: &str, fragment_shader: &str) -> Result<Shader> {
+    pub fn new(ctx: &mut Context, vertex_shader: &str, fragment_shader: &str) -> Shader {
         // TODO: If this fails, we need to actually return an error instead of crashing
-        let program = ctx.gl.compile_program(vertex_shader, fragment_shader);
-
-        Ok(Shader {
-            handle: Rc::new(program),
-        })
+        Shader::from_handle(ctx.gl.compile_program(vertex_shader, fragment_shader))
     }
 
     pub fn from_file<P: AsRef<Path>>(
@@ -26,10 +22,16 @@ impl Shader {
         vertex_path: P,
         fragment_path: P,
     ) -> Result<Shader> {
-        Shader::new(
+        Ok(Shader::new(
             ctx,
             &fs::read_to_string(vertex_path).map_err(TetraError::Io)?,
             &fs::read_to_string(fragment_path).map_err(TetraError::Io)?,
-        )
+        ))
+    }
+
+    pub(crate) fn from_handle(handle: GLProgram) -> Shader {
+        Shader {
+            handle: Rc::new(handle),
+        }
     }
 }
