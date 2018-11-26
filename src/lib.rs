@@ -11,7 +11,7 @@ pub mod time;
 use std::time::{Duration, Instant};
 
 use glm::Vec2;
-use sdl2::event::Event;
+use sdl2::event::{Event, WindowEvent};
 pub use sdl2::keyboard::Keycode as Key;
 use sdl2::video::Window;
 use sdl2::Sdl;
@@ -40,9 +40,9 @@ pub struct Context {
 
 pub struct ContextBuilder<'a> {
     title: &'a str,
-    width: u32,
-    height: u32,
-    scale: u32,
+    width: i32,
+    height: i32,
+    scale: i32,
     vsync: bool,
     resizable: bool,
     tick_rate: f64,
@@ -68,13 +68,13 @@ impl<'a> ContextBuilder<'a> {
         self
     }
 
-    pub fn size(mut self, width: u32, height: u32) -> ContextBuilder<'a> {
+    pub fn size(mut self, width: i32, height: i32) -> ContextBuilder<'a> {
         self.width = width;
         self.height = height;
         self
     }
 
-    pub fn scale(mut self, scale: u32) -> ContextBuilder<'a> {
+    pub fn scale(mut self, scale: i32) -> ContextBuilder<'a> {
         self.scale = scale;
         self
     }
@@ -103,11 +103,11 @@ impl<'a> ContextBuilder<'a> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
         let video = sdl.video().map_err(TetraError::Sdl)?;
 
-        let mut window_builder = video.window(
-            self.title,
-            self.width * self.scale,
-            self.height * self.scale,
-        );
+        let window_width = self.width * self.scale;
+        let window_height = self.height * self.scale;
+
+        let mut window_builder =
+            video.window(self.title, window_width as u32, window_height as u32);
 
         window_builder.position_centered().opengl();
 
@@ -120,7 +120,13 @@ impl<'a> ContextBuilder<'a> {
             .map_err(|e| TetraError::Sdl(e.to_string()))?; // TODO: This could probably be cleaner
 
         let mut gl = GLDevice::new(&video, &window, self.vsync)?;
-        let graphics = GraphicsContext::new(&mut gl, self.width as i32, self.height as i32);
+        let graphics = GraphicsContext::new(
+            &mut gl,
+            self.width,
+            self.height,
+            window_width,
+            window_height,
+        );
         let input = InputContext::new();
 
         Ok(Context {
@@ -197,7 +203,9 @@ fn handle_event(ctx: &mut Context, event: &Event) {
         Event::MouseMotion { x, y, .. } => {
             ctx.input.mouse_position = Vec2::new(*x as f32, *y as f32)
         }
-
+        Event::Window { win_event, .. } => if let WindowEvent::SizeChanged(x, y) = win_event {
+            graphics::set_window_size(ctx, *x, *y)
+        },
         _ => {}
     }
 }
