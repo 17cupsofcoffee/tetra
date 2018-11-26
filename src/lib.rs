@@ -44,6 +44,7 @@ pub struct ContextBuilder<'a> {
     height: u32,
     scale: u32,
     vsync: bool,
+    resizable: bool,
     tick_rate: f64,
     quit_on_escape: bool,
 }
@@ -56,6 +57,7 @@ impl<'a> ContextBuilder<'a> {
             height: 720,
             scale: 1,
             vsync: true,
+            resizable: false,
             tick_rate: 1.0 / 60.0,
             quit_on_escape: false,
         }
@@ -82,6 +84,11 @@ impl<'a> ContextBuilder<'a> {
         self
     }
 
+    pub fn resizable(mut self, resizable: bool) -> ContextBuilder<'a> {
+        self.resizable = resizable;
+        self
+    }
+
     pub fn tick_rate(mut self, tick_rate: f64) -> ContextBuilder<'a> {
         self.tick_rate = tick_rate;
         self
@@ -96,23 +103,24 @@ impl<'a> ContextBuilder<'a> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
         let video = sdl.video().map_err(TetraError::Sdl)?;
 
-        let window = video
-            .window(
-                self.title,
-                self.width * self.scale,
-                self.height * self.scale,
-            ).position_centered()
-            .opengl()
+        let mut window_builder = video.window(
+            self.title,
+            self.width * self.scale,
+            self.height * self.scale,
+        );
+
+        window_builder.position_centered().opengl();
+
+        if self.resizable {
+            window_builder.resizable();
+        }
+
+        let window = window_builder
             .build()
             .map_err(|e| TetraError::Sdl(e.to_string()))?; // TODO: This could probably be cleaner
 
         let mut gl = GLDevice::new(&video, &window, self.vsync)?;
-        let graphics = GraphicsContext::new(
-            &mut gl,
-            self.width as i32,
-            self.height as i32,
-            self.scale as i32,
-        );
+        let graphics = GraphicsContext::new(&mut gl, self.width as i32, self.height as i32);
         let input = InputContext::new();
 
         Ok(Context {
@@ -144,31 +152,7 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
         lag += elapsed;
 
         for event in events.poll_iter() {
-            match event {
-                Event::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
-                Event::KeyDown {
-                    keycode: Some(k), ..
-                } => {
-                    if let Key::Escape = k {
-                        if ctx.quit_on_escape {
-                            ctx.running = false;
-                        }
-                    }
-
-                    ctx.input.current_key_state[k as usize] = true;
-                }
-                Event::KeyUp {
-                    keycode: Some(k), ..
-                } => {
-                    // TODO: This can cause some inputs to be missed at low tick rates.
-                    // Could consider buffering input releases like Otter2D does?
-                    ctx.input.current_key_state[k as usize] = false;
-                }
-                Event::MouseMotion { x, y, .. } => {
-                    ctx.input.mouse_position = Vec2::new(x as f32, y as f32)
-                }
-                _ => {}
-            }
+            handle_event(ctx, &event);
         }
 
         while lag >= ctx.tick_rate {
@@ -187,6 +171,35 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
     }
 
     Ok(())
+}
+
+fn handle_event(ctx: &mut Context, event: &Event) {
+    match event {
+        Event::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
+        Event::KeyDown {
+            keycode: Some(k), ..
+        } => {
+            if let Key::Escape = k {
+                if ctx.quit_on_escape {
+                    ctx.running = false;
+                }
+            }
+
+            ctx.input.current_key_state[*k as usize] = true;
+        }
+        Event::KeyUp {
+            keycode: Some(k), ..
+        } => {
+            // TODO: This can cause some inputs to be missed at low tick rates.
+            // Could consider buffering input releases like Otter2D does?
+            ctx.input.current_key_state[*k as usize] = false;
+        }
+        Event::MouseMotion { x, y, .. } => {
+            ctx.input.mouse_position = Vec2::new(*x as f32, *y as f32)
+        }
+
+        _ => {}
+    }
 }
 
 pub fn quit(ctx: &mut Context) {

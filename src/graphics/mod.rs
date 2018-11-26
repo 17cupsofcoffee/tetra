@@ -35,11 +35,10 @@ pub struct GraphicsContext {
 
     width: i32,
     height: i32,
-    scale: i32,
 }
 
 impl GraphicsContext {
-    pub fn new(device: &mut GLDevice, width: i32, height: i32, scale: i32) -> GraphicsContext {
+    pub fn new(device: &mut GLDevice, width: i32, height: i32) -> GraphicsContext {
         assert!(
             SPRITE_CAPACITY <= 8191,
             "Can't have more than 8191 sprites to a single buffer"
@@ -92,7 +91,6 @@ impl GraphicsContext {
 
             width,
             height,
-            scale,
         }
     }
 }
@@ -285,11 +283,11 @@ pub fn flush(ctx: &mut Context) {
 pub fn present(ctx: &mut Context) {
     flush(ctx);
 
-    let screen_width = ctx.graphics.width * ctx.graphics.scale;
-    let screen_height = ctx.graphics.height * ctx.graphics.scale;
+    let (window_width, window_height) = ctx.window.drawable_size();
 
     ctx.gl.bind_default_framebuffer();
-    ctx.gl.set_viewport(0, 0, screen_width, screen_height);
+    ctx.gl
+        .set_viewport(0, 0, window_width as i32, window_height as i32);
     clear(ctx, color::BLACK);
 
     push_vertex(ctx, -1.0, 1.0, 0.0, 1.0, color::WHITE);
