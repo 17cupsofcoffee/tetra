@@ -35,7 +35,7 @@ pub struct Context {
 
     running: bool,
     quit_on_escape: bool,
-    tick_rate: f64,
+    tick_rate: Duration,
 }
 
 pub struct ContextBuilder<'a> {
@@ -44,6 +44,7 @@ pub struct ContextBuilder<'a> {
     height: u32,
     scale: u32,
     vsync: bool,
+    tick_rate: f64,
     quit_on_escape: bool,
 }
 
@@ -55,6 +56,7 @@ impl<'a> ContextBuilder<'a> {
             height: 720,
             scale: 1,
             vsync: true,
+            tick_rate: 1.0 / 60.0,
             quit_on_escape: false,
         }
     }
@@ -77,6 +79,11 @@ impl<'a> ContextBuilder<'a> {
 
     pub fn vsync(mut self, vsync: bool) -> ContextBuilder<'a> {
         self.vsync = vsync;
+        self
+    }
+
+    pub fn tick_rate(mut self, tick_rate: f64) -> ContextBuilder<'a> {
+        self.tick_rate = tick_rate;
         self
     }
 
@@ -117,7 +124,7 @@ impl<'a> ContextBuilder<'a> {
 
             running: false,
             quit_on_escape: self.quit_on_escape,
-            tick_rate: 1.0 / 60.0,
+            tick_rate: time::f64_to_duration(self.tick_rate),
         })
     }
 }
@@ -127,7 +134,6 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
 
     let mut last_time = Instant::now();
     let mut lag = Duration::from_secs(0);
-    let tick_rate = time::f64_to_duration(ctx.tick_rate);
 
     ctx.running = true;
 
@@ -165,13 +171,13 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
             }
         }
 
-        while lag >= tick_rate {
+        while lag >= ctx.tick_rate {
             state.update(ctx);
             ctx.input.previous_key_state = ctx.input.current_key_state;
-            lag -= tick_rate;
+            lag -= ctx.tick_rate;
         }
 
-        let dt = time::duration_to_f64(lag) / ctx.tick_rate;
+        let dt = time::duration_to_f64(lag) / time::duration_to_f64(ctx.tick_rate);
 
         state.draw(ctx, dt);
 
@@ -185,4 +191,8 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
 
 pub fn quit(ctx: &mut Context) {
     ctx.running = false;
+}
+
+pub fn set_tick_rate(ctx: &mut Context, tick_rate: f64) {
+    ctx.tick_rate = time::f64_to_duration(tick_rate);
 }
