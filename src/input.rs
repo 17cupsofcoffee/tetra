@@ -1,8 +1,8 @@
 use glm::Vec2;
+pub use sdl2::keyboard::Keycode as Key;
 
 use graphics;
 use Context;
-use Key;
 
 pub(crate) struct InputContext {
     pub(crate) current_key_state: [bool; 322],

@@ -418,6 +418,8 @@ fn letterbox(
     window_width: i32,
     window_height: i32,
 ) -> Rectangle {
+    // TODO: We need to make sure this always aligns to a pixel, otherwise we get texture wrapping
+
     let scale_factor = if window_width <= window_height {
         window_width / internal_width
     } else {

@@ -12,14 +12,13 @@ use std::time::{Duration, Instant};
 
 use glm::Vec2;
 use sdl2::event::{Event, WindowEvent};
-pub use sdl2::keyboard::Keycode as Key;
 use sdl2::video::Window;
 use sdl2::Sdl;
 
 use error::{Result, TetraError};
 use graphics::opengl::GLDevice;
 use graphics::GraphicsContext;
-use input::InputContext;
+use input::{InputContext, Key};
 
 pub trait State {
     fn update(&mut self, ctx: &mut Context);
