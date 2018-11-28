@@ -7,36 +7,18 @@ use tetra::graphics::{self, DrawParams, Texture};
 use tetra::input::{self, Key};
 use tetra::{Context, ContextBuilder, State};
 
-enum BlockShape {
-    I,
-}
-
-enum BlockOrientation {
-    A,
-    B,
-}
-
 struct Block {
-    x: usize,
-    y: usize,
-    shape: BlockShape,
-    orientation: BlockOrientation,
+    x: i32,
+    y: i32,
+    shape: [[bool; 4]; 4],
 }
 
 impl Block {
-    fn new(x: usize, y: usize, shape: BlockShape, orientation: BlockOrientation) -> Block {
+    fn new(x: i32, y: i32) -> Block {
         Block {
             x,
             y,
-            shape,
-            orientation,
-        }
-    }
-
-    fn shape_coords(&self) -> [(usize, usize); 4] {
-        match (&self.shape, &self.orientation) {
-            (BlockShape::I, BlockOrientation::A) => [(1, 0), (1, 1), (1, 2), (1, 3)],
-            (BlockShape::I, BlockOrientation::B) => [(0, 2), (1, 2), (2, 2), (3, 2)],
+            shape: [[false, true, false, false]; 4],
         }
     }
 }
@@ -53,24 +35,55 @@ impl GameState {
     fn new(ctx: &mut Context) -> Result<GameState> {
         Ok(GameState {
             block_texture: Texture::new(ctx, "./examples/resources/block.png")?,
-            block: Block::new(0, 0, BlockShape::I, BlockOrientation::A),
+            block: Block::new(0, -2),
             drop_timer: 0,
             move_timer: 0,
             board: [[false; 20]; 10],
         })
     }
 
-    fn can_move(&self, block: &Block, move_x: isize, move_y: isize) -> bool {
-        self.block.shape_coords().iter().all(|(seg_x, seg_y)| {
-            let dest_x = block.x as isize + *seg_x as isize + move_x;
-            let dest_y = block.y as isize + *seg_y as isize + move_y;
+    fn collides(&mut self, move_x: i32, move_y: i32) -> bool {
+        for (x, column) in self.block.shape.iter().enumerate() {
+            for (y, exists) in column.iter().enumerate() {
+                if !exists {
+                    continue;
+                }
 
-            dest_x >= 0
-                && dest_x <= 9
-                && dest_y >= 0
-                && dest_y <= 19
-                && !self.board[dest_x as usize][dest_y as usize]
-        })
+                let board_x = self.block.x + move_x + x as i32;
+                let board_y = self.block.y + move_y + y as i32;
+
+                if board_y < 0 {
+                    continue;
+                }
+
+                if board_x < 0
+                    || board_x > 9
+                    || board_y > 19
+                    || self.board[board_x as usize][board_y as usize]
+                {
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+
+    fn lock(&mut self) {
+        for (x, column) in self.block.shape.iter().enumerate() {
+            for (y, exists) in column.iter().enumerate() {
+                if !exists {
+                    continue;
+                }
+
+                let board_x = self.block.x + x as i32;
+                let board_y = self.block.y + y as i32;
+
+                if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 19 {
+                    self.board[board_x as usize][board_y as usize] = true;
+                }
+            }
+        }
     }
 }
 
@@ -82,21 +95,21 @@ impl State for GameState {
         if self.drop_timer >= 30 || (self.drop_timer >= 8 && input::is_key_down(ctx, Key::S)) {
             self.drop_timer = 0;
 
-            if !self.can_move(&self.block, 0, 1) {
-                for (x, y) in self.block.shape_coords().iter() {
-                    self.board[self.block.x + *x][self.block.y + *y - 1] = true;
-                }
-                self.block = Block::new(0, 0, BlockShape::I, BlockOrientation::A);
+            if self.collides(0, 1) {
+                self.lock();
+                self.block = Block::new(0, -2);
+            } else {
+                self.block.y += 1;
             }
         }
 
         if self.move_timer >= 15 {
-            if input::is_key_down(ctx, Key::A) && self.can_move(&self.block, -1, 0) {
+            if input::is_key_down(ctx, Key::A) && !self.collides(-1, 0) {
                 self.move_timer = 0;
                 self.block.x -= 1;
             }
 
-            if input::is_key_down(ctx, Key::D) && self.can_move(&self.block, 11, 0) {
+            if input::is_key_down(ctx, Key::D) && !self.collides(1, 0) {
                 self.move_timer = 0;
                 self.block.x += 1;
             }
@@ -107,29 +120,40 @@ impl State for GameState {
         graphics::clear(ctx, color::BLACK);
 
         for (x, column) in self.board.iter().enumerate() {
-            for (y, is_filled) in column.iter().enumerate() {
-                if *is_filled {
+            for (y, exists) in column.iter().enumerate() {
+                if !exists {
+                    continue;
+                }
+
+                graphics::draw(
+                    ctx,
+                    &self.block_texture,
+                    DrawParams::new()
+                        .position(Vec2::new(x as f32 * 16.0, y as f32 * 16.0))
+                        .color(color::RED),
+                );
+            }
+        }
+
+        for (x, column) in self.block.shape.iter().enumerate() {
+            for (y, exists) in column.iter().enumerate() {
+                if !exists {
+                    continue;
+                }
+
+                let board_x = self.block.x + x as i32;
+                let board_y = self.block.y + y as i32;
+
+                if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 19 {
                     graphics::draw(
                         ctx,
                         &self.block_texture,
                         DrawParams::new()
-                            .position(Vec2::new(x as f32 * 16.0, y as f32 * 16.0))
-                            .color(color::RED),
+                            .position(Vec2::new(board_x as f32 * 16.0, board_y as f32 * 16.0))
+                            .color(color::BLUE),
                     );
                 }
             }
-        }
-
-        for (x, y) in self.block.shape_coords().iter() {
-            graphics::draw(
-                ctx,
-                &self.block_texture,
-                DrawParams::new()
-                    .position(Vec2::new(
-                        (self.block.x + *x) as f32 * 16.0,
-                        (self.block.y + *y) as f32 * 16.0,
-                    )).color(color::BLUE),
-            );
         }
 
         graphics::present(ctx);
