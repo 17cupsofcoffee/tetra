@@ -7,7 +7,7 @@ use rand::Rng;
 use tetra::error::Result;
 use tetra::glm::Vec2;
 use tetra::graphics::color;
-use tetra::graphics::{self, DrawParams, Texture};
+use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, Key};
 use tetra::{Context, ContextBuilder, State};
 
@@ -28,11 +28,14 @@ struct Block {
     y: i32,
     shape: BlockShape,
     rotation: BlockRotation,
+    color: Color,
 }
 
 impl Block {
     fn new() -> Block {
-        let shape = match rand::thread_rng().gen_range(0, 2) {
+        let mut rng = rand::thread_rng();
+
+        let shape = match rng.gen_range(0, 2) {
             0 => BlockShape::I,
             _ => BlockShape::J,
         };
@@ -42,6 +45,7 @@ impl Block {
             y: 0,
             shape,
             rotation: BlockRotation::A,
+            color: Color::rgb(rng.gen(), rng.gen(), rng.gen()),
         }
     }
 
@@ -86,7 +90,7 @@ struct GameState {
     block: Block,
     drop_timer: i32,
     move_timer: i32,
-    board: [[bool; 10]; 22],
+    board: [[Option<Color>; 10]; 22],
 }
 
 impl GameState {
@@ -96,7 +100,7 @@ impl GameState {
             block: Block::new(),
             drop_timer: 0,
             move_timer: 0,
-            board: [[false; 10]; 22],
+            board: [[None; 10]; 22],
         })
     }
 
@@ -112,7 +116,7 @@ impl GameState {
             if board_x < 0
                 || board_x > 9
                 || board_y > 21
-                || self.board[board_y as usize][board_x as usize]
+                || self.board[board_y as usize][board_x as usize].is_some()
             {
                 return true;
             }
@@ -127,7 +131,7 @@ impl GameState {
             let board_y = self.block.y + y;
 
             if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 21 {
-                self.board[board_y as usize][board_x as usize] = true;
+                self.board[board_y as usize][board_x as usize] = Some(self.block.color);
             }
         }
     }
@@ -135,7 +139,7 @@ impl GameState {
     fn check_for_clears(&mut self) {
         'outer: for y in 0..22 {
             for x in 0..10 {
-                if !self.board[y][x] {
+                if self.board[y][x].is_none() {
                     continue 'outer;
                 }
             }
@@ -144,22 +148,23 @@ impl GameState {
                 if clear_y > 0 {
                     self.board[clear_y] = self.board[clear_y - 1];
                 } else {
-                    self.board[clear_y] = [false; 10];
+                    self.board[clear_y] = [None; 10];
                 }
             }
         }
     }
 
     fn check_for_game_over(&self) -> bool {
-        self.board[0].iter().any(|filled| *filled) || self.board[1].iter().any(|filled| *filled)
+        self.board[0].iter().any(|segment| segment.is_some())
+            || self.board[1].iter().any(|segment| segment.is_some())
     }
 
-    fn board_blocks(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
+    fn board_blocks(&self) -> impl Iterator<Item = (i32, i32, Color)> + '_ {
         self.board.iter().enumerate().flat_map(|(y, row)| {
             row.iter()
                 .enumerate()
-                .filter(|(_, exists)| **exists)
-                .map(move |(x, _)| (x as i32, y as i32))
+                .filter(|(_, segment)| segment.is_some())
+                .map(move |(x, segment)| (x as i32, y as i32, segment.unwrap()))
         })
     }
 }
@@ -208,13 +213,13 @@ impl State for GameState {
     fn draw(&mut self, ctx: &mut Context, _dt: f64) {
         graphics::clear(ctx, color::BLACK);
 
-        for (x, y) in self.board_blocks() {
+        for (x, y, color) in self.board_blocks() {
             graphics::draw(
                 ctx,
                 &self.block_texture,
                 DrawParams::new()
                     .position(Vec2::new(x as f32 * 16.0, (y - 2) as f32 * 16.0))
-                    .color(color::RED),
+                    .color(color),
             );
         }
 
@@ -230,7 +235,7 @@ impl State for GameState {
                         .position(Vec2::new(
                             board_x as f32 * 16.0,
                             (board_y - 2) as f32 * 16.0,
-                        )).color(color::BLUE),
+                        )).color(self.block.color),
                 );
             }
         }
