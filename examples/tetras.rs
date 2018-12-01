@@ -44,17 +44,17 @@ struct GameState {
     block: Block,
     drop_timer: i32,
     move_timer: i32,
-    board: [[bool; 10]; 20],
+    board: [[bool; 10]; 22],
 }
 
 impl GameState {
     fn new(ctx: &mut Context) -> Result<GameState> {
         Ok(GameState {
             block_texture: Texture::new(ctx, "./examples/resources/block.png")?,
-            block: Block::new(0, -2),
+            block: Block::new(0, 0),
             drop_timer: 0,
             move_timer: 0,
-            board: [[false; 10]; 20],
+            board: [[false; 10]; 22],
         })
     }
 
@@ -69,7 +69,7 @@ impl GameState {
 
             if board_x < 0
                 || board_x > 9
-                || board_y > 19
+                || board_y > 21
                 || self.board[board_y as usize][board_x as usize]
             {
                 return true;
@@ -84,17 +84,14 @@ impl GameState {
             let board_x = self.block.x + x as i32;
             let board_y = self.block.y + y as i32;
 
-            // TODO: This doesn't add the blocks that cause the game over!
-            if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 19 {
+            if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 21 {
                 self.board[board_y as usize][board_x as usize] = true;
             }
         }
-
-        self.check_for_clears();
     }
 
     fn check_for_clears(&mut self) {
-        'outer: for y in 0..20 {
+        'outer: for y in 0..22 {
             for x in 0..10 {
                 if !self.board[y][x] {
                     continue 'outer;
@@ -107,6 +104,10 @@ impl GameState {
                 self.board[y] = [false; 10];
             }
         }
+    }
+
+    fn check_for_game_over(&self) -> bool {
+        self.board[0].iter().any(|filled| *filled) || self.board[1].iter().any(|filled| *filled)
     }
 
     fn board_blocks(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
@@ -129,6 +130,13 @@ impl State for GameState {
 
             if self.collides(0, 1) {
                 self.lock();
+                self.check_for_clears();
+
+                if self.check_for_game_over() {
+                    println!("Game over!");
+                    tetra::quit(ctx);
+                }
+
                 self.block = Block::new(0, -2);
             } else {
                 self.block.y += 1;
@@ -156,7 +164,7 @@ impl State for GameState {
                 ctx,
                 &self.block_texture,
                 DrawParams::new()
-                    .position(Vec2::new(x as f32 * 16.0, y as f32 * 16.0))
+                    .position(Vec2::new(x as f32 * 16.0, (y - 2) as f32 * 16.0))
                     .color(color::RED),
             );
         }
@@ -165,13 +173,15 @@ impl State for GameState {
             let board_x = self.block.x + x as i32;
             let board_y = self.block.y + y as i32;
 
-            if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 19 {
+            if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 21 {
                 graphics::draw(
                     ctx,
                     &self.block_texture,
                     DrawParams::new()
-                        .position(Vec2::new(board_x as f32 * 16.0, board_y as f32 * 16.0))
-                        .color(color::BLUE),
+                        .position(Vec2::new(
+                            board_x as f32 * 16.0,
+                            (board_y - 2) as f32 * 16.0,
+                        )).color(color::BLUE),
                 );
             }
         }
