@@ -20,17 +20,21 @@ impl Block {
         Block {
             x,
             y,
-            shape: [[false, true, false, false]; 4],
+            shape: [
+                [true, false, false, false],
+                [true, false, false, false],
+                [true, false, false, false],
+                [true, false, false, false],
+            ],
         }
     }
 
     fn segments(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
-        self.shape.iter().enumerate().flat_map(|(x, column)| {
-            column
-                .iter()
+        self.shape.iter().enumerate().flat_map(|(y, row)| {
+            row.iter()
                 .enumerate()
                 .filter(|(_, exists)| **exists)
-                .map(move |(y, _)| (x as i32, y as i32))
+                .map(move |(x, _)| (x as i32, y as i32))
         })
     }
 }
@@ -40,7 +44,7 @@ struct GameState {
     block: Block,
     drop_timer: i32,
     move_timer: i32,
-    board: [[bool; 20]; 10],
+    board: [[bool; 10]; 20],
 }
 
 impl GameState {
@@ -50,7 +54,7 @@ impl GameState {
             block: Block::new(0, -2),
             drop_timer: 0,
             move_timer: 0,
-            board: [[false; 20]; 10],
+            board: [[false; 10]; 20],
         })
     }
 
@@ -66,7 +70,7 @@ impl GameState {
             if board_x < 0
                 || board_x > 9
                 || board_y > 19
-                || self.board[board_x as usize][board_y as usize]
+                || self.board[board_y as usize][board_x as usize]
             {
                 return true;
             }
@@ -81,18 +85,35 @@ impl GameState {
             let board_y = self.block.y + y as i32;
 
             if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 19 {
-                self.board[board_x as usize][board_y as usize] = true;
+                self.board[board_y as usize][board_x as usize] = true;
+            }
+        }
+
+        self.check_for_clears();
+    }
+
+    fn check_for_clears(&mut self) {
+        'outer: for y in 0..20 {
+            for x in 0..10 {
+                if !self.board[y][x] {
+                    continue 'outer;
+                }
+            }
+
+            if y > 0 {
+                self.board[y] = self.board[y - 1];
+            } else {
+                self.board[y] = [false; 10];
             }
         }
     }
 
     fn board_blocks(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
-        self.board.iter().enumerate().flat_map(|(x, column)| {
-            column
-                .iter()
+        self.board.iter().enumerate().flat_map(|(y, row)| {
+            row.iter()
                 .enumerate()
                 .filter(|(_, exists)| **exists)
-                .map(move |(y, _)| (x as i32, y as i32))
+                .map(move |(x, _)| (x as i32, y as i32))
         })
     }
 }
