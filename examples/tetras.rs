@@ -1,7 +1,9 @@
 // Loosely based on https://github.com/jonhoo/tetris-tutorial
 
+extern crate rand;
 extern crate tetra;
 
+use rand::Rng;
 use tetra::error::Result;
 use tetra::glm::Vec2;
 use tetra::graphics::color;
@@ -29,11 +31,16 @@ struct Block {
 }
 
 impl Block {
-    fn new(x: i32, y: i32) -> Block {
+    fn new() -> Block {
+        let shape = match rand::thread_rng().gen_range(0, 2) {
+            0 => BlockShape::I,
+            _ => BlockShape::J,
+        };
+
         Block {
-            x,
-            y,
-            shape: BlockShape::J,
+            x: 0,
+            y: 0,
+            shape,
             rotation: BlockRotation::A,
         }
     }
@@ -48,15 +55,19 @@ impl Block {
     }
 
     fn data(&self) -> &'static [[bool; 4]; 4] {
-        match (&self.shape, &self.rotation) {
-            (BlockShape::I, BlockRotation::A) => &IA,
-            (BlockShape::I, BlockRotation::B) => &IB,
-            (BlockShape::I, BlockRotation::C) => &IC,
-            (BlockShape::I, BlockRotation::D) => &ID,
-            (BlockShape::J, BlockRotation::A) => &JA,
-            (BlockShape::J, BlockRotation::B) => &JB,
-            (BlockShape::J, BlockRotation::C) => &JC,
-            (BlockShape::J, BlockRotation::D) => &JD,
+        match self.shape {
+            BlockShape::I => match self.rotation {
+                BlockRotation::A => &IA,
+                BlockRotation::B => &IB,
+                BlockRotation::C => &IC,
+                BlockRotation::D => &ID,
+            },
+            BlockShape::J => match self.rotation {
+                BlockRotation::A => &JA,
+                BlockRotation::B => &JB,
+                BlockRotation::C => &JC,
+                BlockRotation::D => &JD,
+            },
         }
     }
 
@@ -82,7 +93,7 @@ impl GameState {
     fn new(ctx: &mut Context) -> Result<GameState> {
         Ok(GameState {
             block_texture: Texture::new(ctx, "./examples/resources/block.png")?,
-            block: Block::new(0, 0),
+            block: Block::new(),
             drop_timer: 0,
             move_timer: 0,
             board: [[false; 10]; 22],
@@ -170,7 +181,7 @@ impl State for GameState {
                     tetra::quit(ctx);
                 }
 
-                self.block = Block::new(0, -2);
+                self.block = Block::new();
             } else {
                 self.block.y += 1;
             }
