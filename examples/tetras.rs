@@ -11,6 +11,7 @@ use tetra::{Context, ContextBuilder, State};
 
 enum BlockShape {
     I,
+    J,
 }
 
 enum BlockRotation {
@@ -32,7 +33,7 @@ impl Block {
         Block {
             x,
             y,
-            shape: BlockShape::I,
+            shape: BlockShape::J,
             rotation: BlockRotation::A,
         }
     }
@@ -52,6 +53,10 @@ impl Block {
             (BlockShape::I, BlockRotation::B) => &IB,
             (BlockShape::I, BlockRotation::C) => &IC,
             (BlockShape::I, BlockRotation::D) => &ID,
+            (BlockShape::J, BlockRotation::A) => &JA,
+            (BlockShape::J, BlockRotation::B) => &JB,
+            (BlockShape::J, BlockRotation::C) => &JC,
+            (BlockShape::J, BlockRotation::D) => &JD,
         }
     }
 
@@ -86,8 +91,8 @@ impl GameState {
 
     fn collides(&mut self, move_x: i32, move_y: i32) -> bool {
         for (x, y) in self.block.segments() {
-            let board_x = self.block.x + move_x + x as i32;
-            let board_y = self.block.y + move_y + y as i32;
+            let board_x = self.block.x + move_x + x;
+            let board_y = self.block.y + move_y + y;
 
             if board_y < 0 {
                 continue;
@@ -107,8 +112,8 @@ impl GameState {
 
     fn lock(&mut self) {
         for (x, y) in self.block.segments() {
-            let board_x = self.block.x + x as i32;
-            let board_y = self.block.y + y as i32;
+            let board_x = self.block.x + x;
+            let board_y = self.block.y + y;
 
             if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 21 {
                 self.board[board_y as usize][board_x as usize] = true;
@@ -124,10 +129,12 @@ impl GameState {
                 }
             }
 
-            if y > 0 {
-                self.board[y] = self.board[y - 1];
-            } else {
-                self.board[y] = [false; 10];
+            for clear_y in (0..=y).rev() {
+                if clear_y > 0 {
+                    self.board[clear_y] = self.board[clear_y - 1];
+                } else {
+                    self.board[clear_y] = [false; 10];
+                }
             }
         }
     }
@@ -201,8 +208,8 @@ impl State for GameState {
         }
 
         for (x, y) in self.block.segments() {
-            let board_x = self.block.x + x as i32;
-            let board_y = self.block.y + y as i32;
+            let board_x = self.block.x + x;
+            let board_y = self.block.y + y;
 
             if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 21 {
                 graphics::draw(
@@ -261,4 +268,32 @@ static ID: [[bool; 4]; 4] = [
     [false, true, false, false],
     [false, true, false, false],
     [false, true, false, false],
+];
+
+static JA: [[bool; 4]; 4] = [
+    [true, false, false, false],
+    [true, true, true, false],
+    [false, false, false, false],
+    [false, false, false, false],
+];
+
+static JB: [[bool; 4]; 4] = [
+    [false, true, true, false],
+    [false, true, false, false],
+    [false, true, false, false],
+    [false, false, false, false],
+];
+
+static JC: [[bool; 4]; 4] = [
+    [false, false, false, false],
+    [true, true, true, false],
+    [false, false, true, false],
+    [false, false, false, false],
+];
+
+static JD: [[bool; 4]; 4] = [
+    [false, true, false, false],
+    [false, true, false, false],
+    [true, true, false, false],
+    [false, false, false, false],
 ];
