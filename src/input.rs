@@ -1,5 +1,6 @@
 use glm::Vec2;
 
+use graphics;
 use Context;
 use Key;
 
@@ -37,14 +38,16 @@ pub fn is_key_released(ctx: &Context, key: Key) -> bool {
     ctx.input.previous_key_state[i] && !ctx.input.current_key_state[i]
 }
 
-pub fn get_mouse_position(ctx: &Context) -> Vec2 {
-    ctx.input.mouse_position
-}
-
 pub fn get_mouse_x(ctx: &Context) -> f32 {
-    ctx.input.mouse_position.x
+    (ctx.input.mouse_position.x / graphics::get_window_width(ctx) as f32)
+        * graphics::get_width(ctx) as f32
 }
 
 pub fn get_mouse_y(ctx: &Context) -> f32 {
-    ctx.input.mouse_position.y
+    (ctx.input.mouse_position.y / graphics::get_window_height(ctx) as f32)
+        * graphics::get_height(ctx) as f32
+}
+
+pub fn get_mouse_position(ctx: &Context) -> Vec2 {
+    Vec2::new(get_mouse_x(ctx), get_mouse_y(ctx))
 }

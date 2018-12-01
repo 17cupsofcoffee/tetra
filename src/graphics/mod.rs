@@ -253,6 +253,22 @@ pub trait Drawable {
     fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T);
 }
 
+pub fn get_width(ctx: &Context) -> i32 {
+    ctx.graphics.internal_width
+}
+
+pub fn get_height(ctx: &Context) -> i32 {
+    ctx.graphics.internal_height
+}
+
+pub fn get_window_width(ctx: &Context) -> i32 {
+    ctx.graphics.window_width
+}
+
+pub fn get_window_height(ctx: &Context) -> i32 {
+    ctx.graphics.window_height
+}
+
 pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
