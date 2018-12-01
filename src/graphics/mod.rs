@@ -429,11 +429,6 @@ fn letterbox(
     let letterbox_x = (window_width - letterbox_width) / 2;
     let letterbox_y = (window_height - letterbox_height) / 2;
 
-    println!(
-        "{}, {}, {}, {}, {}",
-        scale_factor, letterbox_x, letterbox_y, letterbox_width, letterbox_height
-    );
-
     Rectangle::new(
         letterbox_x as f32,
         letterbox_y as f32,
