@@ -125,12 +125,7 @@ impl GraphicsContext {
             internal_height,
             window_width,
             window_height,
-            letterbox: letterbox(
-                internal_width as f32,
-                internal_height as f32,
-                window_width as f32,
-                window_height as f32,
-            ),
+            letterbox: letterbox(internal_width, internal_height, window_width, window_height),
         }
     }
 }
@@ -394,31 +389,41 @@ pub(crate) fn set_window_size(ctx: &mut Context, width: i32, height: i32) {
     ctx.graphics.window_height = height;
     ctx.graphics.window_projection = ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
     ctx.graphics.letterbox = letterbox(
-        ctx.graphics.internal_width as f32,
-        ctx.graphics.internal_height as f32,
-        width as f32,
-        height as f32,
+        ctx.graphics.internal_width,
+        ctx.graphics.internal_height,
+        width,
+        height,
     );
 }
 
 fn letterbox(
-    internal_width: f32,
-    internal_height: f32,
-    window_width: f32,
-    window_height: f32,
+    internal_width: i32,
+    internal_height: i32,
+    window_width: i32,
+    window_height: i32,
 ) -> Rectangle {
     let scale_factor = if window_width <= window_height {
         window_width / internal_width
     } else {
         window_height / internal_height
-    }.trunc();
+    };
 
     let letterbox_width = internal_width * scale_factor;
     let letterbox_height = internal_height * scale_factor;
-    let letterbox_x = (window_width - letterbox_width) / 2.0;
-    let letterbox_y = (window_height - letterbox_height) / 2.0;
+    let letterbox_x = (window_width - letterbox_width) / 2;
+    let letterbox_y = (window_height - letterbox_height) / 2;
 
-    Rectangle::new(letterbox_x, letterbox_y, letterbox_width, letterbox_height)
+    println!(
+        "{}, {}, {}, {}, {}",
+        scale_factor, letterbox_x, letterbox_y, letterbox_width, letterbox_height
+    );
+
+    Rectangle::new(
+        letterbox_x as f32,
+        letterbox_y as f32,
+        letterbox_width as f32,
+        letterbox_height as f32,
+    )
 }
 
 pub(crate) fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Mat4 {
