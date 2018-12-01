@@ -84,6 +84,7 @@ impl GameState {
             let board_x = self.block.x + x as i32;
             let board_y = self.block.y + y as i32;
 
+            // TODO: This doesn't add the blocks that cause the game over!
             if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 19 {
                 self.board[board_y as usize][board_x as usize] = true;
             }
