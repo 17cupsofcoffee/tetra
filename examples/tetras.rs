@@ -9,10 +9,22 @@ use tetra::graphics::{self, DrawParams, Texture};
 use tetra::input::{self, Key};
 use tetra::{Context, ContextBuilder, State};
 
+enum BlockShape {
+    I,
+}
+
+enum BlockRotation {
+    A,
+    B,
+    C,
+    D,
+}
+
 struct Block {
     x: i32,
     y: i32,
-    shape: [[bool; 4]; 4],
+    shape: BlockShape,
+    rotation: BlockRotation,
 }
 
 impl Block {
@@ -20,17 +32,31 @@ impl Block {
         Block {
             x,
             y,
-            shape: [
-                [true, false, false, false],
-                [true, false, false, false],
-                [true, false, false, false],
-                [true, false, false, false],
-            ],
+            shape: BlockShape::I,
+            rotation: BlockRotation::A,
+        }
+    }
+
+    fn rotate(&mut self) {
+        self.rotation = match self.rotation {
+            BlockRotation::A => BlockRotation::B,
+            BlockRotation::B => BlockRotation::C,
+            BlockRotation::C => BlockRotation::D,
+            BlockRotation::D => BlockRotation::A,
+        }
+    }
+
+    fn data(&self) -> &'static [[bool; 4]; 4] {
+        match (&self.shape, &self.rotation) {
+            (BlockShape::I, BlockRotation::A) => &IA,
+            (BlockShape::I, BlockRotation::B) => &IB,
+            (BlockShape::I, BlockRotation::C) => &IC,
+            (BlockShape::I, BlockRotation::D) => &ID,
         }
     }
 
     fn segments(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
-        self.shape.iter().enumerate().flat_map(|(y, row)| {
+        self.data().iter().enumerate().flat_map(|(y, row)| {
             row.iter()
                 .enumerate()
                 .filter(|(_, exists)| **exists)
@@ -144,6 +170,11 @@ impl State for GameState {
         }
 
         if self.move_timer >= 15 {
+            if input::is_key_down(ctx, Key::W) {
+                self.move_timer = 0;
+                self.block.rotate();
+            }
+
             if input::is_key_down(ctx, Key::A) && !self.collides(-1, 0) {
                 self.move_timer = 0;
                 self.block.x -= 1;
@@ -203,3 +234,31 @@ fn main() -> Result {
 
     tetra::run(ctx, state)
 }
+
+static IA: [[bool; 4]; 4] = [
+    [false, false, false, false],
+    [true, true, true, true],
+    [false, false, false, false],
+    [false, false, false, false],
+];
+
+static IB: [[bool; 4]; 4] = [
+    [false, false, true, false],
+    [false, false, true, false],
+    [false, false, true, false],
+    [false, false, true, false],
+];
+
+static IC: [[bool; 4]; 4] = [
+    [false, false, false, false],
+    [false, false, false, false],
+    [true, true, true, true],
+    [false, false, false, false],
+];
+
+static ID: [[bool; 4]; 4] = [
+    [false, true, false, false],
+    [false, true, false, false],
+    [false, true, false, false],
+    [false, true, false, false],
+];
