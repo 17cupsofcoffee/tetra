@@ -1,3 +1,5 @@
+// Loosely based on https://github.com/jonhoo/tetris-tutorial
+
 extern crate tetra;
 
 use tetra::error::Result;
@@ -21,6 +23,16 @@ impl Block {
             shape: [[false, true, false, false]; 4],
         }
     }
+
+    fn segments(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
+        self.shape.iter().enumerate().flat_map(|(x, column)| {
+            column
+                .iter()
+                .enumerate()
+                .filter(|(_, exists)| **exists)
+                .map(move |(y, _)| (x as i32, y as i32))
+        })
+    }
 }
 
 struct GameState {
@@ -43,26 +55,20 @@ impl GameState {
     }
 
     fn collides(&mut self, move_x: i32, move_y: i32) -> bool {
-        for (x, column) in self.block.shape.iter().enumerate() {
-            for (y, exists) in column.iter().enumerate() {
-                if !exists {
-                    continue;
-                }
+        for (x, y) in self.block.segments() {
+            let board_x = self.block.x + move_x + x as i32;
+            let board_y = self.block.y + move_y + y as i32;
 
-                let board_x = self.block.x + move_x + x as i32;
-                let board_y = self.block.y + move_y + y as i32;
+            if board_y < 0 {
+                continue;
+            }
 
-                if board_y < 0 {
-                    continue;
-                }
-
-                if board_x < 0
-                    || board_x > 9
-                    || board_y > 19
-                    || self.board[board_x as usize][board_y as usize]
-                {
-                    return true;
-                }
+            if board_x < 0
+                || board_x > 9
+                || board_y > 19
+                || self.board[board_x as usize][board_y as usize]
+            {
+                return true;
             }
         }
 
@@ -70,20 +76,24 @@ impl GameState {
     }
 
     fn lock(&mut self) {
-        for (x, column) in self.block.shape.iter().enumerate() {
-            for (y, exists) in column.iter().enumerate() {
-                if !exists {
-                    continue;
-                }
+        for (x, y) in self.block.segments() {
+            let board_x = self.block.x + x as i32;
+            let board_y = self.block.y + y as i32;
 
-                let board_x = self.block.x + x as i32;
-                let board_y = self.block.y + y as i32;
-
-                if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 19 {
-                    self.board[board_x as usize][board_y as usize] = true;
-                }
+            if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 19 {
+                self.board[board_x as usize][board_y as usize] = true;
             }
         }
+    }
+
+    fn board_blocks(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
+        self.board.iter().enumerate().flat_map(|(x, column)| {
+            column
+                .iter()
+                .enumerate()
+                .filter(|(_, exists)| **exists)
+                .map(move |(y, _)| (x as i32, y as i32))
+        })
     }
 }
 
@@ -119,40 +129,28 @@ impl State for GameState {
     fn draw(&mut self, ctx: &mut Context, _dt: f64) {
         graphics::clear(ctx, color::BLACK);
 
-        for (x, column) in self.board.iter().enumerate() {
-            for (y, exists) in column.iter().enumerate() {
-                if !exists {
-                    continue;
-                }
+        for (x, y) in self.board_blocks() {
+            graphics::draw(
+                ctx,
+                &self.block_texture,
+                DrawParams::new()
+                    .position(Vec2::new(x as f32 * 16.0, y as f32 * 16.0))
+                    .color(color::RED),
+            );
+        }
 
+        for (x, y) in self.block.segments() {
+            let board_x = self.block.x + x as i32;
+            let board_y = self.block.y + y as i32;
+
+            if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 19 {
                 graphics::draw(
                     ctx,
                     &self.block_texture,
                     DrawParams::new()
-                        .position(Vec2::new(x as f32 * 16.0, y as f32 * 16.0))
-                        .color(color::RED),
+                        .position(Vec2::new(board_x as f32 * 16.0, board_y as f32 * 16.0))
+                        .color(color::BLUE),
                 );
-            }
-        }
-
-        for (x, column) in self.block.shape.iter().enumerate() {
-            for (y, exists) in column.iter().enumerate() {
-                if !exists {
-                    continue;
-                }
-
-                let board_x = self.block.x + x as i32;
-                let board_y = self.block.y + y as i32;
-
-                if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 19 {
-                    graphics::draw(
-                        ctx,
-                        &self.block_texture,
-                        DrawParams::new()
-                            .position(Vec2::new(board_x as f32 * 16.0, board_y as f32 * 16.0))
-                            .color(color::BLUE),
-                    );
-                }
             }
         }
 
