@@ -49,12 +49,21 @@ impl Block {
         }
     }
 
-    fn rotate(&mut self) {
+    fn rotate_cw(&mut self) {
         self.rotation = match self.rotation {
             BlockRotation::A => BlockRotation::B,
             BlockRotation::B => BlockRotation::C,
             BlockRotation::C => BlockRotation::D,
             BlockRotation::D => BlockRotation::A,
+        }
+    }
+
+    fn rotate_ccw(&mut self) {
+        self.rotation = match self.rotation {
+            BlockRotation::A => BlockRotation::D,
+            BlockRotation::B => BlockRotation::A,
+            BlockRotation::C => BlockRotation::B,
+            BlockRotation::D => BlockRotation::C,
         }
     }
 
@@ -193,9 +202,14 @@ impl State for GameState {
         }
 
         if self.move_timer >= 15 {
-            if input::is_key_down(ctx, Key::W) {
+            if input::is_key_down(ctx, Key::Q) {
                 self.move_timer = 0;
-                self.block.rotate();
+                self.block.rotate_ccw();
+            }
+
+            if input::is_key_down(ctx, Key::E) {
+                self.move_timer = 0;
+                self.block.rotate_cw();
             }
 
             if input::is_key_down(ctx, Key::A) && !self.collides(-1, 0) {
