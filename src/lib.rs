@@ -103,7 +103,7 @@ use input::{InputContext, Key};
 /// varying framerates, but may require you to do some interpolation in order to make things look
 /// smooth.
 ///
-/// See https://gafferongames.com/post/fix_your_timestep/ for more info.
+/// See [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/) for more info.
 pub trait State {
     /// Called when it is time for the game to update, at the interval specified by the context's
     /// tick rate.
