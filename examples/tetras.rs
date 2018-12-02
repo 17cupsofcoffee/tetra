@@ -48,7 +48,7 @@ impl Block {
         };
 
         Block {
-            x: 0,
+            x: 3,
             y: 0,
             shape,
             rotation: BlockRotation::A,
