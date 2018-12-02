@@ -1,5 +1,9 @@
 # Tetra
 
+[![Crates.io](https://img.shields.io/crates/v/rustc-serialize.svg)](https://crates.io/crates/tetra)
+[![Documentation](https://docs.rs/tetra/badge.svg)](https://docs.rs/tetra)
+[![License](https://img.shields.io/crates/l/tetra.svg)](LICENSE)
+
 Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event handling and OpenGL 3.2+ for rendering.
 
 **Note that Tetra is still extremely early in development!** It may/will have bugs and missing features (the big ones currently being sound and gamepad support). That said, you're welcome to give it a go and let me know what you think :)
