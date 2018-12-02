@@ -1,7 +1,13 @@
+//! Functions and types relating to animations.
+
 use graphics::texture::Texture;
 use graphics::{DrawParams, Drawable, Rectangle};
 use Context;
 
+/// An animaton, cycling between regions of a texture at a regular interval.
+///
+/// As the rendering speed of the game is not fixed, use the `tick` method in your
+/// `update` handler to progress the animation.
 pub struct Animation {
     texture: Texture,
     frames: Vec<Rectangle>,
@@ -12,6 +18,7 @@ pub struct Animation {
 }
 
 impl Animation {
+    /// Creates a new animation.
     pub fn new(texture: Texture, frames: Vec<Rectangle>, frame_length: i32) -> Animation {
         Animation {
             texture,
@@ -23,6 +30,7 @@ impl Animation {
         }
     }
 
+    /// Advances the animation's timer, switching the texture region if required.
     pub fn tick(&mut self) {
         self.timer += 1;
         if self.timer >= self.frame_length {
