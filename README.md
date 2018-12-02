@@ -14,7 +14,7 @@ Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event hand
 * Efficient 2D rendering, with draw call batching by default
 * Animations/spritesheets
 * Pixel-perfect screen scaling 
-* Deterministic game loop, à la [Fix Your Timestep](*https://gafferongames.com/post/fix_your_timestep/).
+* Deterministic game loop, à la [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/).
 
 ## Installation
 
