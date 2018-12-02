@@ -14,6 +14,11 @@ use tetra::{Context, ContextBuilder, State};
 enum BlockShape {
     I,
     J,
+    L,
+    O,
+    S,
+    T,
+    Z,
 }
 
 enum BlockRotation {
@@ -35,9 +40,14 @@ impl Block {
     fn new() -> Block {
         let mut rng = rand::thread_rng();
 
-        let shape = match rng.gen_range(0, 2) {
+        let shape = match rng.gen_range(0, 7) {
             0 => BlockShape::I,
-            _ => BlockShape::J,
+            1 => BlockShape::J,
+            2 => BlockShape::L,
+            3 => BlockShape::O,
+            4 => BlockShape::S,
+            5 => BlockShape::T,
+            _ => BlockShape::Z,
         };
 
         Block {
@@ -80,6 +90,31 @@ impl Block {
                 BlockRotation::B => &JB,
                 BlockRotation::C => &JC,
                 BlockRotation::D => &JD,
+            },
+            BlockShape::L => match self.rotation {
+                BlockRotation::A => &LA,
+                BlockRotation::B => &LB,
+                BlockRotation::C => &LC,
+                BlockRotation::D => &LD,
+            },
+            BlockShape::O => &O,
+            BlockShape::S => match self.rotation {
+                BlockRotation::A => &SA,
+                BlockRotation::B => &SB,
+                BlockRotation::C => &SC,
+                BlockRotation::D => &SD,
+            },
+            BlockShape::T => match self.rotation {
+                BlockRotation::A => &TA,
+                BlockRotation::B => &TB,
+                BlockRotation::C => &TC,
+                BlockRotation::D => &TD,
+            },
+            BlockShape::Z => match self.rotation {
+                BlockRotation::A => &ZA,
+                BlockRotation::B => &ZB,
+                BlockRotation::C => &ZC,
+                BlockRotation::D => &ZD,
             },
         }
     }
@@ -339,5 +374,124 @@ static JD: [[bool; 4]; 4] = [
     [false, true, false, false],
     [false, true, false, false],
     [true, true, false, false],
+    [false, false, false, false],
+];
+
+static LA: [[bool; 4]; 4] = [
+    [false, false, true, false],
+    [true, true, true, false],
+    [false, false, false, false],
+    [false, false, false, false],
+];
+
+static LB: [[bool; 4]; 4] = [
+    [false, true, false, false],
+    [false, true, false, false],
+    [false, true, true, false],
+    [false, false, false, false],
+];
+
+static LC: [[bool; 4]; 4] = [
+    [false, false, false, false],
+    [true, true, true, false],
+    [true, false, false, false],
+    [false, false, false, false],
+];
+
+static LD: [[bool; 4]; 4] = [
+    [true, true, false, false],
+    [false, true, false, false],
+    [false, true, false, false],
+    [false, false, false, false],
+];
+
+static O: [[bool; 4]; 4] = [
+    [false, false, false, false],
+    [false, true, true, false],
+    [false, true, true, false],
+    [false, false, false, false],
+];
+
+static SA: [[bool; 4]; 4] = [
+    [false, true, true, false],
+    [true, true, false, false],
+    [false, false, false, false],
+    [false, false, false, false],
+];
+
+static SB: [[bool; 4]; 4] = [
+    [false, true, false, false],
+    [false, true, true, false],
+    [false, false, true, false],
+    [false, false, false, false],
+];
+
+static SC: [[bool; 4]; 4] = [
+    [false, false, false, false],
+    [false, true, true, false],
+    [true, true, false, false],
+    [false, false, false, false],
+];
+
+static SD: [[bool; 4]; 4] = [
+    [true, false, false, false],
+    [true, true, false, false],
+    [false, true, false, false],
+    [false, false, false, false],
+];
+
+static TA: [[bool; 4]; 4] = [
+    [false, true, false, false],
+    [true, true, true, false],
+    [false, false, false, false],
+    [false, false, false, false],
+];
+
+static TB: [[bool; 4]; 4] = [
+    [false, true, false, false],
+    [false, true, true, false],
+    [false, true, false, false],
+    [false, false, false, false],
+];
+
+static TC: [[bool; 4]; 4] = [
+    [false, false, false, false],
+    [true, true, true, false],
+    [false, true, false, false],
+    [false, false, false, false],
+];
+
+static TD: [[bool; 4]; 4] = [
+    [false, true, false, false],
+    [true, true, false, false],
+    [false, true, false, false],
+    [false, false, false, false],
+];
+
+static ZA: [[bool; 4]; 4] = [
+    [true, true, false, false],
+    [false, true, true, false],
+    [false, false, false, false],
+    [false, false, false, false],
+];
+
+static ZB: [[bool; 4]; 4] = [
+    [false, false, true, false],
+    [false, true, true, false],
+    [false, true, false, false],
+    [false, false, false, false],
+];
+
+static ZC: [[bool; 4]; 4] = [
+    [false, false, false, false],
+    [true, true, false, false],
+    [false, true, true, false],
+    [false, false, false, false],
+];
+
+static ZD: [[bool; 4]; 4] = [
+    [false, true, false, false],
+    [true, true, false, false],
+    [true, false, false, false],
     [false, false, false, false],
 ];
