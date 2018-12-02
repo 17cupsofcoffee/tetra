@@ -143,6 +143,7 @@ struct GameState {
     drop_timer: i32,
     move_timer: i32,
     board: [[Option<Color>; 10]; 22],
+    score: i32,
 }
 
 impl GameState {
@@ -153,6 +154,7 @@ impl GameState {
             drop_timer: 0,
             move_timer: 0,
             board: [[None; 10]; 22],
+            score: 0,
         })
     }
 
@@ -195,6 +197,8 @@ impl GameState {
                 }
             }
 
+            self.score += 1;
+
             for clear_y in (0..=y).rev() {
                 if clear_y > 0 {
                     self.board[clear_y] = self.board[clear_y - 1];
@@ -233,7 +237,7 @@ impl State for GameState {
                 self.check_for_clears();
 
                 if self.check_for_game_over() {
-                    println!("Game over!");
+                    println!("Game over! You cleared {} lines.", self.score);
                     tetra::quit(ctx);
                 }
 
@@ -327,6 +331,9 @@ fn main() -> Result {
         .build()?;
 
     let state = &mut GameState::new(ctx)?;
+
+    println!("=== Tetras ===");
+    println!("Controls: A and D to move, Q and E to rotate, S to drop faster");
 
     tetra::run(ctx, state)
 }
