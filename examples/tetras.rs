@@ -314,8 +314,6 @@ impl State for GameState {
                     .color(block_color),
             );
         }
-
-        graphics::present(ctx);
     }
 }
 
