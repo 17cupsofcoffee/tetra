@@ -1,3 +1,4 @@
+extern crate fnv;
 extern crate gl;
 extern crate image;
 pub extern crate nalgebra_glm as glm;
@@ -166,7 +167,7 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
 
         while lag >= ctx.tick_rate {
             state.update(ctx);
-            ctx.input.previous_key_state = ctx.input.current_key_state;
+            ctx.input.previous_key_state = ctx.input.current_key_state.clone();
             lag -= ctx.tick_rate;
         }
 
@@ -194,14 +195,14 @@ fn handle_event(ctx: &mut Context, event: &Event) {
                 }
             }
 
-            ctx.input.current_key_state[*k as usize] = true;
+            ctx.input.current_key_state.insert(*k);
         }
         Event::KeyUp {
             keycode: Some(k), ..
         } => {
             // TODO: This can cause some inputs to be missed at low tick rates.
             // Could consider buffering input releases like Otter2D does?
-            ctx.input.current_key_state[*k as usize] = false;
+            ctx.input.current_key_state.remove(k);
         }
         Event::MouseMotion { x, y, .. } => {
             ctx.input.mouse_position = Vec2::new(*x as f32, *y as f32)
