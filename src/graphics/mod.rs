@@ -14,7 +14,7 @@ use graphics::opengl::{BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVe
 use Context;
 
 const SPRITE_CAPACITY: usize = 1024;
-const VERTEX_STRIDE: usize = 7;
+const VERTEX_STRIDE: usize = 8;
 const INDEX_STRIDE: usize = 6;
 const INDEX_ARRAY: [u32; INDEX_STRIDE] = [0, 1, 2, 2, 3, 0];
 const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
@@ -281,6 +281,7 @@ pub(crate) fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, col
     ctx.graphics.vertices.push(color.r);
     ctx.graphics.vertices.push(color.g);
     ctx.graphics.vertices.push(color.b);
+    ctx.graphics.vertices.push(color.a);
 }
 
 pub fn draw<D: Drawable, P: Into<DrawParams>>(ctx: &mut Context, drawable: &D, params: P) {
