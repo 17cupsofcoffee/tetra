@@ -143,6 +143,7 @@ enum Move {
     RotateCcw,
     RotateCw,
     Drop,
+    HardDrop,
 }
 
 struct GameState {
@@ -280,6 +281,11 @@ impl State for GameState {
             self.move_queue.push(Move::Drop);
         }
 
+        if input::is_key_pressed(ctx, Key::Space) {
+            self.drop_timer = 0;
+            self.move_queue.push(Move::HardDrop);
+        }
+
         let next_move = self.move_queue.pop();
 
         match next_move {
@@ -334,6 +340,21 @@ impl State for GameState {
                     self.block.y += 1;
                 }
             }
+            Some(Move::HardDrop) => {
+                while !self.collides(0, 1) {
+                    self.block.y += 1;
+                }
+
+                self.lock();
+                self.check_for_clears();
+
+                if self.check_for_game_over() {
+                    println!("Game over! You cleared {} lines.", self.score);
+                    tetra::quit(ctx);
+                }
+
+                self.block = Block::new();
+            }
             None => {}
         }
     }
@@ -377,7 +398,7 @@ fn main() -> Result {
     let state = &mut GameState::new(ctx)?;
 
     println!("=== Tetras ===");
-    println!("Controls: A and D to move, Q and E to rotate, S to drop faster");
+    println!("Controls: A and D to move, Q and E to rotate, S to drop one row, Space to hard drop");
 
     tetra::run(ctx, state)
 }
