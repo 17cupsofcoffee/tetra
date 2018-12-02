@@ -1,3 +1,5 @@
+//! Functions and types relating to textures.
+
 use std::path::Path;
 use std::rc::Rc;
 
@@ -8,12 +10,17 @@ use graphics::opengl::GLTexture;
 use graphics::{self, DrawParams, Drawable, Rectangle};
 use Context;
 
+/// Texture data.
+///
+/// This type acts as a lightweight handle to the associated graphics hardware data,
+/// and so can be cloned with little overhead.
 #[derive(Clone, PartialEq)]
 pub struct Texture {
     pub(crate) handle: Rc<GLTexture>,
 }
 
 impl Texture {
+    /// Creates a new texture from the given file.
     pub fn new<P: AsRef<Path>>(ctx: &mut Context, path: P) -> Result<Texture> {
         let image = image::open(path).map_err(TetraError::Image)?.to_rgba();
         let (width, height) = image.dimensions();

@@ -1,6 +1,13 @@
+//! Functions and types used for rendering to the screen.
+//!
+//! This module implements a (hopefully!) efficent quad renderer, which will queue up
+//! drawing operations until it is absolutely necessary to send them to the graphics
+//! hardware. This allows us to minimize the number of draw calls made, speeding up
+//! rendering.
+
 pub mod animation;
 pub mod color;
-pub mod opengl;
+pub(crate) mod opengl;
 pub mod shader;
 pub mod texture;
 
@@ -20,7 +27,7 @@ const INDEX_ARRAY: [u32; INDEX_STRIDE] = [0, 1, 2, 2, 3, 0];
 const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
 const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 
-pub struct GraphicsContext {
+pub(crate) struct GraphicsContext {
     vertex_buffer: GLVertexBuffer,
     index_buffer: GLIndexBuffer,
     framebuffer: GLFramebuffer,
@@ -45,7 +52,7 @@ pub struct GraphicsContext {
 }
 
 impl GraphicsContext {
-    pub fn new(
+    pub(crate) fn new(
         device: &mut GLDevice,
         internal_width: i32,
         internal_height: i32,
@@ -130,15 +137,24 @@ impl GraphicsContext {
     }
 }
 
-#[derive(Copy, Clone)]
+/// A rectangle of `f32`s.
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Rectangle {
+    /// The X co-ordinate of the rectangle.
     pub x: f32,
+
+    /// The Y co-ordinate of the rectangle.
     pub y: f32,
+
+    /// The width of the rectangle.
     pub width: f32,
+
+    /// The height of the rectangle.
     pub height: f32,
 }
 
 impl Rectangle {
+    /// Creates a new `Rectangle`.
     pub fn new(x: f32, y: f32, width: f32, height: f32) -> Rectangle {
         Rectangle {
             x,
@@ -148,12 +164,40 @@ impl Rectangle {
         }
     }
 
+    /// Returns an infinite iterator of horizontally adjecent rectangles, starting at the specified
+    /// point and increasing along the X axis.
+    ///
+    /// This can be useful when slicing spritesheets.
+    ///
+    /// # Examples
+    /// ```
+    /// # use tetra::graphics::Rectangle;
+    /// let rects: Vec<Rectangle> = Rectangle::row(0.0, 0.0, 16.0, 16.0).take(3).collect();
+    ///
+    /// assert_eq!(Rectangle::new(0.0, 0.0, 16.0, 16.0), rects[0]);
+    /// assert_eq!(Rectangle::new(16.0, 0.0, 16.0, 16.0), rects[1]);
+    /// assert_eq!(Rectangle::new(32.0, 0.0, 16.0, 16.0), rects[2]);
+    /// ```
     pub fn row(x: f32, y: f32, width: f32, height: f32) -> impl Iterator<Item = Rectangle> {
         RectangleRow {
             next_rect: Rectangle::new(x, y, width, height),
         }
     }
 
+    /// Returns an infinite iterator of vertically adjecent rectangles, starting at the specified
+    /// point and increasing along the Y axis.
+    ///
+    /// This can be useful when slicing spritesheets.
+    ///
+    /// # Examples
+    /// ```
+    /// # use tetra::graphics::Rectangle;
+    /// let rects: Vec<Rectangle> = Rectangle::column(0.0, 0.0, 16.0, 16.0).take(3).collect();
+    ///
+    /// assert_eq!(Rectangle::new(0.0, 0.0, 16.0, 16.0), rects[0]);
+    /// assert_eq!(Rectangle::new(0.0, 16.0, 16.0, 16.0), rects[1]);
+    /// assert_eq!(Rectangle::new(0.0, 32.0, 16.0, 16.0), rects[2]);
+    /// ```
     pub fn column(x: f32, y: f32, width: f32, height: f32) -> impl Iterator<Item = Rectangle> {
         RectangleColumn {
             next_rect: Rectangle::new(x, y, width, height),
@@ -189,39 +233,63 @@ impl Iterator for RectangleColumn {
     }
 }
 
+/// Struct representing the parameters that can be used when drawing.
+///
+/// A default instance of DrawParams will draw the associated graphic with the following
+/// settings:
+///
+/// * Position: [0.0, 0.0]
+/// * Scale: [1.0, 1.0]
+/// * Origin: [0.0, 0.0]
+/// * Color: White
+/// * Clip: Full image
 pub struct DrawParams {
-    pub position: Vec2,
-    pub scale: Vec2,
-    pub origin: Vec2,
-    pub color: Color,
-    pub clip: Option<Rectangle>,
+    pub(crate) position: Vec2,
+    pub(crate) scale: Vec2,
+    pub(crate) origin: Vec2,
+    pub(crate) color: Color,
+    pub(crate) clip: Option<Rectangle>,
 }
 
 impl DrawParams {
+    /// Creates a new set of `DrawParams`.
     pub fn new() -> DrawParams {
         DrawParams::default()
     }
 
+    /// Sets the position that the graphic should be drawn at.
     pub fn position(mut self, position: Vec2) -> DrawParams {
         self.position = position;
         self
     }
 
+    /// Sets the scale that the graphic should be drawn at.
+    ///
+    /// This can be set to a negative value to flip the graphic around the origin.
     pub fn scale(mut self, scale: Vec2) -> DrawParams {
         self.scale = scale;
         self
     }
 
+    /// Sets the origin of the graphic.
+    ///
+    /// Positioning and scaling will be calculated relative to this point.
     pub fn origin(mut self, origin: Vec2) -> DrawParams {
         self.origin = origin;
         self
     }
 
+    /// Sets the color to multiply the graphic by.
+    ///
+    /// Setting this to white will draw the graphic in its original color.
     pub fn color(mut self, color: Color) -> DrawParams {
         self.color = color;
         self
     }
 
+    /// Sets the region of the graphic to draw.
+    ///
+    /// This is useful if you're using spritesheets (which you should be!).
     pub fn clip(mut self, clip: Rectangle) -> DrawParams {
         self.clip = Some(clip);
         self
@@ -249,26 +317,40 @@ impl From<Vec2> for DrawParams {
     }
 }
 
+/// Represents a type that can be drawn to the screen/render target.
+///
+/// [graphics::draw](fn.draw.html) can be used to draw without importing this trait, which is sometimes
+/// more convienent.
 pub trait Drawable {
+    /// Draws `self` to the currently enabled render target, using the specified parameters.
+    ///
+    /// Any type that implements `Into<DrawParams>` can be passed into this method. For example, since the majority
+    /// of the time, you only care about changing the position, a `Vec2` can be passed to set the position and leave
+    /// everything else as the defaults.
     fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T);
 }
 
+/// Gets the internal width of the screen, before scaling is applied.
 pub fn get_width(ctx: &Context) -> i32 {
     ctx.graphics.internal_width
 }
 
+/// Gets the internal height of the screen, before scaling is applied.
 pub fn get_height(ctx: &Context) -> i32 {
     ctx.graphics.internal_height
 }
 
+/// Gets the width of the window.
 pub fn get_window_width(ctx: &Context) -> i32 {
     ctx.graphics.window_width
 }
 
+/// Gets the height of the window.
 pub fn get_window_height(ctx: &Context) -> i32 {
     ctx.graphics.window_height
 }
 
+/// Clears the currently enabled render target to the specified color.
 pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
@@ -284,10 +366,20 @@ pub(crate) fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, col
     ctx.graphics.vertices.push(color.a);
 }
 
+/// Draws an object to the currently enabled render target.
+///
+/// This function simply calls [`draw`](trait.Drawable.html#tymethod.draw) on the passed object - it is
+/// provided to allow you to avoid having to import the [`Drawable`](trait.Drawable.html) trait as well
+/// as the `graphics` module.
 pub fn draw<D: Drawable, P: Into<DrawParams>>(ctx: &mut Context, drawable: &D, params: P) {
     drawable.draw(ctx, params);
 }
 
+/// Sets the texture that is currently being used for rendering.
+///
+/// If the texture is different from the one that is currently in use, this will trigger a
+/// [`flush`](fn.flush.html) to the graphics hardware - try to avoid texture swapping as
+/// much as you can.
 pub fn set_texture(ctx: &mut Context, texture: &Texture) {
     match ctx.graphics.texture {
         Some(ref inner) if inner == texture => {}
@@ -301,6 +393,11 @@ pub fn set_texture(ctx: &mut Context, texture: &Texture) {
     }
 }
 
+/// Sends queued data to the graphics hardware.
+///
+/// You usually will not have to call this manually, as [`set_texture`](fn.set_texture.html) and
+/// [`present`](fn.present.html) will automatically flush when necessary. Try to keep flushing
+/// to a minimum, as this will reduce the number of draw calls made to the graphics device.
 pub fn flush(ctx: &mut Context) {
     if ctx.graphics.sprite_count > 0 && ctx.graphics.texture.is_some() {
         let texture = ctx.graphics.texture.as_ref().unwrap();
@@ -332,6 +429,10 @@ pub fn flush(ctx: &mut Context) {
     }
 }
 
+/// Draws the currently enabled render target to the screen, scaling/letterboxing it if necessary.
+///
+/// You usually will not have to call this manually, as it is called for you at the end of every
+/// frame. Note that calling it will trigger a [`flush`](fn.flush.html) to the graphics hardware.
 pub fn present(ctx: &mut Context) {
     flush(ctx);
 
