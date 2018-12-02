@@ -137,11 +137,20 @@ impl Block {
     }
 }
 
+enum Move {
+    Left,
+    Right,
+    RotateCcw,
+    RotateCw,
+    Drop,
+}
+
 struct GameState {
     block_texture: Texture,
     block: Block,
     drop_timer: i32,
     move_timer: i32,
+    move_queue: Vec<Move>,
     board: [[Option<Color>; 10]; 22],
     score: i32,
 }
@@ -153,6 +162,7 @@ impl GameState {
             block: Block::new(),
             drop_timer: 0,
             move_timer: 0,
+            move_queue: Vec::new(),
             board: [[None; 10]; 22],
             score: 0,
         })
@@ -229,27 +239,57 @@ impl State for GameState {
         self.drop_timer += 1;
         self.move_timer += 1;
 
-        if self.drop_timer >= 30 || (self.drop_timer >= 8 && input::is_key_down(ctx, Key::S)) {
+        if self.drop_timer >= 30 {
             self.drop_timer = 0;
-
-            if self.collides(0, 1) {
-                self.lock();
-                self.check_for_clears();
-
-                if self.check_for_game_over() {
-                    println!("Game over! You cleared {} lines.", self.score);
-                    tetra::quit(ctx);
-                }
-
-                self.block = Block::new();
-            } else {
-                self.block.y += 1;
-            }
+            self.move_queue.push(Move::Drop);
         }
 
-        if self.move_timer >= 15 {
-            if input::is_key_down(ctx, Key::Q) {
-                self.move_timer = 0;
+        if input::is_key_pressed(ctx, Key::A)
+            || (self.move_timer == 10 && input::is_key_down(ctx, Key::A))
+        {
+            self.move_timer = 0;
+            self.move_queue.push(Move::Left);
+        }
+
+        if input::is_key_pressed(ctx, Key::D)
+            || (self.move_timer == 10 && input::is_key_down(ctx, Key::D))
+        {
+            self.move_timer = 0;
+            self.move_queue.push(Move::Right);
+        }
+
+        if input::is_key_pressed(ctx, Key::Q)
+            || (self.move_timer == 10 && input::is_key_down(ctx, Key::Q))
+        {
+            self.move_timer = 0;
+            self.move_queue.push(Move::RotateCcw);
+        }
+
+        if input::is_key_pressed(ctx, Key::E)
+            || (self.move_timer == 10 && input::is_key_down(ctx, Key::E))
+        {
+            self.move_timer = 0;
+            self.move_queue.push(Move::RotateCw);
+        }
+
+        if input::is_key_pressed(ctx, Key::S)
+            || (self.move_timer == 10 && input::is_key_down(ctx, Key::S))
+        {
+            self.move_timer = 0;
+            self.drop_timer = 0;
+            self.move_queue.push(Move::Drop);
+        }
+
+        let next_move = self.move_queue.pop();
+
+        match next_move {
+            Some(Move::Left) => if !self.collides(-1, 0) {
+                self.block.x -= 1;
+            },
+            Some(Move::Right) => if !self.collides(1, 0) {
+                self.block.x += 1;
+            },
+            Some(Move::RotateCcw) => {
                 self.block.rotate_ccw();
 
                 let mut nudge = 0;
@@ -264,9 +304,7 @@ impl State for GameState {
                     self.block.x += nudge;
                 }
             }
-
-            if input::is_key_down(ctx, Key::E) {
-                self.move_timer = 0;
+            Some(Move::RotateCw) => {
                 self.block.rotate_cw();
 
                 let mut nudge = 0;
@@ -281,16 +319,22 @@ impl State for GameState {
                     self.block.x += nudge;
                 }
             }
+            Some(Move::Drop) => {
+                if self.collides(0, 1) {
+                    self.lock();
+                    self.check_for_clears();
 
-            if input::is_key_down(ctx, Key::A) && !self.collides(-1, 0) {
-                self.move_timer = 0;
-                self.block.x -= 1;
-            }
+                    if self.check_for_game_over() {
+                        println!("Game over! You cleared {} lines.", self.score);
+                        tetra::quit(ctx);
+                    }
 
-            if input::is_key_down(ctx, Key::D) && !self.collides(1, 0) {
-                self.move_timer = 0;
-                self.block.x += 1;
+                    self.block = Block::new();
+                } else {
+                    self.block.y += 1;
+                }
             }
+            None => {}
         }
     }
 
