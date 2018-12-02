@@ -1,7 +1,12 @@
 [package]
 name = "tetra"
+description = "A simple 2D game framework written in Rust"
 version = "0.1.0"
 authors = ["Joe Clay <27cupsofcoffee@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/17cupsofcoffee/tetra"
+keywords = ["game framework", "game engine", "gamedev"]
+categories = ["game-engines"]
 
 [dependencies]
 gl = "0.10.0"
