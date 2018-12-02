@@ -33,14 +33,11 @@ struct Block {
     y: i32,
     shape: BlockShape,
     rotation: BlockRotation,
-    color: Color,
 }
 
 impl Block {
     fn new() -> Block {
-        let mut rng = rand::thread_rng();
-
-        let shape = match rng.gen_range(0, 7) {
+        let shape = match rand::thread_rng().gen_range(0, 7) {
             0 => BlockShape::I,
             1 => BlockShape::J,
             2 => BlockShape::L,
@@ -55,7 +52,6 @@ impl Block {
             y: 0,
             shape,
             rotation: BlockRotation::A,
-            color: Color::rgb(rng.gen(), rng.gen(), rng.gen()),
         }
     }
 
@@ -119,6 +115,18 @@ impl Block {
         }
     }
 
+    fn color(&self) -> Color {
+        match self.shape {
+            BlockShape::I => Color::rgb(0.0, 1.0, 1.0),
+            BlockShape::J => Color::rgb(0.0, 0.0, 1.0),
+            BlockShape::L => Color::rgb(1.0, 0.522, 0.106),
+            BlockShape::O => Color::rgb(1.0, 0.863, 0.0),
+            BlockShape::S => Color::rgb(0.0, 1.0, 0.0),
+            BlockShape::T => Color::rgb(0.694, 0.051, 0.788),
+            BlockShape::Z => Color::rgb(1.0, 0.0, 0.0),
+        }
+    }
+
     fn segments(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
         self.data().iter().enumerate().flat_map(move |(y, row)| {
             row.iter()
@@ -170,9 +178,11 @@ impl GameState {
     }
 
     fn lock(&mut self) {
+        let color = self.block.color();
+
         for (x, y) in self.block.segments() {
             if x >= 0 && x <= 9 && y >= 0 && y <= 21 {
-                self.board[y as usize][x as usize] = Some(self.block.color);
+                self.board[y as usize][x as usize] = Some(color);
             }
         }
     }
@@ -293,13 +303,15 @@ impl State for GameState {
             );
         }
 
+        let block_color = self.block.color();
+
         for (x, y) in self.block.segments() {
             graphics::draw(
                 ctx,
                 &self.block_texture,
                 DrawParams::new()
                     .position(Vec2::new(x as f32 * 16.0, (y - 2) as f32 * 16.0))
-                    .color(self.block.color),
+                    .color(block_color),
             );
         }
 
