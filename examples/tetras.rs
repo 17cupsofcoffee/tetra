@@ -205,15 +205,15 @@ impl State for GameState {
 
                 let mut nudge = 0;
 
-                for (x, _) in self.block.segments() {
-                    if x < 0 {
-                        nudge = nudge.max(-x);
-                    } else if x > 9 {
-                        nudge = nudge.min(-x + 9);
-                    }
+                if self.collides(0, 0) {
+                    nudge = if self.block.x > 5 { -1 } else { 1 }
                 }
 
-                self.block.x += nudge;
+                if nudge != 0 && self.collides(nudge, 0) {
+                    self.block.rotate_cw();
+                } else {
+                    self.block.x += nudge;
+                }
             }
 
             if input::is_key_down(ctx, Key::E) {
@@ -222,15 +222,15 @@ impl State for GameState {
 
                 let mut nudge = 0;
 
-                for (x, _) in self.block.segments() {
-                    if x < 0 {
-                        nudge = nudge.max(-x);
-                    } else if x > 9 {
-                        nudge = nudge.min(-x + 9);
-                    }
+                if self.collides(0, 0) {
+                    nudge = if self.block.x > 5 { -1 } else { 1 }
                 }
 
-                self.block.x += nudge;
+                if nudge != 0 && self.collides(nudge, 0) {
+                    self.block.rotate_ccw();
+                } else {
+                    self.block.x += nudge;
+                }
             }
 
             if input::is_key_down(ctx, Key::A) && !self.collides(-1, 0) {
