@@ -64,9 +64,6 @@
 //! * [`mouse`](examples/mouse.rs) - Moves a texture around based on mouse input.
 //! * [`tetras`](examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
 //!
-//!
-//! If you're looking for a more stable framework to use, [GGEZ](https://github.com/ggez/ggez/), [Amethyst](https://www.amethyst.rs) or [Quicksilver](https://github.com/ryanisaacg/quicksilver/) are probably your best bets right now.
-//!
 //! ## Support/Feedback
 //!
 //! As mentioned above, Tetra is fairly early in development, so there's likely to be bugs/flaky docs/general weirdness. Please feel free to leave an issue/PR if you find something!
