@@ -85,11 +85,11 @@ impl Block {
     }
 
     fn segments(&self) -> impl Iterator<Item = (i32, i32)> + '_ {
-        self.data().iter().enumerate().flat_map(|(y, row)| {
+        self.data().iter().enumerate().flat_map(move |(y, row)| {
             row.iter()
                 .enumerate()
                 .filter(|(_, exists)| **exists)
-                .map(move |(x, _)| (x as i32, y as i32))
+                .map(move |(x, _)| (x as i32 + self.x, y as i32 + self.y))
         })
     }
 }
@@ -115,17 +115,17 @@ impl GameState {
 
     fn collides(&mut self, move_x: i32, move_y: i32) -> bool {
         for (x, y) in self.block.segments() {
-            let board_x = self.block.x + move_x + x;
-            let board_y = self.block.y + move_y + y;
+            let new_x = x + move_x;
+            let new_y = y + move_y;
 
-            if board_y < 0 {
+            if new_y < 0 {
                 continue;
             }
 
-            if board_x < 0
-                || board_x > 9
-                || board_y > 21
-                || self.board[board_y as usize][board_x as usize].is_some()
+            if new_x < 0
+                || new_x > 9
+                || new_y > 21
+                || self.board[new_y as usize][new_x as usize].is_some()
             {
                 return true;
             }
@@ -136,11 +136,8 @@ impl GameState {
 
     fn lock(&mut self) {
         for (x, y) in self.block.segments() {
-            let board_x = self.block.x + x;
-            let board_y = self.block.y + y;
-
-            if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 21 {
-                self.board[board_y as usize][board_x as usize] = Some(self.block.color);
+            if x >= 0 && x <= 9 && y >= 0 && y <= 21 {
+                self.board[y as usize][x as usize] = Some(self.block.color);
             }
         }
     }
@@ -209,12 +206,10 @@ impl State for GameState {
                 let mut nudge = 0;
 
                 for (x, _) in self.block.segments() {
-                    let board_x = self.block.x + x;
-
-                    if board_x < 0 {
-                        nudge = nudge.max(-board_x);
-                    } else if board_x > 9 {
-                        nudge = nudge.min(-board_x + 9);
+                    if x < 0 {
+                        nudge = nudge.max(-x);
+                    } else if x > 9 {
+                        nudge = nudge.min(-x + 9);
                     }
                 }
 
@@ -228,12 +223,10 @@ impl State for GameState {
                 let mut nudge = 0;
 
                 for (x, _) in self.block.segments() {
-                    let board_x = self.block.x + x;
-
-                    if board_x < 0 {
-                        nudge = nudge.max(-board_x);
-                    } else if board_x > 9 {
-                        nudge = nudge.min(-board_x + 9);
+                    if x < 0 {
+                        nudge = nudge.max(-x);
+                    } else if x > 9 {
+                        nudge = nudge.min(-x + 9);
                     }
                 }
 
@@ -266,20 +259,13 @@ impl State for GameState {
         }
 
         for (x, y) in self.block.segments() {
-            let board_x = self.block.x + x;
-            let board_y = self.block.y + y;
-
-            if board_x >= 0 && board_x <= 9 && board_y >= 0 && board_y <= 21 {
-                graphics::draw(
-                    ctx,
-                    &self.block_texture,
-                    DrawParams::new()
-                        .position(Vec2::new(
-                            board_x as f32 * 16.0,
-                            (board_y - 2) as f32 * 16.0,
-                        )).color(self.block.color),
-                );
-            }
+            graphics::draw(
+                ctx,
+                &self.block_texture,
+                DrawParams::new()
+                    .position(Vec2::new(x as f32 * 16.0, (y - 2) as f32 * 16.0))
+                    .color(self.block.color),
+            );
         }
 
         graphics::present(ctx);
