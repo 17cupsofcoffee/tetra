@@ -1,9 +1,86 @@
+//! Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event handling and OpenGL 3.2+ for rendering.
+//!
+//! **Note that Tetra is still extremely early in development!** It may/will have bugs and missing features (the big ones currently being sound and gamepad support). That said, you're welcome to give it a go and let me know what you think :)
+//!
+//! ## Features
+//!
+//! * XNA/MonoGame-inspired API
+//! * Efficient 2D rendering, with draw call batching by default
+//! * Animations/spritesheets
+//! * Pixel-perfect screen scaling
+//! * Deterministic game loop, à la [Fix Your Timestep](*https://gafferongames.com/post/fix_your_timestep/).
+//!
+//! ## Installation
+//!
+//! To add Tetra to your project, add the following line to your `Cargo.toml` file:
+//!
+//! ```toml
+//! tetra = "0.1"
+//! ```
+//!
+//! You will also need to install the SDL2 native libraries, as described [here](https://github.com/Rust-SDL2/rust-sdl2#user-content-requirements).
+//!
+//! ## Examples
+//!
+//! To get a simple window displayed on screen, the following code can be used:
+//!
+//! ```no_run
+//! extern crate tetra;
+//!
+//! use tetra::error::Result;
+//! use tetra::graphics::{self, Color};
+//! use tetra::{Context, ContextBuilder, State};
+//!
+//! struct GameState;
+//!
+//! impl State for GameState {
+//!     fn update(&mut self, _ctx: &mut Context) {}
+//!
+//!     fn draw(&mut self, ctx: &mut Context, _dt: f64) {
+//!         // Cornflour blue, as is tradition
+//!         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
+//!     }
+//! }
+//!
+//! fn main() -> Result {
+//!     let ctx = &mut ContextBuilder::new()
+//!         .title("Hello, world!")
+//!         .quit_on_escape(true)
+//!         .build()?;
+//!
+//!     let state = &mut GameState;
+//!
+//!     tetra::run(ctx, state)
+//! }
+//! ```
+//!
+//! You can see this example in action by running `cargo run --example hello_world`.
+//!
+//! The full list of examples available are:
+//!
+//! * [`hello_world`](examples/hello_world.rs) - Opens a window and clears it with a solid color.
+//! * [`texture`](examples/texture.rs) - Loads and displays a texture.
+//! * [`keyboard`](examples/keyboard.rs) - Moves a texture around based on keyboard input.
+//! * [`mouse`](examples/mouse.rs) - Moves a texture around based on mouse input.
+//! * [`tetras`](examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
+//!
+//!
+//! If you're looking for a more stable framework to use, [GGEZ](https://github.com/ggez/ggez/), [Amethyst](https://www.amethyst.rs) or [Quicksilver](https://github.com/ryanisaacg/quicksilver/) are probably your best bets right now.
+//!
+//! ## Support/Feedback
+//!
+//! As mentioned above, Tetra is fairly early in development, so there's likely to be bugs/flaky docs/general weirdness. Please feel free to leave an issue/PR if you find something!
+//!
+//! You can also contact me via [Twitter](https://twitter.com/17cupsofcoffee), or find me lurking in the #gamedev channel on the [Rust Community Discord](https://bit.ly/rust-community).
+
+#![deny(missing_docs)]
+
 extern crate fnv;
 extern crate gl;
 extern crate image;
-pub extern crate nalgebra_glm as glm;
 extern crate sdl2;
 
+pub extern crate nalgebra_glm as glm;
 pub mod error;
 pub mod graphics;
 pub mod input;
@@ -21,11 +98,31 @@ use graphics::opengl::GLDevice;
 use graphics::GraphicsContext;
 use input::{InputContext, Key};
 
+/// A trait representing a type that contains game state and provides logic for updating it
+/// and drawing it to the screen. This is where you'll write your game logic!
+///
+/// The game will update at a fixed time step (defaulting to 60fps), and draw as fast as it is
+/// allowed to (depending on CPU/vsync settings). This allows for deterministic updates even at
+/// varying framerates, but may require you to do some interpolation in order to make things look
+/// smooth.
+///
+/// See https://gafferongames.com/post/fix_your_timestep/ for more info.
 pub trait State {
+    /// Called when it is time for the game to update, at the interval specified by the context's
+    /// tick rate.
     fn update(&mut self, ctx: &mut Context);
+
+    /// Called when it is time for the game to be drawn.
+    ///
+    /// As drawing will not necessarily be in step with updating, the `dt` argument is provided -
+    /// this will be a number between 0 and 1, specifying how far through the current tick you are.
+    ///
+    /// For example, if the player is meant to move 16 pixels per frame, and the current `dt` is 0.5,
+    /// you should draw them 8 pixels along.
     fn draw(&mut self, ctx: &mut Context, dt: f64);
 }
 
+/// A struct containing all of the 'global' state within the framework.
 pub struct Context {
     sdl: Sdl,
     window: Window,
@@ -38,6 +135,7 @@ pub struct Context {
     tick_rate: Duration,
 }
 
+/// Creates a new `Context` based on the provided options.
 pub struct ContextBuilder<'a> {
     title: &'a str,
     width: i32,
@@ -50,6 +148,7 @@ pub struct ContextBuilder<'a> {
 }
 
 impl<'a> ContextBuilder<'a> {
+    /// Creates a new ContextBuilder, with the default settings.
     pub fn new() -> ContextBuilder<'a> {
         ContextBuilder {
             title: "Tetra",
@@ -63,42 +162,50 @@ impl<'a> ContextBuilder<'a> {
         }
     }
 
+    /// Sets the title of the window.
     pub fn title(mut self, title: &'a str) -> ContextBuilder<'a> {
         self.title = title;
         self
     }
 
+    /// Sets the internal size of the screen.
     pub fn size(mut self, width: i32, height: i32) -> ContextBuilder<'a> {
         self.width = width;
         self.height = height;
         self
     }
 
+    /// Sets the initial scale of the window, relative to the internal screen size.
     pub fn scale(mut self, scale: i32) -> ContextBuilder<'a> {
         self.scale = scale;
         self
     }
 
+    /// Enables or disables vsync.
     pub fn vsync(mut self, vsync: bool) -> ContextBuilder<'a> {
         self.vsync = vsync;
         self
     }
 
+    /// Sets whether or not the window should be resizable.
     pub fn resizable(mut self, resizable: bool) -> ContextBuilder<'a> {
         self.resizable = resizable;
         self
     }
 
+    /// Sets the game's update tick rate.
     pub fn tick_rate(mut self, tick_rate: f64) -> ContextBuilder<'a> {
         self.tick_rate = tick_rate;
         self
     }
 
+    /// Sets whether or not the game should close when the Escape key is pressed.
     pub fn quit_on_escape(mut self, quit_on_escape: bool) -> ContextBuilder<'a> {
         self.quit_on_escape = quit_on_escape;
         self
     }
 
+    /// Builds the context.
     pub fn build(self) -> Result<Context> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
         let video = sdl.video().map_err(TetraError::Sdl)?;
@@ -147,6 +254,7 @@ impl<'a> ContextBuilder<'a> {
     }
 }
 
+/// Runs the game.
 pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
     let mut events = ctx.sdl.event_pump().map_err(TetraError::Sdl)?;
 
@@ -214,10 +322,15 @@ fn handle_event(ctx: &mut Context, event: &Event) {
     }
 }
 
+/// Quits the game, if it is currently running.
+///
+/// Note that currently, quitting the game does not take effect until the end of the current
+/// cycle of the game loop. This will probably change later.
 pub fn quit(ctx: &mut Context) {
     ctx.running = false;
 }
 
+/// Sets the update tick rate of the application, in ticks per second.
 pub fn set_tick_rate(ctx: &mut Context, tick_rate: f64) {
     ctx.tick_rate = time::f64_to_duration(tick_rate);
 }

@@ -1,35 +1,45 @@
+//! Functions and types relating to color.
+
+/// Represents an RGBA color.
 #[derive(Copy, Clone)]
 pub struct Color {
+    /// The red component of the color.
     pub r: f32,
+
+    /// The green component of the color.
     pub g: f32,
+
+    /// The blue component of the color.
     pub b: f32,
+
+    /// The alpha component of the color.
     pub a: f32,
 }
 
 impl Color {
+    /// Creates a new `Color`, with the specified RGB values and the alpha set to 1.0.
     pub fn rgb(r: f32, g: f32, b: f32) -> Color {
         Color { r, g, b, a: 1.0 }
     }
 
+    /// Creates a new `Color`, with the specified RGBA values.
     pub fn rgba(r: f32, g: f32, b: f32, a: f32) -> Color {
         Color { r, g, b, a }
     }
 }
 
-// We can't call our constructors in consts, so time for macros...
-macro_rules! const_color {
-    ($name:ident, $r:expr, $g:expr, $b:expr) => {
-        pub const $name: Color = Color {
-            r: $r,
-            g: $g,
-            b: $b,
-            a: 1.0,
-        };
-    };
-}
+/// Shortcut for Color::rgb(0.0, 0.0, 0.0).
+pub const BLACK: Color = Color {
+    r: 0.0,
+    g: 0.0,
+    b: 0.0,
+    a: 1.0,
+};
 
-const_color!(BLACK, 0.0, 0.0, 0.0);
-const_color!(WHITE, 1.0, 1.0, 1.0);
-const_color!(RED, 1.0, 0.0, 0.0);
-const_color!(GREEN, 0.0, 1.0, 0.0);
-const_color!(BLUE, 0.0, 0.0, 1.0);
+/// Shortcut for Color::rgb(1.0, 1.0, 1.0).
+pub const WHITE: Color = Color {
+    r: 1.0,
+    g: 1.0,
+    b: 1.0,
+    a: 1.0,
+};
