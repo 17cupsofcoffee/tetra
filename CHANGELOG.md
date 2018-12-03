@@ -12,6 +12,7 @@
 
 ### Bug Fixes
 
+* Scaling is now applied relative to the origin (#12).
 * Various fixes to the documentation and crate metadata.
 
 ## 0.1.0 (December 2, 2018)

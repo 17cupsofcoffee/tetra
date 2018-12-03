@@ -3,6 +3,7 @@
 use std::path::Path;
 use std::rc::Rc;
 
+use glm::{self, Vec2, Vec3};
 use image;
 
 use error::{Result, TetraError};
@@ -56,39 +57,31 @@ impl Drawable for Texture {
             .clip
             .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));
 
-        // TODO: I feel like there must be a cleaner way of determining the winding order...
-        // TODO: We could probably use GLM to do this with vector math, too
+        let transform = glm::translation2d(&params.position)
+            * glm::scaling2d(&params.scale)
+            * glm::translation2d(&-params.origin);
 
-        let (x1, x2, u1, u2) = if params.scale.x >= 0.0 {
-            (
-                params.position.x - params.origin.x,
-                params.position.x - params.origin.x + (clip.width * params.scale.x),
-                clip.x / texture_width,
-                (clip.x + clip.width) / texture_width,
-            )
+        let pos1 = transform * Vec3::new(0.0, 0.0, 1.0);
+        let pos2 = transform * Vec3::new(clip.width, clip.height, 1.0);
+
+        let tex1 = Vec2::new(clip.x / texture_width, clip.y / texture_height);
+        let tex2 = Vec2::new(
+            (clip.x + clip.width) / texture_width,
+            (clip.y + clip.height) / texture_height,
+        );
+
+        // TODO: Is there a cleaner way of determining the winding order?
+
+        let (x1, x2, u1, u2) = if pos1.x <= pos2.x {
+            (pos1.x, pos2.x, tex1.x, tex2.x)
         } else {
-            (
-                params.position.x + params.origin.x + (clip.width * params.scale.x),
-                params.position.x + params.origin.x,
-                (clip.x + clip.width) / texture_width,
-                clip.x / texture_width,
-            )
+            (pos2.x, pos1.x, tex2.x, tex1.x)
         };
 
-        let (y1, y2, v1, v2) = if params.scale.y >= 0.0 {
-            (
-                params.position.y - params.origin.y,
-                params.position.y - params.origin.y + (clip.height * params.scale.y),
-                clip.y / texture_height,
-                (clip.y + clip.height) / texture_height,
-            )
+        let (y1, y2, v1, v2) = if pos1.y <= pos2.y {
+            (pos1.y, pos2.y, tex1.y, tex2.y)
         } else {
-            (
-                params.position.y + params.origin.y + (clip.height * params.scale.y),
-                params.position.y + params.origin.y,
-                (clip.y + clip.height) / texture_height,
-                clip.y / texture_height,
-            )
+            (pos2.y, pos1.y, tex2.y, tex1.y)
         };
 
         graphics::push_vertex(ctx, x1, y1, u1, v1, params.color);
