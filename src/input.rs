@@ -9,9 +9,14 @@ use Context;
 /// Represents a key on the player's keyboard.
 pub use sdl2::keyboard::Keycode as Key;
 
+/// Represents a button on the player's mouse.
+pub use sdl2::mouse::MouseButton;
+
 pub(crate) struct InputContext {
     pub(crate) current_key_state: FnvHashSet<Key>,
     pub(crate) previous_key_state: FnvHashSet<Key>,
+    pub(crate) current_mouse_state: FnvHashSet<MouseButton>,
+    pub(crate) previous_mouse_state: FnvHashSet<MouseButton>,
     pub(crate) mouse_position: Vec2,
 }
 
@@ -20,6 +25,8 @@ impl InputContext {
         InputContext {
             current_key_state: FnvHashSet::default(),
             previous_key_state: FnvHashSet::default(),
+            current_mouse_state: FnvHashSet::default(),
+            previous_mouse_state: FnvHashSet::default(),
             mouse_position: Vec2::zeros(),
         }
     }
@@ -43,6 +50,28 @@ pub fn is_key_pressed(ctx: &Context, key: Key) -> bool {
 /// Returns true if the specified key was released this tick.
 pub fn is_key_released(ctx: &Context, key: Key) -> bool {
     ctx.input.previous_key_state.contains(&key) && !ctx.input.current_key_state.contains(&key)
+}
+
+/// Returns true if the specified mouse button is currently down.
+pub fn is_mouse_button_down(ctx: &Context, button: MouseButton) -> bool {
+    ctx.input.current_mouse_state.contains(&button)
+}
+
+/// Returns true if the specified key is currently up.
+pub fn is_mouse_button_up(ctx: &Context, button: MouseButton) -> bool {
+    !ctx.input.current_mouse_state.contains(&button)
+}
+
+/// Returns true if the specified key was pressed this tick.
+pub fn is_mouse_button_pressed(ctx: &Context, button: MouseButton) -> bool {
+    !ctx.input.previous_mouse_state.contains(&button)
+        && ctx.input.current_mouse_state.contains(&button)
+}
+
+/// Returns true if the specified key was released this tick.
+pub fn is_mouse_button_released(ctx: &Context, button: MouseButton) -> bool {
+    ctx.input.previous_mouse_state.contains(&button)
+        && !ctx.input.current_mouse_state.contains(&button)
 }
 
 /// Get the X co-ordinate of the mouse.

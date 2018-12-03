@@ -309,6 +309,12 @@ fn handle_event(ctx: &mut Context, event: &Event) {
             // Could consider buffering input releases like Otter2D does?
             ctx.input.current_key_state.remove(k);
         }
+        Event::MouseButtonDown { mouse_btn, .. } => {
+            ctx.input.current_mouse_state.insert(*mouse_btn);
+        }
+        Event::MouseButtonUp { mouse_btn, .. } => {
+            ctx.input.current_mouse_state.remove(mouse_btn);
+        }
         Event::MouseMotion { x, y, .. } => {
             ctx.input.mouse_position = Vec2::new(*x as f32, *y as f32)
         }

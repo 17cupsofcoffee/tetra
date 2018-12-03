@@ -45,7 +45,7 @@ impl State for GameState {
 
 fn main() -> Result {
     let ctx = &mut ContextBuilder::new()
-        .title("Rendering a Texture")
+        .title("Keyboard Input")
         .size(160, 144)
         .scale(4)
         .resizable(true)
