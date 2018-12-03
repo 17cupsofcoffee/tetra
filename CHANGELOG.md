@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.1.1 (Upcoming)
+## 0.1.2 (December 3, 2018)
+
+* Quick fix to the docs for the mouse button methods.
+
+## 0.1.1 (December 3, 2018)
 
 ### New Features
 

@@ -57,18 +57,18 @@ pub fn is_mouse_button_down(ctx: &Context, button: MouseButton) -> bool {
     ctx.input.current_mouse_state.contains(&button)
 }
 
-/// Returns true if the specified key is currently up.
+/// Returns true if the specified mouse button is currently up.
 pub fn is_mouse_button_up(ctx: &Context, button: MouseButton) -> bool {
     !ctx.input.current_mouse_state.contains(&button)
 }
 
-/// Returns true if the specified key was pressed this tick.
+/// Returns true if the specified mouse button was pressed this tick.
 pub fn is_mouse_button_pressed(ctx: &Context, button: MouseButton) -> bool {
     !ctx.input.previous_mouse_state.contains(&button)
         && ctx.input.current_mouse_state.contains(&button)
 }
 
-/// Returns true if the specified key was released this tick.
+/// Returns true if the specified mouse button was released this tick.
 pub fn is_mouse_button_released(ctx: &Context, button: MouseButton) -> bool {
     ctx.input.previous_mouse_state.contains(&button)
         && !ctx.input.current_mouse_state.contains(&button)
