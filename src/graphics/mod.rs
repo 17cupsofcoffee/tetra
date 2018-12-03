@@ -350,6 +350,10 @@ pub fn get_window_height(ctx: &Context) -> i32 {
     ctx.graphics.window_height
 }
 
+pub(crate) fn get_letterbox(ctx: &Context) -> Rectangle {
+    ctx.graphics.letterbox
+}
+
 /// Clears the currently enabled render target to the specified color.
 pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
