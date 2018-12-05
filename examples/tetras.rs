@@ -4,7 +4,6 @@ extern crate rand;
 extern crate tetra;
 
 use rand::Rng;
-use tetra::error::Result;
 use tetra::glm::Vec2;
 use tetra::graphics::color;
 use tetra::graphics::{self, Color, DrawParams, Texture};
@@ -157,7 +156,7 @@ struct GameState {
 }
 
 impl GameState {
-    fn new(ctx: &mut Context) -> Result<GameState> {
+    fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
             block_texture: Texture::new(ctx, "./examples/resources/block.png")?,
             block: Block::new(),
@@ -386,7 +385,7 @@ impl State for GameState {
     }
 }
 
-fn main() -> Result {
+fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Tetras")
         .size(10 * 16, 20 * 16)

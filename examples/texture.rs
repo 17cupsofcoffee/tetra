@@ -1,6 +1,5 @@
 extern crate tetra;
 
-use tetra::error::Result;
 use tetra::glm::Vec2;
 use tetra::graphics::{self, Color, Texture};
 use tetra::{Context, ContextBuilder, State};
@@ -19,7 +18,7 @@ impl State for GameState {
     }
 }
 
-fn main() -> Result {
+fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Rendering a Texture")
         .size(160, 144)

@@ -27,7 +27,6 @@
 //! ```no_run
 //! extern crate tetra;
 //!
-//! use tetra::error::Result;
 //! use tetra::graphics::{self, Color};
 //! use tetra::{Context, ContextBuilder, State};
 //!
@@ -42,7 +41,7 @@
 //!     }
 //! }
 //!
-//! fn main() -> Result {
+//! fn main() -> tetra::Result {
 //!     let ctx = &mut ContextBuilder::new()
 //!         .title("Hello, world!")
 //!         .quit_on_escape(true)
@@ -90,7 +89,7 @@ use sdl2::event::{Event, WindowEvent};
 use sdl2::video::Window;
 use sdl2::Sdl;
 
-use error::{Result, TetraError};
+pub use error::{Result, TetraError};
 use graphics::opengl::GLDevice;
 use graphics::GraphicsContext;
 use input::{InputContext, Key};

@@ -1,6 +1,5 @@
 extern crate tetra;
 
-use tetra::error::Result;
 use tetra::glm::{self, Vec2};
 use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, MouseButton};
@@ -37,7 +36,7 @@ impl State for GameState {
     }
 }
 
-fn main() -> Result {
+fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Mouse Input")
         .size(160, 144)

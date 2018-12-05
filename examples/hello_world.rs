@@ -1,6 +1,5 @@
 extern crate tetra;
 
-use tetra::error::Result;
 use tetra::graphics::{self, Color};
 use tetra::{Context, ContextBuilder, State};
 
@@ -15,7 +14,7 @@ impl State for GameState {
     }
 }
 
-fn main() -> Result {
+fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Hello, world!")
         .quit_on_escape(true)
