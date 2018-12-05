@@ -65,6 +65,7 @@ The full list of examples available are:
 
 * [`hello_world`](examples/hello_world.rs) - Opens a window and clears it with a solid color.
 * [`texture`](examples/texture.rs) - Loads and displays a texture.
+* [`animation`](examples/animation.rs) - Displays an animation, made up of regions from a texture.
 * [`keyboard`](examples/keyboard.rs) - Moves a texture around based on keyboard input.
 * [`mouse`](examples/mouse.rs) - Moves a texture around based on mouse input.
 * [`tetras`](examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
