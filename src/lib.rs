@@ -57,12 +57,12 @@
 //!
 //! The full list of examples available are:
 //!
-//! * [`hello_world`](examples/hello_world.rs) - Opens a window and clears it with a solid color.
-//! * [`texture`](examples/texture.rs) - Loads and displays a texture.
-//! * [`animation`](examples/animation.rs) - Displays an animation, made up of regions from a texture.
-//! * [`keyboard`](examples/keyboard.rs) - Moves a texture around based on keyboard input.
-//! * [`mouse`](examples/mouse.rs) - Moves a texture around based on mouse input.
-//! * [`tetras`](examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
+//! * [`hello_world`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/hello_world.rs) - Opens a window and clears it with a solid color.
+//! * [`texture`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/texture.rs) - Loads and displays a texture.
+//! * [`animation`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/animation.rs) - Displays an animation, made up of regions from a texture.
+//! * [`keyboard`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/keyboard.rs) - Moves a texture around based on keyboard input.
+//! * [`mouse`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/mouse.rs) - Moves a texture around based on mouse input.
+//! * [`tetras`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
 //!
 //! ## Support/Feedback
 //!
