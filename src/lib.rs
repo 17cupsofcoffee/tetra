@@ -133,11 +133,14 @@ pub struct Context {
 }
 
 /// Creates a new `Context` based on the provided options.
+///
+/// With the default settings, a window will be created at 1280x720 resolution, with no scaling applied.
 pub struct ContextBuilder<'a> {
     title: &'a str,
     width: i32,
     height: i32,
-    scale: i32,
+    window_size: Option<(i32, i32)>,
+    scale: Option<i32>,
     vsync: bool,
     resizable: bool,
     tick_rate: f64,
@@ -151,7 +154,8 @@ impl<'a> ContextBuilder<'a> {
             title: "Tetra",
             width: 1280,
             height: 720,
-            scale: 1,
+            window_size: None,
+            scale: None,
             vsync: true,
             resizable: false,
             tick_rate: 1.0 / 60.0,
@@ -172,9 +176,21 @@ impl<'a> ContextBuilder<'a> {
         self
     }
 
+    /// Sets the size of the window.
+    ///
+    /// If this is smaller or larger than the internal size, the screen will be scaled to fit.
+    ///
+    /// This will take precedence over `scale`.
+    pub fn window_size(mut self, width: i32, height: i32) -> ContextBuilder<'a> {
+        self.window_size = Some((width, height));
+        self
+    }
+
     /// Sets the initial scale of the window, relative to the internal screen size.
+    ///
+    /// `window_size` will take precedence over this.
     pub fn scale(mut self, scale: i32) -> ContextBuilder<'a> {
-        self.scale = scale;
+        self.scale = Some(scale);
         self
     }
 
@@ -207,8 +223,13 @@ impl<'a> ContextBuilder<'a> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
         let video = sdl.video().map_err(TetraError::Sdl)?;
 
-        let window_width = self.width * self.scale;
-        let window_height = self.height * self.scale;
+        let (window_width, window_height) = if let Some(window_size) = self.window_size {
+            window_size
+        } else if let Some(scale) = self.scale {
+            (self.width * scale, self.height * scale)
+        } else {
+            (self.width, self.height)
+        };
 
         let mut window_builder =
             video.window(self.title, window_width as u32, window_height as u32);
