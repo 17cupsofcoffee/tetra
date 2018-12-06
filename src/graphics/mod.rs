@@ -16,7 +16,7 @@ pub use self::color::Color;
 pub use self::shader::Shader;
 pub use self::texture::Texture;
 
-use glm::{Mat4, Vec2};
+use glm::{self, Mat3, Mat4, Vec2};
 use graphics::opengl::{BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer};
 use Context;
 
@@ -243,6 +243,7 @@ impl Iterator for RectangleColumn {
 /// * Origin: [0.0, 0.0]
 /// * Color: White
 /// * Clip: Full image
+#[derive(Clone)]
 pub struct DrawParams {
     pub(crate) position: Vec2,
     pub(crate) scale: Vec2,
@@ -293,6 +294,13 @@ impl DrawParams {
     pub fn clip(mut self, clip: Rectangle) -> DrawParams {
         self.clip = Some(clip);
         self
+    }
+
+    /// Construct a transformation matrix using the position, scale and origin.
+    pub fn build_matrix(&self) -> Mat3 {
+        glm::translation2d(&self.position)
+            * glm::scaling2d(&self.scale)
+            * glm::translation2d(&-self.origin)
     }
 }
 
@@ -359,15 +367,46 @@ pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
-pub(crate) fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, color: Color) {
-    ctx.graphics.vertices.push(x);
-    ctx.graphics.vertices.push(y);
-    ctx.graphics.vertices.push(u);
-    ctx.graphics.vertices.push(v);
+fn push_vertex(ctx: &mut Context, pos: Vec2, tex: Vec2, color: Color) {
+    ctx.graphics.vertices.push(pos.x);
+    ctx.graphics.vertices.push(pos.y);
+    ctx.graphics.vertices.push(tex.x);
+    ctx.graphics.vertices.push(tex.y);
     ctx.graphics.vertices.push(color.r);
     ctx.graphics.vertices.push(color.g);
     ctx.graphics.vertices.push(color.b);
     ctx.graphics.vertices.push(color.a);
+}
+
+pub(crate) fn push_quad(
+    ctx: &mut Context,
+    mut pos1: Vec2,
+    mut pos2: Vec2,
+    mut tex1: Vec2,
+    mut tex2: Vec2,
+    color: Color,
+) {
+    if pos2.x > pos1.x {
+        std::mem::swap(&mut pos1.x, &mut pos2.x);
+        std::mem::swap(&mut tex1.x, &mut tex2.x);
+    }
+
+    if pos2.y > pos1.y {
+        std::mem::swap(&mut pos1.y, &mut pos2.y);
+        std::mem::swap(&mut tex1.y, &mut tex2.y);
+    }
+
+    let pos_bl = Vec2::new(pos1.x, pos2.y);
+    let tex_bl = Vec2::new(tex1.x, tex2.y);
+    let pos_tr = Vec2::new(pos2.x, pos1.y);
+    let tex_tr = Vec2::new(tex2.x, tex1.y);
+
+    push_vertex(ctx, pos1, tex1, color);
+    push_vertex(ctx, pos_bl, tex_bl, color);
+    push_vertex(ctx, pos2, tex2, color);
+    push_vertex(ctx, pos_tr, tex_tr, color);
+
+    ctx.graphics.sprite_count += 1;
 }
 
 /// Draws an object to the currently enabled render target.
@@ -445,34 +484,20 @@ pub fn present(ctx: &mut Context) {
         .set_viewport(0, 0, ctx.graphics.window_width, ctx.graphics.window_height);
     clear(ctx, color::BLACK);
 
+    // TODO: Could use some utility methods on Rectangle for this?
     let letterbox = ctx.graphics.letterbox;
-
-    push_vertex(ctx, letterbox.x, letterbox.y, 0.0, 1.0, color::WHITE);
-
-    push_vertex(
-        ctx,
-        letterbox.x,
-        letterbox.y + letterbox.height,
-        0.0,
-        0.0,
-        color::WHITE,
-    );
-
-    push_vertex(
-        ctx,
+    let letterbox_pos1 = Vec2::new(letterbox.x, letterbox.y);
+    let letterbox_pos2 = Vec2::new(
         letterbox.x + letterbox.width,
         letterbox.y + letterbox.height,
-        1.0,
-        0.0,
-        color::WHITE,
     );
 
-    push_vertex(
+    push_quad(
         ctx,
-        letterbox.x + letterbox.width,
-        letterbox.y,
-        1.0,
-        1.0,
+        letterbox_pos1,
+        letterbox_pos2,
+        Vec2::new(0.0, 1.0),
+        Vec2::new(1.0, 0.0),
         color::WHITE,
     );
 

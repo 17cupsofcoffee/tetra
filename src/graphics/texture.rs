@@ -3,7 +3,7 @@
 use std::path::Path;
 use std::rc::Rc;
 
-use glm::{self, Vec2, Vec3};
+use glm::{Vec2, Vec3};
 use image;
 
 use error::{Result, TetraError};
@@ -57,12 +57,10 @@ impl Drawable for Texture {
             .clip
             .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));
 
-        let transform = glm::translation2d(&params.position)
-            * glm::scaling2d(&params.scale)
-            * glm::translation2d(&-params.origin);
+        let transform = params.build_matrix();
 
-        let pos1 = transform * Vec3::new(0.0, 0.0, 1.0);
-        let pos2 = transform * Vec3::new(clip.width, clip.height, 1.0);
+        let pos1 = (transform * Vec3::new(0.0, 0.0, 1.0)).xy();
+        let pos2 = (transform * Vec3::new(clip.width, clip.height, 1.0)).xy();
 
         let tex1 = Vec2::new(clip.x / texture_width, clip.y / texture_height);
         let tex2 = Vec2::new(
@@ -70,25 +68,6 @@ impl Drawable for Texture {
             (clip.y + clip.height) / texture_height,
         );
 
-        // TODO: Is there a cleaner way of determining the winding order?
-
-        let (x1, x2, u1, u2) = if pos1.x <= pos2.x {
-            (pos1.x, pos2.x, tex1.x, tex2.x)
-        } else {
-            (pos2.x, pos1.x, tex2.x, tex1.x)
-        };
-
-        let (y1, y2, v1, v2) = if pos1.y <= pos2.y {
-            (pos1.y, pos2.y, tex1.y, tex2.y)
-        } else {
-            (pos2.y, pos1.y, tex2.y, tex1.y)
-        };
-
-        graphics::push_vertex(ctx, x1, y1, u1, v1, params.color);
-        graphics::push_vertex(ctx, x1, y2, u1, v2, params.color);
-        graphics::push_vertex(ctx, x2, y2, u2, v2, params.color);
-        graphics::push_vertex(ctx, x2, y1, u2, v1, params.color);
-
-        ctx.graphics.sprite_count += 1;
+        graphics::push_quad(ctx, pos1, pos2, tex1, tex2, params.color);
     }
 }
