@@ -367,11 +367,11 @@ pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
-fn push_vertex(ctx: &mut Context, pos: Vec2, tex: Vec2, color: Color) {
-    ctx.graphics.vertices.push(pos.x);
-    ctx.graphics.vertices.push(pos.y);
-    ctx.graphics.vertices.push(tex.x);
-    ctx.graphics.vertices.push(tex.y);
+fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, color: Color) {
+    ctx.graphics.vertices.push(x);
+    ctx.graphics.vertices.push(y);
+    ctx.graphics.vertices.push(u);
+    ctx.graphics.vertices.push(v);
     ctx.graphics.vertices.push(color.r);
     ctx.graphics.vertices.push(color.g);
     ctx.graphics.vertices.push(color.b);
@@ -380,31 +380,30 @@ fn push_vertex(ctx: &mut Context, pos: Vec2, tex: Vec2, color: Color) {
 
 pub(crate) fn push_quad(
     ctx: &mut Context,
-    mut pos1: Vec2,
-    mut pos2: Vec2,
-    mut tex1: Vec2,
-    mut tex2: Vec2,
+    mut x1: f32,
+    mut y1: f32,
+    mut x2: f32,
+    mut y2: f32,
+    mut u1: f32,
+    mut v1: f32,
+    mut u2: f32,
+    mut v2: f32,
     color: Color,
 ) {
-    if pos2.x > pos1.x {
-        std::mem::swap(&mut pos1.x, &mut pos2.x);
-        std::mem::swap(&mut tex1.x, &mut tex2.x);
+    if x2 > x1 {
+        std::mem::swap(&mut x1, &mut x2);
+        std::mem::swap(&mut u1, &mut u2);
     }
 
-    if pos2.y > pos1.y {
-        std::mem::swap(&mut pos1.y, &mut pos2.y);
-        std::mem::swap(&mut tex1.y, &mut tex2.y);
+    if y2 > y1 {
+        std::mem::swap(&mut y1, &mut y2);
+        std::mem::swap(&mut v1, &mut v2);
     }
 
-    let pos_bl = Vec2::new(pos1.x, pos2.y);
-    let tex_bl = Vec2::new(tex1.x, tex2.y);
-    let pos_tr = Vec2::new(pos2.x, pos1.y);
-    let tex_tr = Vec2::new(tex2.x, tex1.y);
-
-    push_vertex(ctx, pos1, tex1, color);
-    push_vertex(ctx, pos_bl, tex_bl, color);
-    push_vertex(ctx, pos2, tex2, color);
-    push_vertex(ctx, pos_tr, tex_tr, color);
+    push_vertex(ctx, x1, y1, u1, v1, color);
+    push_vertex(ctx, x1, y2, u1, v2, color);
+    push_vertex(ctx, x2, y2, u2, v2, color);
+    push_vertex(ctx, x2, y1, u2, v1, color);
 
     ctx.graphics.sprite_count += 1;
 }
@@ -484,20 +483,18 @@ pub fn present(ctx: &mut Context) {
         .set_viewport(0, 0, ctx.graphics.window_width, ctx.graphics.window_height);
     clear(ctx, color::BLACK);
 
-    // TODO: Could use some utility methods on Rectangle for this?
     let letterbox = ctx.graphics.letterbox;
-    let letterbox_pos1 = Vec2::new(letterbox.x, letterbox.y);
-    let letterbox_pos2 = Vec2::new(
-        letterbox.x + letterbox.width,
-        letterbox.y + letterbox.height,
-    );
 
     push_quad(
         ctx,
-        letterbox_pos1,
-        letterbox_pos2,
-        Vec2::new(0.0, 1.0),
-        Vec2::new(1.0, 0.0),
+        letterbox.x,
+        letterbox.y,
+        letterbox.x + letterbox.width,
+        letterbox.y + letterbox.height,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
         color::WHITE,
     );
 

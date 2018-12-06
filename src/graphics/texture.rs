@@ -3,7 +3,7 @@
 use std::path::Path;
 use std::rc::Rc;
 
-use glm::{Vec2, Vec3};
+use glm::Vec3;
 use image;
 
 use error::{Result, TetraError};
@@ -59,15 +59,25 @@ impl Drawable for Texture {
 
         let transform = params.build_matrix();
 
-        let pos1 = (transform * Vec3::new(0.0, 0.0, 1.0)).xy();
-        let pos2 = (transform * Vec3::new(clip.width, clip.height, 1.0)).xy();
+        let pos1 = transform * Vec3::new(0.0, 0.0, 1.0);
+        let pos2 = transform * Vec3::new(clip.width, clip.height, 1.0);
 
-        let tex1 = Vec2::new(clip.x / texture_width, clip.y / texture_height);
-        let tex2 = Vec2::new(
-            (clip.x + clip.width) / texture_width,
-            (clip.y + clip.height) / texture_height,
+        let u1 = clip.x / texture_width;
+        let v1 = clip.y / texture_height;
+        let u2 = (clip.x + clip.width) / texture_width;
+        let v2 = (clip.y + clip.height) / texture_height;
+
+        graphics::push_quad(
+            ctx,
+            pos1.x,
+            pos1.y,
+            pos2.x,
+            pos2.y,
+            u1,
+            v1,
+            u2,
+            v2,
+            params.color,
         );
-
-        graphics::push_quad(ctx, pos1, pos2, tex1, tex2, params.color);
     }
 }
