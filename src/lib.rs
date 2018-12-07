@@ -60,7 +60,7 @@
 //! * [`hello_world`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/hello_world.rs) - Opens a window and clears it with a solid color.
 //! * [`texture`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/texture.rs) - Loads and displays a texture.
 //! * [`animation`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/animation.rs) - Displays an animation, made up of regions from a texture.
-//! * [`nineslice`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/animation.rs) - Slices a texture into nine segments to display a dialog box.
+//! * [`nineslice`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/nineslice.rs) - Slices a texture into nine segments to display a dialog box.
 //! * [`keyboard`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/keyboard.rs) - Moves a texture around based on keyboard input.
 //! * [`mouse`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/mouse.rs) - Moves a texture around based on mouse input.
 //! * [`tetras`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
