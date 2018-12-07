@@ -42,13 +42,6 @@ impl Texture {
 
 impl Drawable for Texture {
     fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
-        graphics::set_texture(ctx, self);
-
-        assert!(
-            ctx.graphics.sprite_count < ctx.graphics.capacity,
-            "Renderer is full"
-        );
-
         let params = params.into();
 
         let texture_width = self.handle.width() as f32;
@@ -66,6 +59,8 @@ impl Drawable for Texture {
         let v1 = clip.y / texture_height;
         let u2 = (clip.x + clip.width) / texture_width;
         let v2 = (clip.y + clip.height) / texture_height;
+
+        graphics::set_texture(ctx, self);
 
         graphics::push_quad(
             ctx,

@@ -32,13 +32,6 @@ impl NineSlice {
 
 impl Drawable for NineSlice {
     fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
-        graphics::set_texture(ctx, &self.texture);
-
-        assert!(
-            ctx.graphics.sprite_count < ctx.graphics.capacity,
-            "Renderer is full"
-        );
-
         let params = params.into();
         let transform = params.build_matrix();
 
@@ -62,6 +55,8 @@ impl Drawable for NineSlice {
         let v3 = (self.fill_rect.y + self.fill_rect.height) / texture_height;
         let u4 = 1.0;
         let v4 = 1.0;
+
+        graphics::set_texture(ctx, &self.texture);
 
         // Top left
         graphics::push_quad(

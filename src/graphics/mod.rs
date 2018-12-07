@@ -392,6 +392,11 @@ pub(crate) fn push_quad(
     mut v2: f32,
     color: Color,
 ) {
+    assert!(
+        ctx.graphics.sprite_count < ctx.graphics.capacity,
+        "Renderer is full"
+    );
+
     if x2 > x1 {
         std::mem::swap(&mut x1, &mut x2);
         std::mem::swap(&mut u1, &mut u2);
