@@ -3,7 +3,6 @@
 use std::path::Path;
 use std::rc::Rc;
 
-use glm::Vec3;
 use image;
 
 use error::{Result, TetraError};
@@ -50,10 +49,10 @@ impl Drawable for Texture {
             .clip
             .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));
 
-        let transform = params.build_matrix();
-
-        let pos1 = transform * Vec3::new(0.0, 0.0, 1.0);
-        let pos2 = transform * Vec3::new(clip.width, clip.height, 1.0);
+        let x1 = 0.0;
+        let y1 = 0.0;
+        let x2 = clip.width;
+        let y2 = clip.height;
 
         let u1 = clip.x / texture_width;
         let v1 = clip.y / texture_height;
@@ -61,18 +60,6 @@ impl Drawable for Texture {
         let v2 = (clip.y + clip.height) / texture_height;
 
         graphics::set_texture(ctx, self);
-
-        graphics::push_quad(
-            ctx,
-            pos1.x,
-            pos1.y,
-            pos2.x,
-            pos2.y,
-            u1,
-            v1,
-            u2,
-            v2,
-            params.color,
-        );
+        graphics::push_quad(ctx, x1, y1, x2, y2, u1, v1, u2, v2, &params);
     }
 }

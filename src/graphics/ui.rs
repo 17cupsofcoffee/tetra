@@ -1,7 +1,5 @@
 //! Functions and types relating to user interfaces.
 
-use glm::Vec3;
-
 use graphics::{self, DrawParams, Drawable, Rectangle, Texture};
 use Context;
 
@@ -33,19 +31,18 @@ impl NineSlice {
 impl Drawable for NineSlice {
     fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
         let params = params.into();
-        let transform = params.build_matrix();
 
         let texture_width = self.texture.handle.width() as f32;
         let texture_height = self.texture.handle.height() as f32;
 
-        let pos1 = transform * Vec3::new(0.0, 0.0, 1.0);
-        let pos2 = transform * Vec3::new(self.fill_rect.x, self.fill_rect.y, 1.0);
-        let pos3 = transform * Vec3::new(
-            self.width - self.fill_rect.x,
-            self.height - self.fill_rect.y,
-            1.0,
-        );
-        let pos4 = transform * Vec3::new(self.width, self.height, 1.0);
+        let x1 = 0.0;
+        let y1 = 0.0;
+        let x2 = self.fill_rect.x;
+        let y2 = self.fill_rect.y;
+        let x3 = self.width - self.fill_rect.x;
+        let y3 = self.height - self.fill_rect.y;
+        let x4 = self.width;
+        let y4 = self.height;
 
         let u1 = 0.0;
         let v1 = 0.0;
@@ -59,129 +56,30 @@ impl Drawable for NineSlice {
         graphics::set_texture(ctx, &self.texture);
 
         // Top left
-        graphics::push_quad(
-            ctx,
-            pos1.x,
-            pos1.y,
-            pos2.x,
-            pos2.y,
-            u1,
-            v1,
-            u2,
-            v2,
-            params.color,
-        );
+        graphics::push_quad(ctx, x1, y1, x2, x2, u1, v1, u2, v2, &params);
 
         // Top
-        graphics::push_quad(
-            ctx,
-            pos2.x,
-            pos1.y,
-            pos3.x,
-            pos2.y,
-            u2,
-            v1,
-            u3,
-            v2,
-            params.color,
-        );
+        graphics::push_quad(ctx, x2, y1, x3, y2, u2, v1, u3, v2, &params);
 
         // Top right
-        graphics::push_quad(
-            ctx,
-            pos3.x,
-            pos1.y,
-            pos4.x,
-            pos2.y,
-            u3,
-            v1,
-            u4,
-            v2,
-            params.color,
-        );
+        graphics::push_quad(ctx, x3, y1, x4, y2, u3, v1, u4, v2, &params);
 
         // Left
-        graphics::push_quad(
-            ctx,
-            pos1.x,
-            pos2.y,
-            pos2.x,
-            pos3.y,
-            u1,
-            v2,
-            u2,
-            v3,
-            params.color,
-        );
+        graphics::push_quad(ctx, x1, y2, x2, y3, u1, v2, u2, v3, &params);
 
         // Center
-        graphics::push_quad(
-            ctx,
-            pos2.x,
-            pos2.y,
-            pos3.x,
-            pos3.y,
-            u2,
-            v2,
-            u3,
-            v3,
-            params.color,
-        );
+        graphics::push_quad(ctx, x2, y2, x3, y3, u2, v2, u3, v3, &params);
 
         // Right
-        graphics::push_quad(
-            ctx,
-            pos3.x,
-            pos2.y,
-            pos4.x,
-            pos3.y,
-            u3,
-            v2,
-            u4,
-            v3,
-            params.color,
-        );
+        graphics::push_quad(ctx, x3, y2, x4, y3, u3, v2, u4, v3, &params);
 
         // Bottom left
-        graphics::push_quad(
-            ctx,
-            pos1.x,
-            pos3.y,
-            pos2.x,
-            pos4.y,
-            u1,
-            v3,
-            u2,
-            v4,
-            params.color,
-        );
+        graphics::push_quad(ctx, x1, y3, x2, y4, u1, v3, u2, v4, &params);
 
         // Bottom
-        graphics::push_quad(
-            ctx,
-            pos2.x,
-            pos3.y,
-            pos3.x,
-            pos4.y,
-            u2,
-            v3,
-            u3,
-            v4,
-            params.color,
-        );
+        graphics::push_quad(ctx, x2, y3, x3, y4, u2, v3, u3, v4, &params);
 
         // Bottom right
-        graphics::push_quad(
-            ctx,
-            pos3.x,
-            pos3.y,
-            pos4.x,
-            pos4.y,
-            u3,
-            v3,
-            u4,
-            v4,
-            params.color,
-        );
+        graphics::push_quad(ctx, x3, y3, x4, y4, u3, v3, u4, v4, &params);
     }
 }

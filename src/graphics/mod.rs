@@ -18,7 +18,7 @@ pub use self::shader::Shader;
 pub use self::texture::Texture;
 pub use self::ui::NineSlice;
 
-use glm::{self, Mat3, Mat4, Vec2};
+use glm::{self, Mat3, Mat4, Vec2, Vec3};
 use graphics::opengl::{BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer};
 use Context;
 
@@ -43,8 +43,6 @@ pub(crate) struct GraphicsContext {
     window_projection: Mat4,
 
     vertices: Vec<f32>,
-    sprite_count: usize,
-    capacity: usize,
 
     internal_width: i32,
     internal_height: i32,
@@ -62,8 +60,8 @@ impl GraphicsContext {
         window_height: i32,
     ) -> GraphicsContext {
         assert!(
-            SPRITE_CAPACITY <= 8191,
-            "Can't have more than 8191 sprites to a single buffer"
+            SPRITE_CAPACITY * 4 <= 32767,
+            "Can't have more than 32767 vertices to a single buffer"
         );
 
         let framebuffer = device.new_framebuffer();
@@ -127,8 +125,6 @@ impl GraphicsContext {
             ),
 
             vertices: Vec::with_capacity(SPRITE_CAPACITY * 4 * VERTEX_STRIDE),
-            sprite_count: 0,
-            capacity: SPRITE_CAPACITY,
 
             internal_width,
             internal_height,
@@ -243,6 +239,7 @@ impl Iterator for RectangleColumn {
 /// * Position: [0.0, 0.0]
 /// * Scale: [1.0, 1.0]
 /// * Origin: [0.0, 0.0]
+/// * Rotation: 0.0
 /// * Color: White
 /// * Clip: Full image
 #[derive(Clone)]
@@ -250,6 +247,7 @@ pub struct DrawParams {
     pub(crate) position: Vec2,
     pub(crate) scale: Vec2,
     pub(crate) origin: Vec2,
+    pub(crate) rotation: f32,
     pub(crate) color: Color,
     pub(crate) clip: Option<Rectangle>,
 }
@@ -282,6 +280,12 @@ impl DrawParams {
         self
     }
 
+    /// Sets the rotation of the graphic, in radians.
+    pub fn rotation(mut self, rotation: f32) -> DrawParams {
+        self.rotation = rotation;
+        self
+    }
+
     /// Sets the color to multiply the graphic by.
     ///
     /// Setting this to white will draw the graphic in its original color.
@@ -298,9 +302,10 @@ impl DrawParams {
         self
     }
 
-    /// Construct a transformation matrix using the position, scale and origin.
+    /// Construct a transformation matrix using the position, scale, origin and rotation.
     pub fn build_matrix(&self) -> Mat3 {
         glm::translation2d(&self.position)
+            * glm::rotation2d(self.rotation)
             * glm::scaling2d(&self.scale)
             * glm::translation2d(&-self.origin)
     }
@@ -312,6 +317,7 @@ impl Default for DrawParams {
             position: Vec2::new(0.0, 0.0),
             scale: Vec2::new(1.0, 1.0),
             origin: Vec2::new(0.0, 0.0),
+            rotation: 0.0,
             color: color::WHITE,
             clip: None,
         }
@@ -369,15 +375,24 @@ pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
-fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, color: Color) {
-    ctx.graphics.vertices.push(x);
-    ctx.graphics.vertices.push(y);
+// TODO: I don't like that these functions take `DrawParams`...
+
+pub(crate) fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, params: &DrawParams) {
+    assert!(
+        ctx.graphics.vertices.len() < ctx.graphics.vertices.capacity() - 7,
+        "Renderer is full"
+    );
+
+    let pos = params.build_matrix() * Vec3::new(x, y, 1.0);
+
+    ctx.graphics.vertices.push(pos.x);
+    ctx.graphics.vertices.push(pos.y);
     ctx.graphics.vertices.push(u);
     ctx.graphics.vertices.push(v);
-    ctx.graphics.vertices.push(color.r);
-    ctx.graphics.vertices.push(color.g);
-    ctx.graphics.vertices.push(color.b);
-    ctx.graphics.vertices.push(color.a);
+    ctx.graphics.vertices.push(params.color.r);
+    ctx.graphics.vertices.push(params.color.g);
+    ctx.graphics.vertices.push(params.color.b);
+    ctx.graphics.vertices.push(params.color.a);
 }
 
 pub(crate) fn push_quad(
@@ -390,29 +405,22 @@ pub(crate) fn push_quad(
     mut v1: f32,
     mut u2: f32,
     mut v2: f32,
-    color: Color,
+    params: &DrawParams,
 ) {
-    assert!(
-        ctx.graphics.sprite_count < ctx.graphics.capacity,
-        "Renderer is full"
-    );
-
-    if x2 > x1 {
+    if params.scale.x < 0.0 {
         std::mem::swap(&mut x1, &mut x2);
         std::mem::swap(&mut u1, &mut u2);
     }
 
-    if y2 > y1 {
+    if params.scale.y < 0.0 {
         std::mem::swap(&mut y1, &mut y2);
         std::mem::swap(&mut v1, &mut v2);
     }
 
-    push_vertex(ctx, x1, y1, u1, v1, color);
-    push_vertex(ctx, x1, y2, u1, v2, color);
-    push_vertex(ctx, x2, y2, u2, v2, color);
-    push_vertex(ctx, x2, y1, u2, v1, color);
-
-    ctx.graphics.sprite_count += 1;
+    push_vertex(ctx, x1, y1, u1, v1, params);
+    push_vertex(ctx, x1, y2, u1, v2, params);
+    push_vertex(ctx, x2, y2, u2, v2, params);
+    push_vertex(ctx, x2, y1, u2, v1, params);
 }
 
 /// Draws an object to the currently enabled render target.
@@ -448,7 +456,7 @@ pub fn set_texture(ctx: &mut Context, texture: &Texture) {
 /// [`present`](fn.present.html) will automatically flush when necessary. Try to keep flushing
 /// to a minimum, as this will reduce the number of draw calls made to the graphics device.
 pub fn flush(ctx: &mut Context) {
-    if ctx.graphics.sprite_count > 0 && ctx.graphics.texture.is_some() {
+    if !ctx.graphics.vertices.is_empty() && ctx.graphics.texture.is_some() {
         let texture = ctx.graphics.texture.as_ref().unwrap();
         let shader = ctx
             .graphics
@@ -470,11 +478,10 @@ pub fn flush(ctx: &mut Context) {
             &ctx.graphics.index_buffer,
             &shader.handle,
             &texture.handle,
-            ctx.graphics.sprite_count * INDEX_STRIDE,
+            (ctx.graphics.vertices.len() / 4) * INDEX_STRIDE, // this is gross
         );
 
         ctx.graphics.vertices.clear();
-        ctx.graphics.sprite_count = 0;
     }
 }
 
@@ -502,7 +509,7 @@ pub fn present(ctx: &mut Context) {
         1.0,
         1.0,
         0.0,
-        color::WHITE,
+        &DrawParams::new(),
     );
 
     ctx.gl.set_uniform(

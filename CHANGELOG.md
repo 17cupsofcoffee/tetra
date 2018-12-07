@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4 (Upcoming)
+
+### New Features
+
+* Graphics can now be rotated using the `rotation` method on `DrawParams` ([#24](https://github.com/17cupsofcoffee/tetra/issues/24)).
+
 ## 0.1.3 (December 7, 2018)
 
 ### New Features

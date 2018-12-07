@@ -9,6 +9,7 @@ struct GameState {
     texture: Texture,
     position: Vec2,
     scale: Vec2,
+    rotation: f32,
 }
 
 impl State for GameState {
@@ -17,8 +18,10 @@ impl State for GameState {
 
         if input::is_mouse_button_down(ctx, MouseButton::Left) {
             self.scale = Vec2::new(2.0, 2.0);
+            self.rotation += 0.1;
         } else {
             self.scale = Vec2::new(1.0, 1.0);
+            self.rotation = 0.0;
         }
     }
 
@@ -31,7 +34,8 @@ impl State for GameState {
             DrawParams::new()
                 .position(self.position)
                 .origin(Vec2::new(8.0, 8.0))
-                .scale(self.scale),
+                .scale(self.scale)
+                .rotation(self.rotation),
         );
     }
 }
@@ -49,6 +53,7 @@ fn main() -> tetra::Result {
         texture: Texture::new(ctx, "./examples/resources/player.png")?,
         position: Vec2::new(160.0 / 2.0, 144.0 / 2.0),
         scale: Vec2::new(1.0, 1.0),
+        rotation: 0.0,
     };
 
     tetra::run(ctx, state)
