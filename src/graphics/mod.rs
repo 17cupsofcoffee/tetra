@@ -10,11 +10,13 @@ pub mod color;
 pub(crate) mod opengl;
 pub mod shader;
 pub mod texture;
+pub mod ui;
 
 pub use self::animation::Animation;
 pub use self::color::Color;
 pub use self::shader::Shader;
 pub use self::texture::Texture;
+pub use self::ui::NineSlice;
 
 use glm::{self, Mat3, Mat4, Vec2};
 use graphics::opengl::{BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer};
