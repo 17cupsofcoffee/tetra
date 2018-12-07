@@ -31,7 +31,7 @@ impl State for GameState {
 
 fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
-        .title("Rendering a Texture")
+        .title("Rendering a NineSlice")
         .size(160, 144)
         .scale(4)
         .resizable(true)
