@@ -25,7 +25,9 @@ impl GLDevice {
         let _ctx = window.gl_create_context().map_err(TetraError::OpenGl)?;
         gl::load_with(|name| video.gl_get_proc_address(name) as *const _);
 
-        video.gl_set_swap_interval(if vsync { 1 } else { 0 });
+        video
+            .gl_set_swap_interval(if vsync { 1 } else { 0 })
+            .map_err(|e| TetraError::Sdl(e.to_string()))?;;
 
         let mut current_vertex_array = 0;
 
