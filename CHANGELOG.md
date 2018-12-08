@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.4 (Upcoming)
+## 0.1.4 (December 8, 2018)
 
 ### New Features
 
