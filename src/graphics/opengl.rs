@@ -304,6 +304,12 @@ impl GLDevice {
         }
     }
 
+    pub fn set_unpack_alignment(&mut self, alignment: i32) {
+        unsafe {
+            gl::PixelStorei(gl::UNPACK_ALIGNMENT, alignment);
+        }
+    }
+
     pub fn new_framebuffer(&mut self) -> GLFramebuffer {
         unsafe {
             let mut id = 0;
@@ -452,6 +458,7 @@ impl From<BufferUsage> for GLenum {
 pub enum TextureFormat {
     Rgba,
     Rgb,
+    Red,
 }
 
 impl From<TextureFormat> for GLenum {
@@ -459,6 +466,7 @@ impl From<TextureFormat> for GLenum {
         match texture_format {
             TextureFormat::Rgba => gl::RGBA,
             TextureFormat::Rgb => gl::RGB,
+            TextureFormat::Red => gl::RED,
         }
     }
 }

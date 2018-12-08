@@ -9,16 +9,19 @@ pub mod animation;
 pub mod color;
 pub(crate) mod opengl;
 pub mod shader;
+pub mod text;
 pub mod texture;
 pub mod ui;
 
 pub use self::animation::Animation;
 pub use self::color::Color;
 pub use self::shader::Shader;
+pub use self::text::{Font, Text};
 pub use self::texture::Texture;
 pub use self::ui::NineSlice;
 
 use glm::{self, Mat3, Mat4, Vec2, Vec3};
+use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 use graphics::opengl::{
     BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer, TextureFormat,
 };
@@ -31,16 +34,20 @@ const INDEX_CAPACITY: usize = VERTEX_CAPACITY / 4 * INDEX_STRIDE;
 const INDEX_ARRAY: [u32; INDEX_STRIDE] = [0, 1, 2, 2, 3, 0];
 const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
 const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
+const FONT_FRAGMENT_SHADER: &str = include_str!("../resources/text.frag");
+const DEFAULT_FONT: &[u8] = include_bytes!("../resources/DejaVuSansMono.ttf");
 
 #[derive(PartialEq)]
 pub(crate) enum ActiveTexture {
     Framebuffer,
+    FontCache,
     User(Texture),
 }
 
 #[derive(PartialEq)]
 pub(crate) enum ActiveShader {
     Default,
+    Text,
 }
 
 #[derive(PartialEq)]
@@ -61,9 +68,11 @@ pub(crate) struct GraphicsContext {
 
     texture: Option<ActiveTexture>,
     backbuffer_texture: Texture,
+    font_cache_texture: Texture,
 
     shader: ActiveShader,
     default_shader: Shader,
+    text_shader: Shader,
 
     projection: ActiveProjection,
     internal_projection: Mat4,
@@ -82,6 +91,8 @@ pub(crate) struct GraphicsContext {
     window_width: i32,
     window_height: i32,
     letterbox: Rectangle,
+
+    font_cache: GlyphBrush<'static>,
 }
 
 impl GraphicsContext {
@@ -132,15 +143,30 @@ impl GraphicsContext {
             device.compile_program(DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER),
         );
 
+        let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
+        let (width, height) = font_cache.texture_dimensions();
+
+        let font_cache_texture = Texture::from_handle(device.new_texture(
+            width as i32,
+            height as i32,
+            TextureFormat::Red,
+        ));
+
+        let text_shader = Shader::from_handle(
+            device.compile_program(DEFAULT_VERTEX_SHADER, FONT_FRAGMENT_SHADER),
+        );
+
         GraphicsContext {
             vertex_buffer,
             index_buffer,
 
             texture: None,
             backbuffer_texture,
+            font_cache_texture,
 
             shader: ActiveShader::Default,
             default_shader,
+            text_shader,
 
             projection: ActiveProjection::Internal,
             internal_projection: ortho(
@@ -173,6 +199,8 @@ impl GraphicsContext {
             window_width,
             window_height,
             letterbox: letterbox(internal_width, internal_height, window_width, window_height),
+
+            font_cache,
         }
     }
 }
@@ -544,11 +572,13 @@ pub fn flush(ctx: &mut Context) {
         let texture = match &ctx.graphics.texture {
             None => return,
             Some(ActiveTexture::Framebuffer) => &ctx.graphics.backbuffer_texture,
+            Some(ActiveTexture::FontCache) => &ctx.graphics.font_cache_texture,
             Some(ActiveTexture::User(t)) => &t,
         };
 
         let shader = match &ctx.graphics.shader {
             ActiveShader::Default => &ctx.graphics.default_shader,
+            ActiveShader::Text => &ctx.graphics.text_shader,
         };
 
         let projection = match &ctx.graphics.projection {

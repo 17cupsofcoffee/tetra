@@ -1,6 +1,6 @@
 //! Functions and types relating to user interfaces.
 
-use graphics::{self, DrawParams, Drawable, Rectangle, Texture};
+use graphics::{self, ActiveShader, DrawParams, Drawable, Rectangle, Texture};
 use Context;
 
 /// A panel made up of nine slices of an image. Useful for panels with borders.
@@ -54,6 +54,7 @@ impl Drawable for NineSlice {
         let v4 = 1.0;
 
         graphics::set_texture(ctx, &self.texture);
+        graphics::set_shader_ex(ctx, ActiveShader::Default);
 
         // Top left
         graphics::push_quad(ctx, x1, y1, x2, x2, u1, v1, u2, v2, &params);
