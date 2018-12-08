@@ -71,7 +71,7 @@
 //!
 //! You can also contact me via [Twitter](https://twitter.com/17cupsofcoffee), or find me lurking in the #gamedev channel on the [Rust Community Discord](https://bit.ly/rust-community).
 
-#![deny(missing_docs)]
+#![warn(missing_docs)]
 
 extern crate fnv;
 extern crate gl;
