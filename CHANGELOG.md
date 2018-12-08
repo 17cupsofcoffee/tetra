@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.5 (December 8, 2018)
+
+### Bug Fixes
+
+* The batcher was performing a flush after texture switches occured, not before.
+
 ## 0.1.4 (December 8, 2018)
 
 ### New Features
