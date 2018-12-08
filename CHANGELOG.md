@@ -6,6 +6,10 @@
 
 * Graphics can now be rotated using the `rotation` method on `DrawParams` ([#24](https://github.com/17cupsofcoffee/tetra/issues/24)).
 
+### Bug Fixes
+
+* The calculation of how many elements to render when flushing was broken, which could lead to geometry persisting between frames even when the associated graphic was no longer active.
+
 ## 0.1.3 (December 7, 2018)
 
 ### New Features

@@ -22,9 +22,10 @@ use glm::{self, Mat3, Mat4, Vec2, Vec3};
 use graphics::opengl::{BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer};
 use Context;
 
-const SPRITE_CAPACITY: usize = 1024;
 const VERTEX_STRIDE: usize = 8;
+const VERTEX_CAPACITY: usize = 4096;
 const INDEX_STRIDE: usize = 6;
+const INDEX_CAPACITY: usize = VERTEX_CAPACITY / 4 * INDEX_STRIDE;
 const INDEX_ARRAY: [u32; INDEX_STRIDE] = [0, 1, 2, 2, 3, 0];
 const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
 const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
@@ -42,7 +43,10 @@ pub(crate) struct GraphicsContext {
     internal_projection: Mat4,
     window_projection: Mat4,
 
-    vertices: Vec<f32>,
+    vertex_data: Vec<f32>,
+    vertex_capacity: usize,
+    vertex_count: usize,
+    element_count: usize,
 
     internal_width: i32,
     internal_height: i32,
@@ -60,7 +64,7 @@ impl GraphicsContext {
         window_height: i32,
     ) -> GraphicsContext {
         assert!(
-            SPRITE_CAPACITY * 4 <= 32767,
+            VERTEX_CAPACITY <= 32767,
             "Can't have more than 32767 vertices to a single buffer"
         );
 
@@ -74,13 +78,13 @@ impl GraphicsContext {
         let indices: Vec<u32> = INDEX_ARRAY
             .iter()
             .cycle()
-            .take(SPRITE_CAPACITY * INDEX_STRIDE)
+            .take(INDEX_CAPACITY)
             .enumerate()
             .map(|(i, vertex)| vertex + i as u32 / INDEX_STRIDE as u32 * 4)
             .collect();
 
         let vertex_buffer = device.new_vertex_buffer(
-            SPRITE_CAPACITY * 4 * VERTEX_STRIDE,
+            VERTEX_CAPACITY * VERTEX_STRIDE,
             VERTEX_STRIDE,
             BufferUsage::DynamicDraw,
         );
@@ -88,8 +92,7 @@ impl GraphicsContext {
         device.set_vertex_buffer_attribute(&vertex_buffer, 0, 4, 0);
         device.set_vertex_buffer_attribute(&vertex_buffer, 1, 3, 4);
 
-        let index_buffer =
-            device.new_index_buffer(SPRITE_CAPACITY * INDEX_STRIDE, BufferUsage::StaticDraw);
+        let index_buffer = device.new_index_buffer(INDEX_CAPACITY, BufferUsage::StaticDraw);
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
@@ -124,7 +127,10 @@ impl GraphicsContext {
                 1.0,
             ),
 
-            vertices: Vec::with_capacity(SPRITE_CAPACITY * 4 * VERTEX_STRIDE),
+            vertex_data: Vec::with_capacity(VERTEX_CAPACITY * VERTEX_STRIDE),
+            vertex_capacity: VERTEX_CAPACITY,
+            vertex_count: 0,
+            element_count: 0,
 
             internal_width,
             internal_height,
@@ -377,22 +383,24 @@ pub fn clear(ctx: &mut Context, color: Color) {
 
 // TODO: I don't like that these functions take `DrawParams`...
 
-pub(crate) fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, params: &DrawParams) {
+fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, params: &DrawParams) {
     assert!(
-        ctx.graphics.vertices.len() < ctx.graphics.vertices.capacity() - 7,
+        ctx.graphics.vertex_count < ctx.graphics.vertex_capacity,
         "Renderer is full"
     );
 
     let pos = params.build_matrix() * Vec3::new(x, y, 1.0);
 
-    ctx.graphics.vertices.push(pos.x);
-    ctx.graphics.vertices.push(pos.y);
-    ctx.graphics.vertices.push(u);
-    ctx.graphics.vertices.push(v);
-    ctx.graphics.vertices.push(params.color.r);
-    ctx.graphics.vertices.push(params.color.g);
-    ctx.graphics.vertices.push(params.color.b);
-    ctx.graphics.vertices.push(params.color.a);
+    ctx.graphics.vertex_data.push(pos.x);
+    ctx.graphics.vertex_data.push(pos.y);
+    ctx.graphics.vertex_data.push(u);
+    ctx.graphics.vertex_data.push(v);
+    ctx.graphics.vertex_data.push(params.color.r);
+    ctx.graphics.vertex_data.push(params.color.g);
+    ctx.graphics.vertex_data.push(params.color.b);
+    ctx.graphics.vertex_data.push(params.color.a);
+
+    ctx.graphics.vertex_count += 1;
 }
 
 pub(crate) fn push_quad(
@@ -421,6 +429,8 @@ pub(crate) fn push_quad(
     push_vertex(ctx, x1, y2, u1, v2, params);
     push_vertex(ctx, x2, y2, u2, v2, params);
     push_vertex(ctx, x2, y1, u2, v1, params);
+
+    ctx.graphics.element_count += INDEX_STRIDE;
 }
 
 /// Draws an object to the currently enabled render target.
@@ -456,7 +466,7 @@ pub fn set_texture(ctx: &mut Context, texture: &Texture) {
 /// [`present`](fn.present.html) will automatically flush when necessary. Try to keep flushing
 /// to a minimum, as this will reduce the number of draw calls made to the graphics device.
 pub fn flush(ctx: &mut Context) {
-    if !ctx.graphics.vertices.is_empty() && ctx.graphics.texture.is_some() {
+    if !ctx.graphics.vertex_data.is_empty() && ctx.graphics.texture.is_some() {
         let texture = ctx.graphics.texture.as_ref().unwrap();
         let shader = ctx
             .graphics
@@ -471,17 +481,19 @@ pub fn flush(ctx: &mut Context) {
         );
 
         ctx.gl
-            .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertices, 0);
+            .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
 
         ctx.gl.draw(
             &ctx.graphics.vertex_buffer,
             &ctx.graphics.index_buffer,
             &shader.handle,
             &texture.handle,
-            (ctx.graphics.vertices.len() / 4) * INDEX_STRIDE, // this is gross
+            ctx.graphics.element_count, // this is gross
         );
 
-        ctx.graphics.vertices.clear();
+        ctx.graphics.vertex_data.clear();
+        ctx.graphics.vertex_count = 0;
+        ctx.graphics.element_count = 0;
     }
 }
 
@@ -519,7 +531,7 @@ pub fn present(ctx: &mut Context) {
     );
 
     ctx.gl
-        .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertices, 0);
+        .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
 
     ctx.gl.draw(
         &ctx.graphics.vertex_buffer,
@@ -529,7 +541,9 @@ pub fn present(ctx: &mut Context) {
         INDEX_STRIDE,
     );
 
-    ctx.graphics.vertices.clear();
+    ctx.graphics.vertex_data.clear();
+    ctx.graphics.vertex_count = 0;
+    ctx.graphics.element_count = 0;
 
     ctx.window.gl_swap_window();
 
