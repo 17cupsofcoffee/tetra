@@ -454,8 +454,8 @@ pub fn set_texture(ctx: &mut Context, texture: &Texture) {
             ctx.graphics.texture = Some(texture.clone());
         }
         _ => {
-            ctx.graphics.texture = Some(texture.clone());
             flush(ctx);
+            ctx.graphics.texture = Some(texture.clone());
         }
     }
 }
