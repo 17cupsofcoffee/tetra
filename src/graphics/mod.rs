@@ -19,7 +19,9 @@ pub use self::texture::Texture;
 pub use self::ui::NineSlice;
 
 use glm::{self, Mat3, Mat4, Vec2, Vec3};
-use graphics::opengl::{BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer};
+use graphics::opengl::{
+    BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer, TextureFormat,
+};
 use Context;
 
 const VERTEX_STRIDE: usize = 8;
@@ -96,8 +98,11 @@ impl GraphicsContext {
         );
 
         let backbuffer = device.new_framebuffer();
-        let backbuffer_texture =
-            Texture::from_handle(device.new_texture(internal_width, internal_height));
+        let backbuffer_texture = Texture::from_handle(device.new_texture(
+            internal_width,
+            internal_height,
+            TextureFormat::Rgb,
+        ));
 
         device.attach_texture_to_framebuffer(&backbuffer, &backbuffer_texture.handle, false);
         device.set_viewport(0, 0, internal_width, internal_height);

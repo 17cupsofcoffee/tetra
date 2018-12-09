@@ -240,7 +240,7 @@ impl GLDevice {
         }
     }
 
-    pub fn new_texture(&mut self, width: i32, height: i32) -> GLTexture {
+    pub fn new_texture(&mut self, width: i32, height: i32, format: TextureFormat) -> GLTexture {
         // TODO: I don't think we need mipmaps?
         unsafe {
             let mut id = 0;
@@ -257,14 +257,16 @@ impl GLDevice {
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_BASE_LEVEL, 0);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAX_LEVEL, 0);
 
+            let format = format.into();
+
             gl::TexImage2D(
                 gl::TEXTURE_2D,
                 0,
-                gl::RGBA as GLint, // love 2 deal with legacy apis
+                format as GLint, // love 2 deal with legacy apis
                 width,
                 height,
                 0,
-                gl::RGBA,
+                format,
                 gl::UNSIGNED_BYTE,
                 ptr::null(),
             );
@@ -281,9 +283,12 @@ impl GLDevice {
         y: i32,
         width: i32,
         height: i32,
+        format: TextureFormat,
     ) {
         unsafe {
             self.bind_texture(texture);
+
+            let format = format.into();
 
             gl::TexSubImage2D(
                 gl::TEXTURE_2D,
@@ -292,7 +297,7 @@ impl GLDevice {
                 y,
                 width,
                 height,
-                gl::RGBA,
+                format,
                 gl::UNSIGNED_BYTE,
                 data.as_ptr() as *const GLvoid,
             )
@@ -439,6 +444,21 @@ impl From<BufferUsage> for GLenum {
         match buffer_usage {
             BufferUsage::StaticDraw => gl::STATIC_DRAW,
             BufferUsage::DynamicDraw => gl::DYNAMIC_DRAW,
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum TextureFormat {
+    Rgba,
+    Rgb,
+}
+
+impl From<TextureFormat> for GLenum {
+    fn from(texture_format: TextureFormat) -> GLenum {
+        match texture_format {
+            TextureFormat::Rgba => gl::RGBA,
+            TextureFormat::Rgb => gl::RGB,
         }
     }
 }
