@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.6 (Upcoming)
+
+## New Features
+
+* Inspired by FNA, the `TETRA_OPENGL_FORCE_CORE_PROFILE` environment variable can now be set to force the application to run using the 3.2 core profile. This might end up getting removed in favour of a more robust solution later on, but it's handy for testing (e.g. Renderdoc requires the core profile to be enabled).
+
 ## 0.1.5 (December 8, 2018)
 
 ### Bug Fixes
