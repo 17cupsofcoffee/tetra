@@ -2,7 +2,7 @@
 
 ## 0.1.6 (December 9, 2018)
 
-## New Features
+### New Features
 
 * The `Font` and `Text` types have been added, allowing you to render out text using a TTF font ([#17](https://github.com/17cupsofcoffee/tetra/issues/17)).
 * Inspired by FNA, the `TETRA_OPENGL_FORCE_CORE_PROFILE` environment variable can now be set to force the application to run using the 3.2 core profile. This might end up getting removed in favour of a more robust solution later on, but it's handy for testing (e.g. Renderdoc requires the core profile to be enabled).
