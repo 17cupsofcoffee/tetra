@@ -12,7 +12,7 @@ use Context;
 ///
 /// This type acts as a lightweight handle to the associated graphics hardware data,
 /// and so can be cloned with little overhead.
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Shader {
     pub(crate) handle: Rc<GLProgram>,
 }

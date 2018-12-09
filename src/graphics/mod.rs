@@ -30,18 +30,45 @@ const INDEX_ARRAY: [u32; INDEX_STRIDE] = [0, 1, 2, 2, 3, 0];
 const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
 const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 
+#[derive(PartialEq)]
+pub(crate) enum ActiveTexture {
+    Framebuffer,
+    User(Texture),
+}
+
+#[derive(PartialEq)]
+pub(crate) enum ActiveShader {
+    Default,
+}
+
+#[derive(PartialEq)]
+pub(crate) enum ActiveProjection {
+    Internal,
+    Window,
+}
+
+#[derive(PartialEq)]
+pub(crate) enum ActiveFramebuffer {
+    Backbuffer,
+    Window,
+}
+
 pub(crate) struct GraphicsContext {
     vertex_buffer: GLVertexBuffer,
     index_buffer: GLIndexBuffer,
-    framebuffer: GLFramebuffer,
-    framebuffer_texture: Texture,
 
-    texture: Option<Texture>,
-    shader: Option<Shader>,
+    texture: Option<ActiveTexture>,
+    backbuffer_texture: Texture,
+
+    shader: ActiveShader,
     default_shader: Shader,
 
+    projection: ActiveProjection,
     internal_projection: Mat4,
     window_projection: Mat4,
+
+    framebuffer: ActiveFramebuffer,
+    backbuffer: GLFramebuffer,
 
     vertex_data: Vec<f32>,
     vertex_capacity: usize,
@@ -68,11 +95,11 @@ impl GraphicsContext {
             "Can't have more than 32767 vertices to a single buffer"
         );
 
-        let framebuffer = device.new_framebuffer();
-        let framebuffer_texture =
+        let backbuffer = device.new_framebuffer();
+        let backbuffer_texture =
             Texture::from_handle(device.new_texture(internal_width, internal_height));
 
-        device.attach_texture_to_framebuffer(&framebuffer, &framebuffer_texture.handle, false);
+        device.attach_texture_to_framebuffer(&backbuffer, &backbuffer_texture.handle, false);
         device.set_viewport(0, 0, internal_width, internal_height);
 
         let indices: Vec<u32> = INDEX_ARRAY
@@ -103,13 +130,14 @@ impl GraphicsContext {
         GraphicsContext {
             vertex_buffer,
             index_buffer,
-            framebuffer,
-            framebuffer_texture,
 
             texture: None,
-            shader: None,
+            backbuffer_texture,
+
+            shader: ActiveShader::Default,
             default_shader,
 
+            projection: ActiveProjection::Internal,
             internal_projection: ortho(
                 0.0,
                 internal_width as f32,
@@ -126,6 +154,9 @@ impl GraphicsContext {
                 -1.0,
                 1.0,
             ),
+
+            framebuffer: ActiveFramebuffer::Backbuffer,
+            backbuffer,
 
             vertex_data: Vec::with_capacity(VERTEX_CAPACITY * VERTEX_STRIDE),
             vertex_capacity: VERTEX_CAPACITY,
@@ -448,14 +479,52 @@ pub fn draw<D: Drawable, P: Into<DrawParams>>(ctx: &mut Context, drawable: &D, p
 /// [`flush`](fn.flush.html) to the graphics hardware - try to avoid texture swapping as
 /// much as you can.
 pub fn set_texture(ctx: &mut Context, texture: &Texture) {
-    match ctx.graphics.texture {
-        Some(ref inner) if inner == texture => {}
-        None => {
-            ctx.graphics.texture = Some(texture.clone());
-        }
-        _ => {
-            flush(ctx);
-            ctx.graphics.texture = Some(texture.clone());
+    set_texture_ex(ctx, ActiveTexture::User(texture.clone()));
+}
+
+pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
+    let wrapped_texture = Some(texture);
+
+    if wrapped_texture != ctx.graphics.texture {
+        flush(ctx);
+        ctx.graphics.texture = wrapped_texture;
+    }
+}
+
+pub(crate) fn set_shader_ex(ctx: &mut Context, shader: ActiveShader) {
+    if shader != ctx.graphics.shader {
+        flush(ctx);
+        ctx.graphics.shader = shader;
+    }
+}
+
+pub(crate) fn set_projection_ex(ctx: &mut Context, projection: ActiveProjection) {
+    if projection != ctx.graphics.projection {
+        flush(ctx);
+        ctx.graphics.projection = projection;
+    }
+}
+
+pub(crate) fn set_framebuffer_ex(ctx: &mut Context, framebuffer: ActiveFramebuffer) {
+    if framebuffer != ctx.graphics.framebuffer {
+        flush(ctx);
+        ctx.graphics.framebuffer = framebuffer;
+
+        match ctx.graphics.framebuffer {
+            ActiveFramebuffer::Backbuffer => {
+                ctx.gl.bind_framebuffer(&ctx.graphics.backbuffer);
+                ctx.gl.set_viewport(
+                    0,
+                    0,
+                    ctx.graphics.internal_width,
+                    ctx.graphics.internal_height,
+                );
+            }
+            ActiveFramebuffer::Window => {
+                ctx.gl.bind_default_framebuffer();
+                ctx.gl
+                    .set_viewport(0, 0, ctx.graphics.window_width, ctx.graphics.window_height);
+            }
         }
     }
 }
@@ -466,19 +535,24 @@ pub fn set_texture(ctx: &mut Context, texture: &Texture) {
 /// [`present`](fn.present.html) will automatically flush when necessary. Try to keep flushing
 /// to a minimum, as this will reduce the number of draw calls made to the graphics device.
 pub fn flush(ctx: &mut Context) {
-    if !ctx.graphics.vertex_data.is_empty() && ctx.graphics.texture.is_some() {
-        let texture = ctx.graphics.texture.as_ref().unwrap();
-        let shader = ctx
-            .graphics
-            .shader
-            .as_ref()
-            .unwrap_or(&ctx.graphics.default_shader);
+    if !ctx.graphics.vertex_data.is_empty() {
+        let texture = match &ctx.graphics.texture {
+            None => return,
+            Some(ActiveTexture::Framebuffer) => &ctx.graphics.backbuffer_texture,
+            Some(ActiveTexture::User(t)) => &t,
+        };
 
-        ctx.gl.set_uniform(
-            &shader.handle,
-            "projection",
-            &ctx.graphics.internal_projection,
-        );
+        let shader = match &ctx.graphics.shader {
+            ActiveShader::Default => &ctx.graphics.default_shader,
+        };
+
+        let projection = match &ctx.graphics.projection {
+            ActiveProjection::Internal => &ctx.graphics.internal_projection,
+            ActiveProjection::Window => &ctx.graphics.window_projection,
+        };
+
+        ctx.gl
+            .set_uniform(&shader.handle, "projection", &projection);
 
         ctx.gl
             .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
@@ -488,7 +562,7 @@ pub fn flush(ctx: &mut Context) {
             &ctx.graphics.index_buffer,
             &shader.handle,
             &texture.handle,
-            ctx.graphics.element_count, // this is gross
+            ctx.graphics.element_count,
         );
 
         ctx.graphics.vertex_data.clear();
@@ -502,11 +576,11 @@ pub fn flush(ctx: &mut Context) {
 /// You usually will not have to call this manually, as it is called for you at the end of every
 /// frame. Note that calling it will trigger a [`flush`](fn.flush.html) to the graphics hardware.
 pub fn present(ctx: &mut Context) {
-    flush(ctx);
+    set_framebuffer_ex(ctx, ActiveFramebuffer::Window);
+    set_projection_ex(ctx, ActiveProjection::Window);
+    set_texture_ex(ctx, ActiveTexture::Framebuffer);
+    set_shader_ex(ctx, ActiveShader::Default);
 
-    ctx.gl.bind_default_framebuffer();
-    ctx.gl
-        .set_viewport(0, 0, ctx.graphics.window_width, ctx.graphics.window_height);
     clear(ctx, color::BLACK);
 
     let letterbox = ctx.graphics.letterbox;
@@ -524,36 +598,10 @@ pub fn present(ctx: &mut Context) {
         &DrawParams::new(),
     );
 
-    ctx.gl.set_uniform(
-        &ctx.graphics.default_shader.handle,
-        "projection",
-        &ctx.graphics.window_projection,
-    );
-
-    ctx.gl
-        .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
-
-    ctx.gl.draw(
-        &ctx.graphics.vertex_buffer,
-        &ctx.graphics.index_buffer,
-        &ctx.graphics.default_shader.handle,
-        &ctx.graphics.framebuffer_texture.handle,
-        INDEX_STRIDE,
-    );
-
-    ctx.graphics.vertex_data.clear();
-    ctx.graphics.vertex_count = 0;
-    ctx.graphics.element_count = 0;
+    set_framebuffer_ex(ctx, ActiveFramebuffer::Backbuffer);
+    set_projection_ex(ctx, ActiveProjection::Internal);
 
     ctx.window.gl_swap_window();
-
-    ctx.gl.bind_framebuffer(&ctx.graphics.framebuffer);
-    ctx.gl.set_viewport(
-        0,
-        0,
-        ctx.graphics.internal_width,
-        ctx.graphics.internal_height,
-    );
 }
 
 pub(crate) fn set_window_size(ctx: &mut Context, width: i32, height: i32) {
