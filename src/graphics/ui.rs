@@ -57,7 +57,7 @@ impl Drawable for NineSlice {
         graphics::set_shader_ex(ctx, ActiveShader::Default);
 
         // Top left
-        graphics::push_quad(ctx, x1, y1, x2, x2, u1, v1, u2, v2, &params);
+        graphics::push_quad(ctx, x1, y1, x2, y2, u1, v1, u2, v2, &params);
 
         // Top
         graphics::push_quad(ctx, x2, y1, x3, y2, u2, v1, u3, v2, &params);

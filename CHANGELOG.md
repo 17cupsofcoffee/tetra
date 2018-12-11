@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Bug Fixes
+
+* The top left corner of a `NineSlice` no longer gets distorted if the x and y of the `fill_rect` aren't equal.
+
 ## 0.1.6 (December 9, 2018)
 
 ### New Features
