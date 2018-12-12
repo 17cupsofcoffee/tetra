@@ -18,23 +18,23 @@ pub struct Shader {
 }
 
 impl Shader {
-    /// Creates a new shader program from the given strings.
-    pub fn new(ctx: &mut Context, vertex_shader: &str, fragment_shader: &str) -> Shader {
-        // TODO: If this fails, we need to actually return an error instead of crashing
-        Shader::from_handle(ctx.gl.compile_program(vertex_shader, fragment_shader))
-    }
-
     /// Creates a new shader program from the given files.
-    pub fn from_file<P: AsRef<Path>>(
+    pub fn new<P: AsRef<Path>>(
         ctx: &mut Context,
         vertex_path: P,
         fragment_path: P,
     ) -> Result<Shader> {
-        Ok(Shader::new(
+        Ok(Shader::from_string(
             ctx,
             &fs::read_to_string(vertex_path)?,
             &fs::read_to_string(fragment_path)?,
         ))
+    }
+
+    /// Creates a new shader program from the given strings.
+    pub fn from_string(ctx: &mut Context, vertex_shader: &str, fragment_shader: &str) -> Shader {
+        // TODO: If this fails, we need to actually return an error instead of crashing
+        Shader::from_handle(ctx.gl.compile_program(vertex_shader, fragment_shader))
     }
 
     pub(crate) fn from_handle(handle: GLProgram) -> Shader {

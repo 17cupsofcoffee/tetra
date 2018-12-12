@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking Changes
+
+* `Shader::from_file` is now called `Shader::new`, and `Shader::new` is now called `Shader::from_string`. This is more consistent with the other constructors.
+
 ### New Features
 
 * `Texture` now has methods to get the width and height ([#31](https://github.com/17cupsofcoffee/tetra/issues/31)).
