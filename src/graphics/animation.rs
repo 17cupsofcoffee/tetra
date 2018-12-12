@@ -1,8 +1,8 @@
 //! Functions and types relating to animations.
 
-use graphics::texture::Texture;
-use graphics::{DrawParams, Drawable, Rectangle};
-use Context;
+use crate::graphics::texture::Texture;
+use crate::graphics::{DrawParams, Drawable, Rectangle};
+use crate::Context;
 
 /// An animaton, cycling between regions of a texture at a regular interval.
 ///

@@ -5,10 +5,10 @@ use std::rc::Rc;
 
 use image;
 
-use error::Result;
-use graphics::opengl::{GLTexture, TextureFormat};
-use graphics::{self, ActiveShader, DrawParams, Drawable, Rectangle};
-use Context;
+use crate::error::Result;
+use crate::graphics::opengl::{GLTexture, TextureFormat};
+use crate::graphics::{self, ActiveShader, DrawParams, Drawable, Rectangle};
+use crate::Context;
 
 /// Texture data.
 ///

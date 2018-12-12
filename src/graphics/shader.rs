@@ -4,9 +4,9 @@ use std::fs;
 use std::path::Path;
 use std::rc::Rc;
 
-use error::Result;
-use graphics::opengl::GLProgram;
-use Context;
+use crate::error::Result;
+use crate::graphics::opengl::GLProgram;
+use crate::Context;
 
 /// A shader program, consisting of a vertex shader and a fragment shader.
 ///

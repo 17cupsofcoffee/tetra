@@ -22,10 +22,11 @@ pub use self::ui::NineSlice;
 
 use glm::{self, Mat3, Mat4, Vec2, Vec3};
 use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
-use graphics::opengl::{
+
+use crate::graphics::opengl::{
     BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer, TextureFormat,
 };
-use Context;
+use crate::Context;
 
 const VERTEX_STRIDE: usize = 8;
 const VERTEX_CAPACITY: usize = 4096;

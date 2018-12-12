@@ -1,14 +1,16 @@
-use error::{Result, TetraError};
+use std::env;
+use std::ffi::{CStr, CString};
+use std::mem;
+use std::ptr;
+
 use gl::{self, types::*};
 use glm::Mat4;
 use sdl2::{
     video::{GLContext, GLProfile, Window},
     VideoSubsystem,
 };
-use std::env;
-use std::ffi::{CStr, CString};
-use std::mem;
-use std::ptr;
+
+use crate::error::{Result, TetraError};
 
 pub struct GLDevice {
     _ctx: GLContext,

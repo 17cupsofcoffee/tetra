@@ -7,12 +7,12 @@ use std::path::Path;
 use glyph_brush::rusttype::{Rect, Scale};
 use glyph_brush::{BrushAction, BrushError, FontId, GlyphVertex, Section};
 
-use error::Result;
-use graphics::opengl::GLDevice;
-use graphics::{
+use crate::error::Result;
+use crate::graphics::opengl::GLDevice;
+use crate::graphics::{
     self, ActiveShader, ActiveTexture, DrawParams, Drawable, Rectangle, Texture, TextureFormat,
 };
-use Context;
+use crate::Context;
 
 struct FontQuad {
     x1: f32,
