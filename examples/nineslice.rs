@@ -1,9 +1,7 @@
-extern crate tetra;
-
 use tetra::glm::Vec2;
 use tetra::graphics::color;
 use tetra::graphics::{self, NineSlice, Rectangle, Texture};
-use tetra::{Context, ContextBuilder, State};
+use tetra::{self, Context, ContextBuilder, State};
 
 struct GameState {
     panel: NineSlice,

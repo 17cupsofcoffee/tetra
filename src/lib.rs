@@ -25,10 +25,9 @@
 //! To get a simple window displayed on screen, the following code can be used:
 //!
 //! ```no_run
-//! extern crate tetra;
-//!
+//! # fn main() {
 //! use tetra::graphics::{self, Color};
-//! use tetra::{Context, ContextBuilder, State};
+//! use tetra::{self, Context, ContextBuilder, State};
 //!
 //! struct GameState;
 //!
@@ -51,6 +50,7 @@
 //!
 //!     tetra::run(ctx, state)
 //! }
+//! # }
 //! ```
 //!
 //! You can see this example in action by running `cargo run --example hello_world`.
@@ -75,13 +75,7 @@
 
 #![warn(missing_docs)]
 
-extern crate fnv;
-extern crate gl;
-extern crate glyph_brush;
-extern crate image;
-extern crate sdl2;
-
-pub extern crate nalgebra_glm as glm;
+pub use glm;
 pub mod error;
 pub mod graphics;
 pub mod input;

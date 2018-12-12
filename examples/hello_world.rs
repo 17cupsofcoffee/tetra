@@ -1,7 +1,5 @@
-extern crate tetra;
-
 use tetra::graphics::{self, Color};
-use tetra::{Context, ContextBuilder, State};
+use tetra::{self, Context, ContextBuilder, State};
 
 struct GameState;
 

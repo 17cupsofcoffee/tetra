@@ -1,8 +1,6 @@
-extern crate tetra;
-
 use tetra::glm::Vec2;
 use tetra::graphics::{self, Color, Texture};
-use tetra::{Context, ContextBuilder, State};
+use tetra::{self, Context, ContextBuilder, State};
 
 struct GameState {
     texture: Texture,

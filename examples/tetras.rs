@@ -1,14 +1,11 @@
 // Loosely based on https://github.com/jonhoo/tetris-tutorial
 
-extern crate rand;
-extern crate tetra;
-
-use rand::Rng;
+use rand::{self, Rng};
 use tetra::glm::Vec2;
 use tetra::graphics::color;
 use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, Key};
-use tetra::{Context, ContextBuilder, State};
+use tetra::{self, Context, ContextBuilder, State};
 
 enum BlockShape {
     I,

@@ -1,11 +1,9 @@
 // using sprites by 0x72: https://0x72.itch.io/16x16-industrial-tileset
 
-extern crate tetra;
-
 use tetra::glm::Vec2;
 use tetra::graphics::{self, Animation, Color, DrawParams, Rectangle, Texture};
-use tetra::{Context, ContextBuilder, State};
 use tetra::input::{self, Key};
+use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
     animation: Animation,
@@ -22,12 +20,14 @@ impl GameState {
         })
     }
 
-    pub fn set_animation_1(&mut self,) {
-        self.animation.set_frames(Rectangle::row(0.0, 272.0, 16.0, 16.0).take(8).collect());
+    pub fn set_animation_1(&mut self) {
+        self.animation
+            .set_frames(Rectangle::row(0.0, 272.0, 16.0, 16.0).take(8).collect());
     }
 
-    pub fn set_animation_2(&mut self,) {
-        self.animation.set_frames(Rectangle::row(0.0, 256.0, 16.0, 16.0).take(8).collect());
+    pub fn set_animation_2(&mut self) {
+        self.animation
+            .set_frames(Rectangle::row(0.0, 256.0, 16.0, 16.0).take(8).collect());
     }
 }
 
