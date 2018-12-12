@@ -1,7 +1,7 @@
 //! Functions and types relating to user interfaces.
 
-use graphics::{self, ActiveShader, DrawParams, Drawable, Rectangle, Texture};
-use Context;
+use crate::graphics::{self, ActiveShader, DrawParams, Drawable, Rectangle, Texture};
+use crate::Context;
 
 /// A panel made up of nine slices of an image. Useful for panels with borders.
 ///
