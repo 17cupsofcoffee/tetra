@@ -32,10 +32,8 @@ You will also need to install the SDL2 native libraries, as described [here](htt
 To get a simple window displayed on screen, the following code can be used:
 
 ```rust
-extern crate tetra;
-
 use tetra::graphics::{self, Color};
-use tetra::{Context, ContextBuilder, State};
+use tetra::{self, Context, ContextBuilder, State};
 
 struct GameState;
 

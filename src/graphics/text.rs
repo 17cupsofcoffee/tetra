@@ -204,7 +204,7 @@ impl Drawable for Text {
     }
 }
 
-fn draw_text(ctx: &mut Context, section: Section) -> BrushAction<FontQuad> {
+fn draw_text(ctx: &mut Context, section: Section<'_>) -> BrushAction<FontQuad> {
     ctx.graphics.font_cache.queue(section);
 
     let screen_dimensions = (

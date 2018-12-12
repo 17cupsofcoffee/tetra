@@ -1,9 +1,7 @@
-extern crate tetra;
-
 use tetra::glm::{self, Vec2};
 use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, MouseButton};
-use tetra::{Context, ContextBuilder, State};
+use tetra::{self, Context, ContextBuilder, State};
 
 struct GameState {
     texture: Texture,
