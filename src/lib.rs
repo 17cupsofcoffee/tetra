@@ -138,7 +138,7 @@ pub struct ContextBuilder<'a> {
     width: i32,
     height: i32,
     window_size: Option<(i32, i32)>,
-    scale: Option<i32>,
+    window_scale: Option<i32>,
     vsync: bool,
     resizable: bool,
     tick_rate: f64,
@@ -164,11 +164,11 @@ impl<'a> ContextBuilder<'a> {
         self
     }
 
-    /// Sets the size of the window.
+    /// Sets the initial size of the window.
     ///
     /// If this is smaller or larger than the internal size, the screen will be scaled to fit.
     ///
-    /// This will take precedence over `scale`.
+    /// This will take precedence over `window_scale`.
     pub fn window_size(mut self, width: i32, height: i32) -> ContextBuilder<'a> {
         self.window_size = Some((width, height));
         self
@@ -177,8 +177,8 @@ impl<'a> ContextBuilder<'a> {
     /// Sets the initial scale of the window, relative to the internal screen size.
     ///
     /// `window_size` will take precedence over this.
-    pub fn scale(mut self, scale: i32) -> ContextBuilder<'a> {
-        self.scale = Some(scale);
+    pub fn window_scale(mut self, window_scale: i32) -> ContextBuilder<'a> {
+        self.window_scale = Some(window_scale);
         self
     }
 
@@ -213,8 +213,8 @@ impl<'a> ContextBuilder<'a> {
 
         let (window_width, window_height) = if let Some(window_size) = self.window_size {
             window_size
-        } else if let Some(scale) = self.scale {
-            (self.width * scale, self.height * scale)
+        } else if let Some(window_scale) = self.window_scale {
+            (self.width * window_scale, self.height * window_scale)
         } else {
             (self.width, self.height)
         };
@@ -263,7 +263,7 @@ impl<'a> Default for ContextBuilder<'a> {
             width: 1280,
             height: 720,
             window_size: None,
-            scale: None,
+            window_scale: None,
             vsync: true,
             resizable: false,
             tick_rate: 1.0 / 60.0,

@@ -6,6 +6,7 @@
 
 * The library has been upgraded to the 2018 edition of Rust.
 * `Shader::from_file` is now called `Shader::new`, and `Shader::new` is now called `Shader::from_string`. This is more consistent with the other constructors.
+* The `scale` option on `ContextBuilder` has been renamed to `window_scale`, to better reflect its behavior.
 
 ### New Features
 

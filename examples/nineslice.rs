@@ -31,7 +31,7 @@ fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Rendering a NineSlice")
         .size(160, 144)
-        .scale(4)
+        .window_scale(4)
         .resizable(true)
         .quit_on_escape(true)
         .build()?;
