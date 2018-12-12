@@ -390,7 +390,7 @@ fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Tetras")
         .size(10 * 16, 20 * 16)
-        .scale(2)
+        .window_scale(2)
         .resizable(true)
         .quit_on_escape(true)
         .build()?;

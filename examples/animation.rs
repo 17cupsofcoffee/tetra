@@ -62,7 +62,7 @@ fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Displaying an Animation")
         .size(64, 64)
-        .scale(8)
+        .window_scale(8)
         .quit_on_escape(true)
         .build()?;
 
