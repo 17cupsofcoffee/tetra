@@ -4,6 +4,7 @@
 
 ### Bug Fixes
 
+* The model matrix is now calculated once per `Drawable`, instead of once per vertex. This should speed up rendering ([#26](https://github.com/17cupsofcoffee/tetra/issues/26)).
 * The top left corner of a `NineSlice` no longer gets distorted if the x and y of the `fill_rect` aren't equal.
 
 ## 0.1.6 (December 9, 2018)

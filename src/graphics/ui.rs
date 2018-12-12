@@ -31,6 +31,7 @@ impl NineSlice {
 impl Drawable for NineSlice {
     fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
         let params = params.into();
+        let transform = params.build_matrix();
 
         let texture_width = self.texture.handle.width() as f32;
         let texture_height = self.texture.handle.height() as f32;
@@ -57,30 +58,138 @@ impl Drawable for NineSlice {
         graphics::set_shader_ex(ctx, ActiveShader::Default);
 
         // Top left
-        graphics::push_quad(ctx, x1, y1, x2, y2, u1, v1, u2, v2, &params);
+        graphics::push_quad(
+            ctx,
+            x1,
+            y1,
+            x2,
+            y2,
+            u1,
+            v1,
+            u2,
+            v2,
+            &transform,
+            params.color,
+        );
 
         // Top
-        graphics::push_quad(ctx, x2, y1, x3, y2, u2, v1, u3, v2, &params);
+        graphics::push_quad(
+            ctx,
+            x2,
+            y1,
+            x3,
+            y2,
+            u2,
+            v1,
+            u3,
+            v2,
+            &transform,
+            params.color,
+        );
 
         // Top right
-        graphics::push_quad(ctx, x3, y1, x4, y2, u3, v1, u4, v2, &params);
+        graphics::push_quad(
+            ctx,
+            x3,
+            y1,
+            x4,
+            y2,
+            u3,
+            v1,
+            u4,
+            v2,
+            &transform,
+            params.color,
+        );
 
         // Left
-        graphics::push_quad(ctx, x1, y2, x2, y3, u1, v2, u2, v3, &params);
+        graphics::push_quad(
+            ctx,
+            x1,
+            y2,
+            x2,
+            y3,
+            u1,
+            v2,
+            u2,
+            v3,
+            &transform,
+            params.color,
+        );
 
         // Center
-        graphics::push_quad(ctx, x2, y2, x3, y3, u2, v2, u3, v3, &params);
+        graphics::push_quad(
+            ctx,
+            x2,
+            y2,
+            x3,
+            y3,
+            u2,
+            v2,
+            u3,
+            v3,
+            &transform,
+            params.color,
+        );
 
         // Right
-        graphics::push_quad(ctx, x3, y2, x4, y3, u3, v2, u4, v3, &params);
+        graphics::push_quad(
+            ctx,
+            x3,
+            y2,
+            x4,
+            y3,
+            u3,
+            v2,
+            u4,
+            v3,
+            &transform,
+            params.color,
+        );
 
         // Bottom left
-        graphics::push_quad(ctx, x1, y3, x2, y4, u1, v3, u2, v4, &params);
+        graphics::push_quad(
+            ctx,
+            x1,
+            y3,
+            x2,
+            y4,
+            u1,
+            v3,
+            u2,
+            v4,
+            &transform,
+            params.color,
+        );
 
         // Bottom
-        graphics::push_quad(ctx, x2, y3, x3, y4, u2, v3, u3, v4, &params);
+        graphics::push_quad(
+            ctx,
+            x2,
+            y3,
+            x3,
+            y4,
+            u2,
+            v3,
+            u3,
+            v4,
+            &transform,
+            params.color,
+        );
 
         // Bottom right
-        graphics::push_quad(ctx, x3, y3, x4, y4, u3, v3, u4, v4, &params);
+        graphics::push_quad(
+            ctx,
+            x3,
+            y3,
+            x4,
+            y4,
+            u3,
+            v3,
+            u4,
+            v4,
+            &transform,
+            params.color,
+        );
     }
 }

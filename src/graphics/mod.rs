@@ -445,24 +445,24 @@ pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
-// TODO: I don't like that these functions take `DrawParams`...
+// TODO: Should these functions take the transform?
 
-fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, params: &DrawParams) {
+fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, transform: &Mat3, color: Color) {
     assert!(
         ctx.graphics.vertex_count < ctx.graphics.vertex_capacity,
         "Renderer is full"
     );
 
-    let pos = params.build_matrix() * Vec3::new(x, y, 1.0);
+    let pos = transform * Vec3::new(x, y, 1.0);
 
     ctx.graphics.vertex_data.push(pos.x);
     ctx.graphics.vertex_data.push(pos.y);
     ctx.graphics.vertex_data.push(u);
     ctx.graphics.vertex_data.push(v);
-    ctx.graphics.vertex_data.push(params.color.r);
-    ctx.graphics.vertex_data.push(params.color.g);
-    ctx.graphics.vertex_data.push(params.color.b);
-    ctx.graphics.vertex_data.push(params.color.a);
+    ctx.graphics.vertex_data.push(color.r);
+    ctx.graphics.vertex_data.push(color.g);
+    ctx.graphics.vertex_data.push(color.b);
+    ctx.graphics.vertex_data.push(color.a);
 
     ctx.graphics.vertex_count += 1;
 }
@@ -477,22 +477,23 @@ pub(crate) fn push_quad(
     mut v1: f32,
     mut u2: f32,
     mut v2: f32,
-    params: &DrawParams,
+    transform: &Mat3,
+    color: Color,
 ) {
-    if params.scale.x < 0.0 {
+    if x2 < x1 {
         std::mem::swap(&mut x1, &mut x2);
         std::mem::swap(&mut u1, &mut u2);
     }
 
-    if params.scale.y < 0.0 {
+    if y2 < y1 {
         std::mem::swap(&mut y1, &mut y2);
         std::mem::swap(&mut v1, &mut v2);
     }
 
-    push_vertex(ctx, x1, y1, u1, v1, params);
-    push_vertex(ctx, x1, y2, u1, v2, params);
-    push_vertex(ctx, x2, y2, u2, v2, params);
-    push_vertex(ctx, x2, y1, u2, v1, params);
+    push_vertex(ctx, x1, y1, u1, v1, transform, color);
+    push_vertex(ctx, x1, y2, u1, v2, transform, color);
+    push_vertex(ctx, x2, y2, u2, v2, transform, color);
+    push_vertex(ctx, x2, y1, u2, v1, transform, color);
 
     ctx.graphics.element_count += INDEX_STRIDE;
 }
@@ -630,7 +631,8 @@ pub fn present(ctx: &mut Context) {
         1.0,
         1.0,
         0.0,
-        &DrawParams::new(),
+        &Mat3::identity(),
+        color::WHITE,
     );
 
     set_framebuffer_ex(ctx, ActiveFramebuffer::Backbuffer);

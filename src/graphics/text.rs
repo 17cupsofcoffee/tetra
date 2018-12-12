@@ -96,6 +96,7 @@ impl Text {
 impl Drawable for Text {
     fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
         let params = params.into();
+        let transform = params.build_matrix();
 
         let section = Section {
             text: &self.content,
@@ -113,8 +114,17 @@ impl Drawable for Text {
 
         for quad in self.quads.borrow().iter() {
             graphics::push_quad(
-                ctx, quad.x1, quad.y1, quad.x2, quad.y2, quad.u1, quad.v1, quad.u2, quad.v2,
-                &params,
+                ctx,
+                quad.x1,
+                quad.y1,
+                quad.x2,
+                quad.y2,
+                quad.u1,
+                quad.v1,
+                quad.u2,
+                quad.v2,
+                &transform,
+                params.color,
             );
         }
     }

@@ -52,6 +52,7 @@ impl Texture {
 impl Drawable for Texture {
     fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
         let params = params.into();
+        let transform = params.build_matrix();
 
         let texture_width = self.handle.width() as f32;
         let texture_height = self.handle.height() as f32;
@@ -71,6 +72,18 @@ impl Drawable for Texture {
 
         graphics::set_texture(ctx, self);
         graphics::set_shader_ex(ctx, ActiveShader::Default);
-        graphics::push_quad(ctx, x1, y1, x2, y2, u1, v1, u2, v2, &params);
+        graphics::push_quad(
+            ctx,
+            x1,
+            y1,
+            x2,
+            y2,
+            u1,
+            v1,
+            u2,
+            v2,
+            &transform,
+            params.color,
+        );
     }
 }
