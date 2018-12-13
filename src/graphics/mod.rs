@@ -448,10 +448,9 @@ pub fn clear(ctx: &mut Context, color: Color) {
 // TODO: Should these functions take the transform?
 
 fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, transform: &Mat3, color: Color) {
-    assert!(
-        ctx.graphics.vertex_count < ctx.graphics.vertex_capacity,
-        "Renderer is full"
-    );
+    if ctx.graphics.vertex_count >= ctx.graphics.vertex_capacity {
+        flush(ctx);
+    }
 
     let pos = transform * Vec3::new(x, y, 1.0);
 
