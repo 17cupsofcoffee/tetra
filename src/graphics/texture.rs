@@ -47,6 +47,16 @@ impl Texture {
             handle: Rc::new(handle),
         }
     }
+
+    /// Returns the width of the texture.
+    pub fn width(&self) -> i32 {
+        self.handle.width()
+    }
+
+    /// Returns the height of the texture.
+    pub fn height(&self) -> i32 {
+        self.handle.height()
+    }
 }
 
 impl Drawable for Texture {
@@ -54,8 +64,8 @@ impl Drawable for Texture {
         let params = params.into();
         let transform = params.build_matrix();
 
-        let texture_width = self.handle.width() as f32;
-        let texture_height = self.handle.height() as f32;
+        let texture_width = self.width() as f32;
+        let texture_height = self.height() as f32;
         let clip = params
             .clip
             .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));

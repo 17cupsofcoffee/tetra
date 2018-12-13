@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### New Features
+
+* `Texture` now has methods to get the width and height ([#31](https://github.com/17cupsofcoffee/tetra/issues/31)).
+
 ### Bug Fixes
 
 * The model matrix is now calculated once per `Drawable`, instead of once per vertex. This should speed up rendering ([#26](https://github.com/17cupsofcoffee/tetra/issues/26)).

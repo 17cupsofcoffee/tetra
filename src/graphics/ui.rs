@@ -33,8 +33,8 @@ impl Drawable for NineSlice {
         let params = params.into();
         let transform = params.build_matrix();
 
-        let texture_width = self.texture.handle.width() as f32;
-        let texture_height = self.texture.handle.height() as f32;
+        let texture_width = self.texture.width() as f32;
+        let texture_height = self.texture.height() as f32;
 
         let x1 = 0.0;
         let y1 = 0.0;
