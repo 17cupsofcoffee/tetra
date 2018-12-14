@@ -20,3 +20,4 @@ glyph_brush = "0.2.2"
 
 [dev-dependencies]
 rand = "0.6"
+rand_core = "0.2.2" # workaround, see https://github.com/rust-random/rand/issues/645
