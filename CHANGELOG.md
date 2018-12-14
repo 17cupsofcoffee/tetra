@@ -5,6 +5,7 @@
 ### New Features
 
 * `Texture` now has methods to get the width and height ([#31](https://github.com/17cupsofcoffee/tetra/issues/31)).
+* The `bundled` and `static-link` features from the `sdl2` crate can now be used through Tetra by enabling the `sdl2_bundled` and `sdl2_static_link` features ([#33](https://github.com/17cupsofcoffee/tetra/pull/33), by [@VictorKoenders](https://github.com/VictorKoenders)).
 
 ### Bug Fixes
 

@@ -24,7 +24,7 @@ To add Tetra to your project, add the following line to your `Cargo.toml` file:
 tetra = "0.1"
 ```
 
-You will also need to install the SDL2 native libraries, as described [here](https://github.com/Rust-SDL2/rust-sdl2#user-content-requirements).
+You will also need to install the SDL2 native libraries, as described [here](https://github.com/Rust-SDL2/rust-sdl2#user-content-requirements). The 'bundled' and 'static linking' features described can be activated using the `sdl2_bundled` and `sdl2_static_link` Cargo features in Tetra.
 
 ## Examples
 
