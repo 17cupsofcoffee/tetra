@@ -17,6 +17,7 @@ pub(crate) struct InputContext {
     pub(crate) previous_key_state: FnvHashSet<Key>,
     pub(crate) current_mouse_state: FnvHashSet<MouseButton>,
     pub(crate) previous_mouse_state: FnvHashSet<MouseButton>,
+    pub(crate) current_text_input: Option<String>,
     pub(crate) mouse_position: Vec2,
 }
 
@@ -27,9 +28,21 @@ impl InputContext {
             previous_key_state: FnvHashSet::default(),
             current_mouse_state: FnvHashSet::default(),
             previous_mouse_state: FnvHashSet::default(),
+            current_text_input: None,
             mouse_position: Vec2::zeros(),
         }
     }
+
+    pub(crate) fn cleanup_after_state_update(&mut self) {
+        self.previous_key_state = self.current_key_state.clone();
+        self.current_text_input = None;
+    }
+}
+
+/// Returns the text that the user entered this tick.
+/// This will match the user's keyboard and OS settings.
+pub fn get_text_input(ctx: &Context) -> Option<&str> {
+    ctx.input.current_text_input.as_ref().map(String::as_str)
 }
 
 /// Returns true if the specified key is currently down.
