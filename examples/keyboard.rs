@@ -1,5 +1,3 @@
-extern crate tetra;
-
 use tetra::glm::Vec2;
 use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, Key};

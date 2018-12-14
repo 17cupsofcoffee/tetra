@@ -1,7 +1,5 @@
 // using sprites by 0x72: https://0x72.itch.io/16x16-industrial-tileset
 
-extern crate tetra;
-
 use tetra::glm::Vec2;
 use tetra::graphics::{self, Animation, Color, DrawParams, Rectangle, Texture};
 use tetra::{Context, ContextBuilder, State};

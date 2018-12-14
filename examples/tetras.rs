@@ -1,8 +1,5 @@
 // Loosely based on https://github.com/jonhoo/tetris-tutorial
 
-extern crate rand;
-extern crate tetra;
-
 use rand::Rng;
 use tetra::glm::Vec2;
 use tetra::graphics::color;

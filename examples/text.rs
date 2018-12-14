@@ -1,5 +1,3 @@
-extern crate tetra;
-
 use tetra::glm::Vec2;
 use tetra::graphics::{self, Color, Font, Text};
 use tetra::{Context, ContextBuilder, State};

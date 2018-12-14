@@ -1,5 +1,3 @@
-extern crate tetra;
-
 use tetra::glm::Vec2;
 use tetra::graphics::color;
 use tetra::graphics::{self, NineSlice, Rectangle, Texture};
