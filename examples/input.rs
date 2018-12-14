@@ -11,16 +11,6 @@ struct GameState {
     text: Text,
 }
 
-impl GameState {
-    fn update_text(&mut self) {
-        self.text = Text::new(
-            self.input.as_str(),
-            Font::default(),
-            16.0,
-        );
-    }
-}
-
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) {
         if input::is_key_pressed(ctx, Key::Backspace) {
