@@ -292,7 +292,7 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
         lag += elapsed;
 
         for event in events.poll_iter() {
-            handle_event(ctx, &event);
+            handle_event(ctx, event);
         }
 
         while lag >= ctx.tick_rate {
@@ -313,7 +313,7 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
     Ok(())
 }
 
-fn handle_event(ctx: &mut Context, event: &Event) {
+fn handle_event(ctx: &mut Context, event: Event) {
     match event {
         Event::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
         Event::KeyDown {
@@ -325,31 +325,29 @@ fn handle_event(ctx: &mut Context, event: &Event) {
                 }
             }
 
-            ctx.input.current_key_state.insert(*k);
+            ctx.input.current_key_state.insert(k);
         }
         Event::KeyUp {
             keycode: Some(k), ..
         } => {
             // TODO: This can cause some inputs to be missed at low tick rates.
             // Could consider buffering input releases like Otter2D does?
-            ctx.input.current_key_state.remove(k);
+            ctx.input.current_key_state.remove(&k);
         }
         Event::MouseButtonDown { mouse_btn, .. } => {
-            ctx.input.current_mouse_state.insert(*mouse_btn);
+            ctx.input.current_mouse_state.insert(mouse_btn);
         }
         Event::MouseButtonUp { mouse_btn, .. } => {
-            ctx.input.current_mouse_state.remove(mouse_btn);
+            ctx.input.current_mouse_state.remove(&mouse_btn);
         }
-        Event::MouseMotion { x, y, .. } => {
-            ctx.input.mouse_position = Vec2::new(*x as f32, *y as f32)
-        }
+        Event::MouseMotion { x, y, .. } => ctx.input.mouse_position = Vec2::new(x as f32, y as f32),
         Event::Window { win_event, .. } => {
             if let WindowEvent::SizeChanged(x, y) = win_event {
-                graphics::set_window_size(ctx, *x, *y)
+                graphics::set_window_size(ctx, x, y)
             }
         }
         Event::TextInput { text, .. } => {
-            ctx.input.current_text_input = Some(text.clone());
+            ctx.input.current_text_input = Some(text);
         }
         _ => {}
     }
