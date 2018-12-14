@@ -10,6 +10,10 @@ readme = "README.md"
 keywords = ["game", "engine", "framework", "gamedev"]
 categories = ["game-engines"]
 
+[features]
+sdl2_bundled = ["sdl2/bundled"]
+sdl2_static_link = ["sdl2/static-link"]
+
 [dependencies]
 gl = "0.11.0"
 sdl2 = "0.32.0"
