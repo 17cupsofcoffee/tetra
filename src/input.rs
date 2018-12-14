@@ -52,6 +52,15 @@ pub fn is_key_released(ctx: &Context, key: Key) -> bool {
     ctx.input.previous_key_state.contains(&key) && !ctx.input.current_key_state.contains(&key)
 }
 
+/// Returns a list of keys that were pressed this tick. This can be used for text input.
+pub fn get_key_strokes<'a>(ctx: &'a Context) -> impl Iterator<Item = Key> + 'a {
+    ctx.input
+        .current_key_state
+        .iter()
+        .cloned()
+        .filter(move |k| !ctx.input.previous_key_state.contains(&k))
+}
+
 /// Returns true if the specified mouse button is currently down.
 pub fn is_mouse_button_down(ctx: &Context, button: MouseButton) -> bool {
     ctx.input.current_mouse_state.contains(&button)

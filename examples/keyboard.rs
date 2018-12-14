@@ -27,6 +27,10 @@ impl State for GameState {
         if input::is_key_down(ctx, Key::S) {
             self.position.y += 2.0;
         }
+        let mut result = input::get_key_strokes(ctx).peekable();
+        if result.peek().is_some() {
+            println!("Keys pressed this tick: {:?}", result.collect::<Vec<_>>());
+        }
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) {
