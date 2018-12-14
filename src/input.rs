@@ -3,8 +3,7 @@
 use fnv::FnvHashSet;
 use glm::Vec2;
 
-use graphics;
-use Context;
+use crate::{graphics, Context};
 
 /// Represents a key on the player's keyboard.
 pub use sdl2::keyboard::Keycode as Key;

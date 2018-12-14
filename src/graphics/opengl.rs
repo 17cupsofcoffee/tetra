@@ -1,6 +1,6 @@
-use error::{Result, TetraError};
+use crate::error::{Result, TetraError};
 use gl::{self, types::*};
-use glm::Mat4;
+use crate::glm::Mat4;
 use sdl2::{
     video::{GLContext, GLProfile, Window},
     VideoSubsystem,

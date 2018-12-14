@@ -3,12 +3,10 @@
 use std::path::Path;
 use std::rc::Rc;
 
-use image;
-
-use error::{Result, TetraError};
-use graphics::opengl::{GLTexture, TextureFormat};
-use graphics::{self, ActiveShader, DrawParams, Drawable, Rectangle};
-use Context;
+use crate::error::{Result, TetraError};
+use crate::graphics::opengl::{GLTexture, TextureFormat};
+use crate::graphics::{self, ActiveShader, DrawParams, Drawable, Rectangle};
+use crate::Context;
 
 /// Texture data.
 ///

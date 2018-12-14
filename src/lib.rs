@@ -74,12 +74,6 @@
 
 #![warn(missing_docs)]
 
-extern crate fnv;
-extern crate gl;
-extern crate glyph_brush;
-extern crate image;
-extern crate sdl2;
-
 pub extern crate nalgebra_glm as glm;
 pub mod error;
 pub mod graphics;
@@ -87,16 +81,15 @@ pub mod input;
 pub mod time;
 
 use std::time::{Duration, Instant};
-
-use glm::Vec2;
+use crate::glm::Vec2;
 use sdl2::event::{Event, WindowEvent};
 use sdl2::video::Window;
 use sdl2::Sdl;
 
-pub use error::{Result, TetraError};
-use graphics::opengl::GLDevice;
-use graphics::GraphicsContext;
-use input::{InputContext, Key};
+pub use crate::error::{Result, TetraError};
+use crate::graphics::opengl::GLDevice;
+use crate::graphics::GraphicsContext;
+use crate::input::{InputContext, Key};
 
 /// A trait representing a type that contains game state and provides logic for updating it
 /// and drawing it to the screen. This is where you'll write your game logic!

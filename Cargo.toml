@@ -9,6 +9,7 @@ documentation = "https://docs.rs/tetra"
 readme = "README.md"
 keywords = ["game", "engine", "framework", "gamedev"]
 categories = ["game-engines"]
+edition = "2018"
 
 [features]
 sdl2_bundled = ["sdl2/bundled"]
