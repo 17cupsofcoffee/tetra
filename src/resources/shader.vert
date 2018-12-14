@@ -1,18 +1,15 @@
-#version 330 core
+#version 130
 
-layout (location = 0) in vec4 in_pos_tex;
-layout (location = 1) in vec4 in_color;
+in vec4 in_pos_tex;
+in vec4 in_color;
 
-// TODO: Interface block?
 uniform mat4 projection;
 
-out VertexData {
-    vec4 color;
-    vec2 uv;
-} o;
+out vec4 v_color;
+out vec2 v_uv;
 
 void main() {
     gl_Position = projection * vec4(in_pos_tex.xy, 0.0, 1.0);
-    o.color = in_color;
-    o.uv = in_pos_tex.zw;
+    v_color = in_color;
+    v_uv = in_pos_tex.zw;
 }
