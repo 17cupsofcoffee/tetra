@@ -18,7 +18,7 @@
 //! tetra = "0.1"
 //! ```
 //!
-//! You will also need to install the SDL2 native libraries, as described [here](https://github.com/Rust-SDL2/rust-sdl2#user-content-requirements).
+//! You will also need to install the SDL2 native libraries, as described [here](https://github.com/Rust-SDL2/rust-sdl2#user-content-requirements). The 'bundled' and 'static linking' features described can be activated using the `sdl2_bundled` and `sdl2_static_link` Cargo features in Tetra.
 //!
 //! ## Examples
 //!
@@ -342,9 +342,11 @@ fn handle_event(ctx: &mut Context, event: &Event) {
         Event::MouseMotion { x, y, .. } => {
             ctx.input.mouse_position = Vec2::new(*x as f32, *y as f32)
         }
-        Event::Window { win_event, .. } => if let WindowEvent::SizeChanged(x, y) = win_event {
-            graphics::set_window_size(ctx, *x, *y)
-        },
+        Event::Window { win_event, .. } => {
+            if let WindowEvent::SizeChanged(x, y) = win_event {
+                graphics::set_window_size(ctx, *x, *y)
+            }
+        }
         _ => {}
     }
 }
