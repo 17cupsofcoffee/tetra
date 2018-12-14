@@ -41,8 +41,8 @@ impl InputContext {
 
 /// Returns the text that the user entered this tick.
 /// This will match the user's keyboard and OS settings.
-pub fn get_text_input(ctx: &Context) -> &Option<String> {
-    &ctx.input.current_text_input
+pub fn get_text_input(ctx: &Context) -> Option<&str> {
+    ctx.input.current_text_input.as_ref().map(String::as_str)
 }
 
 /// Returns true if the specified key is currently down.

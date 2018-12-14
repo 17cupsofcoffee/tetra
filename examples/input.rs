@@ -25,11 +25,11 @@ impl State for GameState {
     fn update(&mut self, ctx: &mut Context) {
         if input::is_key_pressed(ctx, Key::Backspace) {
             self.input.pop();
-            self.update_text();
+            self.text.set_content(self.input.as_str());
         }
         if let Some(new_input) = input::get_text_input(ctx) {
             self.input += new_input;
-            self.update_text();
+            self.text.set_content(self.input.as_str());
         }
     }
 
