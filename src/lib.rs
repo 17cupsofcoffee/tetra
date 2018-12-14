@@ -296,7 +296,7 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
 
         while lag >= ctx.tick_rate {
             state.update(ctx);
-            ctx.input.previous_key_state = ctx.input.current_key_state.clone();
+            ctx.input.cleanup_after_state_update();
             lag -= ctx.tick_rate;
         }
 
@@ -346,6 +346,9 @@ fn handle_event(ctx: &mut Context, event: &Event) {
             if let WindowEvent::SizeChanged(x, y) = win_event {
                 graphics::set_window_size(ctx, *x, *y)
             }
+        }
+        Event::TextInput { text, .. } => {
+            ctx.input.current_text_input = Some(text.clone());
         }
         _ => {}
     }
