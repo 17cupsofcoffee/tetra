@@ -288,12 +288,16 @@ impl State for GameState {
         let next_move = self.move_queue.pop();
 
         match next_move {
-            Some(Move::Left) => if !self.collides(-1, 0) {
-                self.block.x -= 1;
-            },
-            Some(Move::Right) => if !self.collides(1, 0) {
-                self.block.x += 1;
-            },
+            Some(Move::Left) => {
+                if !self.collides(-1, 0) {
+                    self.block.x -= 1;
+                }
+            }
+            Some(Move::Right) => {
+                if !self.collides(1, 0) {
+                    self.block.x += 1;
+                }
+            }
             Some(Move::RotateCcw) => {
                 self.block.rotate_ccw();
 
