@@ -27,6 +27,19 @@ impl State for GameState {
         if input::is_key_down(ctx, Key::S) {
             self.position.y += 2.0;
         }
+
+        let mut pressed = input::get_keys_pressed(ctx).peekable();
+        if pressed.peek().is_some() {
+            println!("Keys pressed this tick: {:?}", pressed.collect::<Vec<_>>());
+        }
+
+        let mut released = input::get_keys_released(ctx).peekable();
+        if released.peek().is_some() {
+            println!(
+                "Keys released this tick: {:?}",
+                released.collect::<Vec<_>>()
+            );
+        }
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) {

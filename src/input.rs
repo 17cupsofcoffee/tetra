@@ -52,6 +52,25 @@ pub fn is_key_released(ctx: &Context, key: Key) -> bool {
     ctx.input.previous_key_state.contains(&key) && !ctx.input.current_key_state.contains(&key)
 }
 
+/// Returns an iterator of the keys that are currently down.
+pub fn get_keys_down(ctx: &Context) -> impl Iterator<Item = &Key> {
+    ctx.input.current_key_state.iter()
+}
+
+/// Returns an iterator of the keys that were pressed this tick.
+pub fn get_keys_pressed(ctx: &Context) -> impl Iterator<Item = &Key> {
+    ctx.input
+        .current_key_state
+        .difference(&ctx.input.previous_key_state)
+}
+
+/// Returns an iterator of the keys that were released this tick.
+pub fn get_keys_released(ctx: &Context) -> impl Iterator<Item = &Key> {
+    ctx.input
+        .previous_key_state
+        .difference(&ctx.input.current_key_state)
+}
+
 /// Returns true if the specified mouse button is currently down.
 pub fn is_mouse_button_down(ctx: &Context, button: MouseButton) -> bool {
     ctx.input.current_mouse_state.contains(&button)
