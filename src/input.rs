@@ -111,9 +111,9 @@ pub fn is_mouse_button_released(ctx: &Context, button: MouseButton) -> bool {
 /// If the screen is scaled, the returned value will be relative to the original size.
 pub fn get_mouse_x(ctx: &Context) -> f32 {
     let internal_width = graphics::get_width(ctx) as f32;
-    let letterbox = graphics::get_letterbox(ctx);
+    let screen_rect = graphics::get_screen_rect(ctx);
 
-    ((ctx.input.mouse_position.x - letterbox.x) / letterbox.width) * internal_width
+    ((ctx.input.mouse_position.x - screen_rect.x) / screen_rect.width) * internal_width
 }
 
 /// Get the Y co-ordinate of the mouse.
@@ -121,9 +121,9 @@ pub fn get_mouse_x(ctx: &Context) -> f32 {
 /// If the screen is scaled, the returned value will be relative to the original size.
 pub fn get_mouse_y(ctx: &Context) -> f32 {
     let internal_height = graphics::get_height(ctx) as f32;
-    let letterbox = graphics::get_letterbox(ctx);
+    let screen_rect = graphics::get_screen_rect(ctx);
 
-    ((ctx.input.mouse_position.y - letterbox.y) / letterbox.height) * internal_height
+    ((ctx.input.mouse_position.y - screen_rect.y) / screen_rect.height) * internal_height
 }
 
 /// Get the position of the mouse.

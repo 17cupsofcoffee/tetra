@@ -1,5 +1,5 @@
 use tetra::glm::Vec2;
-use tetra::graphics::{self, Color, DrawParams, Texture};
+use tetra::graphics::{self, Color, DrawParams, ScreenScaling, Texture};
 use tetra::input::{self, Key};
 use tetra::{self, Context, ContextBuilder, State};
 
@@ -57,6 +57,7 @@ fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Keyboard Input")
         .size(160, 144)
+        .scaling(ScreenScaling::ShowAllPixelPerfect)
         .window_scale(4)
         .resizable(true)
         .quit_on_escape(true)

@@ -8,6 +8,7 @@
 pub mod animation;
 pub mod color;
 pub(crate) mod opengl;
+pub mod scaling;
 pub mod shader;
 pub mod text;
 pub mod texture;
@@ -15,6 +16,7 @@ pub mod ui;
 
 pub use self::animation::Animation;
 pub use self::color::Color;
+pub use self::scaling::ScreenScaling;
 pub use self::shader::Shader;
 pub use self::text::{Font, Text};
 pub use self::texture::Texture;
@@ -87,11 +89,10 @@ pub(crate) struct GraphicsContext {
     vertex_count: usize,
     element_count: usize,
 
-    internal_width: i32,
-    internal_height: i32,
     window_width: i32,
     window_height: i32,
-    letterbox: Rectangle,
+    scaling: ScreenScaling,
+    screen_rect: Rectangle,
 
     font_cache: GlyphBrush<'static>,
 }
@@ -99,15 +100,19 @@ pub(crate) struct GraphicsContext {
 impl GraphicsContext {
     pub(crate) fn new(
         device: &mut GLDevice,
-        internal_width: i32,
-        internal_height: i32,
         window_width: i32,
         window_height: i32,
+        internal_width: i32,
+        internal_height: i32,
+        scaling: ScreenScaling,
     ) -> GraphicsContext {
         assert!(
             MAX_VERTICES <= 32767,
             "Can't have more than 32767 vertices to a single buffer"
         );
+
+        let screen_rect =
+            scaling.get_screen_rect(internal_width, internal_height, window_width, window_height);
 
         let backbuffer = device.new_framebuffer();
         let backbuffer_texture = Texture::from_handle(device.new_texture(
@@ -195,11 +200,10 @@ impl GraphicsContext {
             vertex_count: 0,
             element_count: 0,
 
-            internal_width,
-            internal_height,
             window_width,
             window_height,
-            letterbox: letterbox(internal_width, internal_height, window_width, window_height),
+            scaling,
+            screen_rect,
 
             font_cache,
         }
@@ -417,14 +421,14 @@ pub trait Drawable {
     fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T);
 }
 
-/// Gets the internal width of the screen, before scaling is applied.
+/// Gets the width of the screen, before any scaling or letterboxing is applied.
 pub fn get_width(ctx: &Context) -> i32 {
-    ctx.graphics.internal_width
+    ctx.graphics.backbuffer_texture.width()
 }
 
-/// Gets the internal height of the screen, before scaling is applied.
+/// Gets the height of the screen, before any scaling or letterboxing is applied.
 pub fn get_height(ctx: &Context) -> i32 {
-    ctx.graphics.internal_height
+    ctx.graphics.backbuffer_texture.height()
 }
 
 /// Gets the width of the window.
@@ -437,8 +441,8 @@ pub fn get_window_height(ctx: &Context) -> i32 {
     ctx.graphics.window_height
 }
 
-pub(crate) fn get_letterbox(ctx: &Context) -> Rectangle {
-    ctx.graphics.letterbox
+pub(crate) fn get_screen_rect(ctx: &Context) -> Rectangle {
+    ctx.graphics.screen_rect
 }
 
 /// Clears the currently enabled render target to the specified color.
@@ -547,17 +551,12 @@ pub(crate) fn set_framebuffer_ex(ctx: &mut Context, framebuffer: ActiveFramebuff
         match ctx.graphics.framebuffer {
             ActiveFramebuffer::Backbuffer => {
                 ctx.gl.bind_framebuffer(&ctx.graphics.backbuffer);
-                ctx.gl.set_viewport(
-                    0,
-                    0,
-                    ctx.graphics.internal_width,
-                    ctx.graphics.internal_height,
-                );
+                ctx.gl.set_viewport(0, 0, get_width(ctx), get_height(ctx));
             }
             ActiveFramebuffer::Window => {
                 ctx.gl.bind_default_framebuffer();
                 ctx.gl
-                    .set_viewport(0, 0, ctx.graphics.window_width, ctx.graphics.window_height);
+                    .set_viewport(0, 0, get_window_width(ctx), get_window_height(ctx));
             }
         }
     }
@@ -619,14 +618,14 @@ pub fn present(ctx: &mut Context) {
 
     clear(ctx, color::BLACK);
 
-    let letterbox = ctx.graphics.letterbox;
+    let screen_rect = ctx.graphics.screen_rect;
 
     push_quad(
         ctx,
-        letterbox.x,
-        letterbox.y,
-        letterbox.x + letterbox.width,
-        letterbox.y + letterbox.height,
+        screen_rect.x,
+        screen_rect.y,
+        screen_rect.x + screen_rect.width,
+        screen_rect.y + screen_rect.height,
         0.0,
         1.0,
         1.0,
@@ -645,37 +644,30 @@ pub(crate) fn set_window_size(ctx: &mut Context, width: i32, height: i32) {
     ctx.graphics.window_width = width;
     ctx.graphics.window_height = height;
     ctx.graphics.window_projection = ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
-    ctx.graphics.letterbox = letterbox(
-        ctx.graphics.internal_width,
-        ctx.graphics.internal_height,
+
+    if let ScreenScaling::Resize = ctx.graphics.scaling {
+        set_internal_size(ctx, width, height);
+    }
+
+    ctx.graphics.screen_rect = ctx.graphics.scaling.get_screen_rect(
+        ctx.graphics.backbuffer_texture.width(),
+        ctx.graphics.backbuffer_texture.height(),
         width,
         height,
     );
 }
 
-fn letterbox(
-    internal_width: i32,
-    internal_height: i32,
-    window_width: i32,
-    window_height: i32,
-) -> Rectangle {
-    let scale_factor = if window_width <= window_height {
-        window_width / internal_width
-    } else {
-        window_height / internal_height
-    };
+pub(crate) fn set_internal_size(ctx: &mut Context, width: i32, height: i32) {
+    ctx.graphics.internal_projection = ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
 
-    let letterbox_width = internal_width * scale_factor;
-    let letterbox_height = internal_height * scale_factor;
-    let letterbox_x = (window_width - letterbox_width) / 2;
-    let letterbox_y = (window_height - letterbox_height) / 2;
+    ctx.graphics.backbuffer_texture =
+        Texture::from_handle(ctx.gl.new_texture(width, height, TextureFormat::Rgb));
 
-    Rectangle::new(
-        letterbox_x as f32,
-        letterbox_y as f32,
-        letterbox_width as f32,
-        letterbox_height as f32,
-    )
+    ctx.gl.attach_texture_to_framebuffer(
+        &ctx.graphics.backbuffer,
+        &ctx.graphics.backbuffer_texture.handle,
+        true,
+    );
 }
 
 pub(crate) fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Mat4 {
