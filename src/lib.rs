@@ -194,9 +194,9 @@ impl<'a> ContextBuilder<'a> {
         self
     }
 
-    /// Sets the game's update tick rate.
+    /// Sets the game's update tick rate, in ticks per second.
     pub fn tick_rate(mut self, tick_rate: f64) -> ContextBuilder<'a> {
-        self.tick_rate = tick_rate;
+        self.tick_rate = 1.0 / tick_rate;
         self
     }
 
@@ -359,5 +359,5 @@ pub fn quit(ctx: &mut Context) {
 
 /// Sets the update tick rate of the application, in ticks per second.
 pub fn set_tick_rate(ctx: &mut Context, tick_rate: f64) {
-    ctx.tick_rate = time::f64_to_duration(tick_rate);
+    ctx.tick_rate = time::f64_to_duration(1.0 / tick_rate);
 }
