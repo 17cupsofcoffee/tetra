@@ -28,11 +28,11 @@ use crate::graphics::opengl::{
 };
 use crate::Context;
 
+const MAX_SPRITES: usize = 2048;
+const MAX_VERTICES: usize = MAX_SPRITES * 4;
+const MAX_INDICES: usize = MAX_SPRITES * 6;
 const VERTEX_STRIDE: usize = 8;
-const VERTEX_CAPACITY: usize = 4096;
-const INDEX_STRIDE: usize = 6;
-const INDEX_CAPACITY: usize = VERTEX_CAPACITY / 4 * INDEX_STRIDE;
-const INDEX_ARRAY: [u32; INDEX_STRIDE] = [0, 1, 2, 2, 3, 0];
+const INDEX_ARRAY: [u32; 6] = [0, 1, 2, 2, 3, 0];
 const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
 const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 const FONT_FRAGMENT_SHADER: &str = include_str!("../resources/text.frag");
@@ -105,7 +105,7 @@ impl GraphicsContext {
         window_height: i32,
     ) -> GraphicsContext {
         assert!(
-            VERTEX_CAPACITY <= 32767,
+            MAX_VERTICES <= 32767,
             "Can't have more than 32767 vertices to a single buffer"
         );
 
@@ -122,13 +122,13 @@ impl GraphicsContext {
         let indices: Vec<u32> = INDEX_ARRAY
             .iter()
             .cycle()
-            .take(INDEX_CAPACITY)
+            .take(MAX_INDICES)
             .enumerate()
-            .map(|(i, vertex)| vertex + i as u32 / INDEX_STRIDE as u32 * 4)
+            .map(|(i, vertex)| vertex + i as u32 / 6 * 4)
             .collect();
 
         let vertex_buffer = device.new_vertex_buffer(
-            VERTEX_CAPACITY * VERTEX_STRIDE,
+            MAX_VERTICES * VERTEX_STRIDE,
             VERTEX_STRIDE,
             BufferUsage::DynamicDraw,
         );
@@ -136,7 +136,7 @@ impl GraphicsContext {
         device.set_vertex_buffer_attribute(&vertex_buffer, 0, 4, 0);
         device.set_vertex_buffer_attribute(&vertex_buffer, 1, 3, 4);
 
-        let index_buffer = device.new_index_buffer(INDEX_CAPACITY, BufferUsage::StaticDraw);
+        let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::StaticDraw);
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
@@ -190,8 +190,8 @@ impl GraphicsContext {
             framebuffer: ActiveFramebuffer::Backbuffer,
             backbuffer,
 
-            vertex_data: Vec::with_capacity(VERTEX_CAPACITY * VERTEX_STRIDE),
-            vertex_capacity: VERTEX_CAPACITY,
+            vertex_data: Vec::with_capacity(MAX_VERTICES * VERTEX_STRIDE),
+            vertex_capacity: MAX_VERTICES,
             vertex_count: 0,
             element_count: 0,
 
@@ -495,7 +495,7 @@ pub(crate) fn push_quad(
     push_vertex(ctx, x2, y2, u2, v2, transform, color);
     push_vertex(ctx, x2, y1, u2, v1, transform, color);
 
-    ctx.graphics.element_count += INDEX_STRIDE;
+    ctx.graphics.element_count += 6;
 }
 
 /// Draws an object to the currently enabled render target.
