@@ -70,7 +70,7 @@ The full list of examples available are:
 * [`nineslice`](examples/nineslice.rs) - Slices a texture into nine segments to display a dialog box.
 * [`keyboard`](examples/keyboard.rs) - Moves a texture around based on keyboard input.
 * [`mouse`](examples/mouse.rs) - Moves a texture around based on mouse input.
-* [`input`](examples/input.rs) - Displays text as it is typed in by the player.
+* [`text_input`](examples/text_input.rs) - Displays text as it is typed in by the player.
 * [`tetras`](examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
 
 ## Support/Feedback

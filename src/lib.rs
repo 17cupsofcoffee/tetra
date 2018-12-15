@@ -64,7 +64,7 @@
 //! * [`nineslice`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/nineslice.rs) - Slices a texture into nine segments to display a dialog box.
 //! * [`keyboard`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/keyboard.rs) - Moves a texture around based on keyboard input.
 //! * [`mouse`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/mouse.rs) - Moves a texture around based on mouse input.
-//! * [`input`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/input.rs) - Displays text as it is typed in by the player.
+//! * [`text_input`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/text_input.rs) - Displays text as it is typed in by the player.
 //! * [`tetras`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
 //!
 //! ## Support/Feedback

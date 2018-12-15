@@ -13,6 +13,11 @@ struct GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) {
+        if input::is_key_pressed(ctx, Key::Return) {
+            self.input += "\n";
+            self.text.set_content(self.input.as_str());
+        }
+
         if input::is_key_pressed(ctx, Key::Backspace) {
             self.input.pop();
             self.text.set_content(self.input.as_str());
@@ -25,23 +30,22 @@ impl State for GameState {
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) {
-        graphics::clear(ctx, Color::rgb(0.769, 0.812, 0.631));
-        graphics::draw(ctx, &self.text, Vec2::new(50.0, 50.0));
+        graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
+        graphics::draw(ctx, &self.text, Vec2::new(16.0, 16.0));
     }
 }
 
 fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Keyboard Input")
-        .size(320, 132)
-        .scale(4)
+        .size(640, 480)
         .resizable(true)
         .quit_on_escape(true)
         .build()?;
 
     let state = &mut GameState {
         input: String::new(),
-        text: Text::new("", Font::default(), 16.0),
+        text: Text::new("", Font::default(), 32.0),
     };
 
     tetra::run(ctx, state)
