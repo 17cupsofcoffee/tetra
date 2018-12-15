@@ -91,6 +91,7 @@ use sdl2::Sdl;
 pub use crate::error::{Result, TetraError};
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
+use crate::graphics::ScreenScaling;
 use crate::input::{InputContext, Key};
 
 /// A trait representing a type that contains game state and provides logic for updating it
@@ -131,14 +132,13 @@ pub struct Context {
 }
 
 /// Creates a new `Context` based on the provided options.
-///
-/// With the default settings, a window will be created at 1280x720 resolution, with no scaling applied.
 pub struct ContextBuilder<'a> {
     title: &'a str,
-    width: i32,
-    height: i32,
+    internal_width: i32,
+    internal_height: i32,
     window_size: Option<(i32, i32)>,
     window_scale: Option<i32>,
+    scaling: ScreenScaling,
     vsync: bool,
     resizable: bool,
     tick_rate: f64,
@@ -152,21 +152,35 @@ impl<'a> ContextBuilder<'a> {
     }
 
     /// Sets the title of the window.
+    ///
+    /// Defaults to `"Tetra"`.
     pub fn title(mut self, title: &'a str) -> ContextBuilder<'a> {
         self.title = title;
         self
     }
 
-    /// Sets the internal size of the screen.
+    /// Sets the internal resolution of the screen.
+    ///
+    /// Defaults to `1280 x 720`.
     pub fn size(mut self, width: i32, height: i32) -> ContextBuilder<'a> {
-        self.width = width;
-        self.height = height;
+        self.internal_width = width;
+        self.internal_height = height;
         self
     }
 
-    /// Sets the initial size of the window.
+    /// Sets the scaling mode for the game.
     ///
-    /// If this is smaller or larger than the internal size, the screen will be scaled to fit.
+    /// Defaults to `ScreenScaling::Resize`, which will adjust the internal resolution to match
+    /// the size of the window.
+    pub fn scaling(mut self, scaling: ScreenScaling) -> ContextBuilder<'a> {
+        self.scaling = scaling;
+        self
+    }
+
+    /// Sets the size of the window.
+    ///
+    /// This only needs to be set if you want the internal resolution of the game
+    /// to be different from the window size.
     ///
     /// This will take precedence over `window_scale`.
     pub fn window_size(mut self, width: i32, height: i32) -> ContextBuilder<'a> {
@@ -174,33 +188,44 @@ impl<'a> ContextBuilder<'a> {
         self
     }
 
-    /// Sets the initial scale of the window, relative to the internal screen size.
+    /// Sets the size of the window, as a multiplier of the internal screen size.
+    ///
+    /// This only needs to be set if you want the internal resolution of the game
+    /// to be different from the window size.
     ///
     /// `window_size` will take precedence over this.
-    pub fn window_scale(mut self, window_scale: i32) -> ContextBuilder<'a> {
-        self.window_scale = Some(window_scale);
+    pub fn window_scale(mut self, scale: i32) -> ContextBuilder<'a> {
+        self.window_scale = Some(scale);
         self
     }
 
     /// Enables or disables vsync.
+    ///
+    /// Defaults to `true`.
     pub fn vsync(mut self, vsync: bool) -> ContextBuilder<'a> {
         self.vsync = vsync;
         self
     }
 
     /// Sets whether or not the window should be resizable.
+    ///
+    /// Defaults to `false`.
     pub fn resizable(mut self, resizable: bool) -> ContextBuilder<'a> {
         self.resizable = resizable;
         self
     }
 
     /// Sets the game's update tick rate, in ticks per second.
+    ///
+    /// Defaults to `60.0`.
     pub fn tick_rate(mut self, tick_rate: f64) -> ContextBuilder<'a> {
         self.tick_rate = 1.0 / tick_rate;
         self
     }
 
     /// Sets whether or not the game should close when the Escape key is pressed.
+    ///
+    /// Defaults to `false`.
     pub fn quit_on_escape(mut self, quit_on_escape: bool) -> ContextBuilder<'a> {
         self.quit_on_escape = quit_on_escape;
         self
@@ -211,12 +236,15 @@ impl<'a> ContextBuilder<'a> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
         let video = sdl.video().map_err(TetraError::Sdl)?;
 
-        let (window_width, window_height) = if let Some(window_size) = self.window_size {
-            window_size
-        } else if let Some(window_scale) = self.window_scale {
-            (self.width * window_scale, self.height * window_scale)
-        } else {
-            (self.width, self.height)
+        let (window_width, window_height) = match (self.window_size, self.window_scale) {
+            (Some(size), _) => size,
+            (_, Some(scale)) => (self.internal_width * scale, self.internal_height * scale),
+            _ => (self.internal_width, self.internal_height),
+        };
+
+        let (internal_width, internal_height) = match self.scaling {
+            ScreenScaling::Resize => (window_width, window_height),
+            _ => (self.internal_width, self.internal_height),
         };
 
         let mut window_builder =
@@ -228,17 +256,15 @@ impl<'a> ContextBuilder<'a> {
             window_builder.resizable();
         }
 
-        let mut window = window_builder.build()?;
-
-        window.set_minimum_size(self.width as u32, self.height as u32)?;
-
+        let window = window_builder.build()?;
         let mut gl = GLDevice::new(&video, &window, self.vsync)?;
         let graphics = GraphicsContext::new(
             &mut gl,
-            self.width,
-            self.height,
             window_width,
             window_height,
+            internal_width,
+            internal_height,
+            self.scaling,
         );
         let input = InputContext::new();
 
@@ -260,10 +286,11 @@ impl<'a> Default for ContextBuilder<'a> {
     fn default() -> ContextBuilder<'a> {
         ContextBuilder {
             title: "Tetra",
-            width: 1280,
-            height: 720,
+            internal_width: 1280,
+            internal_height: 720,
             window_size: None,
             window_scale: None,
+            scaling: ScreenScaling::Resize,
             vsync: true,
             resizable: false,
             tick_rate: 1.0 / 60.0,

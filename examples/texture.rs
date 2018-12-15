@@ -1,5 +1,5 @@
 use tetra::glm::Vec2;
-use tetra::graphics::{self, Color, Texture};
+use tetra::graphics::{self, Color, ScreenScaling, Texture};
 use tetra::{self, Context, ContextBuilder, State};
 
 struct GameState {
@@ -20,7 +20,8 @@ fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Rendering a Texture")
         .size(160, 144)
-        .window_scale(4)
+        .scaling(ScreenScaling::ShowAllPixelPerfect)
+        .window_scale(4) 
         .resizable(true)
         .quit_on_escape(true)
         .build()?;

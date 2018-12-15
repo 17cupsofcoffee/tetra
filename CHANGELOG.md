@@ -5,8 +5,9 @@
 ### Breaking Changes
 
 * The library has been upgraded to the 2018 edition of Rust.
-* `Shader::from_file` is now called `Shader::new`, and `Shader::new` is now called `Shader::from_string`. This is more consistent with the other constructors.
+* There are now numerous different `ScreenScaling` types that can be chosen from - the default has been changed to `Resize`, which will show more/less of the scene based on the window size. The behavior from previous versions is still available under the name `ShowAllPixelPerfect` ([#21](https://github.com/17cupsofcoffee/tetra/issues/21)).
 * The `scale` option on `ContextBuilder` has been renamed to `window_scale`, to better reflect its behavior.
+* `Shader::from_file` is now called `Shader::new`, and `Shader::new` is now called `Shader::from_string`. This is more consistent with the other constructors.
 * Tick rates are now specified in ticks per second ([#40](https://github.com/17cupsofcoffee/tetra/issues/40)).
 
 ### New Features

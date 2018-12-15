@@ -1,5 +1,5 @@
 use tetra::glm::{self, Vec2};
-use tetra::graphics::{self, Color, DrawParams, Texture};
+use tetra::graphics::{self, Color, DrawParams, ScreenScaling, Texture};
 use tetra::input::{self, MouseButton};
 use tetra::{self, Context, ContextBuilder, State};
 
@@ -42,6 +42,7 @@ fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Mouse Input")
         .size(160, 144)
+        .scaling(ScreenScaling::ShowAllPixelPerfect)
         .window_scale(4)
         .resizable(true)
         .quit_on_escape(true)
