@@ -154,17 +154,7 @@ pub struct ContextBuilder<'a> {
 impl<'a> ContextBuilder<'a> {
     /// Creates a new ContextBuilder, with the default settings.
     pub fn new() -> ContextBuilder<'a> {
-        ContextBuilder {
-            title: "Tetra",
-            width: 1280,
-            height: 720,
-            window_size: None,
-            scale: None,
-            vsync: true,
-            resizable: false,
-            tick_rate: 1.0 / 60.0,
-            quit_on_escape: false,
-        }
+        ContextBuilder::default()
     }
 
     /// Sets the title of the window.
@@ -273,6 +263,22 @@ impl<'a> ContextBuilder<'a> {
             quit_on_escape: self.quit_on_escape,
             tick_rate: time::f64_to_duration(self.tick_rate),
         })
+    }
+}
+
+impl<'a> Default for ContextBuilder<'a> {
+    fn default() -> ContextBuilder<'a> {
+        ContextBuilder {
+            title: "Tetra",
+            width: 1280,
+            height: 720,
+            window_size: None,
+            scale: None,
+            vsync: true,
+            resizable: false,
+            tick_rate: 1.0 / 60.0,
+            quit_on_escape: false,
+        }
     }
 }
 
