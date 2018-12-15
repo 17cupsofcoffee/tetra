@@ -25,6 +25,7 @@
 * The model matrix is now calculated once per `Drawable`, instead of once per vertex. This should speed up rendering ([#26](https://github.com/17cupsofcoffee/tetra/issues/26)).
 * The top left corner of a `NineSlice` no longer gets distorted if the x and y of the `fill_rect` aren't equal.
 * The renderer now automatically flushes instead of panicking if it hits capacity ([#30](https://github.com/17cupsofcoffee/tetra/issues/30)).
+* The renderer will now batch up to 2048 sprites, instead of 1024.
 * The default shaders have been rewritten in an older/more compatible syntax, in order to fix some issues with black screens on Mesa drivers ([#14](https://github.com/17cupsofcoffee/tetra/issues/14)).
 
 ## 0.1.6 (December 9, 2018)
