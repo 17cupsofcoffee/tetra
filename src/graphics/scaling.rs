@@ -7,6 +7,8 @@ use crate::graphics::Rectangle;
 pub enum ScreenScaling {
     /// The internal render target will resize to match the size of the window. More of the scene
     /// will be shown on bigger windows, and less of the scene will be shown on smaller windows.
+    ///
+    /// If the scaling mode changes, the internal resolution will return to its original value.
     Resize,
 
     /// The game will always be displayed at its native resolution, with no scaling applied.
