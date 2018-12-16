@@ -32,7 +32,7 @@ fn main() -> tetra::Result {
         .title("Rendering a NineSlice")
         .size(160, 144)
         .scaling(ScreenScaling::ShowAllPixelPerfect)
-        .window_scale(4)
+        .maximized(true)
         .resizable(true)
         .quit_on_escape(true)
         .build()?;

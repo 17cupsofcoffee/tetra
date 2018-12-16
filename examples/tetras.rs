@@ -391,7 +391,7 @@ fn main() -> tetra::Result {
         .title("Tetras")
         .size(10 * 16, 20 * 16)
         .scaling(ScreenScaling::ShowAllPixelPerfect)
-        .window_scale(2)
+        .maximized(true)
         .resizable(true)
         .quit_on_escape(true)
         .build()?;
