@@ -208,8 +208,8 @@ fn draw_text(ctx: &mut Context, section: Section<'_>) -> BrushAction<FontQuad> {
     ctx.graphics.font_cache.queue(section);
 
     let screen_dimensions = (
-        graphics::get_width(ctx) as u32,
-        graphics::get_height(ctx) as u32,
+        graphics::get_internal_width(ctx) as u32,
+        graphics::get_internal_height(ctx) as u32,
     );
 
     // to avoid some borrow checker/closure weirdness

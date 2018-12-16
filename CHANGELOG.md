@@ -9,6 +9,8 @@
 * `Shader::from_file` is now called `Shader::new`, and `Shader::new` is now called `Shader::from_string`. This is more consistent with the other constructors.
 * Tick rates are now specified in ticks per second ([#40](https://github.com/17cupsofcoffee/tetra/issues/40)).
 * The `ContextBuilder` no longer consumes itself when called - this is more flexible for e.g. calling methods inside a conditional.
+* `set_tick_rate` has been moved to the `window` module.
+* The functions for getting the game's internal width/height have been renamed to disambiguate them from the functions for getting the window width/height.
 
 ### New Features
 
@@ -23,6 +25,7 @@
 * New methods have been added to `Animation`, allowing it to be modified after it is initially created ([#48](https://github.com/17cupsofcoffee/tetra/pull/48), by [@VictorKoenders](https://github.com/VictorKoenders))
 * There are now numerous different `ScreenScaling` types that can be chosen from ([#21](https://github.com/17cupsofcoffee/tetra/issues/21)).
 * Extra options have been added to the `ContextBuilder`, allowing you to start the window in various different states (e.g. fullscreen) ([#28](https://github.com/17cupsofcoffee/tetra/issues/28)).
+* There are now many new methods for manipulating the window/game loop in the `window` module.
 
 ### Bug Fixes
 
