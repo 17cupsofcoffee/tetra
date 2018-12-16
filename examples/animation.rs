@@ -1,7 +1,7 @@
 // using sprites by 0x72: https://0x72.itch.io/16x16-industrial-tileset
 
 use tetra::glm::Vec2;
-use tetra::graphics::{self, Animation, Color, DrawParams, Rectangle, ScreenScaling, Texture};
+use tetra::graphics::{self, Animation, Color, DrawParams, Rectangle, Texture};
 use tetra::input::{self, Key};
 use tetra::{Context, ContextBuilder, State};
 
@@ -62,7 +62,6 @@ fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Displaying an Animation")
         .size(64, 64)
-        .scaling(ScreenScaling::ShowAllPixelPerfect)
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)

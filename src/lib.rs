@@ -175,8 +175,8 @@ impl<'a> ContextBuilder<'a> {
 
     /// Sets the scaling mode for the game.
     ///
-    /// Defaults to `ScreenScaling::Resize`, which will adjust the internal resolution to match
-    /// the size of the window.
+    /// Defaults to `ScreenScaling::ShowAllPixelPerfect`, which will maintain the screen's aspect ratio
+    /// by letterboxing.
     pub fn scaling(&mut self, scaling: ScreenScaling) -> &mut ContextBuilder<'a> {
         self.scaling = scaling;
         self
@@ -365,7 +365,7 @@ impl<'a> Default for ContextBuilder<'a> {
             internal_height: 720,
             window_size: None,
             window_scale: None,
-            scaling: ScreenScaling::Resize,
+            scaling: ScreenScaling::ShowAllPixelPerfect,
             vsync: true,
             tick_rate: 1.0 / 60.0,
             fullscreen: false,

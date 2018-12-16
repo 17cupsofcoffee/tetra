@@ -3,7 +3,7 @@
 use rand::{self, Rng};
 use tetra::glm::Vec2;
 use tetra::graphics::color;
-use tetra::graphics::{self, Color, DrawParams, ScreenScaling, Texture};
+use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, Key};
 use tetra::{self, Context, ContextBuilder, State};
 
@@ -390,7 +390,6 @@ fn main() -> tetra::Result {
     let ctx = &mut ContextBuilder::new()
         .title("Tetras")
         .size(10 * 16, 20 * 16)
-        .scaling(ScreenScaling::ShowAllPixelPerfect)
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)
