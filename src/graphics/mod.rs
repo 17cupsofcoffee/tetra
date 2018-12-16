@@ -632,7 +632,8 @@ pub fn get_width(ctx: &Context) -> i32 {
 
 /// Sets the internal width of the screen.
 ///
-/// If the scaling mode is set to Resize, this will also update the window size.
+/// If the scaling mode is set to Resize, this will not take effect until the scaling
+/// mode is changed.
 pub fn set_width(ctx: &mut Context, width: i32) {
     set_size(ctx, width, ctx.graphics.internal_height);
 }
@@ -644,7 +645,8 @@ pub fn get_height(ctx: &Context) -> i32 {
 
 /// Sets the internal height of the screen.
 ///
-/// If the scaling mode is set to Resize, this will also update the window size.
+/// If the scaling mode is set to Resize, this will not take effect until the scaling
+/// mode is changed.
 pub fn set_height(ctx: &mut Context, height: i32) {
     set_size(ctx, ctx.graphics.internal_width, height);
 }
@@ -659,13 +661,14 @@ pub fn get_size(ctx: &Context) -> (i32, i32) {
 
 /// Sets the internal size of the screen.
 ///
-/// If the scaling mode is set to Resize, this will also update the window size.
+/// If the scaling mode is set to Resize, this will not take effect until the scaling
+/// mode is changed.
 pub fn set_size(ctx: &mut Context, width: i32, height: i32) {
     ctx.graphics.internal_width = width;
     ctx.graphics.internal_height = height;
 
     if let ScreenScaling::Resize = ctx.graphics.scaling {
-        set_window_size_ex(ctx, width, height, false);
+        
     } else {
         set_backbuffer_size(ctx, width, height);
         update_screen_rect(ctx);
