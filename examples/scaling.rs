@@ -27,39 +27,43 @@ impl GameState {
                 PANEL_HEIGHT,
                 Rectangle::new(4.0, 4.0, 24.0, 24.0),
             ),
-            text: Text::new(LABEL.to_owned() + "ShowAllPixelPerfect", Font::default(), 16.0),
+            text: Text::new(
+                LABEL.to_owned() + "ShowAllPixelPerfect",
+                Font::default(),
+                16.0,
+            ),
         })
     }
 }
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) {
-        if input::is_key_pressed(ctx, Key::Space)
-        {
+        if input::is_key_pressed(ctx, Key::Space) {
             match graphics::get_scaling(ctx) {
                 ScreenScaling::None => {
                     graphics::set_scaling(ctx, ScreenScaling::Stretch);
-                    self.text.set_content(LABEL.to_owned()  + "Stretch");
+                    self.text.set_content(LABEL.to_owned() + "Stretch");
                 }
                 ScreenScaling::Stretch => {
                     graphics::set_scaling(ctx, ScreenScaling::ShowAll);
-                    self.text.set_content(LABEL.to_owned()  + "ShowAll");
+                    self.text.set_content(LABEL.to_owned() + "ShowAll");
                 }
                 ScreenScaling::ShowAll => {
                     graphics::set_scaling(ctx, ScreenScaling::ShowAllPixelPerfect);
-                    self.text.set_content(LABEL.to_owned()  + "ShowAllPixelPerfect");
+                    self.text
+                        .set_content(LABEL.to_owned() + "ShowAllPixelPerfect");
                 }
                 ScreenScaling::ShowAllPixelPerfect => {
                     graphics::set_scaling(ctx, ScreenScaling::Crop);
-                    self.text.set_content(LABEL.to_owned()  + "Crop");
+                    self.text.set_content(LABEL.to_owned() + "Crop");
                 }
                 ScreenScaling::Crop => {
                     graphics::set_scaling(ctx, ScreenScaling::CropPixelPerfect);
-                    self.text.set_content(LABEL.to_owned()  + "CropPixelPerfect");
+                    self.text.set_content(LABEL.to_owned() + "CropPixelPerfect");
                 }
                 ScreenScaling::CropPixelPerfect => {
                     graphics::set_scaling(ctx, ScreenScaling::Resize);
-                    self.text.set_content(LABEL.to_owned()  + "Resize");
+                    self.text.set_content(LABEL.to_owned() + "Resize");
                 }
                 ScreenScaling::Resize => {
                     graphics::set_scaling(ctx, ScreenScaling::None);

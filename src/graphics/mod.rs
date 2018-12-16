@@ -28,6 +28,7 @@ use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 use crate::graphics::opengl::{
     BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer, TextureFormat,
 };
+use crate::window;
 use crate::Context;
 
 const MAX_SPRITES: usize = 2048;
@@ -89,8 +90,6 @@ pub(crate) struct GraphicsContext {
     vertex_count: usize,
     element_count: usize,
 
-    window_width: i32,
-    window_height: i32,
     internal_width: i32,
     internal_height: i32,
     scaling: ScreenScaling,
@@ -207,8 +206,6 @@ impl GraphicsContext {
             vertex_count: 0,
             element_count: 0,
 
-            window_width,
-            window_height,
             internal_width,
             internal_height,
             scaling,
@@ -536,12 +533,13 @@ pub(crate) fn set_framebuffer_ex(ctx: &mut Context, framebuffer: ActiveFramebuff
         match ctx.graphics.framebuffer {
             ActiveFramebuffer::Backbuffer => {
                 ctx.gl.bind_framebuffer(&ctx.graphics.backbuffer);
-                ctx.gl.set_viewport(0, 0, get_width(ctx), get_height(ctx));
+                ctx.gl
+                    .set_viewport(0, 0, get_internal_width(ctx), get_internal_height(ctx));
             }
             ActiveFramebuffer::Window => {
                 ctx.gl.bind_default_framebuffer();
                 ctx.gl
-                    .set_viewport(0, 0, get_window_width(ctx), get_window_height(ctx));
+                    .set_viewport(0, 0, window::get_width(ctx), window::get_height(ctx));
             }
         }
     }
@@ -626,7 +624,7 @@ pub fn present(ctx: &mut Context) {
 }
 
 /// Gets the internal width of the screen.
-pub fn get_width(ctx: &Context) -> i32 {
+pub fn get_internal_width(ctx: &Context) -> i32 {
     ctx.graphics.backbuffer_texture.width()
 }
 
@@ -634,12 +632,12 @@ pub fn get_width(ctx: &Context) -> i32 {
 ///
 /// If the scaling mode is set to Resize, this will not take effect until the scaling
 /// mode is changed.
-pub fn set_width(ctx: &mut Context, width: i32) {
-    set_size(ctx, width, ctx.graphics.internal_height);
+pub fn set_internal_width(ctx: &mut Context, width: i32) {
+    set_internal_size(ctx, width, ctx.graphics.internal_height);
 }
 
 /// Gets the internal height of the screen.
-pub fn get_height(ctx: &Context) -> i32 {
+pub fn get_internal_height(ctx: &Context) -> i32 {
     ctx.graphics.backbuffer_texture.height()
 }
 
@@ -647,12 +645,12 @@ pub fn get_height(ctx: &Context) -> i32 {
 ///
 /// If the scaling mode is set to Resize, this will not take effect until the scaling
 /// mode is changed.
-pub fn set_height(ctx: &mut Context, height: i32) {
-    set_size(ctx, ctx.graphics.internal_width, height);
+pub fn set_internal_height(ctx: &mut Context, height: i32) {
+    set_internal_size(ctx, ctx.graphics.internal_width, height);
 }
 
 /// Gets the internal size of the screen.
-pub fn get_size(ctx: &Context) -> (i32, i32) {
+pub fn get_internal_size(ctx: &Context) -> (i32, i32) {
     (
         ctx.graphics.backbuffer_texture.width(),
         ctx.graphics.backbuffer_texture.height(),
@@ -663,46 +661,16 @@ pub fn get_size(ctx: &Context) -> (i32, i32) {
 ///
 /// If the scaling mode is set to Resize, this will not take effect until the scaling
 /// mode is changed.
-pub fn set_size(ctx: &mut Context, width: i32, height: i32) {
+pub fn set_internal_size(ctx: &mut Context, width: i32, height: i32) {
     ctx.graphics.internal_width = width;
     ctx.graphics.internal_height = height;
 
     if let ScreenScaling::Resize = ctx.graphics.scaling {
-        
+
     } else {
         set_backbuffer_size(ctx, width, height);
         update_screen_rect(ctx);
     }
-}
-
-/// Gets the width of the window.
-pub fn get_window_width(ctx: &Context) -> i32 {
-    ctx.graphics.window_width
-}
-
-/// Sets the width of the window.
-pub fn set_window_width(ctx: &mut Context, width: i32) {
-    set_window_size_ex(ctx, width, ctx.graphics.window_height, false);
-}
-
-/// Gets the height of the window.
-pub fn get_window_height(ctx: &Context) -> i32 {
-    ctx.graphics.window_height
-}
-
-/// Sets the height of the window.
-pub fn set_window_height(ctx: &mut Context, height: i32) {
-    set_window_size_ex(ctx, ctx.graphics.window_width, height, false);
-}
-
-/// Gets the size of the window.
-pub fn get_window_size(ctx: &Context) -> (i32, i32) {
-    (ctx.graphics.window_width, ctx.graphics.window_height)
-}
-
-/// Sets the size of the window.
-pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) {
-    set_window_size_ex(ctx, width, height, false);
 }
 
 pub(crate) fn get_screen_rect(ctx: &Context) -> Rectangle {
@@ -719,7 +687,7 @@ pub fn set_scaling(ctx: &mut Context, scaling: ScreenScaling) {
     ctx.graphics.scaling = scaling;
 
     if let ScreenScaling::Resize = ctx.graphics.scaling {
-        set_backbuffer_size(ctx, ctx.graphics.window_width, ctx.graphics.window_height);
+        set_backbuffer_size(ctx, window::get_width(ctx), window::get_height(ctx));
     } else {
         set_backbuffer_size(
             ctx,
@@ -729,22 +697,6 @@ pub fn set_scaling(ctx: &mut Context, scaling: ScreenScaling) {
     }
 
     update_screen_rect(ctx);
-}
-
-pub(crate) fn set_window_size_ex(ctx: &mut Context, width: i32, height: i32, from_sdl: bool) {
-    ctx.graphics.window_width = width;
-    ctx.graphics.window_height = height;
-    ctx.graphics.window_projection = ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
-
-    if let ScreenScaling::Resize = ctx.graphics.scaling {
-        set_backbuffer_size(ctx, width, height);
-    }
-
-    update_screen_rect(ctx);
-
-    if !from_sdl {
-        ctx.window.set_size(width as u32, height as u32).unwrap();
-    }
 }
 
 pub(crate) fn set_backbuffer_size(ctx: &mut Context, width: i32, height: i32) {
@@ -767,9 +719,13 @@ pub(crate) fn update_screen_rect(ctx: &mut Context) {
     ctx.graphics.screen_rect = ctx.graphics.scaling.get_screen_rect(
         ctx.graphics.backbuffer_texture.width(),
         ctx.graphics.backbuffer_texture.height(),
-        ctx.graphics.window_width,
-        ctx.graphics.window_height,
+        window::get_width(ctx),
+        window::get_height(ctx),
     );
+}
+
+pub(crate) fn set_window_projection(ctx: &mut Context, width: i32, height: i32) {
+    ctx.graphics.window_projection = ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
 }
 
 pub(crate) fn ortho(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Mat4 {

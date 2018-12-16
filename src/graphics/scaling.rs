@@ -8,7 +8,7 @@ pub enum ScreenScaling {
     /// The game will always be displayed at its native resolution, with no scaling applied.
     /// If the window is bigger than the native resolution, letterboxing will be applied.
     /// If the window is smaller than the native resolution, it will be cropped.
-    None,    
+    None,
 
     /// The screen will be stretched to fill the window, without trying to preserve the original
     /// aspect ratio. Distortion/stretching/squashing may occur.

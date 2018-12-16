@@ -81,6 +81,7 @@ pub mod error;
 pub mod graphics;
 pub mod input;
 pub mod time;
+pub mod window;
 
 use std::time::{Duration, Instant};
 
@@ -127,6 +128,9 @@ pub struct Context {
     graphics: GraphicsContext,
     input: InputContext,
 
+    window_width: i32,
+    window_height: i32,
+    fullscreen: bool,
     running: bool,
     quit_on_escape: bool,
     tick_rate: Duration,
@@ -311,17 +315,7 @@ impl<'a> ContextBuilder<'a> {
         // a) we don't want to blow away the window size settings
         // b) we don't know what monitor they're on until the window is created
 
-        if self.fullscreen {
-            window
-                .display_index()
-                .and_then(|i| video.current_display_mode(i))
-                .and_then(|m| {
-                    window_width = m.w;
-                    window_height = m.h;
-                    window.set_fullscreen(FullscreenType::Desktop)
-                })
-                .map_err(TetraError::Sdl)?;
-        } else if self.maximized {
+        if self.maximized {
             window.maximize();
             let size = window.drawable_size();
             window_width = size.0 as i32;
@@ -331,6 +325,17 @@ impl<'a> ContextBuilder<'a> {
             let size = window.drawable_size();
             window_width = size.0 as i32;
             window_height = size.1 as i32;
+        }
+
+        if self.fullscreen {
+            window
+                .display_mode()
+                .and_then(|m| {
+                    window_width = m.w;
+                    window_height = m.h;
+                    window.set_fullscreen(FullscreenType::Desktop)
+                })
+                .map_err(TetraError::Sdl)?;
         }
 
         let mut gl = GLDevice::new(&video, &window, self.vsync)?;
@@ -351,6 +356,9 @@ impl<'a> ContextBuilder<'a> {
             graphics,
             input,
 
+            window_width,
+            window_height,
+            fullscreen: self.fullscreen,
             running: false,
             quit_on_escape: self.quit_on_escape,
             tick_rate: time::f64_to_duration(self.tick_rate),
@@ -451,7 +459,7 @@ fn handle_event(ctx: &mut Context, event: Event) {
         Event::MouseMotion { x, y, .. } => ctx.input.mouse_position = Vec2::new(x as f32, y as f32),
         Event::Window { win_event, .. } => {
             if let WindowEvent::SizeChanged(x, y) = win_event {
-                graphics::set_window_size_ex(ctx, x, y, true)
+                window::set_size_ex(ctx, x, y, true)
             }
         }
         Event::TextInput { text, .. } => {
@@ -467,9 +475,4 @@ fn handle_event(ctx: &mut Context, event: Event) {
 /// cycle of the game loop. This will probably change later.
 pub fn quit(ctx: &mut Context) {
     ctx.running = false;
-}
-
-/// Sets the update tick rate of the application, in ticks per second.
-pub fn set_tick_rate(ctx: &mut Context, tick_rate: f64) {
-    ctx.tick_rate = time::f64_to_duration(1.0 / tick_rate);
 }
