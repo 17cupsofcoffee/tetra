@@ -37,11 +37,7 @@ impl State for GameState {
         if input::is_key_pressed(ctx, Key::Space)
         {
             match graphics::get_scaling(ctx) {
-                ScreenScaling::Resize => {
-                    graphics::set_scaling(ctx, ScreenScaling::Exact);
-                    self.text.set_content(LABEL.to_owned() + "Exact");
-                }
-                ScreenScaling::Exact => {
+                ScreenScaling::None => {
                     graphics::set_scaling(ctx, ScreenScaling::Stretch);
                     self.text.set_content(LABEL.to_owned()  + "Stretch");
                 }
@@ -64,6 +60,10 @@ impl State for GameState {
                 ScreenScaling::CropPixelPerfect => {
                     graphics::set_scaling(ctx, ScreenScaling::Resize);
                     self.text.set_content(LABEL.to_owned()  + "Resize");
+                }
+                ScreenScaling::Resize => {
+                    graphics::set_scaling(ctx, ScreenScaling::None);
+                    self.text.set_content(LABEL.to_owned() + "None");
                 }
             }
         }
