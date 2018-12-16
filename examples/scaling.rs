@@ -27,7 +27,7 @@ impl GameState {
                 PANEL_HEIGHT,
                 Rectangle::new(4.0, 4.0, 24.0, 24.0),
             ),
-            text: Text::new(LABEL.to_owned() + "Resize", Font::default(), 16.0),
+            text: Text::new(LABEL.to_owned() + "ShowAllPixelPerfect", Font::default(), 16.0),
         })
     }
 }
