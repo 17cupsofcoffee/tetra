@@ -35,6 +35,7 @@ impl InputContext {
 
     pub(crate) fn cleanup_after_state_update(&mut self) {
         self.previous_key_state = self.current_key_state.clone();
+        self.previous_mouse_state = self.current_mouse_state.clone();
         self.current_text_input = None;
     }
 }
