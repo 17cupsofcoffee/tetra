@@ -5,15 +5,10 @@ use crate::graphics::Rectangle;
 /// Defines the different ways that a game's screen can be scaled.
 #[derive(Copy, Clone)]
 pub enum ScreenScaling {
-    /// The internal render target will resize to match the size of the window. More of the scene
-    /// will be shown on bigger windows, and less of the scene will be shown on smaller windows.
-    ///
-    /// If the scaling mode changes, the internal resolution will return to its original value.
-    Resize,
-
     /// The game will always be displayed at its native resolution, with no scaling applied.
     /// If the window is bigger than the native resolution, letterboxing will be applied.
-    Exact,
+    /// If the window is smaller than the native resolution, it will be cropped.
+    None,    
 
     /// The screen will be stretched to fill the window, without trying to preserve the original
     /// aspect ratio. Distortion/stretching/squashing may occur.
@@ -32,6 +27,12 @@ pub enum ScreenScaling {
 
     /// Works the same as Crop, but will only scale by integer values.
     CropPixelPerfect,
+
+    /// The screen will resize to match the size of the window. More of the scene will be shown on
+    /// bigger windows, and less of the scene will be shown on smaller windows.
+    ///
+    /// If the scaling mode changes, the internal resolution will return to its original value.
+    Resize,
 }
 
 impl ScreenScaling {
@@ -51,10 +52,7 @@ impl ScreenScaling {
         let screen_aspect_ratio = f_window_width / f_window_height;
 
         match self {
-            ScreenScaling::Resize | ScreenScaling::Stretch => {
-                Rectangle::new(0.0, 0.0, window_width as f32, window_height as f32)
-            }
-            ScreenScaling::Exact => {
+            ScreenScaling::None => {
                 let screen_x = (window_width - internal_width) / 2;
                 let screen_y = (window_height - internal_height) / 2;
 
@@ -64,6 +62,9 @@ impl ScreenScaling {
                     internal_width as f32,
                     internal_height as f32,
                 )
+            }
+            ScreenScaling::Stretch | ScreenScaling::Resize => {
+                Rectangle::new(0.0, 0.0, window_width as f32, window_height as f32)
             }
             ScreenScaling::ShowAll => {
                 let scale_x = f_window_width / f_internal_width;
