@@ -63,7 +63,7 @@ fn main() -> tetra::Result {
         .title("Displaying an Animation")
         .size(64, 64)
         .scaling(ScreenScaling::ShowAllPixelPerfect)
-        .window_scale(8)
+        .maximized(true)
         .resizable(true)
         .quit_on_escape(true)
         .build()?;

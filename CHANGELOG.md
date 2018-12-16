@@ -9,6 +9,7 @@
 * The `scale` option on `ContextBuilder` has been renamed to `window_scale`, to better reflect its behavior.
 * `Shader::from_file` is now called `Shader::new`, and `Shader::new` is now called `Shader::from_string`. This is more consistent with the other constructors.
 * Tick rates are now specified in ticks per second ([#40](https://github.com/17cupsofcoffee/tetra/issues/40)).
+* The `ContextBuilder` no longer consumes itself when called - this is more flexible for e.g. calling methods inside a conditional.
 
 ### New Features
 
@@ -21,6 +22,7 @@
 * Text input typed by the user can now be retrieved using the `input::get_text_input` function ([#36](https://github.com/17cupsofcoffee/tetra/pull/36), by [@VictorKoenders](https://github.com/VictorKoenders)).
 * `Text` now has a method for efficiently calculating (and caching) the outer bounds of the text ([#41](https://github.com/17cupsofcoffee/tetra/pull/41), by [@VictorKoenders](https://github.com/VictorKoenders)).
 * New methods have been added to `Animation`, allowing it to be modified after it is initially created ([#48](https://github.com/17cupsofcoffee/tetra/pull/48), by [@VictorKoenders](https://github.com/VictorKoenders))
+* Extra options have been added to the `ContextBuilder`, allowing you to start the window in various different states (e.g. fullscreen) ([#28](https://github.com/17cupsofcoffee/tetra/issues/28)).
 
 ### Bug Fixes
 

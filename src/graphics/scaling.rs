@@ -73,12 +73,7 @@ impl ScreenScaling {
                 let screen_x = ((f_window_width - screen_width) / 2.0).ceil();
                 let screen_y = ((f_window_height - screen_height) / 2.0).ceil();
 
-                Rectangle::new(
-                    screen_x,
-                    screen_y,
-                    screen_width,
-                    screen_height,
-                )
+                Rectangle::new(screen_x, screen_y, screen_width, screen_height)
             }
             ScreenScaling::ShowAllPixelPerfect => {
                 let mut scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
@@ -113,19 +108,15 @@ impl ScreenScaling {
                 let screen_x = ((f_window_width - screen_width) / 2.0).ceil();
                 let screen_y = ((f_window_height - screen_height) / 2.0).ceil();
 
-                Rectangle::new(
-                    screen_x,
-                    screen_y,
-                    screen_width,
-                    screen_height,
-                )
+                Rectangle::new(screen_x, screen_y, screen_width, screen_height)
             }
             ScreenScaling::CropPixelPerfect => {
                 let mut scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
                     f_window_height / f_internal_height
                 } else {
                     f_window_width / f_internal_width
-                }.ceil() as i32;
+                }
+                .ceil() as i32;
 
                 if scale_factor == 0 {
                     scale_factor = 1;

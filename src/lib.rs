@@ -85,7 +85,7 @@ use std::time::{Duration, Instant};
 
 use glm::Vec2;
 use sdl2::event::{Event, WindowEvent};
-use sdl2::video::Window;
+use sdl2::video::{FullscreenType, Window};
 use sdl2::Sdl;
 
 pub use crate::error::{Result, TetraError};
@@ -140,8 +140,13 @@ pub struct ContextBuilder<'a> {
     window_scale: Option<i32>,
     scaling: ScreenScaling,
     vsync: bool,
-    resizable: bool,
     tick_rate: f64,
+    fullscreen: bool,
+    maximized: bool,
+    minimized: bool,
+    resizable: bool,
+    borderless: bool,
+    show_mouse: bool,
     quit_on_escape: bool,
 }
 
@@ -154,7 +159,7 @@ impl<'a> ContextBuilder<'a> {
     /// Sets the title of the window.
     ///
     /// Defaults to `"Tetra"`.
-    pub fn title(mut self, title: &'a str) -> ContextBuilder<'a> {
+    pub fn title(&mut self, title: &'a str) -> &mut ContextBuilder<'a> {
         self.title = title;
         self
     }
@@ -162,7 +167,7 @@ impl<'a> ContextBuilder<'a> {
     /// Sets the internal resolution of the screen.
     ///
     /// Defaults to `1280 x 720`.
-    pub fn size(mut self, width: i32, height: i32) -> ContextBuilder<'a> {
+    pub fn size(&mut self, width: i32, height: i32) -> &mut ContextBuilder<'a> {
         self.internal_width = width;
         self.internal_height = height;
         self
@@ -172,7 +177,7 @@ impl<'a> ContextBuilder<'a> {
     ///
     /// Defaults to `ScreenScaling::Resize`, which will adjust the internal resolution to match
     /// the size of the window.
-    pub fn scaling(mut self, scaling: ScreenScaling) -> ContextBuilder<'a> {
+    pub fn scaling(&mut self, scaling: ScreenScaling) -> &mut ContextBuilder<'a> {
         self.scaling = scaling;
         self
     }
@@ -183,7 +188,7 @@ impl<'a> ContextBuilder<'a> {
     /// to be different from the window size.
     ///
     /// This will take precedence over `window_scale`.
-    pub fn window_size(mut self, width: i32, height: i32) -> ContextBuilder<'a> {
+    pub fn window_size(&mut self, width: i32, height: i32) -> &mut ContextBuilder<'a> {
         self.window_size = Some((width, height));
         self
     }
@@ -194,7 +199,7 @@ impl<'a> ContextBuilder<'a> {
     /// to be different from the window size.
     ///
     /// `window_size` will take precedence over this.
-    pub fn window_scale(mut self, scale: i32) -> ContextBuilder<'a> {
+    pub fn window_scale(&mut self, scale: i32) -> &mut ContextBuilder<'a> {
         self.window_scale = Some(scale);
         self
     }
@@ -202,61 +207,136 @@ impl<'a> ContextBuilder<'a> {
     /// Enables or disables vsync.
     ///
     /// Defaults to `true`.
-    pub fn vsync(mut self, vsync: bool) -> ContextBuilder<'a> {
+    pub fn vsync(&mut self, vsync: bool) -> &mut ContextBuilder<'a> {
         self.vsync = vsync;
-        self
-    }
-
-    /// Sets whether or not the window should be resizable.
-    ///
-    /// Defaults to `false`.
-    pub fn resizable(mut self, resizable: bool) -> ContextBuilder<'a> {
-        self.resizable = resizable;
         self
     }
 
     /// Sets the game's update tick rate, in ticks per second.
     ///
     /// Defaults to `60.0`.
-    pub fn tick_rate(mut self, tick_rate: f64) -> ContextBuilder<'a> {
+    pub fn tick_rate(&mut self, tick_rate: f64) -> &mut ContextBuilder<'a> {
         self.tick_rate = 1.0 / tick_rate;
+        self
+    }
+
+    /// Sets whether or not the window should start in fullscreen.
+    ///
+    /// Defaults to `false`.
+    pub fn fullscreen(&mut self, fullscreen: bool) -> &mut ContextBuilder<'a> {
+        self.fullscreen = fullscreen;
+        self
+    }
+
+    /// Sets whether or not the window should start maximized.
+    ///
+    /// Defaults to `false`.
+    pub fn maximized(&mut self, maximized: bool) -> &mut ContextBuilder<'a> {
+        self.maximized = maximized;
+        self
+    }
+
+    /// Sets whether or not the window should start minimized.
+    ///
+    /// Defaults to `false`.
+    pub fn minimized(&mut self, minimized: bool) -> &mut ContextBuilder<'a> {
+        self.minimized = minimized;
+        self
+    }
+
+    /// Sets whether or not the window should be resizable.
+    ///
+    /// Defaults to `false`.
+    pub fn resizable(&mut self, resizable: bool) -> &mut ContextBuilder<'a> {
+        self.resizable = resizable;
+        self
+    }
+
+    /// Sets whether or not the window should be borderless.
+    ///
+    /// Defaults to `false`.
+    pub fn borderless(&mut self, borderless: bool) -> &mut ContextBuilder<'a> {
+        self.borderless = borderless;
+        self
+    }
+
+    /// Sets whether or not the mouse cursor should be visible.
+    ///
+    /// Defaults to `false`.
+    pub fn show_mouse(&mut self, show_mouse: bool) -> &mut ContextBuilder<'a> {
+        self.show_mouse = show_mouse;
         self
     }
 
     /// Sets whether or not the game should close when the Escape key is pressed.
     ///
     /// Defaults to `false`.
-    pub fn quit_on_escape(mut self, quit_on_escape: bool) -> ContextBuilder<'a> {
+    pub fn quit_on_escape(&mut self, quit_on_escape: bool) -> &mut ContextBuilder<'a> {
         self.quit_on_escape = quit_on_escape;
         self
     }
 
     /// Builds the context.
-    pub fn build(self) -> Result<Context> {
+    pub fn build(&self) -> Result<Context> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
         let video = sdl.video().map_err(TetraError::Sdl)?;
 
-        let (window_width, window_height) = match (self.window_size, self.window_scale) {
-            (Some(size), _) => size,
-            (_, Some(scale)) => (self.internal_width * scale, self.internal_height * scale),
-            _ => (self.internal_width, self.internal_height),
+        let (mut window_width, mut window_height) = if let Some(size) = self.window_size {
+            size
+        } else if let Some(scale) = self.window_scale {
+            (self.internal_width * scale, self.internal_height * scale)
+        } else {
+            (self.internal_width, self.internal_height)
         };
+
+        let mut window_builder =
+            video.window(self.title, window_width as u32, window_height as u32);
+
+        window_builder.hidden().position_centered().opengl();
+
+        if self.resizable {
+            window_builder.resizable();
+        }
+
+        if self.borderless {
+            window_builder.borderless();
+        }
+
+        sdl.mouse().show_cursor(self.show_mouse);
+
+        let mut window = window_builder.build()?;
+
+        // We wait until the window has been created to fiddle with this stuff as:
+        // a) we don't want to blow away the window size settings
+        // b) we don't know what monitor they're on until the window is created
+
+        if self.fullscreen {
+            window
+                .display_index()
+                .and_then(|i| video.current_display_mode(i))
+                .and_then(|m| {
+                    window_width = m.w;
+                    window_height = m.h;
+                    window.set_fullscreen(FullscreenType::Desktop)
+                })
+                .map_err(TetraError::Sdl)?;
+        } else if self.maximized {
+            window.maximize();
+            let size = window.drawable_size();
+            window_width = size.0 as i32;
+            window_height = size.1 as i32;
+        } else if self.minimized {
+            window.minimize();
+            let size = window.drawable_size();
+            window_width = size.0 as i32;
+            window_height = size.1 as i32;
+        }
 
         let (internal_width, internal_height) = match self.scaling {
             ScreenScaling::Resize => (window_width, window_height),
             _ => (self.internal_width, self.internal_height),
         };
 
-        let mut window_builder =
-            video.window(self.title, window_width as u32, window_height as u32);
-
-        window_builder.position_centered().opengl();
-
-        if self.resizable {
-            window_builder.resizable();
-        }
-
-        let window = window_builder.build()?;
         let mut gl = GLDevice::new(&video, &window, self.vsync)?;
         let graphics = GraphicsContext::new(
             &mut gl,
@@ -292,8 +372,13 @@ impl<'a> Default for ContextBuilder<'a> {
             window_scale: None,
             scaling: ScreenScaling::Resize,
             vsync: true,
-            resizable: false,
             tick_rate: 1.0 / 60.0,
+            fullscreen: false,
+            maximized: false,
+            minimized: false,
+            resizable: false,
+            borderless: false,
+            show_mouse: false,
             quit_on_escape: false,
         }
     }
@@ -301,6 +386,8 @@ impl<'a> Default for ContextBuilder<'a> {
 
 /// Runs the game.
 pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
+    ctx.window.show();
+
     let mut events = ctx.sdl.event_pump().map_err(TetraError::Sdl)?;
 
     let mut last_time = Instant::now();
@@ -332,6 +419,8 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
 
         std::thread::yield_now();
     }
+
+    ctx.window.hide();
 
     Ok(())
 }
