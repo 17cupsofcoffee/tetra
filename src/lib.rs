@@ -332,18 +332,13 @@ impl<'a> ContextBuilder<'a> {
             window_height = size.1 as i32;
         }
 
-        let (internal_width, internal_height) = match self.scaling {
-            ScreenScaling::Resize => (window_width, window_height),
-            _ => (self.internal_width, self.internal_height),
-        };
-
         let mut gl = GLDevice::new(&video, &window, self.vsync)?;
         let graphics = GraphicsContext::new(
             &mut gl,
             window_width,
             window_height,
-            internal_width,
-            internal_height,
+            self.internal_width,
+            self.internal_height,
             self.scaling,
         );
         let input = InputContext::new();
@@ -455,7 +450,7 @@ fn handle_event(ctx: &mut Context, event: Event) {
         Event::MouseMotion { x, y, .. } => ctx.input.mouse_position = Vec2::new(x as f32, y as f32),
         Event::Window { win_event, .. } => {
             if let WindowEvent::SizeChanged(x, y) = win_event {
-                graphics::set_window_size(ctx, x, y)
+                graphics::set_window_size_ex(ctx, x, y, true)
             }
         }
         Event::TextInput { text, .. } => {

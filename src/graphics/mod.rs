@@ -91,6 +91,8 @@ pub(crate) struct GraphicsContext {
 
     window_width: i32,
     window_height: i32,
+    internal_width: i32,
+    internal_height: i32,
     scaling: ScreenScaling,
     screen_rect: Rectangle,
 
@@ -111,18 +113,23 @@ impl GraphicsContext {
             "Can't have more than 32767 vertices to a single buffer"
         );
 
+        let (backbuffer_width, backbuffer_height) = match scaling {
+            ScreenScaling::Resize => (window_width, window_height),
+            _ => (internal_width, internal_height),
+        };
+
         let screen_rect =
             scaling.get_screen_rect(internal_width, internal_height, window_width, window_height);
 
         let backbuffer = device.new_framebuffer();
         let backbuffer_texture = Texture::from_handle(device.new_texture(
-            internal_width,
-            internal_height,
+            backbuffer_width,
+            backbuffer_height,
             TextureFormat::Rgb,
         ));
 
         device.attach_texture_to_framebuffer(&backbuffer, &backbuffer_texture.handle, false);
-        device.set_viewport(0, 0, internal_width, internal_height);
+        device.set_viewport(0, 0, backbuffer_width, backbuffer_height);
 
         let indices: Vec<u32> = INDEX_ARRAY
             .iter()
@@ -177,8 +184,8 @@ impl GraphicsContext {
             projection: ActiveProjection::Internal,
             internal_projection: ortho(
                 0.0,
-                internal_width as f32,
-                internal_height as f32,
+                backbuffer_width as f32,
+                backbuffer_height as f32,
                 0.0,
                 -1.0,
                 1.0,
@@ -202,6 +209,8 @@ impl GraphicsContext {
 
             window_width,
             window_height,
+            internal_width,
+            internal_height,
             scaling,
             screen_rect,
 
@@ -421,30 +430,6 @@ pub trait Drawable {
     fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T);
 }
 
-/// Gets the width of the screen, before any scaling or letterboxing is applied.
-pub fn get_width(ctx: &Context) -> i32 {
-    ctx.graphics.backbuffer_texture.width()
-}
-
-/// Gets the height of the screen, before any scaling or letterboxing is applied.
-pub fn get_height(ctx: &Context) -> i32 {
-    ctx.graphics.backbuffer_texture.height()
-}
-
-/// Gets the width of the window.
-pub fn get_window_width(ctx: &Context) -> i32 {
-    ctx.graphics.window_width
-}
-
-/// Gets the height of the window.
-pub fn get_window_height(ctx: &Context) -> i32 {
-    ctx.graphics.window_height
-}
-
-pub(crate) fn get_screen_rect(ctx: &Context) -> Rectangle {
-    ctx.graphics.screen_rect
-}
-
 /// Clears the currently enabled render target to the specified color.
 pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
@@ -640,24 +625,126 @@ pub fn present(ctx: &mut Context) {
     ctx.window.gl_swap_window();
 }
 
-pub(crate) fn set_window_size(ctx: &mut Context, width: i32, height: i32) {
+/// Gets the internal width of the screen.
+pub fn get_width(ctx: &Context) -> i32 {
+    ctx.graphics.backbuffer_texture.width()
+}
+
+/// Sets the internal width of the screen.
+///
+/// If the scaling mode is set to Resize, this will also update the window size.
+pub fn set_width(ctx: &mut Context, width: i32) {
+    set_size(ctx, width, ctx.graphics.internal_height);
+}
+
+/// Gets the internal height of the screen.
+pub fn get_height(ctx: &Context) -> i32 {
+    ctx.graphics.backbuffer_texture.height()
+}
+
+/// Sets the internal height of the screen.
+///
+/// If the scaling mode is set to Resize, this will also update the window size.
+pub fn set_height(ctx: &mut Context, height: i32) {
+    set_size(ctx, ctx.graphics.internal_width, height);
+}
+
+/// Gets the internal size of the screen.
+pub fn get_size(ctx: &Context) -> (i32, i32) {
+    (
+        ctx.graphics.backbuffer_texture.width(),
+        ctx.graphics.backbuffer_texture.height(),
+    )
+}
+
+/// Sets the internal size of the screen.
+///
+/// If the scaling mode is set to Resize, this will also update the window size.
+pub fn set_size(ctx: &mut Context, width: i32, height: i32) {
+    ctx.graphics.internal_width = width;
+    ctx.graphics.internal_height = height;
+
+    if let ScreenScaling::Resize = ctx.graphics.scaling {
+        set_window_size_ex(ctx, width, height, false);
+    } else {
+        set_backbuffer_size(ctx, width, height);
+        update_screen_rect(ctx);
+    }
+}
+
+/// Gets the width of the window.
+pub fn get_window_width(ctx: &Context) -> i32 {
+    ctx.graphics.window_width
+}
+
+/// Sets the width of the window.
+pub fn set_window_width(ctx: &mut Context, width: i32) {
+    set_window_size_ex(ctx, width, ctx.graphics.window_height, false);
+}
+
+/// Gets the height of the window.
+pub fn get_window_height(ctx: &Context) -> i32 {
+    ctx.graphics.window_height
+}
+
+/// Sets the height of the window.
+pub fn set_window_height(ctx: &mut Context, height: i32) {
+    set_window_size_ex(ctx, ctx.graphics.window_width, height, false);
+}
+
+/// Gets the size of the window.
+pub fn get_window_size(ctx: &Context) -> (i32, i32) {
+    (ctx.graphics.window_width, ctx.graphics.window_height)
+}
+
+/// Sets the size of the window.
+pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) {
+    set_window_size_ex(ctx, width, height, false);
+}
+
+pub(crate) fn get_screen_rect(ctx: &Context) -> Rectangle {
+    ctx.graphics.screen_rect
+}
+
+/// Gets the current scaling mode.
+pub fn get_scaling(ctx: &mut Context) -> ScreenScaling {
+    ctx.graphics.scaling
+}
+
+/// Sets the current scaling mode.
+pub fn set_scaling(ctx: &mut Context, scaling: ScreenScaling) {
+    ctx.graphics.scaling = scaling;
+
+    if let ScreenScaling::Resize = ctx.graphics.scaling {
+        set_backbuffer_size(ctx, ctx.graphics.window_width, ctx.graphics.window_height);
+    } else {
+        set_backbuffer_size(
+            ctx,
+            ctx.graphics.internal_width,
+            ctx.graphics.internal_height,
+        );
+    }
+
+    update_screen_rect(ctx);
+}
+
+pub(crate) fn set_window_size_ex(ctx: &mut Context, width: i32, height: i32, from_sdl: bool) {
     ctx.graphics.window_width = width;
     ctx.graphics.window_height = height;
     ctx.graphics.window_projection = ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
 
     if let ScreenScaling::Resize = ctx.graphics.scaling {
-        set_internal_size(ctx, width, height);
+        set_backbuffer_size(ctx, width, height);
     }
 
-    ctx.graphics.screen_rect = ctx.graphics.scaling.get_screen_rect(
-        ctx.graphics.backbuffer_texture.width(),
-        ctx.graphics.backbuffer_texture.height(),
-        width,
-        height,
-    );
+    update_screen_rect(ctx);
+
+    if !from_sdl {
+        ctx.window.set_size(width as u32, height as u32).unwrap();
+    }
 }
 
-pub(crate) fn set_internal_size(ctx: &mut Context, width: i32, height: i32) {
+pub(crate) fn set_backbuffer_size(ctx: &mut Context, width: i32, height: i32) {
     ctx.graphics.internal_projection = ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
 
     ctx.graphics.backbuffer_texture =
@@ -667,6 +754,18 @@ pub(crate) fn set_internal_size(ctx: &mut Context, width: i32, height: i32) {
         &ctx.graphics.backbuffer,
         &ctx.graphics.backbuffer_texture.handle,
         true,
+    );
+
+    // TODO: This might conflict with set_framebuffer_ex - bit of a hack
+    ctx.gl.set_viewport(0, 0, width, height);
+}
+
+pub(crate) fn update_screen_rect(ctx: &mut Context) {
+    ctx.graphics.screen_rect = ctx.graphics.scaling.get_screen_rect(
+        ctx.graphics.backbuffer_texture.width(),
+        ctx.graphics.backbuffer_texture.height(),
+        ctx.graphics.window_width,
+        ctx.graphics.window_height,
     );
 }
 
