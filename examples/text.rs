@@ -33,5 +33,7 @@ fn main() -> tetra::Result {
         pos: Vec2::new(16.0, 16.0),
     };
 
+    println!("Text size is {:?}", state.text.get_size(ctx));
+
     tetra::run(ctx, state)
 }
