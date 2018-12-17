@@ -9,7 +9,9 @@ use glyph_brush::{BrushAction, BrushError, FontId, GlyphVertex, Section};
 
 use error::{Result, TetraError};
 use graphics::opengl::GLDevice;
-use graphics::{self, ActiveShader, ActiveTexture, DrawParams, Drawable, Texture, TextureFormat};
+use graphics::{
+    self, ActiveShader, ActiveTexture, DrawParams, Drawable, Rectangle, Texture, TextureFormat,
+};
 use Context;
 
 struct FontQuad {
@@ -54,16 +56,16 @@ impl Default for Font {
     }
 }
 
-/// The cached text bounds
+/// The cached text bounds.
 enum TextBounds {
-    /// Bounds are not known and should be recalculated
+    /// Bounds are not known and should be recalculated.
     Unknown,
 
-    /// The text has no bounds because it's an empty string
+    /// The text has no bounds because it's an empty string.
     NoBounds,
 
-    /// The bounds are the given rectangle
-    Known(graphics::Rectangle),
+    /// The bounds are the given rectangle.
+    Known(Rectangle),
 }
 
 /// A piece of text that can be rendered.
@@ -96,15 +98,20 @@ impl Text {
     }
 
     /// Get the outer bounds of the text when rendered to the screen.
+    ///
     /// If the text is not rendered yet, this method will re-render it and calculate the bounds.
     /// The bounds are automatically cached, so calling this multiple times will only render once.
-    pub fn get_bounds(&self, ctx: &mut Context) -> Option<graphics::Rectangle> {
+    ///
+    /// Note that this method will not take into account the positioning applied to the text via `DrawParams`.
+    pub fn get_bounds(&self, ctx: &mut Context) -> Option<Rectangle> {
         match *self.bounds.borrow() {
             TextBounds::Unknown => {}
             TextBounds::NoBounds => return None,
             TextBounds::Known(r) => return Some(r),
         }
+
         self.attempt_recalculate_quads(ctx);
+
         match *self.bounds.borrow() {
             TextBounds::Unknown => unreachable!(),
             TextBounds::NoBounds => None,
@@ -130,7 +137,7 @@ impl Text {
         self.bounds = RefCell::new(TextBounds::Unknown);
     }
 
-    /// Attempt to recalculate the fontquads
+    /// Attempt to recalculate the font quads.
     fn attempt_recalculate_quads(&self, ctx: &mut Context) {
         let section = Section {
             text: &self.content,
@@ -140,26 +147,28 @@ impl Text {
         };
 
         if let BrushAction::Draw(new_quads) = draw_text(ctx, section) {
-            if new_quads.is_empty() {
-                *self.bounds.borrow_mut() = TextBounds::NoBounds;
+            *self.bounds.borrow_mut() = if new_quads.is_empty() {
+                TextBounds::NoBounds
             } else {
                 let mut max_x = std::f32::MIN;
                 let mut max_y = std::f32::MIN;
                 let mut min_x = std::f32::MAX;
                 let mut min_y = std::f32::MAX;
+
                 for quad in &new_quads {
                     max_x = max_x.max(quad.x1).max(quad.x2);
                     max_y = max_y.max(quad.y1).max(quad.y2);
                     min_x = min_x.min(quad.x1).min(quad.x2);
                     min_y = min_y.min(quad.y1).min(quad.y2);
                 }
-                *self.bounds.borrow_mut() = TextBounds::Known(graphics::Rectangle::new(
+
+                TextBounds::Known(graphics::Rectangle::new(
                     min_x,
                     min_y,
                     max_x - min_x,
                     max_y - min_y,
-                ));
-            }
+                ))
+            };
 
             *self.quads.borrow_mut() = new_quads;
         }
