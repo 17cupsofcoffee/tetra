@@ -54,16 +54,29 @@ impl Default for Font {
     }
 }
 
+/// The cached text bounds
+enum TextBounds {
+    /// Bounds are not known and should be recalculated
+    Unknown,
+
+    /// The text has no bounds because it's an empty string
+    NoBounds,
+
+    /// The bounds are the given rectangle
+    Known(graphics::Rectangle),
+}
+
 /// A piece of text that can be rendered.
 pub struct Text {
     content: String,
     font: Font,
     size: Scale,
+    bounds: RefCell<TextBounds>,
     quads: RefCell<Vec<FontQuad>>,
 }
 
 impl Text {
-    /// Creates a new `Text`, with the given content, font and size.
+    /// Creates a new `Text`, with the given content, font and scale.
     pub fn new<S: Into<String>>(content: S, font: Font, size: f32) -> Text {
         let content = content.into();
 
@@ -71,6 +84,7 @@ impl Text {
             content,
             font,
             size: Scale::uniform(size),
+            bounds: RefCell::new(TextBounds::Unknown),
             quads: RefCell::new(Vec::new()),
         }
     }
@@ -78,26 +92,46 @@ impl Text {
     /// Sets the content of the text.
     pub fn set_content<S: Into<String>>(&mut self, content: S) {
         self.content = content.into();
+        self.invalidate();
+    }
+
+    /// Get the outer bounds of the text when rendered to the screen.
+    /// If the text is not rendered yet, this method will re-render it and calculate the bounds.
+    /// The bounds are automatically cached, so calling this multiple times will only render once.
+    pub fn get_bounds(&self, ctx: &mut Context) -> Option<graphics::Rectangle> {
+        match *self.bounds.borrow() {
+            TextBounds::Unknown => {}
+            TextBounds::NoBounds => return None,
+            TextBounds::Known(r) => return Some(r),
+        }
+        self.attempt_recalculate_quads(ctx);
+        match *self.bounds.borrow() {
+            TextBounds::Unknown => unreachable!(),
+            TextBounds::NoBounds => None,
+            TextBounds::Known(r) => Some(r),
+        }
     }
 
     /// Sets the font of the text.
     pub fn set_font(&mut self, font: Font) {
         self.font = font;
-        self.quads = RefCell::new(Vec::new());
+        self.invalidate();
     }
 
     /// Sets the size of the text.
     pub fn set_size(&mut self, size: f32) {
         self.size = Scale::uniform(size);
-        self.quads = RefCell::new(Vec::new());
+        self.invalidate();
     }
-}
 
-impl Drawable for Text {
-    fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
-        let params = params.into();
-        let transform = params.build_matrix();
+    /// Invalidates this Text component, forcing it to redraw itself on the next draw pass.
+    fn invalidate(&mut self) {
+        self.quads = RefCell::new(Vec::new());
+        self.bounds = RefCell::new(TextBounds::Unknown);
+    }
 
+    /// Attempt to recalculate the fontquads
+    fn attempt_recalculate_quads(&self, ctx: &mut Context) {
         let section = Section {
             text: &self.content,
             scale: self.size,
@@ -106,8 +140,39 @@ impl Drawable for Text {
         };
 
         if let BrushAction::Draw(new_quads) = draw_text(ctx, section) {
+            if new_quads.is_empty() {
+                *self.bounds.borrow_mut() = TextBounds::NoBounds;
+            } else {
+                let mut max_x = std::f32::MIN;
+                let mut max_y = std::f32::MIN;
+                let mut min_x = std::f32::MAX;
+                let mut min_y = std::f32::MAX;
+                for quad in &new_quads {
+                    max_x = max_x.max(quad.x1).max(quad.x2);
+                    max_y = max_y.max(quad.y1).max(quad.y2);
+                    min_x = min_x.min(quad.x1).min(quad.x2);
+                    min_y = min_y.min(quad.y1).min(quad.y2);
+                }
+                *self.bounds.borrow_mut() = TextBounds::Known(graphics::Rectangle::new(
+                    min_x,
+                    min_y,
+                    max_x - min_x,
+                    max_y - min_y,
+                ));
+            }
+
             *self.quads.borrow_mut() = new_quads;
         }
+    }
+}
+
+impl Drawable for Text {
+    fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
+        let params = params.into();
+        let transform = params.build_matrix();
+
+        // TODO: This should probably only be called when self.quads is empty and self.text is not empty?
+        self.attempt_recalculate_quads(ctx);
 
         graphics::set_texture_ex(ctx, ActiveTexture::FontCache);
         graphics::set_shader_ex(ctx, ActiveShader::Text);
