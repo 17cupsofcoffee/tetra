@@ -12,7 +12,6 @@ use graphics::opengl::GLDevice;
 use graphics::{self, ActiveShader, ActiveTexture, DrawParams, Drawable, Texture, TextureFormat};
 use Context;
 
-#[derive(Debug)]
 struct FontQuad {
     x1: f32,
     y1: f32,
@@ -55,15 +54,15 @@ impl Default for Font {
     }
 }
 
-/// The cached text size
-enum TextSize {
-    /// Size is not known and should be recalculated
+/// The cached text bounds
+enum TextBounds {
+    /// Bounds are not known and should be recalculated
     Unknown,
 
-    /// Size is known to be 0
-    NoSize,
+    /// The text has no bounds because it's an empty string
+    NoBounds,
 
-    /// Size is known to be the given rectangle
+    /// The bounds are the given rectangle
     Known(graphics::Rectangle),
 }
 
@@ -71,21 +70,21 @@ enum TextSize {
 pub struct Text {
     content: String,
     font: Font,
-    scale: Scale,
-    size: RefCell<TextSize>,
+    size: Scale,
+    bounds: RefCell<TextBounds>,
     quads: RefCell<Vec<FontQuad>>,
 }
 
 impl Text {
-    /// Creates a new `Text`, with the given content, font and size.
+    /// Creates a new `Text`, with the given content, font and scale.
     pub fn new<S: Into<String>>(content: S, font: Font, size: f32) -> Text {
         let content = content.into();
 
         Text {
             content,
             font,
-            scale: Scale::uniform(size),
-            size: RefCell::new(TextSize::Unknown),
+            size: Scale::uniform(size),
+            bounds: RefCell::new(TextBounds::Unknown),
             quads: RefCell::new(Vec::new()),
         }
     }
@@ -98,18 +97,18 @@ impl Text {
 
     /// Get the outer bounds of the text when rendered to the screen.
     /// If the text is not rendered yet, this method will re-render it and calculate the bounds.
-    /// The size is automatically cached, so calling this multiple times will only render once.
-    pub fn get_size(&self, ctx: &mut Context) -> Option<graphics::Rectangle> {
-        match *self.size.borrow() {
-            TextSize::Unknown => {}
-            TextSize::NoSize => return None,
-            TextSize::Known(r) => return Some(r),
+    /// The bounds are automatically cached, so calling this multiple times will only render once.
+    pub fn get_bounds(&self, ctx: &mut Context) -> Option<graphics::Rectangle> {
+        match *self.bounds.borrow() {
+            TextBounds::Unknown => {}
+            TextBounds::NoBounds => return None,
+            TextBounds::Known(r) => return Some(r),
         }
         self.attempt_recalculate_quads(ctx);
-        match *self.size.borrow() {
-            TextSize::Unknown => unreachable!(),
-            TextSize::NoSize => None,
-            TextSize::Known(r) => Some(r),
+        match *self.bounds.borrow() {
+            TextBounds::Unknown => unreachable!(),
+            TextBounds::NoBounds => None,
+            TextBounds::Known(r) => Some(r),
         }
     }
 
@@ -120,29 +119,29 @@ impl Text {
     }
 
     /// Sets the size of the text.
-    pub fn set_scale(&mut self, size: f32) {
-        self.scale = Scale::uniform(size);
+    pub fn set_size(&mut self, size: f32) {
+        self.size = Scale::uniform(size);
         self.invalidate();
     }
 
     /// Invalidates this Text component, forcing it to redraw itself on the next draw pass.
     fn invalidate(&mut self) {
         self.quads = RefCell::new(Vec::new());
-        self.size = RefCell::new(TextSize::Unknown);
+        self.bounds = RefCell::new(TextBounds::Unknown);
     }
 
     /// Attempt to recalculate the fontquads
     fn attempt_recalculate_quads(&self, ctx: &mut Context) {
         let section = Section {
             text: &self.content,
-            scale: self.scale,
+            scale: self.size,
             font_id: self.font.id,
             ..Section::default()
         };
 
         if let BrushAction::Draw(new_quads) = draw_text(ctx, section) {
             if new_quads.is_empty() {
-                *self.size.borrow_mut() = TextSize::NoSize;
+                *self.bounds.borrow_mut() = TextBounds::NoBounds;
             } else {
                 let mut max_x = std::f32::MIN;
                 let mut max_y = std::f32::MIN;
@@ -154,7 +153,7 @@ impl Text {
                     min_x = min_x.min(quad.x1).min(quad.x2);
                     min_y = min_y.min(quad.y1).min(quad.y2);
                 }
-                *self.size.borrow_mut() = TextSize::Known(graphics::Rectangle::new(
+                *self.bounds.borrow_mut() = TextBounds::Known(graphics::Rectangle::new(
                     min_x,
                     min_y,
                     max_x - min_x,

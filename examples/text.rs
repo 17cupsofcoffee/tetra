@@ -33,7 +33,8 @@ fn main() -> tetra::Result {
         pos: Vec2::new(16.0, 16.0),
     };
 
-    println!("Text size is {:?}", state.text.get_size(ctx));
+    // Text bounds are Some(Rectangle { x: 0.0, y: 2.0, width: 403.0, height: 46.0 })
+    println!("Text bounds are {:?}", state.text.get_bounds(ctx));
 
     tetra::run(ctx, state)
 }
