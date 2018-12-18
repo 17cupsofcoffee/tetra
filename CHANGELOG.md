@@ -5,6 +5,7 @@
 ### Breaking Changes
 
 * The library has been upgraded to the 2018 edition of Rust.
+* `ContextBuilder::new` now takes the title and size as parameters. The old behavior of the function can be replicated by using `ContextBuilder::default` instead.
 * The `update` and `draw` methods on `State` now return `tetra::Result`, allowing errors to be returned (or propagated via the `?` operator). Any errors returned from these methods will stop the game - your main method can then handle the error (e.g. log it out). ([#29](https://github.com/17cupsofcoffee/tetra/issues/29))
 * The `scale` option on `ContextBuilder` has been renamed to `window_scale`, to better reflect its behavior.
 * `Shader::from_file` is now called `Shader::new`, and `Shader::new` is now called `Shader::from_string`. This is more consistent with the other constructors.

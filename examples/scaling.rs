@@ -86,9 +86,7 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new()
-        .title("Screen Scaling")
-        .size(640, 480)
+    let ctx = &mut ContextBuilder::new("Screen Scaling", 640, 480)
         .resizable(true)
         .maximized(true)
         .quit_on_escape(true)

@@ -15,9 +15,7 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new()
-        .title("Rendering a Texture")
-        .size(160, 144)
+    let ctx = &mut ContextBuilder::new("Rendering a Texture", 160, 144)
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)

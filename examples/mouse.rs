@@ -42,9 +42,7 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new()
-        .title("Mouse Input")
-        .size(160, 144)
+    let ctx = &mut ContextBuilder::new("Mouse Input", 160, 144)
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)
