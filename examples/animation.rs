@@ -32,20 +32,25 @@ impl GameState {
 }
 
 impl State for GameState {
-    fn update(&mut self, ctx: &mut Context) {
+    fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         self.animation.tick();
+
         if input::is_key_pressed(ctx, Key::Num1) {
             self.set_animation_1();
         }
+
         if input::is_key_pressed(ctx, Key::Num2) {
             self.set_animation_2();
         }
+
         if input::is_key_pressed(ctx, Key::Space) {
             self.animation.restart();
         }
+
+        Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) {
+    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
         graphics::draw(
@@ -55,6 +60,8 @@ impl State for GameState {
                 .position(Vec2::new(32.0, 32.0))
                 .origin(Vec2::new(8.0, 8.0)),
         );
+
+        Ok(())
     }
 }
 

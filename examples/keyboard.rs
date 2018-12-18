@@ -9,7 +9,7 @@ struct GameState {
 }
 
 impl State for GameState {
-    fn update(&mut self, ctx: &mut Context) {
+    fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         if input::is_key_down(ctx, Key::A) {
             self.position.x -= 2.0;
         }
@@ -38,9 +38,11 @@ impl State for GameState {
                 released.collect::<Vec<_>>()
             );
         }
+
+        Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) {
+    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(0.769, 0.812, 0.631));
 
         graphics::draw(
@@ -50,6 +52,8 @@ impl State for GameState {
                 .position(self.position)
                 .origin(Vec2::new(8.0, 8.0)),
         );
+
+        Ok(())
     }
 }
 
