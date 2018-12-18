@@ -4,7 +4,7 @@ use rand::{self, Rng};
 use tetra::graphics::color;
 use tetra::graphics::{self, Color, DrawParams, Texture, Vec2};
 use tetra::input::{self, Key};
-use tetra::{self, Context, ContextBuilder, State};
+use tetra::{Context, ContextBuilder, State};
 
 enum BlockShape {
     I,

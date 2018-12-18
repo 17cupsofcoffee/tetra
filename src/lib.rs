@@ -25,9 +25,8 @@
 //! To get a simple window displayed on screen, the following code can be used:
 //!
 //! ```no_run
-//! # fn main() {
 //! use tetra::graphics::{self, Color};
-//! use tetra::{self, Context, ContextBuilder, State};
+//! use tetra::{Context, ContextBuilder, State};
 //!
 //! struct GameState;
 //!
@@ -45,7 +44,6 @@
 //!
 //!     tetra::run(ctx, state)
 //! }
-//! # }
 //! ```
 //!
 //! You can see this example in action by running `cargo run --example hello_world`.
