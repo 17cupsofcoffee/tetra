@@ -38,10 +38,6 @@ use tetra::{self, Context, ContextBuilder, State};
 struct GameState;
 
 impl State for GameState {
-    fn update(&mut self, _ctx: &mut Context) -> tetra::Result {
-        Ok(())
-    }
-
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         // Cornflour blue, as is tradition
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));

@@ -18,10 +18,6 @@ impl GameState {
 }
 
 impl State for GameState {
-    fn update(&mut self, _ctx: &mut Context) -> tetra::Result {
-        Ok(())
-    }
-
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         graphics::clear(ctx, color::BLACK);
         graphics::draw(ctx, &self.panel, Vec2::new(0.0, 0.0));

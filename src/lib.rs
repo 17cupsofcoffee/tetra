@@ -32,10 +32,6 @@
 //! struct GameState;
 //!
 //! impl State for GameState {
-//!     fn update(&mut self, _ctx: &mut Context) -> tetra::Result {
-//!         Ok(())
-//!     }
-//!
 //!     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
 //!         // Cornflour blue, as is tradition
 //!         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
@@ -105,6 +101,7 @@ use crate::input::{InputContext, Key};
 /// The methods on `State` allow you to return a `Result`, either explicitly or via the `?`
 /// operator. If an error is returned, the game will close and the error will be returned from
 /// the `run` function that was used to start it.
+#[allow(unused_variables)]
 pub trait State {
     /// Called when it is time for the game to update, at the interval specified by the context's
     /// tick rate.
@@ -115,7 +112,9 @@ pub trait State {
     /// order to make things look smooth.
     ///
     /// See [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/) for more info.
-    fn update(&mut self, ctx: &mut Context) -> Result;
+    fn update(&mut self, ctx: &mut Context) -> Result {
+        Ok(())
+    }
 
     /// Called when it is time for the game to be drawn.
     ///
@@ -124,7 +123,9 @@ pub trait State {
     ///
     /// For example, if the player is meant to move 16 pixels per frame, and the current `dt` is 0.5,
     /// you should draw them 8 pixels along.
-    fn draw(&mut self, ctx: &mut Context, dt: f64) -> Result;
+    fn draw(&mut self, ctx: &mut Context, dt: f64) -> Result {
+        Ok(())
+    }
 }
 
 /// A struct containing all of the 'global' state within the framework.
