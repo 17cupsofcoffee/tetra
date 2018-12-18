@@ -1,5 +1,4 @@
-use tetra::glm::Vec2;
-use tetra::graphics::{self, Color, Texture};
+use tetra::graphics::{self, Color, Texture, Vec2};
 use tetra::{self, Context, ContextBuilder, State};
 
 struct GameState {

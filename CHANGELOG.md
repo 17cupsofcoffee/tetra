@@ -28,6 +28,7 @@
 * Extra options have been added to the `ContextBuilder`, allowing you to start the window in various different states (e.g. fullscreen) ([#28](https://github.com/17cupsofcoffee/tetra/issues/28)).
 * There are now many new methods for manipulating the window/game loop in the `window` module.
 * The `update` and `draw` methods on `State` are now both optional.
+* The `graphics` module now re-exports `Vec2`.
 
 ### Bug Fixes
 
