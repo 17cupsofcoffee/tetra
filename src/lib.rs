@@ -32,11 +32,14 @@
 //! struct GameState;
 //!
 //! impl State for GameState {
-//!     fn update(&mut self, _ctx: &mut Context) {}
+//!     fn update(&mut self, _ctx: &mut Context) -> tetra::Result {
+//!         Ok(())
+//!     }
 //!
-//!     fn draw(&mut self, ctx: &mut Context, _dt: f64) {
+//!     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
 //!         // Cornflour blue, as is tradition
 //!         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
+//!         Ok(())
 //!     }
 //! }
 //!
@@ -99,16 +102,20 @@ use crate::input::{InputContext, Key};
 /// A trait representing a type that contains game state and provides logic for updating it
 /// and drawing it to the screen. This is where you'll write your game logic!
 ///
-/// The game will update at a fixed time step (defaulting to 60fps), and draw as fast as it is
-/// allowed to (depending on CPU/vsync settings). This allows for deterministic updates even at
-/// varying framerates, but may require you to do some interpolation in order to make things look
-/// smooth.
-///
-/// See [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/) for more info.
+/// The methods on `State` allow you to return a `Result`, either explicitly or via the `?`
+/// operator. If an error is returned, the game will close and the error will be returned from
+/// the `run` function that was used to start it.
 pub trait State {
     /// Called when it is time for the game to update, at the interval specified by the context's
     /// tick rate.
-    fn update(&mut self, ctx: &mut Context);
+    ///
+    /// The game will update at a fixed time step (defaulting to 60fps), and draw as fast as it is
+    /// allowed to (depending on CPU/vsync settings). This allows for deterministic updates even at
+    /// varying framerates, but may require you to do some interpolation in the `draw` method in
+    /// order to make things look smooth.
+    ///
+    /// See [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/) for more info.
+    fn update(&mut self, ctx: &mut Context) -> Result;
 
     /// Called when it is time for the game to be drawn.
     ///
@@ -117,7 +124,7 @@ pub trait State {
     ///
     /// For example, if the player is meant to move 16 pixels per frame, and the current `dt` is 0.5,
     /// you should draw them 8 pixels along.
-    fn draw(&mut self, ctx: &mut Context, dt: f64);
+    fn draw(&mut self, ctx: &mut Context, dt: f64) -> Result;
 }
 
 /// A struct containing all of the 'global' state within the framework.
@@ -410,14 +417,21 @@ pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
         }
 
         while lag >= ctx.tick_rate {
-            state.update(ctx);
+            if let Err(e) = state.update(ctx) {
+                ctx.running = false;
+                return Err(e);
+            }
+
             ctx.input.cleanup_after_state_update();
             lag -= ctx.tick_rate;
         }
 
         let dt = time::duration_to_f64(lag) / time::duration_to_f64(ctx.tick_rate);
 
-        state.draw(ctx, dt);
+        if let Err(e) = state.draw(ctx, dt) {
+            ctx.running = false;
+            return Err(e);
+        }
 
         graphics::present(ctx);
 

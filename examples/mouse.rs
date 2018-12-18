@@ -11,7 +11,7 @@ struct GameState {
 }
 
 impl State for GameState {
-    fn update(&mut self, ctx: &mut Context) {
+    fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         self.position = glm::round(&input::get_mouse_position(ctx));
 
         if input::is_mouse_button_down(ctx, MouseButton::Left) {
@@ -21,9 +21,11 @@ impl State for GameState {
             self.scale = Vec2::new(1.0, 1.0);
             self.rotation = 0.0;
         }
+
+        Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) {
+    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(0.769, 0.812, 0.631));
 
         graphics::draw(
@@ -35,6 +37,8 @@ impl State for GameState {
                 .scale(self.scale)
                 .rotation(self.rotation),
         );
+
+        Ok(())
     }
 }
 

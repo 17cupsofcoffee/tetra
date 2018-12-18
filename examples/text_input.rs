@@ -10,7 +10,7 @@ struct GameState {
 }
 
 impl State for GameState {
-    fn update(&mut self, ctx: &mut Context) {
+    fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         if input::is_key_pressed(ctx, Key::Return) {
             self.input += "\n";
             self.text.set_content(self.input.as_str());
@@ -25,11 +25,15 @@ impl State for GameState {
             self.input += new_input;
             self.text.set_content(self.input.as_str());
         }
+
+        Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) {
+    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
         graphics::draw(ctx, &self.text, Vec2::new(16.0, 16.0));
+
+        Ok(())
     }
 }
 

@@ -232,7 +232,7 @@ impl GameState {
 }
 
 impl State for GameState {
-    fn update(&mut self, ctx: &mut Context) {
+    fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         self.drop_timer += 1;
         self.move_timer += 1;
 
@@ -357,9 +357,11 @@ impl State for GameState {
             }
             None => {}
         }
+
+        Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) {
+    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         graphics::clear(ctx, color::BLACK);
 
         for (x, y, color) in self.board_blocks() {
@@ -383,6 +385,8 @@ impl State for GameState {
                     .color(block_color),
             );
         }
+
+        Ok(())
     }
 }
 
