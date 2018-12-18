@@ -16,8 +16,7 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new()
-        .title("Rendering text")
+    let ctx = &mut ContextBuilder::new("Rendering text", 1280, 720)
         .quit_on_escape(true)
         .build()?;
 

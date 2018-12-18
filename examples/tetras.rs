@@ -390,9 +390,7 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new()
-        .title("Tetras")
-        .size(10 * 16, 20 * 16)
+    let ctx = &mut ContextBuilder::new("Tetras", 10 * 16, 20 * 16)
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)

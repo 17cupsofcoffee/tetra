@@ -40,11 +40,7 @@
 //! }
 //!
 //! fn main() -> tetra::Result {
-//!     let ctx = &mut ContextBuilder::new()
-//!         .title("Hello, world!")
-//!         .quit_on_escape(true)
-//!         .build()?;
-//!
+//!     let ctx = &mut ContextBuilder::new("Hello, world!", 1280, 720).build()?;
 //!     let state = &mut GameState;
 //!
 //!     tetra::run(ctx, state)
@@ -164,9 +160,15 @@ pub struct ContextBuilder<'a> {
 }
 
 impl<'a> ContextBuilder<'a> {
-    /// Creates a new ContextBuilder, with the default settings.
-    pub fn new() -> ContextBuilder<'a> {
-        ContextBuilder::default()
+    /// Creates a new ContextBuilder.
+    pub fn new(title: &'a str, width: i32, height: i32) -> ContextBuilder<'a> {
+        ContextBuilder {
+            title,
+            internal_width: width,
+            internal_height: height,
+
+            ..ContextBuilder::default()
+        }
     }
 
     /// Sets the title of the window.
