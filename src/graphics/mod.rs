@@ -21,8 +21,9 @@ pub use self::shader::Shader;
 pub use self::text::{Font, Text};
 pub use self::texture::Texture;
 pub use self::ui::NineSlice;
+pub use glm::Vec2;
 
-use glm::{self, Mat3, Mat4, Vec2, Vec3};
+use glm::{self, Mat3, Mat4, Vec3};
 use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
 use crate::graphics::opengl::{

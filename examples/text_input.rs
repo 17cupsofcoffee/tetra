@@ -1,6 +1,4 @@
-use tetra::glm::Vec2;
-use tetra::graphics::text::{Font, Text};
-use tetra::graphics::{self, Color};
+use tetra::graphics::{self, Color, Font, Text, Vec2};
 use tetra::input::{self, Key};
 use tetra::{self, Context, ContextBuilder, State};
 
