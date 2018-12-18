@@ -12,8 +12,7 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new("Hello, world!", 1280, 720).build()?;
-    let state = &mut GameState;
-
-    tetra::run(ctx, state)
+    ContextBuilder::new("Hello, world!", 1280, 720)
+        .build()?
+        .run(&mut GameState)
 }

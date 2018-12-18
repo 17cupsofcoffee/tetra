@@ -86,13 +86,10 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new("Screen Scaling", 640, 480)
+    ContextBuilder::new("Screen Scaling", 640, 480)
         .resizable(true)
         .maximized(true)
         .quit_on_escape(true)
-        .build()?;
-
-    let state = &mut GameState::new(ctx)?;
-
-    tetra::run(ctx, state)
+        .build()?
+        .run_with(GameState::new)
 }

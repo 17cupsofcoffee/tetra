@@ -6,6 +6,14 @@ use crate::graphics::{self, ScreenScaling};
 use crate::time;
 use crate::{Context, Result, TetraError};
 
+/// Quits the game, if it is currently running.
+///
+/// Note that currently, quitting the game does not take effect until the end of the current
+/// cycle of the game loop. This will probably change later.
+pub fn quit(ctx: &mut Context) {
+    ctx.running = false;
+}
+
 /// Gets the current title of the window.
 pub fn get_title(ctx: &Context) -> &str {
     ctx.window.title()

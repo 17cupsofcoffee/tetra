@@ -4,6 +4,7 @@ use rand::{self, Rng};
 use tetra::graphics::color;
 use tetra::graphics::{self, Color, DrawParams, Texture, Vec2};
 use tetra::input::{self, Key};
+use tetra::window;
 use tetra::{Context, ContextBuilder, State};
 
 enum BlockShape {
@@ -153,6 +154,11 @@ struct GameState {
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+        println!("=== Tetras ===");
+        println!(
+            "Controls: A and D to move, Q and E to rotate, S to drop one row, Space to hard drop"
+        );
+
         Ok(GameState {
             block_texture: Texture::new(ctx, "./examples/resources/block.png")?,
             block: Block::new(),
@@ -331,7 +337,7 @@ impl State for GameState {
 
                     if self.check_for_game_over() {
                         println!("Game over! You cleared {} lines.", self.score);
-                        tetra::quit(ctx);
+                        window::quit(ctx);
                     }
 
                     self.block = Block::new();
@@ -349,7 +355,7 @@ impl State for GameState {
 
                 if self.check_for_game_over() {
                     println!("Game over! You cleared {} lines.", self.score);
-                    tetra::quit(ctx);
+                    window::quit(ctx);
                 }
 
                 self.block = Block::new();
@@ -390,18 +396,12 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new("Tetras", 10 * 16, 20 * 16)
+    ContextBuilder::new("Tetras", 10 * 16, 20 * 16)
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)
-        .build()?;
-
-    let state = &mut GameState::new(ctx)?;
-
-    println!("=== Tetras ===");
-    println!("Controls: A and D to move, Q and E to rotate, S to drop one row, Space to hard drop");
-
-    tetra::run(ctx, state)
+        .build()?
+        .run_with(GameState::new)
 }
 
 static IA: [[bool; 4]; 4] = [

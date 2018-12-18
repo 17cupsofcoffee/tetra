@@ -39,10 +39,9 @@
 //! }
 //!
 //! fn main() -> tetra::Result {
-//!     let ctx = &mut ContextBuilder::new("Hello, world!", 1280, 720).build()?;
-//!     let state = &mut GameState;
-//!
-//!     tetra::run(ctx, state)
+//!     ContextBuilder::new("Hello, world!", 1280, 720)
+//!         .build()?
+//!         .run(&mut GameState)
 //! }
 //! ```
 //!
@@ -136,6 +135,150 @@ pub struct Context {
     running: bool,
     quit_on_escape: bool,
     tick_rate: Duration,
+}
+
+impl Context {
+    /// Runs the game using the provided `State` implementation.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use tetra::{Context, ContextBuilder, State};
+    /// #
+    /// struct GameState;
+    ///
+    /// impl State for GameState { }
+    ///
+    /// fn main() -> tetra::Result {
+    ///    ContextBuilder::default().build()?.run(&mut GameState)
+    /// }
+    /// ```
+    pub fn run<T: State>(&mut self, state: &mut T) -> Result {
+        self.window.show();
+
+        let mut events = self.sdl.event_pump().map_err(TetraError::Sdl)?;
+
+        let mut last_time = Instant::now();
+        let mut lag = Duration::from_secs(0);
+
+        self.running = true;
+
+        while self.running {
+            let current_time = Instant::now();
+            let elapsed = current_time - last_time;
+            last_time = current_time;
+            lag += elapsed;
+
+            for event in events.poll_iter() {
+                self.handle_event(event);
+            }
+
+            while lag >= self.tick_rate {
+                if let Err(e) = state.update(self) {
+                    self.running = false;
+                    return Err(e);
+                }
+
+                self.input.cleanup_after_state_update();
+                lag -= self.tick_rate;
+            }
+
+            let dt = time::duration_to_f64(lag) / time::duration_to_f64(self.tick_rate);
+
+            if let Err(e) = state.draw(self, dt) {
+                self.running = false;
+                return Err(e);
+            }
+
+            graphics::present(self);
+
+            std::thread::yield_now();
+        }
+
+        self.window.hide();
+
+        Ok(())
+    }
+
+    /// Constructs an implementation of `State` using the given closure, and then runs it.
+    ///
+    /// This is mainly handy when chaining methods, as it allows you to call your `State` constructor
+    /// without breaking the chain.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use tetra::graphics::Texture;
+    /// # use tetra::{Context, ContextBuilder, State};
+    /// #
+    /// struct GameState {
+    ///     texture: Texture,
+    /// }
+    ///
+    /// impl GameState {
+    ///     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+    ///         Ok(GameState {
+    ///             texture: Texture::new(ctx, "./examples/resources/player.png")?,
+    ///         })
+    ///     }
+    /// }
+    ///
+    /// impl State for GameState { }
+    ///
+    /// fn main() -> tetra::Result {
+    ///    ContextBuilder::default().build()?.run_with(GameState::new)
+    /// }
+    /// ```
+    pub fn run_with<S, F>(&mut self, init: F) -> Result
+    where
+        S: State,
+        F: Fn(&mut Context) -> Result<S>,
+    {
+        let state = &mut init(self)?;
+        self.run(state)
+    }
+
+    fn handle_event(&mut self, event: Event) {
+        match event {
+            Event::Quit { .. } => self.running = false, // TODO: Add a way to override this
+            Event::KeyDown {
+                keycode: Some(k), ..
+            } => {
+                if let Key::Escape = k {
+                    if self.quit_on_escape {
+                        self.running = false;
+                    }
+                }
+
+                self.input.current_key_state.insert(k);
+            }
+            Event::KeyUp {
+                keycode: Some(k), ..
+            } => {
+                // TODO: This can cause some inputs to be missed at low tick rates.
+                // Could consider buffering input releases like Otter2D does?
+                self.input.current_key_state.remove(&k);
+            }
+            Event::MouseButtonDown { mouse_btn, .. } => {
+                self.input.current_mouse_state.insert(mouse_btn);
+            }
+            Event::MouseButtonUp { mouse_btn, .. } => {
+                self.input.current_mouse_state.remove(&mouse_btn);
+            }
+            Event::MouseMotion { x, y, .. } => {
+                self.input.mouse_position = Vec2::new(x as f32, y as f32)
+            }
+            Event::Window { win_event, .. } => {
+                if let WindowEvent::SizeChanged(x, y) = win_event {
+                    window::set_size_ex(self, x, y, true)
+                }
+            }
+            Event::TextInput { text, .. } => {
+                self.input.current_text_input = Some(text);
+            }
+            _ => {}
+        }
+    }
 }
 
 /// Creates a new `Context` based on the provided options.
@@ -394,100 +537,4 @@ impl<'a> Default for ContextBuilder<'a> {
             quit_on_escape: false,
         }
     }
-}
-
-/// Runs the game.
-pub fn run<T: State>(ctx: &mut Context, state: &mut T) -> Result {
-    ctx.window.show();
-
-    let mut events = ctx.sdl.event_pump().map_err(TetraError::Sdl)?;
-
-    let mut last_time = Instant::now();
-    let mut lag = Duration::from_secs(0);
-
-    ctx.running = true;
-
-    while ctx.running {
-        let current_time = Instant::now();
-        let elapsed = current_time - last_time;
-        last_time = current_time;
-        lag += elapsed;
-
-        for event in events.poll_iter() {
-            handle_event(ctx, event);
-        }
-
-        while lag >= ctx.tick_rate {
-            if let Err(e) = state.update(ctx) {
-                ctx.running = false;
-                return Err(e);
-            }
-
-            ctx.input.cleanup_after_state_update();
-            lag -= ctx.tick_rate;
-        }
-
-        let dt = time::duration_to_f64(lag) / time::duration_to_f64(ctx.tick_rate);
-
-        if let Err(e) = state.draw(ctx, dt) {
-            ctx.running = false;
-            return Err(e);
-        }
-
-        graphics::present(ctx);
-
-        std::thread::yield_now();
-    }
-
-    ctx.window.hide();
-
-    Ok(())
-}
-
-fn handle_event(ctx: &mut Context, event: Event) {
-    match event {
-        Event::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
-        Event::KeyDown {
-            keycode: Some(k), ..
-        } => {
-            if let Key::Escape = k {
-                if ctx.quit_on_escape {
-                    ctx.running = false;
-                }
-            }
-
-            ctx.input.current_key_state.insert(k);
-        }
-        Event::KeyUp {
-            keycode: Some(k), ..
-        } => {
-            // TODO: This can cause some inputs to be missed at low tick rates.
-            // Could consider buffering input releases like Otter2D does?
-            ctx.input.current_key_state.remove(&k);
-        }
-        Event::MouseButtonDown { mouse_btn, .. } => {
-            ctx.input.current_mouse_state.insert(mouse_btn);
-        }
-        Event::MouseButtonUp { mouse_btn, .. } => {
-            ctx.input.current_mouse_state.remove(&mouse_btn);
-        }
-        Event::MouseMotion { x, y, .. } => ctx.input.mouse_position = Vec2::new(x as f32, y as f32),
-        Event::Window { win_event, .. } => {
-            if let WindowEvent::SizeChanged(x, y) = win_event {
-                window::set_size_ex(ctx, x, y, true)
-            }
-        }
-        Event::TextInput { text, .. } => {
-            ctx.input.current_text_input = Some(text);
-        }
-        _ => {}
-    }
-}
-
-/// Quits the game, if it is currently running.
-///
-/// Note that currently, quitting the game does not take effect until the end of the current
-/// cycle of the game loop. This will probably change later.
-pub fn quit(ctx: &mut Context) {
-    ctx.running = false;
 }

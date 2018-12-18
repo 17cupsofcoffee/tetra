@@ -9,6 +9,17 @@ struct GameState {
     rotation: f32,
 }
 
+impl GameState {
+    fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+        Ok(GameState {
+            texture: Texture::new(ctx, "./examples/resources/player.png")?,
+            position: Vec2::new(160.0 / 2.0, 144.0 / 2.0),
+            scale: Vec2::new(1.0, 1.0),
+            rotation: 0.0,
+        })
+    }
+}
+
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         self.position = glm::round(&input::get_mouse_position(ctx));
@@ -42,18 +53,10 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new("Mouse Input", 160, 144)
+    ContextBuilder::new("Mouse Input", 160, 144)
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)
-        .build()?;
-
-    let state = &mut GameState {
-        texture: Texture::new(ctx, "./examples/resources/player.png")?,
-        position: Vec2::new(160.0 / 2.0, 144.0 / 2.0),
-        scale: Vec2::new(1.0, 1.0),
-        rotation: 0.0,
-    };
-
-    tetra::run(ctx, state)
+        .build()?
+        .run_with(GameState::new)
 }

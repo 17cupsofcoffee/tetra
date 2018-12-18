@@ -65,13 +65,10 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new("Displaying an Animation", 64, 64)
+    ContextBuilder::new("Displaying an Animation", 64, 64)
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)
-        .build()?;
-
-    let state = &mut GameState::new(ctx)?;
-
-    tetra::run(ctx, state)
+        .build()?
+        .run_with(GameState::new)
 }
