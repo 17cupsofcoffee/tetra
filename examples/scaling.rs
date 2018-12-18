@@ -4,7 +4,7 @@ use tetra::graphics::{
 use tetra::input::{self, Key};
 use tetra::{Context, ContextBuilder, State};
 
-const LABEL: &str = "Press Space to cycle between scaling modes\nScreenScaling::";
+const LABEL: &str = "Press Space to cycle between scaling modes";
 const SCREEN_WIDTH: f32 = 640.0;
 const SCREEN_HEIGHT: f32 = 480.0;
 const PANEL_WIDTH: f32 = SCREEN_WIDTH - 48.0;
@@ -29,11 +29,16 @@ impl GameState {
                 Rectangle::new(4.0, 4.0, 24.0, 24.0),
             ),
             text: Text::new(
-                LABEL.to_owned() + "ShowAllPixelPerfect",
+                format!("{}\n{:?}", LABEL, graphics::get_scaling(ctx)),
                 Font::default(),
                 16.0,
             ),
         })
+    }
+
+    fn set_scaling(&mut self, ctx: &mut Context, mode: ScreenScaling) {
+        graphics::set_scaling(ctx, mode);
+        self.text.set_content(format!("{}\n{:?}", LABEL, mode));
     }
 }
 
@@ -41,35 +46,13 @@ impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         if input::is_key_pressed(ctx, Key::Space) {
             match graphics::get_scaling(ctx) {
-                ScreenScaling::None => {
-                    graphics::set_scaling(ctx, ScreenScaling::Stretch);
-                    self.text.set_content(LABEL.to_owned() + "Stretch");
-                }
-                ScreenScaling::Stretch => {
-                    graphics::set_scaling(ctx, ScreenScaling::ShowAll);
-                    self.text.set_content(LABEL.to_owned() + "ShowAll");
-                }
-                ScreenScaling::ShowAll => {
-                    graphics::set_scaling(ctx, ScreenScaling::ShowAllPixelPerfect);
-                    self.text
-                        .set_content(LABEL.to_owned() + "ShowAllPixelPerfect");
-                }
-                ScreenScaling::ShowAllPixelPerfect => {
-                    graphics::set_scaling(ctx, ScreenScaling::Crop);
-                    self.text.set_content(LABEL.to_owned() + "Crop");
-                }
-                ScreenScaling::Crop => {
-                    graphics::set_scaling(ctx, ScreenScaling::CropPixelPerfect);
-                    self.text.set_content(LABEL.to_owned() + "CropPixelPerfect");
-                }
-                ScreenScaling::CropPixelPerfect => {
-                    graphics::set_scaling(ctx, ScreenScaling::Resize);
-                    self.text.set_content(LABEL.to_owned() + "Resize");
-                }
-                ScreenScaling::Resize => {
-                    graphics::set_scaling(ctx, ScreenScaling::None);
-                    self.text.set_content(LABEL.to_owned() + "None");
-                }
+                ScreenScaling::None => self.set_scaling(ctx, ScreenScaling::Stretch),
+                ScreenScaling::Stretch => self.set_scaling(ctx, ScreenScaling::ShowAll),
+                ScreenScaling::ShowAll => self.set_scaling(ctx, ScreenScaling::ShowAllPixelPerfect),
+                ScreenScaling::ShowAllPixelPerfect => self.set_scaling(ctx, ScreenScaling::Crop),
+                ScreenScaling::Crop => self.set_scaling(ctx, ScreenScaling::CropPixelPerfect),
+                ScreenScaling::CropPixelPerfect => self.set_scaling(ctx, ScreenScaling::Resize),
+                ScreenScaling::Resize => self.set_scaling(ctx, ScreenScaling::None),
             }
         }
 

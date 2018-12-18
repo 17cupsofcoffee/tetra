@@ -3,7 +3,7 @@
 use crate::graphics::Rectangle;
 
 /// Defines the different ways that a game's screen can be scaled.
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum ScreenScaling {
     /// The game will always be displayed at its native resolution, with no scaling applied.
     /// If the window is bigger than the native resolution, letterboxing will be applied.
