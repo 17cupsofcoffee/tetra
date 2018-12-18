@@ -60,7 +60,10 @@ impl Animation {
 }
 
 impl Drawable for Animation {
-    fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
+    fn draw<P>(&self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
         let frame_clip = self.frames[self.current_frame];
 
         let mut params = params.into();

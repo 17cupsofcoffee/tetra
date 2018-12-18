@@ -153,7 +153,10 @@ impl Context {
     ///    ContextBuilder::default().build()?.run(&mut GameState)
     /// }
     /// ```
-    pub fn run<T: State>(&mut self, state: &mut T) -> Result {
+    pub fn run<S>(&mut self, state: &mut S) -> Result
+    where
+        S: State,
+    {
         self.window.show();
 
         let mut events = self.sdl.event_pump().map_err(TetraError::Sdl)?;

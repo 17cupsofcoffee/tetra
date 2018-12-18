@@ -29,7 +29,10 @@ impl NineSlice {
 }
 
 impl Drawable for NineSlice {
-    fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
+    fn draw<P>(&self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
         let params = params.into();
         let transform = params.build_matrix();
 

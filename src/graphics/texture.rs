@@ -21,7 +21,10 @@ pub struct Texture {
 
 impl Texture {
     /// Creates a new texture from the given file.
-    pub fn new<P: AsRef<Path>>(ctx: &mut Context, path: P) -> Result<Texture> {
+    pub fn new<P>(ctx: &mut Context, path: P) -> Result<Texture>
+    where
+        P: AsRef<Path>,
+    {
         let image = image::open(path)?.to_rgba();
         let (width, height) = image.dimensions();
 
@@ -60,7 +63,10 @@ impl Texture {
 }
 
 impl Drawable for Texture {
-    fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
+    fn draw<P>(&self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
         let params = params.into();
         let transform = params.build_matrix();
 
