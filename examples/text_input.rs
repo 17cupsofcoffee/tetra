@@ -7,6 +7,15 @@ struct GameState {
     text: Text,
 }
 
+impl GameState {
+    fn new() -> GameState {
+        GameState {
+            input: String::new(),
+            text: Text::new("", Font::default(), 32.0),
+        }
+    }
+}
+
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         if input::is_key_pressed(ctx, Key::Return) {
@@ -36,15 +45,9 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new("Keyboard Input", 640, 480)
+    ContextBuilder::new("Keyboard Input", 640, 480)
         .resizable(true)
         .quit_on_escape(true)
-        .build()?;
-
-    let state = &mut GameState {
-        input: String::new(),
-        text: Text::new("", Font::default(), 32.0),
-    };
-
-    tetra::run(ctx, state)
+        .build()?
+        .run(&mut GameState::new())
 }

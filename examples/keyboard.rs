@@ -7,6 +7,15 @@ struct GameState {
     position: Vec2,
 }
 
+impl GameState {
+    fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+        Ok(GameState {
+            texture: Texture::new(ctx, "./examples/resources/player.png")?,
+            position: Vec2::new(160.0 / 2.0, 144.0 / 2.0),
+        })
+    }
+}
+
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         if input::is_key_down(ctx, Key::A) {
@@ -57,16 +66,10 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new("Keyboard Input", 160, 144)
+    ContextBuilder::new("Keyboard Input", 160, 144)
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)
-        .build()?;
-
-    let state = &mut GameState {
-        texture: Texture::new(ctx, "./examples/resources/player.png")?,
-        position: Vec2::new(160.0 / 2.0, 144.0 / 2.0),
-    };
-
-    tetra::run(ctx, state)
+        .build()?
+        .run_with(GameState::new)
 }

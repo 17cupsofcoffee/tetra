@@ -26,13 +26,10 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    let ctx = &mut ContextBuilder::new("Rendering a NineSlice", 160, 144)
+    ContextBuilder::new("Rendering a NineSlice", 160, 144)
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)
-        .build()?;
-
-    let state = &mut GameState::new(ctx)?;
-
-    tetra::run(ctx, state)
+        .build()?
+        .run_with(GameState::new)
 }
