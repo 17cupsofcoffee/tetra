@@ -1,6 +1,6 @@
 use tetra::graphics::color;
 use tetra::graphics::{self, NineSlice, Rectangle, Texture, Vec2};
-use tetra::{self, Context, ContextBuilder, State};
+use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
     panel: NineSlice,

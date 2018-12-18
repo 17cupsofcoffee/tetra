@@ -33,7 +33,7 @@ To get a simple window displayed on screen, the following code can be used:
 
 ```rust
 use tetra::graphics::{self, Color};
-use tetra::{self, Context, ContextBuilder, State};
+use tetra::{Context, ContextBuilder, State};
 
 struct GameState;
 

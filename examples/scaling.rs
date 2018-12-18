@@ -2,7 +2,7 @@ use tetra::graphics::{
     self, Color, Font, NineSlice, Rectangle, ScreenScaling, Text, Texture, Vec2,
 };
 use tetra::input::{self, Key};
-use tetra::{self, Context, ContextBuilder, State};
+use tetra::{Context, ContextBuilder, State};
 
 const LABEL: &str = "Press Space to cycle between scaling modes\nScreenScaling::";
 const SCREEN_WIDTH: f32 = 640.0;
