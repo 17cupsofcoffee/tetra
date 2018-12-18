@@ -19,11 +19,10 @@ pub struct Shader {
 
 impl Shader {
     /// Creates a new shader program from the given files.
-    pub fn new<P: AsRef<Path>>(
-        ctx: &mut Context,
-        vertex_path: P,
-        fragment_path: P,
-    ) -> Result<Shader> {
+    pub fn new<P>(ctx: &mut Context, vertex_path: P, fragment_path: P) -> Result<Shader>
+    where
+        P: AsRef<Path>,
+    {
         Ok(Shader::from_string(
             ctx,
             &fs::read_to_string(vertex_path)?,

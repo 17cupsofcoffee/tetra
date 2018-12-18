@@ -40,7 +40,10 @@ pub struct Font {
 
 impl Font {
     /// Loads a font from the given file.
-    pub fn new<P: AsRef<Path>>(ctx: &mut Context, path: P) -> Result<Font> {
+    pub fn new<P>(ctx: &mut Context, path: P) -> Result<Font>
+    where
+        P: AsRef<Path>,
+    {
         let font_bytes = fs::read(path)?;
         let id = ctx.graphics.font_cache.add_font_bytes(font_bytes);
 
@@ -79,7 +82,10 @@ pub struct Text {
 
 impl Text {
     /// Creates a new `Text`, with the given content, font and scale.
-    pub fn new<S: Into<String>>(content: S, font: Font, size: f32) -> Text {
+    pub fn new<S>(content: S, font: Font, size: f32) -> Text
+    where
+        S: Into<String>,
+    {
         let content = content.into();
 
         Text {
@@ -92,7 +98,10 @@ impl Text {
     }
 
     /// Sets the content of the text.
-    pub fn set_content<S: Into<String>>(&mut self, content: S) {
+    pub fn set_content<S>(&mut self, content: S)
+    where
+        S: Into<String>,
+    {
         self.content = content.into();
         self.invalidate();
     }
@@ -176,7 +185,10 @@ impl Text {
 }
 
 impl Drawable for Text {
-    fn draw<T: Into<DrawParams>>(&self, ctx: &mut Context, params: T) {
+    fn draw<P>(&self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
         let params = params.into();
         let transform = params.build_matrix();
 
