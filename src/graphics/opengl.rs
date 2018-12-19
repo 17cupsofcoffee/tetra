@@ -487,6 +487,7 @@ impl Drop for GLVertexBuffer {
     }
 }
 
+#[derive(Debug)]
 pub struct GLIndexBuffer {
     id: GLuint,
     count: usize,
@@ -500,7 +501,7 @@ impl Drop for GLIndexBuffer {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct GLProgram {
     id: GLuint,
 }
@@ -538,6 +539,7 @@ where
     }
 }
 
+#[derive(Debug)]
 pub struct GLTexture {
     id: GLuint,
     width: i32,
@@ -568,7 +570,7 @@ impl Drop for GLTexture {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub struct GLFramebuffer {
     id: GLuint,
 }

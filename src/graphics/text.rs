@@ -33,7 +33,7 @@ struct FontQuad {
 ///
 /// Deja Vu Sans Mono is provided as a default font, and can be used by calling `Font::default()`.
 /// If you use it, you must distribute the license with your game - it can be found in `src/resources`.
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Font {
     id: FontId,
 }

@@ -14,7 +14,7 @@ use crate::Context;
 ///
 /// This type acts as a lightweight handle to the associated graphics hardware data,
 /// and so can be cloned with little overhead.
-#[derive(Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Texture {
     pub(crate) handle: Rc<GLTexture>,
 }

@@ -6,6 +6,7 @@ use crate::Context;
 /// A panel made up of nine slices of an image. Useful for panels with borders.
 ///
 /// Note that `NineSlice` does not currently support the `clip` `DrawParam`.
+#[derive(Debug, Clone)]
 pub struct NineSlice {
     texture: Texture,
     width: f32,
