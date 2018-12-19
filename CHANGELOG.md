@@ -32,6 +32,7 @@
 * The `update` and `draw` methods on `State` are now both optional.
 * The `graphics` module now re-exports `Vec2`.
 * In addition to the normal `run` method, there is now also a `run_with` method that uses a closure to construct the `State`. This is handy when method chaining - see the examples for how it can be used.
+* Public types now implement `Debug` and `Clone` where appropriate.
 
 ### Bug Fixes
 

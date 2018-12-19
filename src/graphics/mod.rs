@@ -218,7 +218,7 @@ impl GraphicsContext {
 }
 
 /// A rectangle of `f32`s.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Rectangle {
     /// The X co-ordinate of the rectangle.
     pub x: f32,
@@ -285,6 +285,7 @@ impl Rectangle {
     }
 }
 
+#[derive(Debug, Clone)]
 struct RectangleRow {
     next_rect: Rectangle,
 }
@@ -299,6 +300,7 @@ impl Iterator for RectangleRow {
     }
 }
 
+#[derive(Debug, Clone)]
 struct RectangleColumn {
     next_rect: Rectangle,
 }
@@ -324,7 +326,7 @@ impl Iterator for RectangleColumn {
 /// * Rotation: 0.0
 /// * Color: White
 /// * Clip: Full image
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DrawParams {
     pub(crate) position: Vec2,
     pub(crate) scale: Vec2,

@@ -285,6 +285,7 @@ impl Context {
 }
 
 /// Creates a new `Context` based on the provided options.
+#[derive(Debug, Clone)]
 pub struct ContextBuilder<'a> {
     title: &'a str,
     internal_width: i32,

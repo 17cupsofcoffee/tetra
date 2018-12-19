@@ -8,6 +8,7 @@ use crate::Context;
 ///
 /// As the rendering speed of the game is not fixed, use the `tick` method in your
 /// `update` handler to progress the animation.
+#[derive(Debug, Clone)]
 pub struct Animation {
     texture: Texture,
     frames: Vec<Rectangle>,

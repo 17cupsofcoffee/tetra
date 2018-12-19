@@ -1,7 +1,7 @@
 //! Functions and types relating to color.
 
 /// Represents an RGBA color.
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color {
     /// The red component of the color.
     pub r: f32,
