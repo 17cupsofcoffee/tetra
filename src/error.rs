@@ -1,16 +1,28 @@
 //! Functions and types relating to error handling.
 
+use std::error::Error;
+use std::fmt::{self, Display, Formatter};
+use std::io;
+use std::result;
+
+use image::ImageError;
+use sdl2::video::WindowBuildError;
+use sdl2::IntegerOrSdlError;
+
 /// A specialized `Result` type for Tetra.
 ///
 /// All Tetra functions with a recoverable failure condition will return this type.
 /// In your game code, you can either use it directly, or wrap it in your own error type.
-pub type Result<T = ()> = std::result::Result<T, TetraError>;
+pub type Result<T = ()> = result::Result<T, TetraError>;
 
 /// Represents the types of error that can occur in a Tetra game.
+///
+/// Note that if you `match` on this enum, you will be forced to add a wildcard arm by the compiler.
+/// This is so that if a new error type is added later on, it will not break your code.
 #[derive(Debug)]
 pub enum TetraError {
     /// An error that occurred while performing an I/O operation (e.g. while loading a file).
-    Io(std::io::Error),
+    Io(io::Error),
 
     /// An error that was returned by SDL.
     Sdl(String),
@@ -19,29 +31,58 @@ pub enum TetraError {
     OpenGl(String),
 
     /// An error that occured while processing an image.
-    Image(image::ImageError),
+    Image(ImageError),
+
+    /// This is here so that adding new error types will not be a breaking change.
+    /// Can be removed once #[non_exhaustive] is stabilized.
+    #[doc(hidden)]
+    __Nonexhaustive,
 }
 
-impl From<std::io::Error> for TetraError {
-    fn from(io_error: std::io::Error) -> TetraError {
-        TetraError::Io(io_error)
+impl Display for TetraError {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            TetraError::Io(e) => write!(f, "IO error: {}", e),
+            TetraError::Sdl(e) => write!(f, "SDL error: {}", e),
+            TetraError::OpenGl(e) => write!(f, "OpenGL error: {}", e),
+            TetraError::Image(e) => write!(f, "Image processing error: {}", e),
+            TetraError::__Nonexhaustive => unreachable!(),
+        }
     }
 }
 
-impl From<image::ImageError> for TetraError {
-    fn from(image_error: image::ImageError) -> TetraError {
-        TetraError::Image(image_error)
+impl Error for TetraError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            TetraError::Io(e) => Some(e),
+            TetraError::Sdl(_) => None,
+            TetraError::OpenGl(_) => None,
+            TetraError::Image(e) => Some(e),
+            TetraError::__Nonexhaustive => unreachable!(),
+        }
     }
 }
 
-impl From<sdl2::video::WindowBuildError> for TetraError {
-    fn from(window_build_error: sdl2::video::WindowBuildError) -> TetraError {
-        TetraError::Sdl(window_build_error.to_string())
+impl From<io::Error> for TetraError {
+    fn from(e: io::Error) -> TetraError {
+        TetraError::Io(e)
     }
 }
 
-impl From<sdl2::IntegerOrSdlError> for TetraError {
-    fn from(integer_or_sdl_error: sdl2::IntegerOrSdlError) -> TetraError {
-        TetraError::Sdl(integer_or_sdl_error.to_string())
+impl From<ImageError> for TetraError {
+    fn from(e: ImageError) -> TetraError {
+        TetraError::Image(e)
+    }
+}
+
+impl From<WindowBuildError> for TetraError {
+    fn from(e: WindowBuildError) -> TetraError {
+        TetraError::Sdl(e.to_string())
+    }
+}
+
+impl From<IntegerOrSdlError> for TetraError {
+    fn from(e: IntegerOrSdlError) -> TetraError {
+        TetraError::Sdl(e.to_string())
     }
 }
