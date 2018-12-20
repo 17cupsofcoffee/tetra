@@ -23,17 +23,23 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        Ok(Shader::from_string(
+        Shader::from_string(
             ctx,
             &fs::read_to_string(vertex_path)?,
             &fs::read_to_string(fragment_path)?,
-        ))
+        )
     }
 
     /// Creates a new shader program from the given strings.
-    pub fn from_string(ctx: &mut Context, vertex_shader: &str, fragment_shader: &str) -> Shader {
+    pub fn from_string(
+        ctx: &mut Context,
+        vertex_shader: &str,
+        fragment_shader: &str,
+    ) -> Result<Shader> {
         // TODO: If this fails, we need to actually return an error instead of crashing
-        Shader::from_handle(ctx.gl.compile_program(vertex_shader, fragment_shader))
+        Ok(Shader::from_handle(
+            ctx.gl.compile_program(vertex_shader, fragment_shader),
+        ))
     }
 
     pub(crate) fn from_handle(handle: GLProgram) -> Shader {

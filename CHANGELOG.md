@@ -15,6 +15,7 @@
 * `quit` and `set_tick_rate` have been moved to the `window` module.
 * The functions for getting the game's internal width/height have been renamed to disambiguate them from the functions for getting the window width/height.
 * Matching on `TetraError` will now force you to add a wildcard arm. This will prevent the addition of new error types from being a breaking change.
+* `Shader::from_string` now returns `Result`, as proper error handling will be added to to it eventually ([#43](https://github.com/17cupsofcoffee/tetra/issues/43)).
 
 ### New Features
 
