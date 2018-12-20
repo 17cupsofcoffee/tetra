@@ -4,7 +4,7 @@ use std::fs;
 use std::path::Path;
 use std::rc::Rc;
 
-use error::{Result, TetraError};
+use error::Result;
 use graphics::opengl::GLProgram;
 use Context;
 
@@ -32,8 +32,8 @@ impl Shader {
     ) -> Result<Shader> {
         Ok(Shader::new(
             ctx,
-            &fs::read_to_string(vertex_path).map_err(TetraError::Io)?,
-            &fs::read_to_string(fragment_path).map_err(TetraError::Io)?,
+            &fs::read_to_string(vertex_path)?,
+            &fs::read_to_string(fragment_path)?,
         ))
     }
 

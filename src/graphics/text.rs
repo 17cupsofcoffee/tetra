@@ -7,7 +7,7 @@ use std::path::Path;
 use glyph_brush::rusttype::{Rect, Scale};
 use glyph_brush::{BrushAction, BrushError, FontId, GlyphVertex, Section};
 
-use error::{Result, TetraError};
+use error::Result;
 use graphics::opengl::GLDevice;
 use graphics::{
     self, ActiveShader, ActiveTexture, DrawParams, Drawable, Rectangle, Texture, TextureFormat,
@@ -41,7 +41,7 @@ pub struct Font {
 impl Font {
     /// Loads a font from the given file.
     pub fn new<P: AsRef<Path>>(ctx: &mut Context, path: P) -> Result<Font> {
-        let font_bytes = fs::read(path).map_err(TetraError::Io)?;
+        let font_bytes = fs::read(path)?;
         let id = ctx.graphics.font_cache.add_font_bytes(font_bytes);
 
         Ok(Font { id })

@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use image;
 
-use error::{Result, TetraError};
+use error::Result;
 use graphics::opengl::{GLTexture, TextureFormat};
 use graphics::{self, ActiveShader, DrawParams, Drawable, Rectangle};
 use Context;
@@ -22,7 +22,7 @@ pub struct Texture {
 impl Texture {
     /// Creates a new texture from the given file.
     pub fn new<P: AsRef<Path>>(ctx: &mut Context, path: P) -> Result<Texture> {
-        let image = image::open(path).map_err(TetraError::Image)?.to_rgba();
+        let image = image::open(path)?.to_rgba();
         let (width, height) = image.dimensions();
 
         let texture = ctx
