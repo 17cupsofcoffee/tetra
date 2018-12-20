@@ -21,3 +21,27 @@ pub enum TetraError {
     /// An error that occured while processing an image.
     Image(image::ImageError),
 }
+
+impl From<std::io::Error> for TetraError {
+    fn from(io_error: std::io::Error) -> TetraError {
+        TetraError::Io(io_error)
+    }
+}
+
+impl From<image::ImageError> for TetraError {
+    fn from(image_error: image::ImageError) -> TetraError {
+        TetraError::Image(image_error)
+    }
+}
+
+impl From<sdl2::video::WindowBuildError> for TetraError {
+    fn from(window_build_error: sdl2::video::WindowBuildError) -> TetraError {
+        TetraError::Sdl(window_build_error.to_string())
+    }
+}
+
+impl From<sdl2::IntegerOrSdlError> for TetraError {
+    fn from(integer_or_sdl_error: sdl2::IntegerOrSdlError) -> TetraError {
+        TetraError::Sdl(integer_or_sdl_error.to_string())
+    }
+}

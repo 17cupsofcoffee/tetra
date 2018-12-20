@@ -36,7 +36,7 @@ impl GLDevice {
 
         video
             .gl_set_swap_interval(if vsync { 1 } else { 0 })
-            .map_err(|e| TetraError::Sdl(e.to_string()))?;;
+            .map_err(TetraError::Sdl)?;
 
         let mut current_vertex_array = 0;
 

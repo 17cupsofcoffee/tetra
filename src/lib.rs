@@ -234,13 +234,9 @@ impl<'a> ContextBuilder<'a> {
             window_builder.resizable();
         }
 
-        let mut window = window_builder
-            .build()
-            .map_err(|e| TetraError::Sdl(e.to_string()))?; // TODO: This could probably be cleaner
+        let mut window = window_builder.build()?;
 
-        window
-            .set_minimum_size(self.width as u32, self.height as u32)
-            .map_err(|e| TetraError::Sdl(e.to_string()))?;
+        window.set_minimum_size(self.width as u32, self.height as u32)?;
 
         let mut gl = GLDevice::new(&video, &window, self.vsync)?;
         let graphics = GraphicsContext::new(
