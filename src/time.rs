@@ -1,6 +1,8 @@
-//! Functions and types relating to measuring time.
+//! Functions and types relating to measuring and manipulating time.
 
 use std::time::Duration;
+
+use crate::Context;
 
 /// Converts a `std::time::Duration` to an `f64`. This is less accurate, but
 /// usually more useful.
@@ -16,4 +18,14 @@ pub fn f64_to_duration(duration: f64) -> Duration {
     let seconds = duration.trunc() as u64;
     let nanos = (duration.fract() * 1e9) as u32;
     Duration::new(seconds, nanos)
+}
+
+/// Gets the update tick rate of the application, in ticks per second.
+pub fn get_tick_rate(ctx: &Context) -> f64 {
+    1.0 / duration_to_f64(ctx.tick_rate)
+}
+
+/// Sets the update tick rate of the application, in ticks per second.
+pub fn set_tick_rate(ctx: &mut Context, tick_rate: f64) {
+    ctx.tick_rate = f64_to_duration(1.0 / tick_rate);
 }

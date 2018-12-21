@@ -12,7 +12,8 @@
 * `Shader::from_file` is now called `Shader::new`, and `Shader::new` is now called `Shader::from_string`. This is more consistent with the other constructors.
 * Tick rates are now specified in ticks per second ([#40](https://github.com/17cupsofcoffee/tetra/issues/40)).
 * The `ContextBuilder` no longer consumes itself when called - this is more flexible for e.g. calling methods inside a conditional.
-* `quit` and `set_tick_rate` have been moved to the `window` module.
+* `quit` has been moved to the `window` module.
+* `set_tick_rate` has been moved to the `time` module.
 * The functions for getting the game's internal width/height have been renamed to disambiguate them from the functions for getting the window width/height.
 * Matching on `TetraError` will now force you to add a wildcard arm. This will prevent the addition of new error types from being a breaking change.
 * `Shader::from_string` now returns `Result`, as proper error handling will be added to to it eventually ([#43](https://github.com/17cupsofcoffee/tetra/issues/43)).
