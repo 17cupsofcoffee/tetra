@@ -38,6 +38,25 @@ impl Animation {
             self.timer = 0;
         }
     }
+
+    /// Set new frames for this animation, while keeping the old texture and frame length. This will reset the current animation.
+    pub fn set_frames(&mut self, new_frames: Vec<Rectangle>) {
+        self.frames = new_frames;
+        self.current_frame = 0;
+        self.timer = 0;
+    }
+
+    /// Set the new frame length for this animation. This will make the animation run at the new length right away.
+    /// If you want to reset the animation to 0, call `restart`
+    pub fn set_frame_length(&mut self, new_frame_length: i32) {
+        self.frame_length = new_frame_length;
+    }
+
+    /// Will restart the current animation from the beginning.
+    pub fn restart(&mut self) {
+        self.current_frame = 0;
+        self.timer = 0;
+    }
 }
 
 impl Drawable for Animation {
