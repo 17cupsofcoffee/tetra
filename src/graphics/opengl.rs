@@ -219,10 +219,62 @@ impl GLDevice {
             gl::CompileShader(vertex_id);
             gl::AttachShader(program_id, vertex_id);
 
+            let mut success = 0;
+            gl::GetShaderiv(vertex_id, gl::COMPILE_STATUS, &mut success);
+
+            if success != 1 {
+                let mut max_len = 0;
+
+                gl::GetShaderiv(vertex_id, gl::INFO_LOG_LENGTH, &mut max_len);
+
+                let mut result = vec![0u8; max_len as usize];
+                let mut result_len = 0 as GLsizei;
+                gl::GetShaderInfoLog(
+                    vertex_id,
+                    max_len as GLsizei,
+                    &mut result_len,
+                    result.as_mut_ptr() as *mut GLchar,
+                );
+
+                result.truncate(if result_len > 0 {
+                    result_len as usize
+                } else {
+                    0
+                });
+
+                return Err(TetraError::OpenGl(String::from_utf8(result).unwrap()));
+            }
+
             let fragment_id = gl::CreateShader(gl::FRAGMENT_SHADER);
             gl::ShaderSource(fragment_id, 1, &fragment_buffer.as_ptr(), ptr::null());
             gl::CompileShader(fragment_id);
             gl::AttachShader(program_id, fragment_id);
+
+            let mut success = 0;
+            gl::GetShaderiv(fragment_id, gl::COMPILE_STATUS, &mut success);
+
+            if success != 1 {
+                let mut max_len = 0;
+
+                gl::GetShaderiv(fragment_id, gl::INFO_LOG_LENGTH, &mut max_len);
+
+                let mut result = vec![0u8; max_len as usize];
+                let mut result_len = 0 as GLsizei;
+                gl::GetShaderInfoLog(
+                    fragment_id,
+                    max_len as GLsizei,
+                    &mut result_len,
+                    result.as_mut_ptr() as *mut GLchar,
+                );
+
+                result.truncate(if result_len > 0 {
+                    result_len as usize
+                } else {
+                    0
+                });
+
+                return Err(TetraError::OpenGl(String::from_utf8(result).unwrap()));
+            }
 
             gl::LinkProgram(program_id);
 
