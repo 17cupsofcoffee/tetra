@@ -26,6 +26,7 @@ pub use glm::Vec2;
 use glm::{self, Mat3, Mat4, Vec3};
 use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
+use crate::error::Result;
 use crate::graphics::opengl::{
     BufferUsage, GLDevice, GLFramebuffer, GLIndexBuffer, GLVertexBuffer, TextureFormat,
 };
@@ -107,7 +108,7 @@ impl GraphicsContext {
         internal_width: i32,
         internal_height: i32,
         scaling: ScreenScaling,
-    ) -> GraphicsContext {
+    ) -> Result<GraphicsContext> {
         assert!(
             MAX_VERTICES <= 32767,
             "Can't have more than 32767 vertices to a single buffer"
@@ -153,7 +154,7 @@ impl GraphicsContext {
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
         let default_shader = Shader::from_handle(
-            device.compile_program(DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER),
+            device.compile_program(DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER)?,
         );
 
         let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
@@ -166,10 +167,10 @@ impl GraphicsContext {
         ));
 
         let text_shader = Shader::from_handle(
-            device.compile_program(DEFAULT_VERTEX_SHADER, FONT_FRAGMENT_SHADER),
+            device.compile_program(DEFAULT_VERTEX_SHADER, FONT_FRAGMENT_SHADER)?,
         );
 
-        GraphicsContext {
+        Ok(GraphicsContext {
             vertex_buffer,
             index_buffer,
 
@@ -213,7 +214,7 @@ impl GraphicsContext {
             screen_rect,
 
             font_cache,
-        }
+        })
     }
 }
 

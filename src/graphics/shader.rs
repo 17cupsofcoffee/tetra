@@ -36,10 +36,9 @@ impl Shader {
         vertex_shader: &str,
         fragment_shader: &str,
     ) -> Result<Shader> {
-        // TODO: If this fails, we need to actually return an error instead of crashing
-        Ok(Shader::from_handle(
-            ctx.gl.compile_program(vertex_shader, fragment_shader),
-        ))
+        ctx.gl
+            .compile_program(vertex_shader, fragment_shader)
+            .map(Shader::from_handle)
     }
 
     pub(crate) fn from_handle(handle: GLProgram) -> Shader {
