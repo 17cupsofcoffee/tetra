@@ -32,6 +32,10 @@ Tetra currently requires Rust 1.31 or higher.
 
 You will also need to install the SDL2 native libraries, as described [here](https://github.com/Rust-SDL2/rust-sdl2#user-content-requirements). The 'bundled' and 'static linking' features described can be activated using the `sdl2_bundled` and `sdl2_static_link` Cargo features in Tetra.
 
+## Documentation
+
+API documentation is available on [docs.rs](https://docs.rs/tetra). There is also a [FAQ](docs/FAQ.md) in the repository.
+
 ## Examples
 
 To get a simple window displayed on screen, the following code can be used:
