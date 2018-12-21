@@ -6,9 +6,11 @@
 //!
 //! * XNA/MonoGame-inspired API
 //! * Efficient 2D rendering, with draw call batching by default
+//! * Simple input handling
 //! * Animations/spritesheets
-//! * Pixel-perfect screen scaling
-//! * Deterministic game loop, à la [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/).
+//! * TTF font rendering
+//! * Multiple screen scaling algorithms, including pixel-perfect variants (for those chunky retro pixels)
+//! * Deterministic game loop, à la [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/)
 //!
 //! ## Installation
 //!
@@ -17,6 +19,8 @@
 //! ```toml
 //! tetra = "0.1"
 //! ```
+//!
+//! Tetra currently requires Rust 1.31 or higher.
 //!
 //! You will also need to install the SDL2 native libraries, as described [here](https://github.com/Rust-SDL2/rust-sdl2#user-content-requirements). The 'bundled' and 'static linking' features described can be activated using the `sdl2_bundled` and `sdl2_static_link` Cargo features in Tetra.
 //!
