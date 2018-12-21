@@ -1,9 +1,8 @@
-//! Functions and types relating to the window/game loop.
+//! Functions and types relating to the game window.
 
 use sdl2::video::FullscreenType;
 
 use crate::graphics::{self, ScreenScaling};
-use crate::time;
 use crate::{Context, Result, TetraError};
 
 /// Quits the game, if it is currently running.
@@ -22,16 +21,6 @@ pub fn get_title(ctx: &Context) -> &str {
 /// Sets the title of the window.
 pub fn set_title(ctx: &mut Context, title: &str) {
     ctx.window.set_title(title).unwrap();
-}
-
-/// Gets the update tick rate of the application, in ticks per second.
-pub fn get_tick_rate(ctx: &Context) -> f64 {
-    1.0 / time::duration_to_f64(ctx.tick_rate)
-}
-
-/// Sets the update tick rate of the application, in ticks per second.
-pub fn set_tick_rate(ctx: &mut Context, tick_rate: f64) {
-    ctx.tick_rate = time::f64_to_duration(1.0 / tick_rate);
 }
 
 /// Gets the width of the window.
