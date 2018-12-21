@@ -41,7 +41,7 @@ impl State for GameState {
             self.set_animation_2();
         }
         if input::is_key_pressed(ctx, Key::Space) {
-            self.animation.restart_animation();
+            self.animation.restart();
         }
     }
 
