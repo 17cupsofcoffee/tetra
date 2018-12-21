@@ -1,6 +1,7 @@
 # Tetra
 
 [![Crates.io](https://img.shields.io/crates/v/tetra.svg)](https://crates.io/crates/tetra)
+[![Minimum Rust Version](https://img.shields.io/badge/minimum%20rust%20version-1.31-orange.svg)](https://www.rust-lang.org/tools/install)
 [![Documentation](https://docs.rs/tetra/badge.svg)](https://docs.rs/tetra)
 [![License](https://img.shields.io/crates/l/tetra.svg)](LICENSE)
 [![Gitter chat](https://badges.gitter.im/tetra-rs/community.png)](https://gitter.im/tetra-rs/community)
@@ -13,17 +14,21 @@ Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event hand
 
 * XNA/MonoGame-inspired API
 * Efficient 2D rendering, with draw call batching by default
+* Simple input handling
 * Animations/spritesheets
-* Pixel-perfect screen scaling 
-* Deterministic game loop, à la [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/).
+* TTF font rendering
+* Multiple screen scaling algorithms, including pixel-perfect variants (for those chunky retro pixels)
+* Deterministic game loop, à la [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/)
 
 ## Installation
 
 To add Tetra to your project, add the following line to your `Cargo.toml` file:
 
 ```
-tetra = "0.1"
+tetra = "0.2"
 ```
+
+Tetra currently requires Rust 1.31 or higher.
 
 You will also need to install the SDL2 native libraries, as described [here](https://github.com/Rust-SDL2/rust-sdl2#user-content-requirements). The 'bundled' and 'static linking' features described can be activated using the `sdl2_bundled` and `sdl2_static_link` Cargo features in Tetra.
 
