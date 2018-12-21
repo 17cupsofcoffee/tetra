@@ -67,9 +67,11 @@ impl ScreenScaling {
                 Rectangle::new(0.0, 0.0, window_width as f32, window_height as f32)
             }
             ScreenScaling::ShowAll => {
-                let scale_x = f_window_width / f_internal_width;
-                let scale_y = f_window_height / f_internal_height;
-                let scale_factor = scale_x.min(scale_y);
+                let scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
+                    f_window_width / f_internal_width
+                } else {
+                    f_window_height / f_internal_height
+                };
 
                 let screen_width = (f_internal_width * scale_factor).ceil();
                 let screen_height = (f_internal_height * scale_factor).ceil();
