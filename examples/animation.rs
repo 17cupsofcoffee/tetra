@@ -5,6 +5,7 @@ extern crate tetra;
 use tetra::glm::Vec2;
 use tetra::graphics::{self, Animation, Color, DrawParams, Rectangle, Texture};
 use tetra::{Context, ContextBuilder, State};
+use tetra::input::{self, Key};
 
 struct GameState {
     animation: Animation,
@@ -20,11 +21,28 @@ impl GameState {
             ),
         })
     }
+
+    pub fn set_animation_1(&mut self,) {
+        self.animation.set_frames(Rectangle::row(0.0, 272.0, 16.0, 16.0).take(8).collect());
+    }
+
+    pub fn set_animation_2(&mut self,) {
+        self.animation.set_frames(Rectangle::row(0.0, 256.0, 16.0, 16.0).take(8).collect());
+    }
 }
 
 impl State for GameState {
-    fn update(&mut self, _ctx: &mut Context) {
+    fn update(&mut self, ctx: &mut Context) {
         self.animation.tick();
+        if input::is_key_pressed(ctx, Key::Num1) {
+            self.set_animation_1();
+        }
+        if input::is_key_pressed(ctx, Key::Num2) {
+            self.set_animation_2();
+        }
+        if input::is_key_pressed(ctx, Key::Space) {
+            self.animation.restart_animation();
+        }
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) {
