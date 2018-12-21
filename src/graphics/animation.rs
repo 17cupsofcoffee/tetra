@@ -47,13 +47,13 @@ impl Animation {
     }
 
     /// Set the new frame length for this animation. This will make the animation run at the new length right away.
-    /// If you want to reset the animation to 0, call `restart_animation`
+    /// If you want to reset the animation to 0, call `restart`
     pub fn set_frame_length(&mut self, new_frame_length: i32) {
         self.frame_length = new_frame_length;
     }
 
     /// Will restart the current animation from the beginning.
-    pub fn restart_animation(&mut self) {
+    pub fn restart(&mut self) {
         self.current_frame = 0;
         self.timer = 0;
     }
