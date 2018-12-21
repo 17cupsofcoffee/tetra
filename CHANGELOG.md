@@ -12,6 +12,7 @@
     * `input::get_keys_released`
 * Text input typed by the user can now be retrieved using the `input::get_text_input` function ([#36](https://github.com/17cupsofcoffee/tetra/pull/36), by [@VictorKoenders](https://github.com/VictorKoenders)).
 * `Text` now has a method for efficiently calculating (and caching) the outer bounds of the text ([#41](https://github.com/17cupsofcoffee/tetra/pull/41), by [@VictorKoenders](https://github.com/VictorKoenders)).
+* New methods have been added to `Animation`, allowing it to be modified after it is initially created ([#48](https://github.com/17cupsofcoffee/tetra/pull/48), by [@VictorKoenders](https://github.com/VictorKoenders))
 
 ### Bug Fixes
 
