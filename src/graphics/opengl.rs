@@ -214,6 +214,13 @@ impl GLDevice {
 
             let program_id = gl::CreateProgram();
 
+            // TODO: IDK if this should be applied to *all* shaders...
+            let pos_tex_name = CString::new("in_pos_tex").unwrap();
+            let color_name = CString::new("in_color").unwrap();
+
+            gl::BindAttribLocation(program_id, 0, pos_tex_name.as_ptr());
+            gl::BindAttribLocation(program_id, 1, color_name.as_ptr());
+
             let vertex_id = gl::CreateShader(gl::VERTEX_SHADER);
             gl::ShaderSource(vertex_id, 1, &vertex_buffer.as_ptr(), ptr::null());
             gl::CompileShader(vertex_id);
