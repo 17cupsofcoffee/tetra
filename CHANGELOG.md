@@ -1,10 +1,14 @@
 # Changelog
 
-## 0.2.1 (Upcoming)
+## 0.2.1 (December 22, 2018)
 
 ### New Features
 
 * Shader errors are now properly reported via `TetraError::OpenGl`. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#50](https://github.com/17cupsofcoffee/tetra/pull/50))
+
+### Bug Fixes
+
+* The shader attribute order is now explicitly defined - this fixes an issue with black screens on some drivers. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in  [#52](https://github.com/17cupsofcoffee/tetra/pull/52))
 
 ## 0.2.0 (December 21, 2018)
 
