@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 (Upcoming)
+
+### New Features
+
+* Shader errors are now properly reported via `TetraError::OpenGl`. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#50](https://github.com/17cupsofcoffee/tetra/pull/50))
+
 ## 0.2.0 (December 21, 2018)
 
 ### Breaking Changes
