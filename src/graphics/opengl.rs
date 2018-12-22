@@ -203,7 +203,11 @@ impl GLDevice {
         }
     }
 
-    pub fn compile_program(&mut self, vertex_shader: &str, fragment_shader: &str) -> GLProgram {
+    pub fn compile_program(
+        &mut self,
+        vertex_shader: &str,
+        fragment_shader: &str,
+    ) -> Result<GLProgram> {
         unsafe {
             let vertex_buffer = CString::new(vertex_shader).unwrap();
             let fragment_buffer = CString::new(fragment_shader).unwrap();
@@ -215,17 +219,88 @@ impl GLDevice {
             gl::CompileShader(vertex_id);
             gl::AttachShader(program_id, vertex_id);
 
+            let mut success = 0;
+            gl::GetShaderiv(vertex_id, gl::COMPILE_STATUS, &mut success);
+
+            if success != 1 {
+                return Err(TetraError::OpenGl(self.get_shader_info_log(vertex_id)));
+            }
+
             let fragment_id = gl::CreateShader(gl::FRAGMENT_SHADER);
             gl::ShaderSource(fragment_id, 1, &fragment_buffer.as_ptr(), ptr::null());
             gl::CompileShader(fragment_id);
             gl::AttachShader(program_id, fragment_id);
 
+            let mut success = 0;
+            gl::GetShaderiv(fragment_id, gl::COMPILE_STATUS, &mut success);
+
+            if success != 1 {
+                return Err(TetraError::OpenGl(self.get_shader_info_log(fragment_id)));
+            }
+
             gl::LinkProgram(program_id);
+
+            let mut success = 0;
+            gl::GetProgramiv(program_id, gl::LINK_STATUS, &mut success);
+
+            if success != 1 {
+                return Err(TetraError::OpenGl(self.get_program_info_log(program_id)));
+            }
 
             gl::DeleteShader(vertex_id);
             gl::DeleteShader(fragment_id);
 
-            GLProgram { id: program_id }
+            Ok(GLProgram { id: program_id })
+        }
+    }
+
+    fn get_shader_info_log(&mut self, shader_id: GLuint) -> String {
+        unsafe {
+            let mut max_len = 0;
+
+            gl::GetShaderiv(shader_id, gl::INFO_LOG_LENGTH, &mut max_len);
+
+            let mut result = vec![0u8; max_len as usize];
+            let mut result_len = 0 as GLsizei;
+            gl::GetShaderInfoLog(
+                shader_id,
+                max_len as GLsizei,
+                &mut result_len,
+                result.as_mut_ptr() as *mut GLchar,
+            );
+
+            result.truncate(if result_len > 0 {
+                result_len as usize
+            } else {
+                0
+            });
+
+            String::from_utf8(result).unwrap()
+        }
+    }
+
+    fn get_program_info_log(&mut self, program_id: GLuint) -> String {
+        unsafe {
+            let mut max_len = 0;
+
+            gl::GetProgramiv(program_id, gl::INFO_LOG_LENGTH, &mut max_len);
+
+            let mut result = vec![0u8; max_len as usize];
+            let mut result_len = 0 as GLsizei;
+            gl::GetProgramInfoLog(
+                program_id,
+                max_len as GLsizei,
+                &mut result_len,
+                result.as_mut_ptr() as *mut GLchar,
+            );
+
+            result.truncate(if result_len > 0 {
+                result_len as usize
+            } else {
+                0
+            });
+
+            String::from_utf8(result).unwrap()
         }
     }
 

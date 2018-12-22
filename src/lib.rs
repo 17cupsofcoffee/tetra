@@ -505,7 +505,7 @@ impl<'a> ContextBuilder<'a> {
             self.internal_width,
             self.internal_height,
             self.scaling,
-        );
+        )?;
         let input = InputContext::new();
 
         Ok(Context {
