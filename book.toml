@@ -1,0 +1,8 @@
+[book]
+authors = ["Joe Clay"]
+multilingual = false
+src = "docs"
+title = "Tetra"
+
+[build]
+preprocess = ["index"]
