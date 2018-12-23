@@ -17,7 +17,7 @@
 //! To add Tetra to your project, add the following line to your `Cargo.toml` file:
 //!
 //! ```toml
-//! tetra = "0.1"
+//! tetra = "0.2"
 //! ```
 //!
 //! Tetra currently requires Rust 1.31 or higher.
