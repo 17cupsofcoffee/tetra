@@ -1,8 +1,5 @@
 [book]
-authors = ["Joe Clay"]
-multilingual = false
-src = "docs"
 title = "Tetra"
-
-[build]
-preprocess = ["index"]
+authors = ["Joe Clay"]
+description = "A simple 2D game framework written in Rust"
+src = "docs"
