@@ -6,6 +6,10 @@
 
 * Tetra now has a [website](https://tetra.seventeencups.net), with a tutorial on how to get started using it. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#55](https://github.com/17cupsofcoffee/tetra/pull/55))
 
+### Bug Fixes
+
+* We now always request an OpenGL 3.2 core profile context - this is required for us to support MacOS. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#56](https://github.com/17cupsofcoffee/tetra/pull/56))
+
 ## 0.2.1 (December 22, 2018)
 
 ### New Features
