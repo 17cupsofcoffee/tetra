@@ -1,4 +1,5 @@
 /target
+/book
 **/*.rs.bk
 Cargo.lock
 SDL2.dll
