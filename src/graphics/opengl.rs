@@ -1,4 +1,3 @@
-use std::env;
 use std::ffi::{CStr, CString};
 use std::mem;
 use std::ptr;
@@ -26,12 +25,8 @@ pub struct GLDevice {
 impl GLDevice {
     pub fn new(video: &VideoSubsystem, window: &Window, vsync: bool) -> Result<GLDevice> {
         let gl_attr = video.gl_attr();
-
-        let force_core = env::var("TETRA_OPENGL_FORCE_CORE_PROFILE");
-        if force_core.is_ok() && force_core.unwrap() == "1" {
-            gl_attr.set_context_profile(GLProfile::Core);
-            gl_attr.set_context_version(3, 2);
-        }
+        gl_attr.set_context_profile(GLProfile::Core);
+        gl_attr.set_context_version(3, 2);
 
         let _ctx = window.gl_create_context().map_err(TetraError::OpenGl)?;
         gl::load_with(|name| video.gl_get_proc_address(name) as *const _);
