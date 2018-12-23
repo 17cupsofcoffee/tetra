@@ -21,5 +21,6 @@ deploy:
   github-token: $GITHUB_TOKEN
   local-dir: book
   keep-history: false
+  fqdn: tetra.seventeencups.net
   on:
     branch: master
