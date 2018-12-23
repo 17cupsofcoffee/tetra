@@ -10,6 +10,10 @@ Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event hand
 
 **Note that Tetra is still extremely early in development!** It may/will have bugs and missing features (the big ones currently being sound and gamepad support). That said, you're welcome to give it a go and let me know what you think :)
 
+* [Website/Tutorial](https://tetra.seventeencups.net) 
+* [API Docs](https://docs.rs/tetra)
+* [FAQ](https://tetra.seventeencups.net/FAQ)
+
 ## Features
 
 * XNA/MonoGame-inspired API
@@ -31,10 +35,6 @@ tetra = "0.2"
 Tetra currently requires Rust 1.31 or higher.
 
 You will also need to install the SDL2 native libraries, as described [here](https://github.com/Rust-SDL2/rust-sdl2#user-content-requirements). The 'bundled' and 'static linking' features described can be activated using the `sdl2_bundled` and `sdl2_static_link` Cargo features in Tetra.
-
-## Documentation
-
-API documentation is available on [docs.rs](https://docs.rs/tetra). There is also a [FAQ](docs/FAQ.md) in the repository.
 
 ## Examples
 
