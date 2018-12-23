@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 (Upcoming)
+
+### New Features
+
+* Tetra now has a [website](https://tetra.seventeencups.net), with a tutorial on how to get started using it. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#55](https://github.com/17cupsofcoffee/tetra/pull/55))
+
 ## 0.2.1 (December 22, 2018)
 
 ### New Features
