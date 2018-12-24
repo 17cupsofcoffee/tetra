@@ -239,7 +239,7 @@ impl Context {
     pub fn run_with<S, F>(&mut self, init: F) -> Result
     where
         S: State,
-        F: Fn(&mut Context) -> Result<S>,
+        F: FnOnce(&mut Context) -> Result<S>,
     {
         let state = &mut init(self)?;
         self.run(state)
