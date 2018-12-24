@@ -5,6 +5,7 @@
 ### New Features
 
 * Tetra now has a [website](https://tetra.seventeencups.net), with a tutorial on how to get started using it. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#55](https://github.com/17cupsofcoffee/tetra/pull/55))
+* `run_with` is now less restrictive about what kinds of closure it will accept. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#57](https://github.com/17cupsofcoffee/tetra/pull/57))
 
 ### Bug Fixes
 
