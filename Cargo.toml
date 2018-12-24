@@ -1,7 +1,7 @@
 [package]
 name = "tetra"
 description = "A simple 2D game framework written in Rust"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2018"
 authors = ["Joe Clay <27cupsofcoffee@gmail.com>"]
 license = "MIT"
@@ -17,7 +17,7 @@ sdl2_static_link = ["sdl2/static-link"]
 
 [dependencies]
 gl = "0.11.0"
-sdl2 = "0.32.0"
+sdl2 = "0.32.1"
 image = "0.20.1"
 glm = { version = "0.2.0", package = "nalgebra-glm" }
 fnv = "1.0.6"
