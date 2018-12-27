@@ -81,7 +81,6 @@ pub mod window;
 
 use std::time::{Duration, Instant};
 
-use glm::Vec2;
 use sdl2::event::{Event, WindowEvent};
 use sdl2::video::{FullscreenType, Window};
 use sdl2::Sdl;
@@ -90,7 +89,7 @@ pub use crate::error::{Result, TetraError};
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
 use crate::graphics::ScreenScaling;
-use crate::input::{InputContext, Key};
+use crate::input::InputContext;
 
 /// A trait representing a type that contains game state and provides logic for updating it
 /// and drawing it to the screen. This is where you'll write your game logic!
@@ -177,7 +176,13 @@ impl Context {
             lag += elapsed;
 
             for event in events.poll_iter() {
-                self.handle_event(event);
+                if let Err(e) = self
+                    .handle_event(event)
+                    .and_then(|event| input::handle_event(self, event))
+                {
+                    self.running = false;
+                    return Err(e);
+                }
             }
 
             while lag >= self.tick_rate {
@@ -186,7 +191,7 @@ impl Context {
                     return Err(e);
                 }
 
-                self.input.cleanup_after_state_update();
+                input::cleanup_after_state_update(self);
                 lag -= self.tick_rate;
             }
 
@@ -245,46 +250,18 @@ impl Context {
         self.run(state)
     }
 
-    fn handle_event(&mut self, event: Event) {
+    fn handle_event(&mut self, event: Event) -> Result<Event> {
         match event {
             Event::Quit { .. } => self.running = false, // TODO: Add a way to override this
-            Event::KeyDown {
-                keycode: Some(k), ..
-            } => {
-                if let Key::Escape = k {
-                    if self.quit_on_escape {
-                        self.running = false;
-                    }
-                }
-
-                self.input.current_key_state.insert(k);
-            }
-            Event::KeyUp {
-                keycode: Some(k), ..
-            } => {
-                // TODO: This can cause some inputs to be missed at low tick rates.
-                // Could consider buffering input releases like Otter2D does?
-                self.input.current_key_state.remove(&k);
-            }
-            Event::MouseButtonDown { mouse_btn, .. } => {
-                self.input.current_mouse_state.insert(mouse_btn);
-            }
-            Event::MouseButtonUp { mouse_btn, .. } => {
-                self.input.current_mouse_state.remove(&mouse_btn);
-            }
-            Event::MouseMotion { x, y, .. } => {
-                self.input.mouse_position = Vec2::new(x as f32, y as f32)
-            }
             Event::Window { win_event, .. } => {
                 if let WindowEvent::SizeChanged(x, y) = win_event {
                     window::set_size_ex(self, x, y, true)
                 }
             }
-            Event::TextInput { text, .. } => {
-                self.input.current_text_input = Some(text);
-            }
             _ => {}
         }
+
+        Ok(event)
     }
 }
 
@@ -506,7 +483,7 @@ impl<'a> ContextBuilder<'a> {
             self.internal_height,
             self.scaling,
         )?;
-        let input = InputContext::new();
+        let input = InputContext::new(&sdl)?;
 
         Ok(Context {
             sdl,
