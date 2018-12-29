@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3 (Upcoming)
+
+### Bug Fixes
+
+* Some subtle issues around font cache invalidation have been fixed. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#61](https://github.com/17cupsofcoffee/tetra/pull/61))
+
 ## 0.2.2 (December 24, 2018)
 
 ### New Features
