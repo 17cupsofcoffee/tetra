@@ -1,3 +1,5 @@
+// Button prompts from https://opengameart.org/content/free-keyboard-and-controllers-prompts-pack
+
 use tetra::glm;
 use tetra::graphics::{self, color, Color, DrawParams, Font, Rectangle, Text, Texture, Vec2};
 use tetra::input::{self, GamepadAxis, GamepadButton, GamepadStick};
