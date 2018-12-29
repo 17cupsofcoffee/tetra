@@ -124,8 +124,6 @@ impl Text {
         };
 
         if let BrushAction::Draw(new_quads) = draw_text(ctx, section) {
-            println!("NEW QUADS");
-
             *self.bounds.borrow_mut() = if new_quads.is_empty() {
                 None
             } else {
