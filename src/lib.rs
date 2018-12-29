@@ -1,6 +1,6 @@
 //! Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event handling and OpenGL 3.2+ for rendering.
 //!
-//! **Note that Tetra is still extremely early in development!** It may/will have bugs and missing features (the big ones currently being sound and gamepad support). That said, you're welcome to give it a go and let me know what you think :)
+//! **Note that Tetra is still extremely early in development!** It may/will have bugs and missing features (the big one currently being audio playback). That said, you're welcome to give it a go and let me know what you think :)
 //!
 //! ## Features
 //!
@@ -60,6 +60,7 @@
 //! * [`nineslice`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/nineslice.rs) - Slices a texture into nine segments to display a dialog box.
 //! * [`keyboard`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/keyboard.rs) - Moves a texture around based on keyboard input.
 //! * [`mouse`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/mouse.rs) - Moves a texture around based on mouse input.
+//! * [`gamepad`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/gamepad.rs) - Displays the input from a connected gamepad.
 //! * [`text_input`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/text_input.rs) - Displays text as it is typed in by the player.
 //! * [`scaling`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/scaling.rs) - Demonstrates the different screen scaling algorithms.
 //! * [`tetras`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
