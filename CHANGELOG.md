@@ -4,7 +4,7 @@
 
 ### New Features
 
-* Tetra now has support for gamepads! The API is roughly the same as that of keyboard and mouse, aside from having to specify which gamepad's state you're querying. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#62](https://github.com/17cupsofcoffee/tetra/pull/62))
+* Tetra now has support for gamepads! The API is roughly the same as that of keyboard and mouse, aside from having to specify which gamepad's state you're querying. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#62](https://github.com/17cupsofcoffee/tetra/pull/62) and [#63](https://github.com/17cupsofcoffee/tetra/pull/63))
 
 ### Bug Fixes
 
