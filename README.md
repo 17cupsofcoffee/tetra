@@ -8,7 +8,7 @@
 
 Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event handling and OpenGL 3.2+ for rendering.
 
-**Note that Tetra is still extremely early in development!** It may/will have bugs and missing features (the big ones currently being sound and gamepad support). That said, you're welcome to give it a go and let me know what you think :)
+**Note that Tetra is still extremely early in development!** It may/will have bugs and missing features (the big one currently being audio playback). That said, you're welcome to give it a go and let me know what you think :)
 
 * [Website/Tutorial](https://tetra.seventeencups.net) 
 * [API Docs](https://docs.rs/tetra)
@@ -72,6 +72,7 @@ The full list of examples available are:
 * [`nineslice`](examples/nineslice.rs) - Slices a texture into nine segments to display a dialog box.
 * [`keyboard`](examples/keyboard.rs) - Moves a texture around based on keyboard input.
 * [`mouse`](examples/mouse.rs) - Moves a texture around based on mouse input.
+* [`gamepad`](examples/gamepad.rs) - Displays the input from a connected gamepad.
 * [`text_input`](examples/text_input.rs) - Displays text as it is typed in by the player.
 * [`scaling`](examples/scaling.rs) - Demonstrates the different screen scaling algorithms.
 * [`tetras`](examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
