@@ -438,17 +438,15 @@ pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
-// TODO: Should these functions take the transform?
+// TODO: These functions really need cleaning up.
 
-fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, transform: &Mat3, color: Color) {
+fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, color: Color) {
     if ctx.graphics.vertex_count >= ctx.graphics.vertex_capacity {
         flush(ctx);
     }
 
-    let pos = transform * Vec3::new(x, y, 1.0);
-
-    ctx.graphics.vertex_data.push(pos.x);
-    ctx.graphics.vertex_data.push(pos.y);
+    ctx.graphics.vertex_data.push(x);
+    ctx.graphics.vertex_data.push(y);
     ctx.graphics.vertex_data.push(u);
     ctx.graphics.vertex_data.push(v);
     ctx.graphics.vertex_data.push(color.r);
@@ -461,10 +459,10 @@ fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, transform: &Ma
 
 pub(crate) fn push_quad(
     ctx: &mut Context,
-    mut x1: f32,
-    mut y1: f32,
-    mut x2: f32,
-    mut y2: f32,
+    x1: f32,
+    y1: f32,
+    x2: f32,
+    y2: f32,
     mut u1: f32,
     mut v1: f32,
     mut u2: f32,
@@ -472,20 +470,29 @@ pub(crate) fn push_quad(
     transform: &Mat3,
     color: Color,
 ) {
-    if x2 < x1 {
-        std::mem::swap(&mut x1, &mut x2);
+    let mut tl = transform * Vec3::new(x1, y1, 1.0);
+    let mut bl = transform * Vec3::new(x1, y2, 1.0);
+    let mut br = transform * Vec3::new(x2, y2, 1.0);
+    let mut tr = transform * Vec3::new(x2, y1, 1.0);
+
+    // TODO: I don't think this logic will hold if the quad isn't rectangular.
+
+    if tr.x < tl.x {
+        std::mem::swap(&mut tl, &mut tr);
+        std::mem::swap(&mut bl, &mut br);
         std::mem::swap(&mut u1, &mut u2);
     }
 
-    if y2 < y1 {
-        std::mem::swap(&mut y1, &mut y2);
+    if bl.y < tl.y {
+        std::mem::swap(&mut tl, &mut bl);
+        std::mem::swap(&mut tr, &mut br);
         std::mem::swap(&mut v1, &mut v2);
     }
 
-    push_vertex(ctx, x1, y1, u1, v1, transform, color);
-    push_vertex(ctx, x1, y2, u1, v2, transform, color);
-    push_vertex(ctx, x2, y2, u2, v2, transform, color);
-    push_vertex(ctx, x2, y1, u2, v1, transform, color);
+    push_vertex(ctx, tl.x, tl.y, u1, v1, color);
+    push_vertex(ctx, bl.x, bl.y, u1, v2, color);
+    push_vertex(ctx, br.x, br.y, u2, v2, color);
+    push_vertex(ctx, tr.x, tr.y, u2, v1, color);
 
     ctx.graphics.element_count += 6;
 }
