@@ -10,6 +10,7 @@
 
 * Some subtle issues around font cache invalidation have been fixed. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#61](https://github.com/17cupsofcoffee/tetra/pull/61))
 * Texture flipping was broken in 2.0 - this has now been fixed. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#65](https://github.com/17cupsofcoffee/tetra/pull/65))
+* The OpenGL context now explicitly requests a 32 bit color buffer and double buffering. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#66](https://github.com/17cupsofcoffee/tetra/pull/66))
 
 ## 0.2.2 (December 24, 2018)
 
