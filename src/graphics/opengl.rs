@@ -25,8 +25,15 @@ pub struct GLDevice {
 impl GLDevice {
     pub fn new(video: &VideoSubsystem, window: &Window, vsync: bool) -> Result<GLDevice> {
         let gl_attr = video.gl_attr();
+
         gl_attr.set_context_profile(GLProfile::Core);
         gl_attr.set_context_version(3, 2);
+        gl_attr.set_red_size(8);
+        gl_attr.set_green_size(8);
+        gl_attr.set_blue_size(8);
+        gl_attr.set_alpha_size(8);
+        gl_attr.set_double_buffer(true);
+        // TODO: Will need to add some more here if we start using the depth/stencil buffers
 
         let _ctx = window.gl_create_context().map_err(TetraError::OpenGl)?;
         gl::load_with(|name| video.gl_get_proc_address(name) as *const _);
