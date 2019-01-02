@@ -158,7 +158,7 @@ impl Text {
                     *texture_ref = Texture::from_handle(device_ref.new_texture(
                         width as i32,
                         height as i32,
-                        TextureFormat::Red,
+                        TextureFormat::Rgba,
                     ));
 
                     ctx.graphics.font_cache.resize_texture(width, height);
@@ -183,7 +183,7 @@ impl Drawable for Text {
         self.check_for_update(ctx);
 
         graphics::set_texture_ex(ctx, ActiveTexture::FontCache);
-        graphics::set_shader_ex(ctx, ActiveShader::Text);
+        graphics::set_shader_ex(ctx, ActiveShader::Default);
 
         for quad in self.quads.borrow().iter() {
             graphics::push_quad(
@@ -204,17 +204,24 @@ impl Drawable for Text {
 }
 
 fn update_texture(gl: &mut GLDevice, texture: &Texture, rect: Rect<u32>, data: &[u8]) {
-    gl.set_unpack_alignment(1);
+    let mut padded_data = Vec::with_capacity(data.len() * 4);
+
+    for a in data {
+        padded_data.push(255);
+        padded_data.push(255);
+        padded_data.push(255);
+        padded_data.push(*a);
+    }
+
     gl.set_texture_data(
         &texture.handle,
-        data,
+        &padded_data,
         rect.min.x as i32,
         rect.min.y as i32,
         rect.width() as i32,
         rect.height() as i32,
-        TextureFormat::Red,
+        TextureFormat::Rgba,
     );
-    gl.set_unpack_alignment(4);
 }
 
 fn glyph_to_quad(v: &GlyphVertex) -> FontQuad {

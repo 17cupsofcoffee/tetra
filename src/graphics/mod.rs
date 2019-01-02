@@ -163,7 +163,7 @@ impl GraphicsContext {
         let font_cache_texture = Texture::from_handle(device.new_texture(
             width as i32,
             height as i32,
-            TextureFormat::Red,
+            TextureFormat::Rgba,
         ));
 
         let text_shader = Shader::from_handle(
