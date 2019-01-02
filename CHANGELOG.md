@@ -6,9 +6,13 @@
 
 * Tetra now has support for gamepads! The API is roughly the same as that of keyboard and mouse, aside from having to specify which gamepad's state you're querying. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#62](https://github.com/17cupsofcoffee/tetra/pull/62) and [#63](https://github.com/17cupsofcoffee/tetra/pull/63))
 
+### Improvements
+
+* Text is now drawn using the same shader as everything else - this likely won't be noticable now, but it will make things a lot easier once custom shaders get added! ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#68](https://github.com/17cupsofcoffee/tetra/pull/68))
+
 ### Bug Fixes
 
-* Some subtle issues around font cache invalidation have been fixed. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#61](https://github.com/17cupsofcoffee/tetra/pull/61))
+* Some subtle issues around font cache invalidation have been fixed - in general we now let `glyph-brush` handle that side of things. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#61](https://github.com/17cupsofcoffee/tetra/pull/61) and [#68](https://github.com/17cupsofcoffee/tetra/pull/68))
 * Texture flipping was broken in 2.0 - this has now been fixed. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#65](https://github.com/17cupsofcoffee/tetra/pull/65))
 * The OpenGL context now explicitly requests a 32 bit color buffer and double buffering. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#66](https://github.com/17cupsofcoffee/tetra/pull/66))
 
