@@ -5,7 +5,7 @@ use std::fs;
 use std::path::Path;
 
 use glyph_brush::rusttype::{Rect, Scale};
-use glyph_brush::{BrushAction, BrushError, FontId, GlyphVertex, Section};
+use glyph_brush::{BrushAction, BrushError, FontId, GlyphCruncher, GlyphVertex, Section};
 
 use crate::error::Result;
 use crate::graphics::opengl::GLDevice;
@@ -64,7 +64,6 @@ pub struct Text {
     content: String,
     font: Font,
     size: Scale,
-    bounds: RefCell<Option<Rectangle>>,
     quads: RefCell<Vec<FontQuad>>,
 }
 
@@ -80,7 +79,6 @@ impl Text {
             content,
             font,
             size: Scale::uniform(size),
-            bounds: RefCell::new(None),
             quads: RefCell::new(Vec::new()),
         }
     }
@@ -100,8 +98,17 @@ impl Text {
     ///
     /// Note that this method will not take into account the positioning applied to the text via `DrawParams`.
     pub fn get_bounds(&self, ctx: &mut Context) -> Option<Rectangle> {
-        self.attempt_recalculate_quads(ctx);
-        *self.bounds.borrow()
+        ctx.graphics
+            .font_cache
+            .pixel_bounds(self.build_section())
+            .map(|r| {
+                let x = r.min.x as f32;
+                let y = r.min.y as f32;
+                let width = r.width() as f32;
+                let height = r.height() as f32;
+
+                Rectangle::new(x, y, width, height)
+            })
     }
 
     /// Sets the font of the text.
@@ -114,34 +121,52 @@ impl Text {
         self.size = Scale::uniform(size);
     }
 
-    /// Attempt to recalculate the font quads.
-    fn attempt_recalculate_quads(&self, ctx: &mut Context) {
-        let section = Section {
+    fn build_section(&self) -> Section {
+        Section {
             text: &self.content,
             scale: self.size,
             font_id: self.font.id,
+
             ..Section::default()
+        }
+    }
+
+    fn check_for_update(&self, ctx: &mut Context) {
+        ctx.graphics.font_cache.queue(self.build_section());
+
+        let screen_dimensions = (
+            graphics::get_internal_width(ctx) as u32,
+            graphics::get_internal_height(ctx) as u32,
+        );
+
+        // to avoid some borrow checker/closure weirdness
+        let texture_ref = &mut ctx.graphics.font_cache_texture;
+        let device_ref = &mut ctx.gl;
+
+        let action = loop {
+            let attempted_action = ctx.graphics.font_cache.process_queued(
+                screen_dimensions,
+                |rect, data| update_texture(device_ref, texture_ref, rect, data),
+                |v| glyph_to_quad(&v),
+            );
+
+            match attempted_action {
+                Ok(action) => break action,
+                Err(BrushError::TextureTooSmall { suggested, .. }) => {
+                    let (width, height) = suggested;
+
+                    *texture_ref = Texture::from_handle(device_ref.new_texture(
+                        width as i32,
+                        height as i32,
+                        TextureFormat::Red,
+                    ));
+
+                    ctx.graphics.font_cache.resize_texture(width, height);
+                }
+            }
         };
 
-        if let BrushAction::Draw(new_quads) = draw_text(ctx, section) {
-            *self.bounds.borrow_mut() = if new_quads.is_empty() {
-                None
-            } else {
-                let mut max_x = std::f32::MIN;
-                let mut max_y = std::f32::MIN;
-                let mut min_x = std::f32::MAX;
-                let mut min_y = std::f32::MAX;
-
-                for quad in &new_quads {
-                    max_x = max_x.max(quad.x1).max(quad.x2);
-                    max_y = max_y.max(quad.y1).max(quad.y2);
-                    min_x = min_x.min(quad.x1).min(quad.x2);
-                    min_y = min_y.min(quad.y1).min(quad.y2);
-                }
-
-                Some(Rectangle::new(min_x, min_y, max_x - min_x, max_y - min_y))
-            };
-
+        if let BrushAction::Draw(new_quads) = action {
             *self.quads.borrow_mut() = new_quads;
         }
     }
@@ -155,8 +180,7 @@ impl Drawable for Text {
         let params = params.into();
         let transform = params.build_matrix();
 
-        // TODO: This should probably only be called when self.quads is empty and self.text is not empty?
-        self.attempt_recalculate_quads(ctx);
+        self.check_for_update(ctx);
 
         graphics::set_texture_ex(ctx, ActiveTexture::FontCache);
         graphics::set_shader_ex(ctx, ActiveShader::Text);
@@ -176,42 +200,6 @@ impl Drawable for Text {
                 params.color,
             );
         }
-    }
-}
-
-fn draw_text(ctx: &mut Context, section: Section<'_>) -> BrushAction<FontQuad> {
-    ctx.graphics.font_cache.queue(section);
-
-    let screen_dimensions = (
-        graphics::get_internal_width(ctx) as u32,
-        graphics::get_internal_height(ctx) as u32,
-    );
-
-    // to avoid some borrow checker/closure weirdness
-    let texture_ref = &mut ctx.graphics.font_cache_texture;
-    let device_ref = &mut ctx.gl;
-
-    loop {
-        let attempted_action = ctx.graphics.font_cache.process_queued(
-            screen_dimensions,
-            |rect, data| update_texture(device_ref, texture_ref, rect, data),
-            |v| glyph_to_quad(&v),
-        );
-
-        if let Err(BrushError::TextureTooSmall { suggested, .. }) = attempted_action {
-            let (width, height) = suggested;
-
-            *texture_ref = Texture::from_handle(device_ref.new_texture(
-                width as i32,
-                height as i32,
-                TextureFormat::Red,
-            ));
-
-            ctx.graphics.font_cache.resize_texture(width, height);
-            continue;
-        }
-
-        break attempted_action.unwrap();
     }
 }
 
