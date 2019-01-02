@@ -7,7 +7,7 @@ use image;
 
 use crate::error::Result;
 use crate::graphics::opengl::{GLTexture, TextureFormat};
-use crate::graphics::{self, ActiveShader, DrawParams, Drawable, Rectangle};
+use crate::graphics::{self, DrawParams, Drawable, Rectangle};
 use crate::Context;
 
 /// Texture data.
@@ -87,7 +87,6 @@ impl Drawable for Texture {
         let v2 = (clip.y + clip.height) / texture_height;
 
         graphics::set_texture(ctx, self);
-        graphics::set_shader_ex(ctx, ActiveShader::Default);
         graphics::push_quad(
             ctx,
             x1,

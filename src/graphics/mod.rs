@@ -40,7 +40,6 @@ const VERTEX_STRIDE: usize = 8;
 const INDEX_ARRAY: [u32; 6] = [0, 1, 2, 2, 3, 0];
 const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
 const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
-const FONT_FRAGMENT_SHADER: &str = include_str!("../resources/text.frag");
 const DEFAULT_FONT: &[u8] = include_bytes!("../resources/DejaVuSansMono.ttf");
 
 #[derive(PartialEq)]
@@ -53,7 +52,6 @@ pub(crate) enum ActiveTexture {
 #[derive(PartialEq)]
 pub(crate) enum ActiveShader {
     Default,
-    Text,
 }
 
 #[derive(PartialEq)]
@@ -78,7 +76,6 @@ pub(crate) struct GraphicsContext {
 
     shader: ActiveShader,
     default_shader: Shader,
-    text_shader: Shader,
 
     projection: ActiveProjection,
     internal_projection: Mat4,
@@ -166,10 +163,6 @@ impl GraphicsContext {
             TextureFormat::Rgba,
         ));
 
-        let text_shader = Shader::from_handle(
-            device.compile_program(DEFAULT_VERTEX_SHADER, FONT_FRAGMENT_SHADER)?,
-        );
-
         Ok(GraphicsContext {
             vertex_buffer,
             index_buffer,
@@ -180,7 +173,6 @@ impl GraphicsContext {
 
             shader: ActiveShader::Default,
             default_shader,
-            text_shader,
 
             projection: ActiveProjection::Internal,
             internal_projection: ortho(
@@ -524,12 +516,14 @@ pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
     }
 }
 
-pub(crate) fn set_shader_ex(ctx: &mut Context, shader: ActiveShader) {
-    if shader != ctx.graphics.shader {
-        flush(ctx);
-        ctx.graphics.shader = shader;
-    }
-}
+// TODO: This will need to come back once custom shaders are a thing
+
+// pub(crate) fn set_shader_ex(ctx: &mut Context, shader: ActiveShader) {
+//     if shader != ctx.graphics.shader {
+//         flush(ctx);
+//         ctx.graphics.shader = shader;
+//     }
+// }
 
 pub(crate) fn set_projection_ex(ctx: &mut Context, projection: ActiveProjection) {
     if projection != ctx.graphics.projection {
@@ -574,7 +568,6 @@ pub fn flush(ctx: &mut Context) {
 
         let shader = match &ctx.graphics.shader {
             ActiveShader::Default => &ctx.graphics.default_shader,
-            ActiveShader::Text => &ctx.graphics.text_shader,
         };
 
         let projection = match &ctx.graphics.projection {
@@ -610,7 +603,6 @@ pub fn present(ctx: &mut Context) {
     set_framebuffer_ex(ctx, ActiveFramebuffer::Window);
     set_projection_ex(ctx, ActiveProjection::Window);
     set_texture_ex(ctx, ActiveTexture::Framebuffer);
-    set_shader_ex(ctx, ActiveShader::Default);
 
     clear(ctx, color::BLACK);
 

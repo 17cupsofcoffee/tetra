@@ -10,7 +10,7 @@ use glyph_brush::{BrushAction, BrushError, FontId, GlyphCruncher, GlyphVertex, S
 use crate::error::Result;
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::{
-    self, ActiveShader, ActiveTexture, DrawParams, Drawable, Rectangle, Texture, TextureFormat,
+    self, ActiveTexture, DrawParams, Drawable, Rectangle, Texture, TextureFormat,
 };
 use crate::Context;
 
@@ -183,7 +183,6 @@ impl Drawable for Text {
         self.check_for_update(ctx);
 
         graphics::set_texture_ex(ctx, ActiveTexture::FontCache);
-        graphics::set_shader_ex(ctx, ActiveShader::Default);
 
         for quad in self.quads.borrow().iter() {
             graphics::push_quad(

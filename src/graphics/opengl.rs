@@ -389,13 +389,7 @@ impl GLDevice {
             )
         }
     }
-
-    pub fn set_unpack_alignment(&mut self, alignment: i32) {
-        unsafe {
-            gl::PixelStorei(gl::UNPACK_ALIGNMENT, alignment);
-        }
-    }
-
+    
     pub fn new_framebuffer(&mut self) -> GLFramebuffer {
         unsafe {
             let mut id = 0;
