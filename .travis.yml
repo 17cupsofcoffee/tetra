@@ -6,14 +6,35 @@ cache:
 
 rust:
   - stable
+  - beta
+  - nightly
 
-before_script:
+matrix:
+  allow_failures:
+    - rust: nightly
+  fast_finish: true
+  
+install:
+  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
+      sudo apt-get -qq update
+      && sudo apt-get install -y libasound2-dev
+      && wget http://libsdl.org/release/SDL2-2.0.9.tar.gz
+      && tar -xzvf SDL2-2.0.9.tar.gz
+      && pushd SDL2-2.0.9 && ./configure --prefix=/usr && make && sudo make install && popd;
+    fi
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
+      brew update
+      && brew install sdl2;
+    fi
   - (test -x $HOME/.cargo/bin/cargo-install-update || cargo install cargo-update)
   - (test -x $HOME/.cargo/bin/mdbook || cargo install --vers "^0.1" mdbook)
   - cargo install-update -a
 
 script:
+  - cargo build --verbose
+  - cargo test --verbose
   - mdbook build
+  - mdbook test
 
 deploy:
   provider: pages
