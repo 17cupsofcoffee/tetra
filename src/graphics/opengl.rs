@@ -259,7 +259,11 @@ impl GLDevice {
             gl::DeleteShader(vertex_id);
             gl::DeleteShader(fragment_id);
 
-            Ok(GLProgram { id: program_id })
+            let program = GLProgram { id: program_id };
+
+            self.set_uniform(&program, "sampler1", 0);
+
+            Ok(program)
         }
     }
 
@@ -389,7 +393,7 @@ impl GLDevice {
             )
         }
     }
-    
+
     pub fn new_framebuffer(&mut self) -> GLFramebuffer {
         unsafe {
             let mut id = 0;
