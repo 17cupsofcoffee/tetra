@@ -310,23 +310,33 @@ impl Iterator for RectangleColumn {
 
 /// Struct representing the parameters that can be used when drawing.
 ///
-/// A default instance of DrawParams will draw the associated graphic with the following
-/// settings:
-///
-/// * Position: [0.0, 0.0]
-/// * Scale: [1.0, 1.0]
-/// * Origin: [0.0, 0.0]
-/// * Rotation: 0.0
-/// * Color: White
-/// * Clip: Full image
+/// You can either use this as a builder by calling `DrawParams::new` and then chaining methods, or
+/// construct it manually - whichever you find more pleasant to write.
 #[derive(Debug, Clone, PartialEq)]
 pub struct DrawParams {
-    pub(crate) position: Vec2,
-    pub(crate) scale: Vec2,
-    pub(crate) origin: Vec2,
-    pub(crate) rotation: f32,
-    pub(crate) color: Color,
-    pub(crate) clip: Option<Rectangle>,
+    /// The position that the graphic should be drawn at. Defaults to [0.0, 0.0].
+    pub position: Vec2,
+
+    /// The scale that the graphic should be drawn at. Defaults to [1.0, 1.0].
+    ///
+    /// This can be set to a negative value to flip the graphic around the origin.
+    pub scale: Vec2,
+
+    /// The origin of the graphic. Defaults to [0.0, 0.0] (the top left).
+    ///
+    /// Positioning and scaling will be calculated relative to this point.
+    pub origin: Vec2,
+
+    /// The rotation of the graphic, in radians. Defaults to 0.0.
+    pub rotation: f32,
+
+    /// A color to multiply the graphic by. Defaults to white.
+    pub color: Color,
+
+    /// A sub-region of the graphic to draw. Defaults to `None`, which means the the full graphic will be drawn.
+    ///
+    /// This is useful if you're using spritesheets (which you should be!).
+    pub clip: Option<Rectangle>,
 }
 
 impl DrawParams {
@@ -342,16 +352,12 @@ impl DrawParams {
     }
 
     /// Sets the scale that the graphic should be drawn at.
-    ///
-    /// This can be set to a negative value to flip the graphic around the origin.
     pub fn scale(mut self, scale: Vec2) -> DrawParams {
         self.scale = scale;
         self
     }
 
     /// Sets the origin of the graphic.
-    ///
-    /// Positioning and scaling will be calculated relative to this point.
     pub fn origin(mut self, origin: Vec2) -> DrawParams {
         self.origin = origin;
         self
@@ -364,16 +370,12 @@ impl DrawParams {
     }
 
     /// Sets the color to multiply the graphic by.
-    ///
-    /// Setting this to white will draw the graphic in its original color.
     pub fn color(mut self, color: Color) -> DrawParams {
         self.color = color;
         self
     }
 
     /// Sets the region of the graphic to draw.
-    ///
-    /// This is useful if you're using spritesheets (which you should be!).
     pub fn clip(mut self, clip: Rectangle) -> DrawParams {
         self.clip = Some(clip);
         self
