@@ -31,10 +31,8 @@ install:
   - cargo install-update -a
 
 script:
-  - cargo build --verbose
   - cargo test --verbose
   - mdbook build
-  - mdbook test
 
 deploy:
   provider: pages
