@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.4 (Upcoming)
+
+### Bug Fixes
+
+* Fixed an issue where the OpenGL context would fail to initialize when using NVidia's proprietary Linux drivers. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#72](https://github.com/17cupsofcoffee/tetra/pull/72))
+
 ## 0.2.3 (January 3rd, 2019)
 
 ### New Features
