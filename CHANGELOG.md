@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.4 (Upcoming)
+## 0.2.4 (Janurary 4th, 2019)
 
 ### Bug Fixes
 
