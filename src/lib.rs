@@ -83,7 +83,7 @@ pub mod window;
 use std::time::{Duration, Instant};
 
 use sdl2::event::{Event, WindowEvent};
-use sdl2::video::{FullscreenType, Window};
+use sdl2::video::{FullscreenType, GLProfile, Window};
 use sdl2::Sdl;
 
 pub use crate::error::{Result, TetraError};
@@ -422,6 +422,16 @@ impl<'a> ContextBuilder<'a> {
     pub fn build(&self) -> Result<Context> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
         let video = sdl.video().map_err(TetraError::Sdl)?;
+
+        let gl_attr = video.gl_attr();
+        gl_attr.set_context_profile(GLProfile::Core);
+        gl_attr.set_context_version(3, 2);
+        gl_attr.set_red_size(8);
+        gl_attr.set_green_size(8);
+        gl_attr.set_blue_size(8);
+        gl_attr.set_alpha_size(8);
+        gl_attr.set_double_buffer(true);
+        // TODO: Will need to add some more here if we start using the depth/stencil buffers
 
         let (mut window_width, mut window_height) = if let Some(size) = self.window_size {
             size
