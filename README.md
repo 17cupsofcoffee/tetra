@@ -1,5 +1,6 @@
 # Tetra
 
+[![Build Status](https://travis-ci.org/17cupsofcoffee/tetra.svg?branch=master)](https://travis-ci.org/17cupsofcoffee/tetra)
 [![Crates.io](https://img.shields.io/crates/v/tetra.svg)](https://crates.io/crates/tetra)
 [![Minimum Rust Version](https://img.shields.io/badge/minimum%20rust%20version-1.31-orange.svg)](https://www.rust-lang.org/tools/install)
 [![Documentation](https://docs.rs/tetra/badge.svg)](https://docs.rs/tetra)
