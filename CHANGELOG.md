@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.5 (Upcoming)
+
+### Bug Fixes
+
+* The parameters contained within an instance of `DrawParams` are now publicly accessible - without these, it wasn't possible to write a proper custom implementation of `Drawable`. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#73](https://github.com/17cupsofcoffee/tetra/pull/73))
+
 ## 0.2.4 (Janurary 4th, 2019)
 
 ### Bug Fixes
