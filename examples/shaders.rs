@@ -10,7 +10,7 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
-            shader: Shader::new(ctx, "./src/resources/shader.vert", "./examples/resources/greyscale.frag")?
+            shader: Shader::fragment(ctx, "./examples/resources/greyscale.frag")?
         })
     }
 }

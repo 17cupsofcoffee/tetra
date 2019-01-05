@@ -8,6 +8,12 @@ use crate::error::Result;
 use crate::graphics::opengl::GLProgram;
 use crate::Context;
 
+/// The default vertex shader.
+pub static DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
+
+/// The default fragment shader.
+pub static DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
+
 /// A shader program, consisting of a vertex shader and a fragment shader.
 ///
 /// This type acts as a lightweight handle to the associated graphics hardware data,
@@ -38,6 +44,22 @@ impl Shader {
             &fs::read_to_string(vertex_path)?,
             &fs::read_to_string(fragment_path)?,
         )
+    }
+
+    /// Creates a new shader program from the given vertex shader file, using the default fragment shader.
+    pub fn vertex<P>(ctx: &mut Context, path: P) -> Result<Shader>
+    where
+        P: AsRef<Path>,
+    {
+        Shader::from_string(ctx, &fs::read_to_string(path)?, DEFAULT_FRAGMENT_SHADER)
+    }
+
+    /// Creates a new shader program from the given fragment shader file, using the default vertex shader.
+    pub fn fragment<P>(ctx: &mut Context, path: P) -> Result<Shader>
+    where
+        P: AsRef<Path>,
+    {
+        Shader::from_string(ctx, DEFAULT_VERTEX_SHADER, &fs::read_to_string(path)?)
     }
 
     /// Creates a new shader program from the given strings.

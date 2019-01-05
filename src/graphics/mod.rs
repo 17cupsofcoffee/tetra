@@ -38,8 +38,6 @@ const MAX_VERTICES: usize = MAX_SPRITES * 4;
 const MAX_INDICES: usize = MAX_SPRITES * 6;
 const VERTEX_STRIDE: usize = 8;
 const INDEX_ARRAY: [u32; 6] = [0, 1, 2, 2, 3, 0];
-const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
-const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 const DEFAULT_FONT: &[u8] = include_bytes!("../resources/DejaVuSansMono.ttf");
 
 #[derive(PartialEq)]
@@ -152,9 +150,10 @@ impl GraphicsContext {
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
-        let default_shader = Shader::from_handle(
-            device.compile_program(DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER)?,
-        );
+        let default_shader = Shader::from_handle(device.compile_program(
+            shader::DEFAULT_VERTEX_SHADER,
+            shader::DEFAULT_FRAGMENT_SHADER,
+        )?);
 
         let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
         let (width, height) = font_cache.texture_dimensions();
