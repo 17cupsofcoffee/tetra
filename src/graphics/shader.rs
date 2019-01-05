@@ -8,6 +8,9 @@ use crate::error::Result;
 use crate::graphics::opengl::GLProgram;
 use crate::Context;
 
+#[doc(inline)]
+pub use crate::graphics::opengl::UniformValue;
+
 /// The default vertex shader.
 pub static DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
 
@@ -67,5 +70,12 @@ impl Shader {
         Shader {
             handle: Rc::new(handle),
         }
+    }
+
+    pub fn set_uniform<V>(&mut self, ctx: &mut Context, name: &str, value: V)
+    where
+        V: UniformValue,
+    {
+        ctx.gl.set_uniform(&self.handle, name, value);
     }
 }
