@@ -588,7 +588,7 @@ pub fn flush(ctx: &mut Context) {
         };
 
         ctx.gl
-            .set_uniform(&shader.handle, "projection", &projection);
+            .set_uniform(&shader.handle, "u_projection", &projection);
 
         ctx.gl
             .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);

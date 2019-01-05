@@ -204,8 +204,8 @@ impl GLDevice {
             let program_id = gl::CreateProgram();
 
             // TODO: IDK if this should be applied to *all* shaders...
-            let pos_tex_name = CString::new("in_pos_tex").unwrap();
-            let color_name = CString::new("in_color").unwrap();
+            let pos_tex_name = CString::new("a_pos_tex").unwrap();
+            let color_name = CString::new("a_color").unwrap();
 
             gl::BindAttribLocation(program_id, 0, pos_tex_name.as_ptr());
             gl::BindAttribLocation(program_id, 1, color_name.as_ptr());
@@ -248,7 +248,7 @@ impl GLDevice {
 
             let program = GLProgram { id: program_id };
 
-            self.set_uniform(&program, "sampler1", 0);
+            self.set_uniform(&program, "u_texture", 0);
 
             Ok(program)
         }
