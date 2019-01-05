@@ -12,6 +12,16 @@ use crate::Context;
 ///
 /// This type acts as a lightweight handle to the associated graphics hardware data,
 /// and so can be cloned with little overhead.
+///
+/// # Attributes and Uniforms
+///
+/// Tetra's shaders currently take the following parameters:
+///
+/// * The `a_position` attribute is a `vec2`, representing the vertex's position in pixel co-ordinates.
+/// * The `a_uv` attribute is a `vec2`, representing the texture co-ordinates that should be used for the vertex.
+/// * The `a_color` attribute is a `vec4`, representing a color that the output should be multiplied by.
+/// * The `u_projection` uniform is a `mat4`, which can be used to project the vertex's position into GL co-ordinates.
+/// * The `u_texture` uniform is a `sampler2D`, which can be used to sample colors from the current texture.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shader {
     pub(crate) handle: Rc<GLProgram>,
