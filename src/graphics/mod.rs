@@ -523,6 +523,11 @@ pub fn set_shader(ctx: &mut Context, shader: &Shader) {
     set_shader_ex(ctx, ActiveShader::User(shader.clone()));
 }
 
+// TODO: naming
+pub fn reset_shader(ctx: &mut Context) {
+    set_shader_ex(ctx, ActiveShader::Default);
+}
+
 pub(crate) fn set_shader_ex(ctx: &mut Context, shader: ActiveShader) -> Option<Shader> {
     if shader != ctx.graphics.shader {
         flush(ctx);
