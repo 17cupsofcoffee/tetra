@@ -52,6 +52,7 @@ pub(crate) enum ActiveTexture {
 #[derive(PartialEq)]
 pub(crate) enum ActiveShader {
     Default,
+    User(Shader),
 }
 
 #[derive(PartialEq)]
@@ -518,14 +519,22 @@ pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
     }
 }
 
-// TODO: This will need to come back once custom shaders are a thing
+pub fn set_shader(ctx: &mut Context, shader: &Shader) {
+    set_shader_ex(ctx, ActiveShader::User(shader.clone()));
+}
 
-// pub(crate) fn set_shader_ex(ctx: &mut Context, shader: ActiveShader) {
-//     if shader != ctx.graphics.shader {
-//         flush(ctx);
-//         ctx.graphics.shader = shader;
-//     }
-// }
+pub(crate) fn set_shader_ex(ctx: &mut Context, shader: ActiveShader) -> Option<Shader> {
+    if shader != ctx.graphics.shader {
+        flush(ctx);
+        let old_shader = std::mem::replace(&mut ctx.graphics.shader, shader);
+
+        if let ActiveShader::User(s) = old_shader {
+            return Some(s);
+        }
+    }
+
+    None
+}
 
 pub(crate) fn set_projection_ex(ctx: &mut Context, projection: ActiveProjection) {
     if projection != ctx.graphics.projection {
@@ -570,6 +579,7 @@ pub fn flush(ctx: &mut Context) {
 
         let shader = match &ctx.graphics.shader {
             ActiveShader::Default => &ctx.graphics.default_shader,
+            ActiveShader::User(s) => &s,
         };
 
         let projection = match &ctx.graphics.projection {
@@ -605,6 +615,7 @@ pub fn present(ctx: &mut Context) {
     set_framebuffer_ex(ctx, ActiveFramebuffer::Window);
     set_projection_ex(ctx, ActiveProjection::Window);
     set_texture_ex(ctx, ActiveTexture::Framebuffer);
+    let user_shader = set_shader_ex(ctx, ActiveShader::Default);
 
     clear(ctx, color::BLACK);
 
@@ -626,6 +637,10 @@ pub fn present(ctx: &mut Context) {
 
     set_framebuffer_ex(ctx, ActiveFramebuffer::Backbuffer);
     set_projection_ex(ctx, ActiveProjection::Internal);
+
+    if let Some(s) = user_shader {
+        set_shader_ex(ctx, ActiveShader::User(s));
+    }
 
     ctx.window.gl_swap_window();
 }
