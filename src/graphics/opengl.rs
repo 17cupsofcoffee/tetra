@@ -207,10 +207,12 @@ impl GLDevice {
             let position_name = CString::new("a_position").unwrap();
             let uv_name = CString::new("a_uv").unwrap();
             let color_name = CString::new("a_color").unwrap();
+            let out_color_name = CString::new("o_color").unwrap();
 
             gl::BindAttribLocation(program_id, 0, position_name.as_ptr());
             gl::BindAttribLocation(program_id, 1, uv_name.as_ptr());
             gl::BindAttribLocation(program_id, 2, color_name.as_ptr());
+            gl::BindFragDataLocation(program_id, 0, out_color_name.as_ptr());
 
             let vertex_id = gl::CreateShader(gl::VERTEX_SHADER);
             gl::ShaderSource(vertex_id, 1, &vertex_buffer.as_ptr(), ptr::null());
