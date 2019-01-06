@@ -32,3 +32,22 @@ If your framerate is starting to drop, either run the game in release mode (`car
 [profile.dev]
 opt-level = 1
 ```
+
+#### Benchmarks
+
+The impact of this can be observed by running the `bunnymark` example both with and without the `--release` flag. This example adds 100 new sprites to the screen every time the user clicks, until rendering conistently drops below 60fps.
+
+These were the results when I ran it against Tetra 0.2.5 on my local machine:
+
+| Configuration | Bunnies Rendered |
+| --- | --- |
+| Debug | 300 |
+| Release | 65000 |
+
+For reference, my system specs are:
+
+* CPU: AMD Ryzen 5 1600 3.2GHz
+* GPU: NVidia GeForce GTX 1050 Ti
+* RAM: 8GB DDR4
+
+
