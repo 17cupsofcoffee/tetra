@@ -2,9 +2,14 @@
 
 ## 0.2.5 (Upcoming)
 
+### New Features
+
+* Custom shaders can now be used for rendering! ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#75](https://github.com/17cupsofcoffee/tetra/pull/75))
+
 ### Bug Fixes
 
 * The parameters contained within an instance of `DrawParams` are now publicly accessible - without these, it wasn't possible to write a proper custom implementation of `Drawable`. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#73](https://github.com/17cupsofcoffee/tetra/pull/73))
+* Shaders now bind their outputs explicitly - this should help with compatability. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#75](https://github.com/17cupsofcoffee/tetra/pull/75))
 
 ## 0.2.4 (Janurary 4th, 2019)
 
