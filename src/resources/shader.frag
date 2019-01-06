@@ -1,12 +1,12 @@
 #version 130
 
-in vec4 v_color;
 in vec2 v_uv;
+in vec4 v_color;
 
-uniform sampler2D sampler1;
+uniform sampler2D u_texture;
 
-out vec4 out_color;
+out vec4 o_color;
 
 void main() {
-    out_color = v_color * texture(sampler1, v_uv);
+    o_color = v_color * texture(u_texture, v_uv);
 }

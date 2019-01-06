@@ -63,6 +63,7 @@
 //! * [`gamepad`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/gamepad.rs) - Displays the input from a connected gamepad.
 //! * [`text_input`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/text_input.rs) - Displays text as it is typed in by the player.
 //! * [`scaling`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/scaling.rs) - Demonstrates the different screen scaling algorithms.
+//! * [`shaders`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/shaders.rs) - Uses a custom shader to render a texture.
 //! * [`tetras`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
 //!
 //! ## Support/Feedback

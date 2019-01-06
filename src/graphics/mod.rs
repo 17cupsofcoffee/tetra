@@ -38,8 +38,6 @@ const MAX_VERTICES: usize = MAX_SPRITES * 4;
 const MAX_INDICES: usize = MAX_SPRITES * 6;
 const VERTEX_STRIDE: usize = 8;
 const INDEX_ARRAY: [u32; 6] = [0, 1, 2, 2, 3, 0];
-const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
-const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 const DEFAULT_FONT: &[u8] = include_bytes!("../resources/DejaVuSansMono.ttf");
 
 #[derive(PartialEq)]
@@ -52,6 +50,7 @@ pub(crate) enum ActiveTexture {
 #[derive(PartialEq)]
 pub(crate) enum ActiveShader {
     Default,
+    User(Shader),
 }
 
 #[derive(PartialEq)]
@@ -143,16 +142,18 @@ impl GraphicsContext {
             BufferUsage::DynamicDraw,
         );
 
-        device.set_vertex_buffer_attribute(&vertex_buffer, 0, 4, 0);
-        device.set_vertex_buffer_attribute(&vertex_buffer, 1, 3, 4);
+        device.set_vertex_buffer_attribute(&vertex_buffer, 0, 2, 0);
+        device.set_vertex_buffer_attribute(&vertex_buffer, 1, 2, 2);
+        device.set_vertex_buffer_attribute(&vertex_buffer, 2, 4, 4);
 
         let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::StaticDraw);
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
-        let default_shader = Shader::from_handle(
-            device.compile_program(DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER)?,
-        );
+        let default_shader = Shader::from_handle(device.compile_program(
+            shader::DEFAULT_VERTEX_SHADER,
+            shader::DEFAULT_FRAGMENT_SHADER,
+        )?);
 
         let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
         let (width, height) = font_cache.texture_dimensions();
@@ -518,14 +519,32 @@ pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
     }
 }
 
-// TODO: This will need to come back once custom shaders are a thing
+/// Sets the shader that is currently being used for rendering.
+///
+/// If the shader is different from the one that is currently in use, this will trigger a
+/// [`flush`](fn.flush.html) to the graphics hardware - try to avoid shader swapping as
+/// much as you can.
+pub fn set_shader(ctx: &mut Context, shader: &Shader) {
+    set_shader_ex(ctx, ActiveShader::User(shader.clone()));
+}
 
-// pub(crate) fn set_shader_ex(ctx: &mut Context, shader: ActiveShader) {
-//     if shader != ctx.graphics.shader {
-//         flush(ctx);
-//         ctx.graphics.shader = shader;
-//     }
-// }
+/// Sets the renderer back to using the default shader.
+pub fn reset_shader(ctx: &mut Context) {
+    set_shader_ex(ctx, ActiveShader::Default);
+}
+
+pub(crate) fn set_shader_ex(ctx: &mut Context, shader: ActiveShader) -> Option<Shader> {
+    if shader != ctx.graphics.shader {
+        flush(ctx);
+        let old_shader = std::mem::replace(&mut ctx.graphics.shader, shader);
+
+        if let ActiveShader::User(s) = old_shader {
+            return Some(s);
+        }
+    }
+
+    None
+}
 
 pub(crate) fn set_projection_ex(ctx: &mut Context, projection: ActiveProjection) {
     if projection != ctx.graphics.projection {
@@ -570,6 +589,7 @@ pub fn flush(ctx: &mut Context) {
 
         let shader = match &ctx.graphics.shader {
             ActiveShader::Default => &ctx.graphics.default_shader,
+            ActiveShader::User(s) => &s,
         };
 
         let projection = match &ctx.graphics.projection {
@@ -578,7 +598,7 @@ pub fn flush(ctx: &mut Context) {
         };
 
         ctx.gl
-            .set_uniform(&shader.handle, "projection", &projection);
+            .set_uniform(&shader.handle, "u_projection", &projection);
 
         ctx.gl
             .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
@@ -605,6 +625,7 @@ pub fn present(ctx: &mut Context) {
     set_framebuffer_ex(ctx, ActiveFramebuffer::Window);
     set_projection_ex(ctx, ActiveProjection::Window);
     set_texture_ex(ctx, ActiveTexture::Framebuffer);
+    let user_shader = set_shader_ex(ctx, ActiveShader::Default);
 
     clear(ctx, color::BLACK);
 
@@ -626,6 +647,10 @@ pub fn present(ctx: &mut Context) {
 
     set_framebuffer_ex(ctx, ActiveFramebuffer::Backbuffer);
     set_projection_ex(ctx, ActiveProjection::Internal);
+
+    if let Some(s) = user_shader {
+        set_shader_ex(ctx, ActiveShader::User(s));
+    }
 
     ctx.window.gl_swap_window();
 }

@@ -204,11 +204,15 @@ impl GLDevice {
             let program_id = gl::CreateProgram();
 
             // TODO: IDK if this should be applied to *all* shaders...
-            let pos_tex_name = CString::new("in_pos_tex").unwrap();
-            let color_name = CString::new("in_color").unwrap();
+            let position_name = CString::new("a_position").unwrap();
+            let uv_name = CString::new("a_uv").unwrap();
+            let color_name = CString::new("a_color").unwrap();
+            let out_color_name = CString::new("o_color").unwrap();
 
-            gl::BindAttribLocation(program_id, 0, pos_tex_name.as_ptr());
-            gl::BindAttribLocation(program_id, 1, color_name.as_ptr());
+            gl::BindAttribLocation(program_id, 0, position_name.as_ptr());
+            gl::BindAttribLocation(program_id, 1, uv_name.as_ptr());
+            gl::BindAttribLocation(program_id, 2, color_name.as_ptr());
+            gl::BindFragDataLocation(program_id, 0, out_color_name.as_ptr());
 
             let vertex_id = gl::CreateShader(gl::VERTEX_SHADER);
             gl::ShaderSource(vertex_id, 1, &vertex_buffer.as_ptr(), ptr::null());
@@ -248,7 +252,7 @@ impl GLDevice {
 
             let program = GLProgram { id: program_id };
 
-            self.set_uniform(&program, "sampler1", 0);
+            self.set_uniform(&program, "u_texture", 0);
 
             Ok(program)
         }
@@ -306,7 +310,7 @@ impl GLDevice {
 
     pub fn set_uniform<T>(&mut self, program: &GLProgram, name: &str, value: T)
     where
-        T: SetUniform,
+        T: UniformValue,
     {
         unsafe {
             self.bind_program(program);
@@ -583,26 +587,51 @@ impl Drop for GLProgram {
     }
 }
 
-pub trait SetUniform {
+mod sealed {
+    use super::*;
+    pub trait UniformValueTypes {}
+    impl UniformValueTypes for i32 {}
+    impl UniformValueTypes for f32 {}
+    impl UniformValueTypes for Mat4 {}
+    impl<'a, T> UniformValueTypes for &'a T where T: UniformValueTypes {}
+}
+
+/// Represents a type that can be passed as a uniform value to a shader.
+///
+/// As the implementation of this trait currently interacts directly with the OpenGL layer,
+/// it's marked as a [sealed trait](https://rust-lang-nursery.github.io/api-guidelines/future-proofing.html#sealed-traits-protect-against-downstream-implementations-c-sealed),
+/// and can't be implemented outside of Tetra. This might change in the future!
+pub trait UniformValue: sealed::UniformValueTypes {
+    #[doc(hidden)]
     unsafe fn set_uniform(&self, location: GLint);
 }
 
-impl SetUniform for i32 {
+impl UniformValue for i32 {
+    #[doc(hidden)]
     unsafe fn set_uniform(&self, location: GLint) {
         gl::Uniform1i(location, *self);
     }
 }
 
-impl SetUniform for Mat4 {
+impl UniformValue for f32 {
+    #[doc(hidden)]
+    unsafe fn set_uniform(&self, location: GLint) {
+        gl::Uniform1f(location, *self);
+    }
+}
+
+impl UniformValue for Mat4 {
+    #[doc(hidden)]
     unsafe fn set_uniform(&self, location: GLint) {
         gl::UniformMatrix4fv(location, 1, gl::FALSE, self.as_slice().as_ptr());
     }
 }
 
-impl<'a, T> SetUniform for &'a T
+impl<'a, T> UniformValue for &'a T
 where
-    T: SetUniform,
+    T: UniformValue,
 {
+    #[doc(hidden)]
     unsafe fn set_uniform(&self, location: GLint) {
         (**self).set_uniform(location);
     }
