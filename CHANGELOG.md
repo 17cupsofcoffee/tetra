@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.6 (Upcoming)
+
+### New Features
+
+* A port of the popular 'BunnyMark' benchmark has been added, which can be helpful for comparing relative performance of different versions/configurations of Tetra. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#77](https://github.com/17cupsofcoffee/tetra/pull/77))
+
 ## 0.2.5 (Janurary 6th, 2019)
 
 ### New Features
