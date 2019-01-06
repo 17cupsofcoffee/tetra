@@ -1,9 +1,12 @@
-use tetra::graphics::{self, Color, DrawParams, Shader, Texture, Vec2};
+use tetra::graphics::{self, Color, DrawParams, Font, Shader, Text, Texture, Vec2};
 use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
     texture: Texture,
     shader: Shader,
+    text: Text,
+
+    timer: f32,
     red: f32,
     green: f32,
     blue: f32,
@@ -14,6 +17,9 @@ impl GameState {
         Ok(GameState {
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
             shader: Shader::fragment(ctx, "./examples/resources/disco.frag")?,
+            text: Text::new("", Font::default(), 32.0),
+
+            timer: 0.0,
             red: 0.0,
             green: 0.0,
             blue: 0.0,
@@ -23,41 +29,50 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, _ctx: &mut Context) -> tetra::Result {
-        self.red += 0.1;
-        self.green += 0.05;
-        self.blue += 0.025;
+        self.timer += 1.0;
+
+        self.red = ((self.timer / 10.0).sin() + 1.0) / 2.0;
+        self.green = ((self.timer / 100.0).sin() + 1.0) / 2.0;
+        self.blue = ((self.timer / 1000.0).sin() + 1.0) / 2.0;
+
+        self.text.set_content(format!(
+            "Red: {:.2}\nGreen: {:.2}\nBlue: {:.2}",
+            self.red, self.green, self.blue
+        ));
 
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
-        graphics::clear(ctx, Color::rgb(0.769, 0.812, 0.631));
+        graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
+
         graphics::set_shader(ctx, &self.shader);
 
-        self.shader
-            .set_uniform(ctx, "u_red", (self.red.sin() + 1.0) / 2.0);
+        self.shader.set_uniform(ctx, "u_red", self.red);
 
-        self.shader
-            .set_uniform(ctx, "u_green", (self.green.sin() + 1.0) / 2.0);
+        self.shader.set_uniform(ctx, "u_green", self.green);
 
-        self.shader
-            .set_uniform(ctx, "u_blue", (self.blue.sin() + 1.0) / 2.0);
+        self.shader.set_uniform(ctx, "u_blue", self.blue);
 
         graphics::draw(
             ctx,
             &self.texture,
             DrawParams::new()
-                .position(Vec2::new(80.0, 72.0))
+                .position(Vec2::new(640.0, 360.0))
                 .origin(Vec2::new(8.0, 8.0))
-                .scale(Vec2::new(4.0, 4.0)),
+                .scale(Vec2::new(24.0, 24.0)),
         );
+
+        graphics::reset_shader(ctx);
+
+        graphics::draw(ctx, &self.text, Vec2::new(16.0, 16.0));
 
         Ok(())
     }
 }
 
 fn main() -> tetra::Result {
-    ContextBuilder::new("Custom Shaders", 160, 144)
+    ContextBuilder::new("Custom Shaders", 1280, 720)
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)

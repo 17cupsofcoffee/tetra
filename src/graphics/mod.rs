@@ -519,11 +519,16 @@ pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
     }
 }
 
+/// Sets the shader that is currently being used for rendering.
+///
+/// If the shader is different from the one that is currently in use, this will trigger a
+/// [`flush`](fn.flush.html) to the graphics hardware - try to avoid shader swapping as
+/// much as you can.
 pub fn set_shader(ctx: &mut Context, shader: &Shader) {
     set_shader_ex(ctx, ActiveShader::User(shader.clone()));
 }
 
-// TODO: naming
+/// Sets the renderer back to using the default shader.
 pub fn reset_shader(ctx: &mut Context) {
     set_shader_ex(ctx, ActiveShader::Default);
 }

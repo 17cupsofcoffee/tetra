@@ -39,7 +39,9 @@ impl Shader {
         )
     }
 
-    /// Creates a new shader program from the given vertex shader file, using the default fragment shader.
+    /// Creates a new shader program from the given vertex shader file.
+    ///
+    /// The default fragment shader will be used.
     pub fn vertex<P>(ctx: &mut Context, path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
@@ -47,7 +49,9 @@ impl Shader {
         Shader::from_string(ctx, &fs::read_to_string(path)?, DEFAULT_FRAGMENT_SHADER)
     }
 
-    /// Creates a new shader program from the given fragment shader file, using the default vertex shader.
+    /// Creates a new shader program from the given fragment shader file.
+    ///
+    /// The default vertex shader will be used.
     pub fn fragment<P>(ctx: &mut Context, path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
@@ -72,6 +76,7 @@ impl Shader {
         }
     }
 
+    /// Sets the value of the specifed uniform parameter.
     pub fn set_uniform<V>(&mut self, ctx: &mut Context, name: &str, value: V)
     where
         V: UniformValue,
