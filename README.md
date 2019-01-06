@@ -77,6 +77,7 @@ The full list of examples available are:
 * [`text_input`](examples/text_input.rs) - Displays text as it is typed in by the player.
 * [`scaling`](examples/scaling.rs) - Demonstrates the different screen scaling algorithms.
 * [`shaders`](examples/shaders.rs) - Uses a custom shader to render a texture.
+* [`bunnymark`](examples/bunnymark.rs) - Benchmarks rendering performance.
 * [`tetras`](examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
 
 ## Support/Feedback
