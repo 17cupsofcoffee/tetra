@@ -53,23 +53,42 @@ export LIBRARY_PATH="$LIBRARY_PATH:/usr/local/lib"
 
 The SDL development libraries are distributed through most Linux package managers - here are a few examples:
 
-#### Ubuntu/Debian
+#### 
 
 ```bash
+# Ubuntu/Debian
 sudo apt-get install libsdl2-dev
-```
 
-#### Fedora/CentOS
-
-```bash
+# Fedora/CentOS
 sudo yum install SDL2-devel
-```
 
-#### Arch Linux
-
-```bash
+# Arch Linux
 sudo pacman -S sdl2
 ```
+
+### Advanced: Using a Bundled Version of SDL2
+
+It's also possible to have your project automatically compile SDL2 from source as part of the build process. To do so, specify your dependency on Tetra like this:
+
+```toml
+[dependencies.tetra]
+version = "0.2"
+features = ["sdl2_bundled"]
+```
+
+This is more convienent, but does however require you to have various build tools installed on your machine (e.g. a C compiler, CMake, etc). In particular, this can be a pain on Windows - hence why it's not the default!
+
+### Advanced: Static Linking
+
+If you want to avoid your users having to install SDL2 themselves (or you having to distribute it as a DLL), you can specify for it to be statically linked:
+
+```toml
+[dependencies.tetra]
+version = "0.2"
+features = ["sdl2_static_link"]
+```
+
+This comes with some trade-offs, however - make sure you read [this document](https://hg.libsdl.org/SDL/file/default/docs/README-dynapi.md) in the SDL2 repository so that you understand what you're doing!
 
 ## Next Steps
 
