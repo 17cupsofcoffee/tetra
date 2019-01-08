@@ -35,7 +35,7 @@ tetra = "0.2"
 
 Tetra currently requires Rust 1.31 or higher.
 
-You will also need to install the SDL2 native libraries, as described [here](https://github.com/Rust-SDL2/rust-sdl2#user-content-requirements). The 'bundled' and 'static linking' features described can be activated using the `sdl2_bundled` and `sdl2_static_link` Cargo features in Tetra.
+You will also need to install the SDL2 native libraries - full details are provided in the [documentation](https://tetra.seventeencups.net/tutorial/installation.html). 
 
 ## Examples
 
