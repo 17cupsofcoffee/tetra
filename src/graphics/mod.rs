@@ -23,7 +23,7 @@ pub use self::texture::Texture;
 pub use self::ui::NineSlice;
 pub use glm::Vec2;
 
-use glm::{self, Mat3, Mat4, Vec3};
+use glm::{self, Mat3, Mat4};
 use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
 use crate::error::Result;
@@ -382,7 +382,8 @@ impl DrawParams {
         self
     }
 
-    /// Construct a transformation matrix using the position, scale, origin and rotation.
+    #[deprecated(since = "0.2.6", note = "This was only intended for internal use, but was made public by mistake.")]
+    #[doc(hidden)]
     pub fn build_matrix(&self) -> Mat3 {
         glm::translation2d(&self.position)
             * glm::rotation2d(self.rotation)
@@ -462,32 +463,58 @@ pub(crate) fn push_quad(
     mut v1: f32,
     mut u2: f32,
     mut v2: f32,
-    transform: &Mat3,
-    color: Color,
+    params: &DrawParams,
 ) {
-    let mut tl = transform * Vec3::new(x1, y1, 1.0);
-    let mut bl = transform * Vec3::new(x1, y2, 1.0);
-    let mut br = transform * Vec3::new(x2, y2, 1.0);
-    let mut tr = transform * Vec3::new(x2, y1, 1.0);
+    // This function is a bit hairy, but it's more performant than doing the matrix math every
+    // frame by a *lot* (at least going by the BunnyMark example). The logic is roughly based
+    // on how FNA and LibGDX implement their spritebatches.
 
-    // TODO: I don't think this logic will hold if the quad isn't rectangular.
+    let mut fx = (x1 - params.origin.x) * params.scale.x;
+    let mut fy = (y1 - params.origin.y) * params.scale.y;
+    let mut fx2 = (x2 - params.origin.x) * params.scale.x;
+    let mut fy2 = (y2 - params.origin.y) * params.scale.y;
 
-    if tr.x < tl.x {
-        std::mem::swap(&mut tl, &mut tr);
-        std::mem::swap(&mut bl, &mut br);
+    if fx2 < fx {
+        std::mem::swap(&mut fx, &mut fx2);
         std::mem::swap(&mut u1, &mut u2);
     }
 
-    if bl.y < tl.y {
-        std::mem::swap(&mut tl, &mut bl);
-        std::mem::swap(&mut tr, &mut br);
+    if fy2 < fy {
+        std::mem::swap(&mut fy, &mut fy2);
         std::mem::swap(&mut v1, &mut v2);
     }
 
-    push_vertex(ctx, tl.x, tl.y, u1, v1, color);
-    push_vertex(ctx, bl.x, bl.y, u1, v2, color);
-    push_vertex(ctx, br.x, br.y, u2, v2, color);
-    push_vertex(ctx, tr.x, tr.y, u2, v1, color);
+    // Branching here might be a bit of a premature optimization...
+    let (ox1, oy1, ox2, oy2, ox3, oy3, ox4, oy4) = if params.rotation != 0.0 {
+        let sin = params.rotation.sin();
+        let cos = params.rotation.cos();
+        (
+            params.position.x + (cos * fx) - (sin * fy),
+            params.position.y + (sin * fx) + (cos * fy),
+            params.position.x + (cos * fx) - (sin * fy2),
+            params.position.y + (sin * fx) + (cos * fy2),
+            params.position.x + (cos * fx2) - (sin * fy2),
+            params.position.y + (sin * fx2) + (cos * fy2),
+            params.position.x + (cos * fx2) - (sin * fy),
+            params.position.y + (sin * fx2) + (cos * fy),
+        )
+    } else {
+        (
+            params.position.x + fx,
+            params.position.y + fy,
+            params.position.x + fx,
+            params.position.y + fy2,
+            params.position.x + fx2,
+            params.position.y + fy2,
+            params.position.x + fx2,
+            params.position.y + fy,
+        )
+    };
+
+    push_vertex(ctx, ox1, oy1, u1, v1, params.color);
+    push_vertex(ctx, ox2, oy2, u1, v2, params.color);
+    push_vertex(ctx, ox3, oy3, u2, v2, params.color);
+    push_vertex(ctx, ox4, oy4, u2, v1, params.color);
 
     ctx.graphics.element_count += 6;
 }
@@ -641,8 +668,7 @@ pub fn present(ctx: &mut Context) {
         1.0,
         1.0,
         0.0,
-        &Mat3::identity(),
-        color::WHITE,
+        &DrawParams::new(),
     );
 
     set_framebuffer_ex(ctx, ActiveFramebuffer::Backbuffer);
