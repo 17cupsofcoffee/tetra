@@ -68,7 +68,6 @@ impl Drawable for Texture {
         P: Into<DrawParams>,
     {
         let params = params.into();
-        let transform = params.build_matrix();
 
         let texture_width = self.width() as f32;
         let texture_height = self.height() as f32;
@@ -87,18 +86,6 @@ impl Drawable for Texture {
         let v2 = (clip.y + clip.height) / texture_height;
 
         graphics::set_texture(ctx, self);
-        graphics::push_quad(
-            ctx,
-            x1,
-            y1,
-            x2,
-            y2,
-            u1,
-            v1,
-            u2,
-            v2,
-            &transform,
-            params.color,
-        );
+        graphics::push_quad(ctx, x1, y1, x2, y2, u1, v1, u2, v2, &params);
     }
 }

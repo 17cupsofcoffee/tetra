@@ -178,7 +178,6 @@ impl Drawable for Text {
         P: Into<DrawParams>,
     {
         let params = params.into();
-        let transform = params.build_matrix();
 
         self.check_for_update(ctx);
 
@@ -186,17 +185,8 @@ impl Drawable for Text {
 
         for quad in self.quads.borrow().iter() {
             graphics::push_quad(
-                ctx,
-                quad.x1,
-                quad.y1,
-                quad.x2,
-                quad.y2,
-                quad.u1,
-                quad.v1,
-                quad.u2,
-                quad.v2,
-                &transform,
-                params.color,
+                ctx, quad.x1, quad.y1, quad.x2, quad.y2, quad.u1, quad.v1, quad.u2, quad.v2,
+                &params,
             );
         }
     }
