@@ -51,21 +51,7 @@
 //!
 //! You can see this example in action by running `cargo run --example hello_world`.
 //!
-//! The full list of examples available are:
-//!
-//! * [`hello_world`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/hello_world.rs) - Opens a window and clears it with a solid color.
-//! * [`texture`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/texture.rs) - Loads and displays a texture.
-//! * [`animation`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/animation.rs) - Displays an animation, made up of regions from a texture.
-//! * [`text`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/text.rs) - Displays text using a TTF font.
-//! * [`nineslice`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/nineslice.rs) - Slices a texture into nine segments to display a dialog box.
-//! * [`keyboard`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/keyboard.rs) - Moves a texture around based on keyboard input.
-//! * [`mouse`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/mouse.rs) - Moves a texture around based on mouse input.
-//! * [`gamepad`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/gamepad.rs) - Displays the input from a connected gamepad.
-//! * [`text_input`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/text_input.rs) - Displays text as it is typed in by the player.
-//! * [`scaling`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/scaling.rs) - Demonstrates the different screen scaling algorithms.
-//! * [`shaders`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/shaders.rs) - Uses a custom shader to render a texture.
-//! * [`bunnymark`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/examples/bunnymark.rs) - Benchmarks rendering performance.
-//! * [`tetras`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
+//! The full list of examples is available [here](https://github.com/17cupsofcoffee/tetra/tree/master/examples).
 //!
 //! ## Support/Feedback
 //!
