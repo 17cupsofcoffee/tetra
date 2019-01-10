@@ -5,4 +5,5 @@
     - [Installation](./tutorial/installation.md)
     - [Getting Started](./tutorial/getting-started.md)
     - [Loading a Texture](./tutorial/loading-a-texture.md)
+- [Examples](./examples.md)
 - [FAQ](./FAQ.md)
