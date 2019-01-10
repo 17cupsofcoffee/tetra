@@ -64,21 +64,7 @@ fn main() -> tetra::Result {
 
 You can see this example in action by running `cargo run --example hello_world`.
 
-The full list of examples available are:
-
-* [`hello_world`](examples/hello_world.rs) - Opens a window and clears it with a solid color.
-* [`texture`](examples/texture.rs) - Loads and displays a texture.
-* [`animation`](examples/animation.rs) - Displays an animation, made up of regions from a texture.
-* [`text`](examples/text.rs) - Displays text using a TTF font.
-* [`nineslice`](examples/nineslice.rs) - Slices a texture into nine segments to display a dialog box.
-* [`keyboard`](examples/keyboard.rs) - Moves a texture around based on keyboard input.
-* [`mouse`](examples/mouse.rs) - Moves a texture around based on mouse input.
-* [`gamepad`](examples/gamepad.rs) - Displays the input from a connected gamepad.
-* [`text_input`](examples/text_input.rs) - Displays text as it is typed in by the player.
-* [`scaling`](examples/scaling.rs) - Demonstrates the different screen scaling algorithms.
-* [`shaders`](examples/shaders.rs) - Uses a custom shader to render a texture.
-* [`bunnymark`](examples/bunnymark.rs) - Benchmarks rendering performance.
-* [`tetras`](examples/tetras.rs) - A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*).
+The full list of examples is available [here](https://github.com/17cupsofcoffee/tetra/tree/master/examples).
 
 ## Support/Feedback
 
