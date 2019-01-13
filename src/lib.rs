@@ -1,6 +1,6 @@
 //! Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event handling and OpenGL 3.2+ for rendering.
 //!
-//! **Note that Tetra is still extremely early in development!** It may/will have bugs and missing features (the big one currently being audio playback). That said, you're welcome to give it a go and let me know what you think :)
+//! **Note that Tetra is still extremely early in development!** It may/will have bugs and missing features. That said, you're welcome to give it a go and let me know what you think :)
 //!
 //! ## Features
 //!
@@ -61,6 +61,7 @@
 
 #![warn(missing_docs)]
 
+pub mod audio;
 pub use glm;
 pub mod error;
 pub mod graphics;
@@ -74,6 +75,7 @@ use sdl2::event::{Event, WindowEvent};
 use sdl2::video::{FullscreenType, GLProfile, Window};
 use sdl2::Sdl;
 
+use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
@@ -120,6 +122,7 @@ pub struct Context {
     gl: GLDevice,
     graphics: GraphicsContext,
     input: InputContext,
+    audio: AudioContext,
 
     window_width: i32,
     window_height: i32,
@@ -482,6 +485,7 @@ impl<'a> ContextBuilder<'a> {
             self.internal_height,
             self.scaling,
         )?;
+        let audio = AudioContext::new();
         let input = InputContext::new(&sdl)?;
 
         Ok(Context {
@@ -490,6 +494,7 @@ impl<'a> ContextBuilder<'a> {
             gl,
             graphics,
             input,
+            audio,
 
             window_width,
             window_height,
