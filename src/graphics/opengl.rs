@@ -426,19 +426,9 @@ impl GLDevice {
         }
     }
 
-    pub fn draw(
-        &mut self,
-        vertex_buffer: &GLVertexBuffer,
-        index_buffer: &GLIndexBuffer,
-        program: &GLProgram,
-        texture: &GLTexture,
-        count: usize,
-    ) {
+    pub fn draw_elements(&mut self, index_buffer: &GLIndexBuffer, count: usize) {
         unsafe {
-            self.bind_program(program);
-            self.bind_vertex_buffer(vertex_buffer);
             self.bind_index_buffer(index_buffer);
-            self.bind_texture(texture);
 
             gl::DrawElements(
                 gl::TRIANGLES,

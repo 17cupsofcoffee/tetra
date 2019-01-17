@@ -382,7 +382,10 @@ impl DrawParams {
         self
     }
 
-    #[deprecated(since = "0.2.6", note = "This was only intended for internal use, but was made public by mistake.")]
+    #[deprecated(
+        since = "0.2.6",
+        note = "This was only intended for internal use, but was made public by mistake."
+    )]
     #[doc(hidden)]
     pub fn build_matrix(&self) -> Mat3 {
         glm::translation2d(&self.position)
@@ -624,19 +627,18 @@ pub fn flush(ctx: &mut Context) {
             ActiveProjection::Window => &ctx.graphics.window_projection,
         };
 
+        ctx.gl.bind_texture(&texture.handle);
+
+        ctx.gl.bind_program(&shader.handle);
         ctx.gl
             .set_uniform(&shader.handle, "u_projection", &projection);
 
+        ctx.gl.bind_vertex_buffer(&ctx.graphics.vertex_buffer);
         ctx.gl
             .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
 
-        ctx.gl.draw(
-            &ctx.graphics.vertex_buffer,
-            &ctx.graphics.index_buffer,
-            &shader.handle,
-            &texture.handle,
-            ctx.graphics.element_count,
-        );
+        ctx.gl
+            .draw_elements(&ctx.graphics.index_buffer, ctx.graphics.element_count);
 
         ctx.graphics.vertex_data.clear();
         ctx.graphics.vertex_count = 0;
@@ -671,14 +673,15 @@ pub fn present(ctx: &mut Context) {
         &DrawParams::new(),
     );
 
+    flush(ctx);
+    ctx.window.gl_swap_window();
+
     set_framebuffer_ex(ctx, ActiveFramebuffer::Backbuffer);
     set_projection_ex(ctx, ActiveProjection::Internal);
 
     if let Some(s) = user_shader {
         set_shader_ex(ctx, ActiveShader::User(s));
     }
-
-    ctx.window.gl_swap_window();
 }
 
 /// Gets the internal width of the screen.
