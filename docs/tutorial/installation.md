@@ -37,6 +37,8 @@ The instructions below are adapted from the README of the [sdl2](https://github.
 
 ### Mac
 
+> Note that Tetra currently has some issues with black screens on Mac systems - for information (and if you'd like to help fix them!), please see [this issue on our GitHub repository](https://github.com/17cupsofcoffee/tetra/issues/54).
+
 The easiest way to install SDL is via [Homebrew](http://brew.sh/):
 
 ```bash
