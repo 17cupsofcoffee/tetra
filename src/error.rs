@@ -6,6 +6,7 @@ use std::io;
 use std::result;
 
 use image::ImageError;
+use rodio::decoder::DecoderError;
 use sdl2::video::WindowBuildError;
 use sdl2::IntegerOrSdlError;
 
@@ -33,6 +34,12 @@ pub enum TetraError {
     /// An error that occured while processing an image.
     Image(ImageError),
 
+    /// Returned when trying to play back audio without an available device.
+    NoAudioDevice,
+
+    /// An error that occured while decoding audio data.
+    FailedToDecodeAudio(DecoderError),
+
     /// This is here so that adding new error types will not be a breaking change.
     /// Can be removed once #[non_exhaustive] is stabilized.
     #[doc(hidden)]
@@ -46,6 +53,8 @@ impl Display for TetraError {
             TetraError::Sdl(e) => write!(f, "SDL error: {}", e),
             TetraError::OpenGl(e) => write!(f, "OpenGL error: {}", e),
             TetraError::Image(e) => write!(f, "Image processing error: {}", e),
+            TetraError::NoAudioDevice => write!(f, "No audio device was available for playback."),
+            TetraError::FailedToDecodeAudio(e) => write!(f, "Failed to decode audio: {}", e),
             TetraError::__Nonexhaustive => unreachable!(),
         }
     }
@@ -58,6 +67,8 @@ impl Error for TetraError {
             TetraError::Sdl(_) => None,
             TetraError::OpenGl(_) => None,
             TetraError::Image(e) => Some(e),
+            TetraError::NoAudioDevice => None,
+            TetraError::FailedToDecodeAudio(e) => Some(e),
             TetraError::__Nonexhaustive => unreachable!(),
         }
     }
@@ -84,5 +95,11 @@ impl From<WindowBuildError> for TetraError {
 impl From<IntegerOrSdlError> for TetraError {
     fn from(e: IntegerOrSdlError) -> TetraError {
         TetraError::Sdl(e.to_string())
+    }
+}
+
+impl From<DecoderError> for TetraError {
+    fn from(e: DecoderError) -> TetraError {
+        TetraError::FailedToDecodeAudio(e)
     }
 }

@@ -15,6 +15,7 @@ cargo run --example example_name
 | `nineslice` | Graphics | Slices a texture into nine segments to display a dialog box. |
 | `scaling` | Graphics | Demonstrates the different screen scaling algorithms. |
 | `shaders` | Graphics | Uses a custom shader to render a texture. |
+| `audio` | Audio | Plays back an audio file. |
 | `keyboard` | Input | Moves a texture around based on keyboard input. |
 | `mouse` | Input | Moves a texture around based on mouse input. |
 | `gamepad` | Input | Displays the input from a connected gamepad. |
