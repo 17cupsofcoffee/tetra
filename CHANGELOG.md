@@ -4,6 +4,7 @@
 
 ### New Features
 
+* Audio playback has been added, using [Rodio](https://github.com/tomaka/rodio) as the backend! ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#84](https://github.com/17cupsofcoffee/tetra/pull/84))
 * A port of the popular 'BunnyMark' benchmark has been added, which can be helpful for comparing relative performance of different versions/configurations of Tetra. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#77](https://github.com/17cupsofcoffee/tetra/pull/77))
 * The documentation has been updated to detail the `sdl2_bundled` and `sdl2_static_link` features.
 
