@@ -18,7 +18,7 @@ sdl2_static_link = ["sdl2/static-link"]
 [dependencies]
 gl = "0.11.0"
 sdl2 = "0.32.1"
-image = "0.20.1"
+image = "0.21.0"
 glm = { version = "0.2.0", package = "nalgebra-glm" }
 fnv = "1.0.6"
 glyph_brush = "0.2.4"
