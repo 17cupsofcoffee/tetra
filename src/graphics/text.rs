@@ -40,6 +40,10 @@ pub struct Font {
 
 impl Font {
     /// Loads a font from the given file.
+    /// 
+    /// # Errors
+    /// 
+    /// If the file could not be read, a `TetraError::Io` will be returned.
     pub fn new<P>(ctx: &mut Context, path: P) -> Result<Font>
     where
         P: AsRef<Path>,

@@ -54,6 +54,12 @@ pub struct Shader {
 
 impl Shader {
     /// Creates a new shader program from the given files.
+    /// 
+    /// # Errors
+    /// 
+    /// If the file could not be read, a `TetraError::Io` will be returned.
+    /// 
+    /// If the shader could not be compiled, a `TetraError::OpenGl` will be returned.
     pub fn new<P>(ctx: &mut Context, vertex_path: P, fragment_path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
@@ -68,6 +74,12 @@ impl Shader {
     /// Creates a new shader program from the given vertex shader file.
     ///
     /// The default fragment shader will be used.
+    /// 
+    /// # Errors
+    /// 
+    /// If the file could not be read, a `TetraError::Io` will be returned.
+    /// 
+    /// If the shader could not be compiled, a `TetraError::OpenGl` will be returned.
     pub fn vertex<P>(ctx: &mut Context, path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
@@ -78,6 +90,12 @@ impl Shader {
     /// Creates a new shader program from the given fragment shader file.
     ///
     /// The default vertex shader will be used.
+    /// 
+    /// # Errors
+    /// 
+    /// If the file could not be read, a `TetraError::Io` will be returned.
+    /// 
+    /// If the shader could not be compiled, a `TetraError::OpenGl` will be returned.
     pub fn fragment<P>(ctx: &mut Context, path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
@@ -86,6 +104,10 @@ impl Shader {
     }
 
     /// Creates a new shader program from the given strings.
+    /// 
+    /// # Errors
+    /// 
+    /// If the shader could not be compiled, a `TetraError::OpenGl` will be returned.
     pub fn from_string(
         ctx: &mut Context,
         vertex_shader: &str,

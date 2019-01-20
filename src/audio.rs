@@ -52,6 +52,12 @@ pub struct Sound {
 
 impl Sound {
     /// Creates a new sound from the given file.
+    /// 
+    /// # Errors
+    /// 
+    /// If the file path is invalid, a `TetraError::Io` will be returned. Note that the data
+    /// is not decoded until playback begins, so this function will not validate
+    /// that the data being read is formatted correctly.
     pub fn new<P>(path: P) -> Result<Sound>
     where
         P: AsRef<Path>,
@@ -63,48 +69,66 @@ impl Sound {
 
     /// Plays the sound.
     /// 
-    /// Can return an error if there is no active audio device, or if the sound data
-    /// is in an invalid format.
+    /// # Errors
+    /// 
+    /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
+    /// 
+    /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn play(&self, ctx: &Context) -> Result<SoundInstance> {
         self.start_source(ctx, true, false, 1.0, 1.0)
     }
 
     /// Plays the sound repeatedly.
     /// 
-    /// Can return an error if there is no active audio device, or if the sound data
-    /// is in an invalid format.
+    /// # Errors
+    /// 
+    /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
+    /// 
+    /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn repeat(&self, ctx: &Context) -> Result<SoundInstance> {
         self.start_source(ctx, true, true, 1.0, 1.0)
     }
 
     /// Spawns a new instance of the sound that is not playing yet.
     /// 
-    /// Can return an error if there is no active audio device, or if the sound data
-    /// is in an invalid format.
+    /// # Errors
+    /// 
+    /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
+    /// 
+    /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn spawn(&self, ctx: &Context) -> Result<SoundInstance> {
         self.start_source(ctx, false, false, 1.0, 1.0)
     }
 
     /// Plays the sound, with the provided settings.
     /// 
-    /// Can return an error if there is no active audio device, or if the sound data
-    /// is in an invalid format.
+    /// # Errors
+    /// 
+    /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
+    /// 
+    /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn play_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         self.start_source(ctx, true, false, volume, speed)
     }
 
     /// Plays the sound repeatedly, with the provided settings.
     /// 
-    /// Can return an error if there is no active audio device, or if the sound data
-    /// is in an invalid format.
+    /// # Errors
+    /// 
+    /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
+    /// 
+    /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn repeat_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         self.start_source(ctx, true, true, volume, speed)
     }
 
     /// Spawns a new instance of the sound that is not playing yet, with the provided settings.
     /// 
-    /// Can return an error if there is no active audio device, or if the sound data
-    /// is in an invalid format.
+    /// # Errors
+    /// 
+    /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
+    /// 
+    /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn spawn_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         self.start_source(ctx, false, false, volume, speed)
     }

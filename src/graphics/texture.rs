@@ -21,6 +21,12 @@ pub struct Texture {
 
 impl Texture {
     /// Creates a new texture from the given file.
+    /// 
+    /// # Errors
+    /// 
+    /// If the file could not be read, a `TetraError::Io` will be returned.
+    /// 
+    /// If the image data was invalid, a `TetraError::Image` will be returned.
     pub fn new<P>(ctx: &mut Context, path: P) -> Result<Texture>
     where
         P: AsRef<Path>,

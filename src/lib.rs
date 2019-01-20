@@ -134,6 +134,11 @@ pub struct Context {
 
 impl Context {
     /// Runs the game using the provided `State` implementation.
+    /// 
+    /// # Errors
+    /// 
+    /// If the `State` returns an error from `update` or `draw`, the game will stop
+    /// running and this method will return the error.
     ///
     /// # Examples
     ///
@@ -208,7 +213,12 @@ impl Context {
     ///
     /// This is mainly handy when chaining methods, as it allows you to call your `State` constructor
     /// without breaking the chain.
-    ///
+    /// 
+    /// # Errors
+    /// 
+    /// If the `State` returns an error from `update` or `draw`, the game will stop
+    /// running and this method will return the error.
+    /// 
     /// # Examples
     ///
     /// ```no_run
@@ -410,6 +420,11 @@ impl<'a> ContextBuilder<'a> {
     }
 
     /// Builds the context.
+    /// 
+    /// # Errors
+    /// 
+    /// If an error is encountered during initialization of the context, this method will
+    /// return the error. This will usually be either `TetraError::Sdl` or `TetraError::OpenGl`.
     pub fn build(&self) -> Result<Context> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
         let video = sdl.video().map_err(TetraError::Sdl)?;
