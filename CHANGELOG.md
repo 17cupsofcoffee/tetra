@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.6 (Upcoming)
+## 0.2.6 (January 20th, 2019)
 
 ### New Features
 
