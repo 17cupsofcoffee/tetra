@@ -12,6 +12,30 @@ If you're looking for a similar engine that *is* working towards being pure Rust
 
 I'm terrible at naming projects, and [this](https://www.youtube.com/watch?v=g3xg28yaZ5E) happened to be playing when I was typing `cargo new`. I wish there was a better origin story than that :D
 
+### Do I have to install SDL manually?
+
+It's possible to have your project automatically compile SDL2 from source as part of the build process. To do so, specify your dependency on Tetra like this:
+
+```toml
+[dependencies.tetra]
+version = "0.2"
+features = ["sdl2_bundled"]
+```
+
+This is more convienent, but does however require you to have various build tools installed on your machine (e.g. a C compiler, CMake, etc). In particular, this can be a pain on Windows - hence why it's not the default!
+
+### Can I static link SDL?
+
+If you want to avoid your users having to install SDL2 themselves (or you having to distribute it as a DLL), you can specify for it to be statically linked:
+
+```toml
+[dependencies.tetra]
+version = "0.2"
+features = ["sdl2_static_link"]
+```
+
+This comes with some trade-offs, however - make sure you read [this document](https://hg.libsdl.org/SDL/file/default/docs/README-dynapi.md) in the SDL2 repository so that you understand what you're doing!
+
 ## Compatibility
 
 ### Why am I getting a black screen?

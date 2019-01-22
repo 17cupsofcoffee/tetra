@@ -1,6 +1,6 @@
 # Summary
 
-- [Introduction](./README.md)
+[Tetra](./README.md)
 - [Tutorial](./tutorial/README.md)
     - [Installation](./tutorial/installation.md)
     - [Getting Started](./tutorial/getting-started.md)

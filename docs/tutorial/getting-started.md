@@ -1,12 +1,12 @@
 # Getting Started
 
-Once you have [installed SDL and set up your project](./installation.md), you're ready to start writing a game!
+Once you have [installed the native dependencies and set up your project](./installation.md), you're ready to start writing a game!
 
 ## Creating Some State
 
 The first step is to create a struct to hold your game's state. To begin with, let's create some text, and store a position where we want to render it:
 
-```rust
+```rust ,noplaypen
 use tetra::graphics::{Text, Font, Vec2};
 
 struct GameState {
@@ -32,7 +32,7 @@ Now that we have some data, we need a way to manipulate it. In Tetra, you do thi
 
 Let's write some code that draws our text moving across the screen:
 
-```rust
+```rust ,noplaypen
 use tetra::graphics;
 use tetra::{State, Context};
 
@@ -52,7 +52,12 @@ impl State for GameState {
 }
 ```
 
-You might be wondering what the `Context` that we're passing around is for, or where it comes from - let's take a closer look!
+You might have a few questions after reading that code:
+
+* What's that `Context` object that we're passing around? Where does it come from?
+* Why do we return `Ok(())` from the methods?
+
+To answer these, we'll need to write our program's `main` function, and actually start our game!
 
 ## Building a Context
 
@@ -60,7 +65,7 @@ You might be wondering what the `Context` that we're passing around is for, or w
 
 Let's build a new context with a window size of 1280 by 720, and run an instance of our `GameState` struct on it:
 
-```rust
+```rust ,noplaypen
 use tetra::ContextBuilder;
 
 fn main() -> tetra::Result {
@@ -70,7 +75,9 @@ fn main() -> tetra::Result {
 }
 ```
 
-If you try `cargo run`, you should see your text scrolling across the screen!
+Note that both our `main` function and the `run` method return `tetra::Result`, just like our `update` and `draw` did. If we'd returned an error from `update` or `draw` instead of `Ok(())`, the game would stop running, and `run` would return that error to be handled or logged out. In our case, we just pass it on as `main`'s return value too - Rust will automatically print errors in this case.
+
+If you run `cargo run` from the command line, you should now see your text scrolling across the screen!
 
 ## Next Steps
 
@@ -78,7 +85,7 @@ In [the next chapter](./loading-a-texture.md), we'll try loading a texture to di
 
 Here's the full example from this chapter:
 
-```rust
+```rust ,noplaypen
 use tetra::graphics::{self, Text, Font, Vec2};
 use tetra::{State, Context, ContextBuilder};
 

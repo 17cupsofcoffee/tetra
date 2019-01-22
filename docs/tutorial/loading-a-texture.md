@@ -12,7 +12,7 @@ For this example, we'll use a sprite that I drew - excuse the programmer art:
 
 Save that image to the root of your project. We can now load it in our `GameState` constructor:
 
-```rust
+```rust ,noplaypen
 use tetra::graphics::{Texture, Vec2};
 use tetra::Context;
 
@@ -61,7 +61,7 @@ error[E0277]: the trait bound `std::result::Result<GameState, tetra::error::Tetr
 
 The obvious solution would be to write something like this:
 
-```rust
+```rust ,noplaypen
 fn main() -> tetra::Result {
     let mut ctx = ContextBuilder::new("My First Tetra Game", 1280, 720)
         .build()?;
@@ -74,7 +74,7 @@ fn main() -> tetra::Result {
 
 But wait, there's a simpler way! `Context` provides a method called `run_with` that will use a closure to initialize your state before running the game:
 
-```rust
+```rust ,noplaypen
 fn main() -> tetra::Result {
     ContextBuilder::new("My First Tetra Game", 1280, 720)
         .build()?
@@ -82,9 +82,9 @@ fn main() -> tetra::Result {
 }
 ```
 
-And since our constructor's function signature is the same as what `run_with` expects, we can simplify this even further:
+And since our constructor's function signature is the same as that of the closure that `run_with` expects, we can simplify this even further:
 
-```rust
+```rust ,noplaypen
 fn main() -> tetra::Result {
     ContextBuilder::new("My First Tetra Game", 1280, 720)
         .build()?
@@ -100,7 +100,7 @@ This is currently the last chapter of the tutorial (although more will be added 
 
 Here's the full example from this chapter:
 
-```rust
+```rust ,noplaypen
 use tetra::graphics::{self, Texture, Vec2};
 use tetra::{State, Context, ContextBuilder};
 
