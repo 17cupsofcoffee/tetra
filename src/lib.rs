@@ -426,6 +426,9 @@ impl<'a> ContextBuilder<'a> {
     /// If an error is encountered during initialization of the context, this method will
     /// return the error. This will usually be either `TetraError::Sdl` or `TetraError::OpenGl`.
     pub fn build(&self) -> Result<Context> {
+        // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
+        let audio = AudioContext::new();
+
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
         let video = sdl.video().map_err(TetraError::Sdl)?;
 
@@ -500,7 +503,6 @@ impl<'a> ContextBuilder<'a> {
             self.internal_height,
             self.scaling,
         )?;
-        let audio = AudioContext::new();
         let input = InputContext::new(&sdl)?;
 
         Ok(Context {
