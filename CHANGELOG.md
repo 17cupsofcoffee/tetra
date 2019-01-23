@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.7 (January 23rd, 2019)
+
+### Improvements
+
+* We now use the [`hashbrown`](https://github.com/Amanieu/hashbrown) implementation of `HashMap`/`HashSet` instead of the `fnv` hasher. The hope was that this would give a performance boost, but it didn't seem to have any real observable impact :( That said, several of Tetra's dependencies use `hashbrown`, so in the interests of keeping the dependency tree light, we're switching anyway. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#91](https://github.com/17cupsofcoffee/tetra/pull/91))
+
+### Bug Fixes
+
+* A race condition between Rodio and SDL has been fixed. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#90](https://github.com/17cupsofcoffee/tetra/pull/90))
+* While testing `hashbrown` integration, it was found that the benchmark numbers in the FAQ were slightly inaccurate - this has now been fixed. ([@17cupsofcoffee](https://github.com/17cupsofcoffee), in [#91](https://github.com/17cupsofcoffee/tetra/pull/91))
+
 ## 0.2.6 (January 20th, 2019)
 
 ### New Features
