@@ -8,7 +8,7 @@
 //! If a controller is disconnected, the next controller to be connected will take its index - otherwise,
 //! a new one will be allocated. This behaviour might be made smarter in future versions.
 
-use fnv::{FnvHashMap, FnvHashSet};
+use hashbrown::{HashMap, HashSet};
 use glm::Vec2;
 use sdl2::controller::{Axis as SdlAxis, Button as SdlButton, GameController};
 use sdl2::event::Event;
@@ -111,34 +111,34 @@ pub enum GamepadStick {
 
 struct GamepadState {
     sdl_controller: GameController,
-    current_button_state: FnvHashSet<GamepadButton>,
-    previous_button_state: FnvHashSet<GamepadButton>,
-    current_axis_state: FnvHashMap<GamepadAxis, f32>,
+    current_button_state: HashSet<GamepadButton>,
+    previous_button_state: HashSet<GamepadButton>,
+    current_axis_state: HashMap<GamepadAxis, f32>,
 }
 
 impl GamepadState {
     pub(crate) fn new(sdl_controller: GameController) -> GamepadState {
         GamepadState {
             sdl_controller,
-            current_button_state: FnvHashSet::default(),
-            previous_button_state: FnvHashSet::default(),
-            current_axis_state: FnvHashMap::default(),
+            current_button_state: HashSet::new(),
+            previous_button_state: HashSet::new(),
+            current_axis_state: HashMap::new(),
         }
     }
 }
 
 pub(crate) struct InputContext {
-    current_key_state: FnvHashSet<Key>,
-    previous_key_state: FnvHashSet<Key>,
+    current_key_state: HashSet<Key>,
+    previous_key_state: HashSet<Key>,
     current_text_input: Option<String>,
 
-    current_mouse_state: FnvHashSet<MouseButton>,
-    previous_mouse_state: FnvHashSet<MouseButton>,
+    current_mouse_state: HashSet<MouseButton>,
+    previous_mouse_state: HashSet<MouseButton>,
     mouse_position: Vec2,
 
     controller_sys: GameControllerSubsystem,
     pads: Vec<Option<GamepadState>>,
-    sdl_pad_indexes: FnvHashMap<i32, usize>,
+    sdl_pad_indexes: HashMap<i32, usize>,
 }
 
 impl InputContext {
@@ -147,17 +147,17 @@ impl InputContext {
         sdl2::hint::set("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
 
         Ok(InputContext {
-            current_key_state: FnvHashSet::default(),
-            previous_key_state: FnvHashSet::default(),
+            current_key_state: HashSet::new(),
+            previous_key_state: HashSet::new(),
             current_text_input: None,
 
-            current_mouse_state: FnvHashSet::default(),
-            previous_mouse_state: FnvHashSet::default(),
+            current_mouse_state: HashSet::new(),
+            previous_mouse_state: HashSet::new(),
             mouse_position: Vec2::zeros(),
 
             controller_sys,
             pads: Vec::new(),
-            sdl_pad_indexes: FnvHashMap::default(),
+            sdl_pad_indexes: HashMap::new(),
         })
     }
 }
