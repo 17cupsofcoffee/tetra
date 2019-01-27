@@ -15,7 +15,7 @@ This project adheres to Semantic Versioning.
 * A race condition between Rodio and SDL has been fixed.
 * While testing `hashbrown` integration, it was found that the benchmark numbers in the FAQ were slightly inaccurate - this has now been fixed.
 
-## [v0.2.6] - 2019-01-20
+## [0.2.6] - 2019-01-20
 
 ### Added
 
