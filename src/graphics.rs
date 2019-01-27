@@ -38,7 +38,7 @@ const MAX_VERTICES: usize = MAX_SPRITES * 4;
 const MAX_INDICES: usize = MAX_SPRITES * 6;
 const VERTEX_STRIDE: usize = 8;
 const INDEX_ARRAY: [u32; 6] = [0, 1, 2, 2, 3, 0];
-const DEFAULT_FONT: &[u8] = include_bytes!("../resources/DejaVuSansMono.ttf");
+const DEFAULT_FONT: &[u8] = include_bytes!("./resources/DejaVuSansMono.ttf");
 
 #[derive(PartialEq)]
 pub(crate) enum ActiveTexture {
