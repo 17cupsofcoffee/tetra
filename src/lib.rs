@@ -70,6 +70,7 @@ pub mod time;
 pub mod window;
 
 use std::time::{Duration, Instant};
+use std::collections::VecDeque;
 
 use sdl2::event::{Event, WindowEvent};
 use sdl2::video::{FullscreenType, GLProfile, Window};
@@ -130,6 +131,7 @@ pub struct Context {
     running: bool,
     quit_on_escape: bool,
     tick_rate: Duration,
+    fps_tracker: VecDeque<f64>
 }
 
 impl Context {
@@ -171,6 +173,9 @@ impl Context {
             let elapsed = current_time - last_time;
             last_time = current_time;
             lag += elapsed;
+
+            if self.fps_tracker.len() == self.fps_tracker.capacity() { self.fps_tracker.pop_front(); }
+            self.fps_tracker.push_back(time::duration_to_f64(elapsed));
 
             for event in events.poll_iter() {
                 if let Err(e) = self
@@ -519,6 +524,7 @@ impl<'a> ContextBuilder<'a> {
             running: false,
             quit_on_escape: self.quit_on_escape,
             tick_rate: time::f64_to_duration(self.tick_rate),
+            fps_tracker: VecDeque::<f64>::with_capacity(250)
         })
     }
 }
