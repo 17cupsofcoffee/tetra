@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## 0.2.8 - Upcoming
+
+### Added
+
+* The `time::get_fps` function was added, which returns the current FPS, averaged out over the last few seconds. ([@selimeren](https://github.com/selimeren) in [#48](https://github.com/17cupsofcoffee/tetra/pull/96))
+
 ## [0.2.7] - 2019-01-23
 
 ### Changed
