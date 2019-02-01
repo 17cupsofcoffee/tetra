@@ -1,7 +1,5 @@
 /// Based on https://github.com/openfl/openfl-samples/tree/master/demos/BunnyMark
 /// Original BunnyMark (and sprite) by Iain Lobb
-use std::collections::VecDeque;
-use std::time::Instant;
 
 use rand::rngs::ThreadRng;
 use rand::{self, Rng};
@@ -41,8 +39,6 @@ struct GameState {
     max_y: f32,
 
     click_timer: i32,
-    fps_tracker: VecDeque<f64>,
-    last_frame: Instant,
 }
 
 impl GameState {
@@ -65,8 +61,6 @@ impl GameState {
             max_y,
 
             click_timer: 0,
-            fps_tracker: VecDeque::new(),
-            last_frame: Instant::now(),
         })
     }
 }
@@ -119,26 +113,14 @@ impl State for GameState {
             graphics::draw(ctx, &self.texture, bunny.position);
         }
 
-        let current_frame = Instant::now();
-        let elapsed = current_frame - self.last_frame;
-
-        self.fps_tracker.push_back(time::duration_to_f64(elapsed));
-
-        if self.fps_tracker.len() > 200 {
-            self.fps_tracker.pop_front();
-        }
-
-        let fps = 1.0 / (self.fps_tracker.iter().sum::<f64>() / self.fps_tracker.len() as f64);
         window::set_title(
             ctx,
             &format!(
                 "BunnyMark - {} bunnies - {:.0} FPS",
                 self.bunnies.len(),
-                fps
+                time::get_fps(ctx)
             ),
         );
-
-        self.last_frame = current_frame;
 
         Ok(())
     }
