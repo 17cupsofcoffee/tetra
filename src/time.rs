@@ -30,7 +30,7 @@ pub fn set_tick_rate(ctx: &mut Context, tick_rate: f64) {
     ctx.tick_rate = f64_to_duration(1.0 / tick_rate);
 }
 
-/// Calculates FPS from average frame durations
+/// Returns the current frame rate, averaged out over the last 200 frames.
 pub fn get_fps(ctx: &Context) -> f64 {
     1.0 / (ctx.fps_tracker.iter().sum::<f64>() / ctx.fps_tracker.len() as f64)
 }

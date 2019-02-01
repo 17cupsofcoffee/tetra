@@ -174,7 +174,9 @@ impl Context {
             last_time = current_time;
             lag += elapsed;
 
-            if self.fps_tracker.len() == self.fps_tracker.capacity() { self.fps_tracker.pop_front(); }
+            // Since we fill the buffer when we create the context, we can cycle it
+            // here and it shouldn't reallocate.
+            self.fps_tracker.pop_front();
             self.fps_tracker.push_back(time::duration_to_f64(elapsed));
 
             for event in events.poll_iter() {
@@ -510,6 +512,11 @@ impl<'a> ContextBuilder<'a> {
         )?;
         let input = InputContext::new(&sdl)?;
 
+        // We fill the buffer with values so that the FPS counter doesn't jitter
+        // at startup.
+        let mut fps_tracker = VecDeque::with_capacity(200);
+        fps_tracker.resize(200, 1.0 / 60.0);
+
         Ok(Context {
             sdl,
             window,
@@ -524,7 +531,7 @@ impl<'a> ContextBuilder<'a> {
             running: false,
             quit_on_escape: self.quit_on_escape,
             tick_rate: time::f64_to_duration(self.tick_rate),
-            fps_tracker: VecDeque::<f64>::with_capacity(250)
+            fps_tracker,
         })
     }
 }
