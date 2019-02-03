@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Changed
+
+* Some optimizations have been made to the rendering code, mainly to avoid unnecessary allocations.
+
 ## [0.2.8] - 2019-02-01
 
 ### Added

@@ -444,14 +444,9 @@ fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, color: Color) 
         flush(ctx);
     }
 
-    ctx.graphics.vertex_data.push(x);
-    ctx.graphics.vertex_data.push(y);
-    ctx.graphics.vertex_data.push(u);
-    ctx.graphics.vertex_data.push(v);
-    ctx.graphics.vertex_data.push(color.r);
-    ctx.graphics.vertex_data.push(color.g);
-    ctx.graphics.vertex_data.push(color.b);
-    ctx.graphics.vertex_data.push(color.a);
+    ctx.graphics
+        .vertex_data
+        .extend_from_slice(&[x, y, u, v, color.r, color.b, color.b, color.a]);
 
     ctx.graphics.vertex_count += 1;
 }
