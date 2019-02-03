@@ -6,6 +6,10 @@ This project adheres to Semantic Versioning.
 
 ## Upcoming
 
+### Added
+
+* `from_data` constructors were added to `Texture`, `Font` and `Sound`, allowing them to be constructed from binary data. This is useful if you want to use `include_bytes` to bundle assets into your executable. Note that an equivalent constructor already existed on `Shader`, which can be used in combination with `include_str`. 
+
 ### Changed
 
 * The default shaders have been amended to use GLSL 1.50 instead of GLSL 1.30. This seems to be required to get Tetra working on Mac.

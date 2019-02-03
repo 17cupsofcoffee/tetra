@@ -3,7 +3,7 @@
 use std::path::Path;
 use std::rc::Rc;
 
-use image;
+use image::{self, DynamicImage};
 
 use crate::error::Result;
 use crate::graphics::opengl::{GLTexture, TextureFormat};
@@ -21,18 +21,42 @@ pub struct Texture {
 
 impl Texture {
     /// Creates a new texture from the given file.
-    /// 
+    ///
+    /// The format will be determined based on the file extension.
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the file could not be read, a `TetraError::Io` will be returned.
-    /// 
+    ///
     /// If the image data was invalid, a `TetraError::Image` will be returned.
     pub fn new<P>(ctx: &mut Context, path: P) -> Result<Texture>
     where
         P: AsRef<Path>,
     {
-        let image = image::open(path)?.to_rgba();
-        let (width, height) = image.dimensions();
+        let image = image::open(path)?;
+        Texture::load(ctx, image)
+    }
+
+    /// Creates a new texture from a slice of binary data.
+    /// 
+    /// This is useful in combination with `include_bytes`, as it allows you to include
+    /// your textures directly in the binary.
+    ///
+    /// The format will be determined based on the 'magic bytes' at the beginning of the
+    /// data. This should be reasonably reliable, but a `from_data_with_format` function
+    /// might have to be added later.
+    ///
+    /// # Errors
+    ///
+    /// If the image data was invalid, a `TetraError::Image` will be returned.
+    pub fn from_data(ctx: &mut Context, data: &[u8]) -> Result<Texture> {
+        let image = image::load_from_memory(data)?;
+        Texture::load(ctx, image)
+    }
+
+    pub(crate) fn load(ctx: &mut Context, image: DynamicImage) -> Result<Texture> {
+        let rgba_image = image.to_rgba();
+        let (width, height) = rgba_image.dimensions();
 
         let texture = ctx
             .gl
@@ -40,7 +64,7 @@ impl Texture {
 
         ctx.gl.set_texture_data(
             &texture,
-            &image,
+            &rgba_image,
             0,
             0,
             width as i32,

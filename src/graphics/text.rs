@@ -53,6 +53,20 @@ impl Font {
 
         Ok(Font { id })
     }
+
+    /// Loads a font from a slice of binary data.
+    /// 
+    /// This is useful in combination with `include_bytes`, as it allows you to
+    /// include your fonts directly in the binary.
+    /// 
+    /// Note that this function currently requires the slice to have the `'static`
+    /// lifetime due to the way that the font cache is implemented - this may change
+    /// in the future.
+    pub fn from_data(ctx: &mut Context, data: &'static [u8]) -> Font {
+        let id = ctx.graphics.font_cache.add_font_bytes(data);
+
+        Font { id }
+    }
 }
 
 impl Default for Font {

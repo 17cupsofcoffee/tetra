@@ -52,9 +52,9 @@ pub struct Sound {
 
 impl Sound {
     /// Creates a new sound from the given file.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the file path is invalid, a `TetraError::Io` will be returned. Note that the data
     /// is not decoded until playback begins, so this function will not validate
     /// that the data being read is formatted correctly.
@@ -67,67 +67,78 @@ impl Sound {
         })
     }
 
+    /// Creates a new sound from a slice of binary data.
+    /// 
+    /// This is useful in combination with `include_bytes`, as it allows you to include
+    /// your audio data directly in the binary.
+    /// 
+    /// Note that the data is not decoded until playback begins, so this function will not
+    /// validate that the data being read is formatted correctly.
+    pub fn from_data(data: &[u8]) -> Sound {
+        Sound { data: data.into() }
+    }
+
     /// Plays the sound.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
-    /// 
+    ///
     /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn play(&self, ctx: &Context) -> Result<SoundInstance> {
         self.start_source(ctx, true, false, 1.0, 1.0)
     }
 
     /// Plays the sound repeatedly.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
-    /// 
+    ///
     /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn repeat(&self, ctx: &Context) -> Result<SoundInstance> {
         self.start_source(ctx, true, true, 1.0, 1.0)
     }
 
     /// Spawns a new instance of the sound that is not playing yet.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
-    /// 
+    ///
     /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn spawn(&self, ctx: &Context) -> Result<SoundInstance> {
         self.start_source(ctx, false, false, 1.0, 1.0)
     }
 
     /// Plays the sound, with the provided settings.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
-    /// 
+    ///
     /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn play_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         self.start_source(ctx, true, false, volume, speed)
     }
 
     /// Plays the sound repeatedly, with the provided settings.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
-    /// 
+    ///
     /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn repeat_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         self.start_source(ctx, true, true, volume, speed)
     }
 
     /// Spawns a new instance of the sound that is not playing yet, with the provided settings.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If there is no active audio device, a `TetraError::NoAudioDevice` will be returned.
-    /// 
+    ///
     /// If the sound data could not be decoded, a `TetraError::FailedToDecodeAudio` will be returned.
     pub fn spawn_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         self.start_source(ctx, false, false, volume, speed)
@@ -149,9 +160,7 @@ impl Sound {
             speed: Mutex::new(speed),
         });
 
-        let master_volume = {
-            *ctx.audio.master_volume.lock().unwrap()
-        };
+        let master_volume = { *ctx.audio.master_volume.lock().unwrap() };
 
         let source = TetraSource {
             data: Arc::clone(&self.data),
@@ -170,7 +179,10 @@ impl Sound {
             speed,
         };
 
-        rodio::play_raw(ctx.audio.device.as_ref().ok_or(TetraError::NoAudioDevice)?, source.convert_samples());
+        rodio::play_raw(
+            ctx.audio.device.as_ref().ok_or(TetraError::NoAudioDevice)?,
+            source.convert_samples(),
+        );
         Ok(SoundInstance { controls })
     }
 }
@@ -185,7 +197,7 @@ struct RemoteControls {
 }
 
 /// A handle to a single instance of a [`Sound`](./struct.Sound.html).
-/// 
+///
 /// The audio thread will poll this for updates every 220 samples (roughly
 /// every 5ms at a 44100hz sample rate).
 ///
@@ -359,7 +371,7 @@ impl Source for TetraSource {
 }
 
 /// Sets the master volume for the game.
-/// 
+///
 /// The parameter is used as a multiplier - for example, `1.0` would result in
 /// sounds being played back at their original volume.
 pub fn set_master_volume(ctx: &mut Context, volume: f32) {
