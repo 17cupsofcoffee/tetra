@@ -1,4 +1,4 @@
-#version 130
+#version 150
 
 in vec2 a_position;
 in vec2 a_uv;

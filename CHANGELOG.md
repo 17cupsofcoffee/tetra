@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Changed
+
+* The default shaders have been amended to use GLSL 1.50 instead of GLSL 1.30. This seems to be required to get Tetra working on Mac.
+
 ## [0.2.9] - 2019-02-03
 
 ### Changed
