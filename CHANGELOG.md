@@ -4,11 +4,11 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
-## Upcoming
+## [0.2.9] - 2019-02-03
 
 ### Changed
 
-* Some optimizations have been made to the rendering code, mainly to avoid unnecessary allocations.
+* Some optimizations have been made to the rendering code, mainly to avoid unnecessary allocations. This nearly doubled the performance of the `bunnymark` example in release mode!
 
 ## [0.2.8] - 2019-02-01
 

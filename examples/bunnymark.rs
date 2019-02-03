@@ -1,6 +1,5 @@
 /// Based on https://github.com/openfl/openfl-samples/tree/master/demos/BunnyMark
 /// Original BunnyMark (and sprite) by Iain Lobb
-
 use rand::rngs::ThreadRng;
 use rand::{self, Rng};
 use tetra::graphics::{self, Color, Texture, Vec2};
@@ -9,10 +8,12 @@ use tetra::time;
 use tetra::window;
 use tetra::{Context, ContextBuilder, State};
 
+// NOTE: Using a high number here yields worse performance than adding more bunnies over
+// time - I think this is due to all of the RNG being run on the same tick...
+const INITIAL_BUNNIES: usize = 100;
 const WIDTH: i32 = 1280;
 const HEIGHT: i32 = 720;
 const GRAVITY: f32 = 0.5;
-const INITIAL_BUNNIES: usize = 100;
 
 struct Bunny {
     position: Vec2,
@@ -94,7 +95,7 @@ impl State for GameState {
                 bunny.velocity.y *= -0.8;
                 bunny.position.y = self.max_y;
 
-                if self.rng.gen::<bool>() == true {
+                if self.rng.gen::<bool>() {
                     bunny.velocity.y -= 3.0 + (self.rng.gen::<f32>() * 4.0);
                 }
             } else if bunny.position.y < 0.0 {

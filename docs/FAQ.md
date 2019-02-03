@@ -61,12 +61,12 @@ opt-level = 1
 
 The impact of this can be observed by running the `bunnymark` example both with and without the `--release` flag. This example adds 100 new sprites to the screen every time the user clicks, until rendering conistently drops below 60fps.
 
-These were the results when I ran it against Tetra 0.2.7 on my local machine:
+These were the results when I ran it against Tetra 0.2.9 on my local machine:
 
 | Configuration | Bunnies Rendered |
 | --- | --- |
-| Debug | 2900 |
-| Release | 127500 |
+| Debug | 3200 |
+| Release | 230000 |
 
 For reference, my system specs are:
 
