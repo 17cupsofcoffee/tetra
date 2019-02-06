@@ -23,10 +23,10 @@ struct GameState {
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
-        GameState {
+        Ok(GameState {
             texture: Texture::new(ctx, "./player.png")?,
             position: Vec2::new(0.0, 0.0),
-        }
+        })
     }
 }
 ```
@@ -111,10 +111,10 @@ struct GameState {
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
-        GameState {
-            text: Texture::new(ctx, "./player.png"),
+        Ok(GameState {
+            text: Texture::new(ctx, "./player.png")?,
             position: Vec2::new(0.0, 0.0),
-        }
+        })
     }
 }
 
