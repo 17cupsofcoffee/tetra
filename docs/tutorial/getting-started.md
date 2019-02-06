@@ -45,7 +45,7 @@ impl State for GameState {
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
-        graphics::draw(ctx, &self.text, self.pos);
+        graphics::draw(ctx, &self.text, self.position);
 
         Ok(())
     }
@@ -61,7 +61,7 @@ To answer these, we'll need to write our program's `main` function, and actually
 
 ## Building a Context
 
-`Context` is the object that represents all the global state in the framework (the window settings, the rendering engine, etc.). Most functions provided by Tetra will require you to pass the current context, so that they can read from/write to it. As your game grows, you'll probably write your own functions that pass around `Context`, too. 
+`Context` is the object that represents all the global state in the framework (the window settings, the rendering engine, etc.). Most functions provided by Tetra will require you to pass the current context, so that they can read from/write to it. As your game grows, you'll probably write your own functions that pass around `Context`, too.
 
 Let's build a new context with a window size of 1280 by 720, and run an instance of our `GameState` struct on it:
 
@@ -81,7 +81,7 @@ If you run `cargo run` from the command line, you should now see your text scrol
 
 ## Next Steps
 
-In [the next chapter](./loading-a-texture.md), we'll try loading a texture to display on the screen. 
+In [the next chapter](./loading-a-texture.md), we'll try loading a texture to display on the screen.
 
 Here's the full example from this chapter:
 
