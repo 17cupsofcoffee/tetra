@@ -1,5 +1,4 @@
 language: rust
-sudo: false
 
 cache:
   - cargo
@@ -13,26 +12,29 @@ matrix:
   allow_failures:
     - rust: nightly
   fast_finish: true
-  
+
+addons:
+  apt:
+    packages:
+    - libasound2-dev
+    - libsdl2-dev
+
 install:
-  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
-      sudo apt-get -qq update
-      && sudo apt-get install -y libasound2-dev
-      && wget http://libsdl.org/release/SDL2-2.0.9.tar.gz
-      && tar -xzvf SDL2-2.0.9.tar.gz
-      && pushd SDL2-2.0.9 && ./configure --prefix=/usr && make && sudo make install && popd;
-    fi
   - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then
       brew update
       && brew install sdl2;
     fi
-  - (test -x $HOME/.cargo/bin/cargo-install-update || cargo install cargo-update)
-  - (test -x $HOME/.cargo/bin/mdbook || cargo install --vers "^0.1" mdbook)
-  - cargo install-update -a
+  - if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ "${TRAVIS_RUST_VERSION}" == "1.31.0" ]; then
+      (test -x $HOME/.cargo/bin/cargo-install-update || cargo install cargo-update)
+      && (test -x $HOME/.cargo/bin/mdbook || cargo install --vers "^0.1" mdbook)
+      && cargo install-update -a;
+    fi
 
 script:
   - cargo test --verbose
-  - mdbook build
+  - if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ "${TRAVIS_RUST_VERSION}" == "1.31.0" ]; then
+      mdbook build;
+    fi
 
 deploy:
   provider: pages
@@ -43,3 +45,5 @@ deploy:
   fqdn: tetra.seventeencups.net
   on:
     branch: master
+    condition: $TRAVIS_OS_NAME == "linux"
+    condition: $TRAVIS_RUST_VERSION == "1.31.0"
