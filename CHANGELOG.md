@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Fixed
+
+* The audio engine now handles repeats/restarts of a `SoundInstance` more reliably. This was mainly an issue with OGG and MP3 files.
+
 ## [0.2.10] - 2019-02-03
 
 ### Added

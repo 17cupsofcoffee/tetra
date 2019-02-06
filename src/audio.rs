@@ -7,7 +7,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, Weak};
 use std::time::Duration;
 
-use rodio::source::Empty;
+use rodio::source::{Buffered, Empty};
 use rodio::{Decoder, Device, Sample, Source};
 
 use crate::error::{Result, TetraError};
@@ -68,10 +68,10 @@ impl Sound {
     }
 
     /// Creates a new sound from a slice of binary data.
-    /// 
+    ///
     /// This is useful in combination with `include_bytes`, as it allows you to include
     /// your audio data directly in the binary.
-    /// 
+    ///
     /// Note that the data is not decoded until playback begins, so this function will not
     /// validate that the data being read is formatted correctly.
     pub fn from_data(data: &[u8]) -> Sound {
@@ -162,9 +162,11 @@ impl Sound {
 
         let master_volume = { *ctx.audio.master_volume.lock().unwrap() };
 
+        let data = Decoder::new(Cursor::new(Arc::clone(&self.data)))?.buffered();
+
         let source = TetraSource {
-            data: Arc::clone(&self.data),
-            cursor: Decoder::new(Cursor::new(Arc::clone(&self.data)))?,
+            repeat_source: data.clone(),
+            data,
 
             remote_master_volume: Arc::clone(&ctx.audio.master_volume),
             remote_controls: Arc::downgrade(&Arc::clone(&controls)),
@@ -255,9 +257,11 @@ impl SoundInstance {
     }
 }
 
+type TetraSourceData = Buffered<Decoder<Cursor<Arc<[u8]>>>>;
+
 struct TetraSource {
-    data: Arc<[u8]>,
-    cursor: Decoder<Cursor<Arc<[u8]>>>,
+    data: TetraSourceData,
+    repeat_source: TetraSourceData,
 
     remote_master_volume: Arc<Mutex<f32>>,
     remote_controls: Weak<RemoteControls>,
@@ -308,7 +312,7 @@ impl Iterator for TetraSource {
         }
 
         if self.rewind {
-            self.cursor = Decoder::new(Cursor::new(Arc::clone(&self.data))).unwrap();
+            self.data = self.repeat_source.clone();
             self.rewind = false;
 
             if let Some(controls) = self.remote_controls.upgrade() {
@@ -316,12 +320,12 @@ impl Iterator for TetraSource {
             }
         }
 
-        self.cursor
+        self.data
             .next()
             .or_else(|| {
                 if self.repeating {
-                    self.cursor = Decoder::new(Cursor::new(Arc::clone(&self.data))).unwrap();
-                    self.cursor.next()
+                    self.data = self.repeat_source.clone();
+                    self.data.next()
                 } else {
                     None
                 }
@@ -346,27 +350,41 @@ impl Iterator for TetraSource {
                 }
             })
     }
+
+    #[inline]
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (0, None)
+    }
 }
 
 impl Source for TetraSource {
     #[inline]
     fn current_frame_len(&self) -> Option<usize> {
-        self.cursor.current_frame_len()
+        match self.data.current_frame_len() {
+            Some(0) => self.repeat_source.current_frame_len(),
+            a => a,
+        }
     }
 
     #[inline]
     fn channels(&self) -> u16 {
-        self.cursor.channels()
+        match self.data.current_frame_len() {
+            Some(0) => self.repeat_source.channels(),
+            _ => self.data.channels(),
+        }
     }
 
     #[inline]
     fn sample_rate(&self) -> u32 {
-        (self.cursor.sample_rate() as f32 * self.speed) as u32
+        match self.data.current_frame_len() {
+            Some(0) => (self.repeat_source.sample_rate() as f32 * self.speed) as u32,
+            _ => (self.data.sample_rate() as f32 * self.speed) as u32,
+        }
     }
 
     #[inline]
     fn total_duration(&self) -> Option<Duration> {
-        self.cursor.total_duration()
+        None
     }
 }
 
