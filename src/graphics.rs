@@ -84,8 +84,7 @@ pub(crate) struct GraphicsContext {
     backbuffer: GLFramebuffer,
 
     vertex_data: Vec<f32>,
-    vertex_capacity: usize,
-    vertex_count: usize,
+    element_capacity: usize,
     element_count: usize,
 
     internal_width: i32,
@@ -197,8 +196,7 @@ impl GraphicsContext {
             backbuffer,
 
             vertex_data: Vec::with_capacity(MAX_VERTICES * VERTEX_STRIDE),
-            vertex_capacity: MAX_VERTICES,
-            vertex_count: 0,
+            element_capacity: MAX_INDICES,
             element_count: 0,
 
             internal_width,
@@ -437,19 +435,7 @@ pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
-// TODO: These functions really need cleaning up.
-
-fn push_vertex(ctx: &mut Context, x: f32, y: f32, u: f32, v: f32, color: Color) {
-    if ctx.graphics.vertex_count >= ctx.graphics.vertex_capacity {
-        flush(ctx);
-    }
-
-    ctx.graphics
-        .vertex_data
-        .extend_from_slice(&[x, y, u, v, color.r, color.b, color.b, color.a]);
-
-    ctx.graphics.vertex_count += 1;
-}
+// TODO: This function really needs cleaning up before it can be exposed publicly.
 
 pub(crate) fn push_quad(
     ctx: &mut Context,
@@ -466,6 +452,10 @@ pub(crate) fn push_quad(
     // This function is a bit hairy, but it's more performant than doing the matrix math every
     // frame by a *lot* (at least going by the BunnyMark example). The logic is roughly based
     // on how FNA and LibGDX implement their spritebatches.
+
+    if ctx.graphics.element_count >= ctx.graphics.element_capacity {
+        flush(ctx);
+    }
 
     let mut fx = (x1 - params.origin.x) * params.scale.x;
     let mut fy = (y1 - params.origin.y) * params.scale.y;
@@ -509,10 +499,44 @@ pub(crate) fn push_quad(
         )
     };
 
-    push_vertex(ctx, ox1, oy1, u1, v1, params.color);
-    push_vertex(ctx, ox2, oy2, u1, v2, params.color);
-    push_vertex(ctx, ox3, oy3, u2, v2, params.color);
-    push_vertex(ctx, ox4, oy4, u2, v1, params.color);
+    ctx.graphics.vertex_data.extend_from_slice(&[
+        // 1
+        ox1,
+        oy1,
+        u1,
+        v1,
+        params.color.r,
+        params.color.g,
+        params.color.b,
+        params.color.a,
+        // 2
+        ox2,
+        oy2,
+        u1,
+        v2,
+        params.color.r,
+        params.color.g,
+        params.color.b,
+        params.color.a,
+        // 3
+        ox3,
+        oy3,
+        u2,
+        v2,
+        params.color.r,
+        params.color.g,
+        params.color.b,
+        params.color.a,
+        // 4
+        ox4,
+        oy4,
+        u2,
+        v1,
+        params.color.r,
+        params.color.g,
+        params.color.b,
+        params.color.a,
+    ]);
 
     ctx.graphics.element_count += 6;
 }
@@ -636,7 +660,6 @@ pub fn flush(ctx: &mut Context) {
             .draw_elements(&ctx.graphics.index_buffer, ctx.graphics.element_count);
 
         ctx.graphics.vertex_data.clear();
-        ctx.graphics.vertex_count = 0;
         ctx.graphics.element_count = 0;
     }
 }

@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Changed
+
+* The renderer has been optimized a bit more.
+
+### Fixed
+
+* The 'color' DrawParams property is now being sent to the shader properly - the last few versions had a bug where the blue level was being sent in place of the green channel.
+
 ## [0.2.11] - 2019-02-06
 
 ### Fixed
