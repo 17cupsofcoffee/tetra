@@ -33,7 +33,7 @@ Now that we have some data, we need a way to manipulate it. In Tetra, you do thi
 Let's write some code that draws our text moving across the screen:
 
 ```rust ,noplaypen
-use tetra::graphics;
+use tetra::graphics::{self, Color};
 use tetra::{State, Context};
 
 impl State for GameState {
@@ -86,7 +86,7 @@ In [the next chapter](./loading-a-texture.md), we'll try loading a texture to di
 Here's the full example from this chapter:
 
 ```rust ,noplaypen
-use tetra::graphics::{self, Text, Font, Vec2};
+use tetra::graphics::{self, Color, Text, Font, Vec2};
 use tetra::{State, Context, ContextBuilder};
 
 struct GameState {
