@@ -99,4 +99,4 @@ If you're on Windows, you'll need to place the SDL2 .dll in the root of your pro
 
 ## Next Steps
 
-Once those steps are complete, you're ready to [start writing your first game with Tetra](./getting-started)!
+Once those steps are complete, you're ready to [start writing your first game with Tetra](./getting-started.md)!
