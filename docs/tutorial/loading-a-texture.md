@@ -101,7 +101,7 @@ This is currently the last chapter of the tutorial (although more will be added 
 Here's the full example from this chapter:
 
 ```rust ,noplaypen
-use tetra::graphics::{self, Texture, Vec2};
+use tetra::graphics::{self, Color, Texture, Vec2};
 use tetra::{State, Context, ContextBuilder};
 
 struct GameState {
@@ -112,7 +112,7 @@ struct GameState {
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
-            text: Texture::new(ctx, "./player.png")?,
+            texture: Texture::new(ctx, "./player.png")?,
             position: Vec2::new(0.0, 0.0),
         })
     }
