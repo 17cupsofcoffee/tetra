@@ -1,11 +1,136 @@
-// Loosely based on https://github.com/jonhoo/tetris-tutorial
+// Loosely based on https://github.com/jonhoo/tetris-tutorial.
+// The scene stack implementation is inspired by Amethyst's state system
+// and the ggez-goodies scene stack.
 
 use rand::{self, Rng};
-use tetra::graphics::color;
-use tetra::graphics::{self, Color, DrawParams, Texture, Vec2};
+use tetra::graphics::{self, Color, DrawParams, Font, Text, Texture, Vec2};
 use tetra::input::{self, Key};
 use tetra::window;
 use tetra::{Context, ContextBuilder, State};
+
+const SCREEN_WIDTH: i32 = 640;
+const SCREEN_HEIGHT: i32 = 480;
+const BLOCK_SIZE: i32 = 16;
+const BORDER_SIZE: i32 = 1;
+const BOARD_WIDTH: i32 = (10 * BLOCK_SIZE) + BORDER_SIZE;
+const BOARD_HEIGHT: i32 = (20 * BLOCK_SIZE) + BORDER_SIZE;
+const BOARD_OFFSET_X: i32 = (SCREEN_WIDTH - BOARD_WIDTH) / 2;
+const BOARD_OFFSET_Y: i32 = (SCREEN_HEIGHT - BOARD_HEIGHT) / 2;
+const SCORE_OFFSET_Y: i32 = BOARD_OFFSET_Y + BOARD_HEIGHT + 4;
+
+fn main() -> tetra::Result {
+    ContextBuilder::new("Tetras", 640, 480)
+        .resizable(true)
+        .quit_on_escape(true)
+        .build()?
+        .run(&mut SceneManager::new(Box::new(TitleScene::new())))
+}
+
+// === Scene Management ===
+
+// This trait extends the normal signature of a 'State' with the ability
+// to return a transition, effectively making it function like a state
+// machine. Later versions of Tetra will probably provide a way to
+// do this without defining your own trait!
+
+trait Scene {
+    fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition>;
+    fn draw(&mut self, ctx: &mut Context, dt: f64) -> tetra::Result<Transition>;
+}
+
+enum Transition {
+    None,
+    Push(Box<Scene>),
+    Pop,
+}
+
+// Boxing/dynamic dispatch could be avoided here by defining an enum for all
+// of your scenes, but that adds a bit of extra boilerplate - your choice!
+
+struct SceneManager {
+    scenes: Vec<Box<Scene>>,
+}
+
+impl SceneManager {
+    fn new(initial_scene: Box<Scene>) -> SceneManager {
+        SceneManager {
+            scenes: vec![initial_scene],
+        }
+    }
+}
+
+impl State for SceneManager {
+    fn update(&mut self, ctx: &mut Context) -> tetra::Result {
+        match self.scenes.last_mut() {
+            Some(active_scene) => match active_scene.update(ctx)? {
+                Transition::None => {}
+                Transition::Push(s) => {
+                    self.scenes.push(s);
+                }
+                Transition::Pop => {
+                    self.scenes.pop();
+                }
+            },
+            None => window::quit(ctx),
+        }
+
+        Ok(())
+    }
+
+    fn draw(&mut self, ctx: &mut Context, dt: f64) -> tetra::Result {
+        match self.scenes.last_mut() {
+            Some(active_scene) => match active_scene.draw(ctx, dt)? {
+                Transition::None => {}
+                Transition::Push(s) => {
+                    self.scenes.push(s);
+                }
+                Transition::Pop => {
+                    self.scenes.pop();
+                }
+            },
+            None => window::quit(ctx),
+        }
+
+        Ok(())
+    }
+}
+
+// === Title Scene ===
+
+struct TitleScene {
+    title_text: Text,
+    help_text: Text,
+}
+
+impl TitleScene {
+    fn new() -> TitleScene {
+        TitleScene {
+            title_text: Text::new("Tetras", Font::default(), 36.0),
+            help_text: Text::new("An extremely legally distinct puzzle game\n\nControls:\nA and D to move\nQ and E to rotate\nS to drop one row\nSpace to hard drop\n\nPress Space to start.", Font::default(), 16.0),
+        }
+    }
+}
+
+impl Scene for TitleScene {
+    fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
+        if input::is_key_pressed(ctx, Key::Space) {
+            Ok(Transition::Push(Box::new(GameScene::new(ctx)?)))
+        } else {
+            Ok(Transition::None)
+        }
+    }
+
+    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result<Transition> {
+        graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
+
+        graphics::draw(ctx, &self.title_text, Vec2::new(16.0, 16.0));
+        graphics::draw(ctx, &self.help_text, Vec2::new(16.0, 56.0));
+
+        Ok(Transition::None)
+    }
+}
+
+// === Game Scene ===
 
 enum BlockShape {
     I,
@@ -142,7 +267,8 @@ enum Move {
     HardDrop,
 }
 
-struct GameState {
+struct GameScene {
+    backdrop_texture: Texture,
     block_texture: Texture,
     block: Block,
     drop_timer: i32,
@@ -150,16 +276,13 @@ struct GameState {
     move_queue: Vec<Move>,
     board: [[Option<Color>; 10]; 22],
     score: i32,
+    score_text: Text,
 }
 
-impl GameState {
-    fn new(ctx: &mut Context) -> tetra::Result<GameState> {
-        println!("=== Tetras ===");
-        println!(
-            "Controls: A and D to move, Q and E to rotate, S to drop one row, Space to hard drop"
-        );
-
-        Ok(GameState {
+impl GameScene {
+    fn new(ctx: &mut Context) -> tetra::Result<GameScene> {
+        Ok(GameScene {
+            backdrop_texture: Texture::new(ctx, "./examples/resources/backdrop.png")?,
             block_texture: Texture::new(ctx, "./examples/resources/block.png")?,
             block: Block::new(),
             drop_timer: 0,
@@ -167,6 +290,7 @@ impl GameState {
             move_queue: Vec::new(),
             board: [[None; 10]; 22],
             score: 0,
+            score_text: Text::new("Score: 0", Font::default(), 16.0),
         })
     }
 
@@ -210,6 +334,8 @@ impl GameState {
             }
 
             self.score += 1;
+            self.score_text
+                .set_content(format!("Score: {}", self.score));
 
             for clear_y in (0..=y).rev() {
                 if clear_y > 0 {
@@ -236,8 +362,8 @@ impl GameState {
     }
 }
 
-impl State for GameState {
-    fn update(&mut self, ctx: &mut Context) -> tetra::Result {
+impl Scene for GameScene {
+    fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
         self.drop_timer += 1;
         self.move_timer += 1;
 
@@ -336,8 +462,7 @@ impl State for GameState {
                     self.check_for_clears();
 
                     if self.check_for_game_over() {
-                        println!("Game over! You cleared {} lines.", self.score);
-                        window::quit(ctx);
+                        return Ok(Transition::Pop);
                     }
 
                     self.block = Block::new();
@@ -354,8 +479,7 @@ impl State for GameState {
                 self.check_for_clears();
 
                 if self.check_for_game_over() {
-                    println!("Game over! You cleared {} lines.", self.score);
-                    window::quit(ctx);
+                    return Ok(Transition::Pop);
                 }
 
                 self.block = Block::new();
@@ -363,18 +487,33 @@ impl State for GameState {
             None => {}
         }
 
-        Ok(())
+        Ok(Transition::None)
     }
 
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
-        graphics::clear(ctx, color::BLACK);
+    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result<Transition> {
+        graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
+
+        graphics::draw(
+            ctx,
+            &self.backdrop_texture,
+            Vec2::new(BOARD_OFFSET_X as f32, BOARD_OFFSET_Y as f32),
+        );
+
+        graphics::draw(
+            ctx,
+            &self.score_text,
+            Vec2::new(BOARD_OFFSET_X as f32, SCORE_OFFSET_Y as f32),
+        );
 
         for (x, y, color) in self.board_blocks() {
             graphics::draw(
                 ctx,
                 &self.block_texture,
                 DrawParams::new()
-                    .position(Vec2::new(x as f32 * 16.0, (y - 2) as f32 * 16.0))
+                    .position(Vec2::new(
+                        (BOARD_OFFSET_X + BORDER_SIZE + x * BLOCK_SIZE) as f32,
+                        (BOARD_OFFSET_Y + BORDER_SIZE + (y - 2) * BLOCK_SIZE) as f32,
+                    ))
                     .color(color),
             );
         }
@@ -386,23 +525,19 @@ impl State for GameState {
                 ctx,
                 &self.block_texture,
                 DrawParams::new()
-                    .position(Vec2::new(x as f32 * 16.0, (y - 2) as f32 * 16.0))
+                    .position(Vec2::new(
+                        (BOARD_OFFSET_X + BORDER_SIZE + x * BLOCK_SIZE) as f32,
+                        (BOARD_OFFSET_Y + BORDER_SIZE + (y - 2) * BLOCK_SIZE) as f32,
+                    ))
                     .color(block_color),
             );
         }
 
-        Ok(())
+        Ok(Transition::None)
     }
 }
 
-fn main() -> tetra::Result {
-    ContextBuilder::new("Tetras", 10 * 16, 20 * 16)
-        .maximized(true)
-        .resizable(true)
-        .quit_on_escape(true)
-        .build()?
-        .run_with(GameState::new)
-}
+// === Static Data ===
 
 static IA: [[bool; 4]; 4] = [
     [false, false, false, false],

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Changed
+
+* The `tetras` example has been updated to demonstrate how you could approach adding multiple screens/states to a game.
+
 ## [0.2.12] - 2019-02-07
 
 ### Changed
