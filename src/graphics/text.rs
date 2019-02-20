@@ -40,9 +40,9 @@ pub struct Font {
 
 impl Font {
     /// Loads a font from the given file.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the file could not be read, a `TetraError::Io` will be returned.
     pub fn new<P>(ctx: &mut Context, path: P) -> Result<Font>
     where
@@ -55,10 +55,10 @@ impl Font {
     }
 
     /// Loads a font from a slice of binary data.
-    /// 
+    ///
     /// This is useful in combination with `include_bytes`, as it allows you to
     /// include your fonts directly in the binary.
-    /// 
+    ///
     /// Note that this function currently requires the slice to have the `'static`
     /// lifetime due to the way that the font cache is implemented - this may change
     /// in the future.

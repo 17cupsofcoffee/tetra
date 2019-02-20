@@ -38,7 +38,7 @@ impl Texture {
     }
 
     /// Creates a new texture from a slice of binary data.
-    /// 
+    ///
     /// This is useful in combination with `include_bytes`, as it allows you to include
     /// your textures directly in the binary.
     ///

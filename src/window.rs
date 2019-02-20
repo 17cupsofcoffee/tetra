@@ -71,9 +71,9 @@ pub(crate) fn set_size_ex(ctx: &mut Context, width: i32, height: i32, from_sdl: 
 }
 
 /// Enables fullscreen if it is currently disabled, or vice-versa.
-/// 
+///
 /// # Errors
-/// 
+///
 /// If the application's fullscreen state could not be changed, this function
 /// will return a `TetraError::Sdl`.
 pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
@@ -85,9 +85,9 @@ pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
 }
 
 /// Enables fullscreen.
-/// 
+///
 /// # Errors
-/// 
+///
 /// If the application's fullscreen state could not be changed, this function
 /// will return a `TetraError::Sdl`.
 pub fn enable_fullscreen(ctx: &mut Context) -> Result {
@@ -106,9 +106,9 @@ pub fn enable_fullscreen(ctx: &mut Context) -> Result {
 }
 
 /// Disables fullscreen.
-/// 
+///
 /// # Errors
-/// 
+///
 /// If the application's fullscreen state could not be changed, this function
 /// will return a `TetraError::Sdl`.
 pub fn disable_fullscreen(ctx: &mut Context) -> Result {

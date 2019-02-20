@@ -8,8 +8,8 @@
 //! If a controller is disconnected, the next controller to be connected will take its index - otherwise,
 //! a new one will be allocated. This behaviour might be made smarter in future versions.
 
-use hashbrown::{HashMap, HashSet};
 use glm::Vec2;
+use hashbrown::{HashMap, HashSet};
 use sdl2::controller::{Axis as SdlAxis, Button as SdlButton, GameController};
 use sdl2::event::Event;
 use sdl2::{GameControllerSubsystem, Sdl};

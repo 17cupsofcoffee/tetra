@@ -69,8 +69,8 @@ pub mod input;
 pub mod time;
 pub mod window;
 
-use std::time::{Duration, Instant};
 use std::collections::VecDeque;
+use std::time::{Duration, Instant};
 
 use sdl2::event::{Event, WindowEvent};
 use sdl2::video::{FullscreenType, GLProfile, Window};
@@ -131,14 +131,14 @@ pub struct Context {
     running: bool,
     quit_on_escape: bool,
     tick_rate: Duration,
-    fps_tracker: VecDeque<f64>
+    fps_tracker: VecDeque<f64>,
 }
 
 impl Context {
     /// Runs the game using the provided `State` implementation.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the `State` returns an error from `update` or `draw`, the game will stop
     /// running and this method will return the error.
     ///
@@ -220,12 +220,12 @@ impl Context {
     ///
     /// This is mainly handy when chaining methods, as it allows you to call your `State` constructor
     /// without breaking the chain.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the `State` returns an error from `update` or `draw`, the game will stop
     /// running and this method will return the error.
-    /// 
+    ///
     /// # Examples
     ///
     /// ```no_run
@@ -427,9 +427,9 @@ impl<'a> ContextBuilder<'a> {
     }
 
     /// Builds the context.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If an error is encountered during initialization of the context, this method will
     /// return the error. This will usually be either `TetraError::Sdl` or `TetraError::OpenGl`.
     pub fn build(&self) -> Result<Context> {
