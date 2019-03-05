@@ -34,6 +34,17 @@ pub enum TetraError {
     /// An error that occured while processing an image.
     Image(ImageError),
 
+    /// Returned when not enough data is provided to fill a buffer.
+    /// This may happen if you're creating a texture from raw data and you don't provide
+    /// enough data.
+    NotEnoughData {
+        /// The number of bytes that were expected.
+        expected: usize,
+
+        /// The number of bytes that were provided.
+        actual: usize,
+    },
+
     /// Returned when trying to play back audio without an available device.
     NoAudioDevice,
 
@@ -53,6 +64,11 @@ impl Display for TetraError {
             TetraError::Sdl(e) => write!(f, "SDL error: {}", e),
             TetraError::OpenGl(e) => write!(f, "OpenGL error: {}", e),
             TetraError::Image(e) => write!(f, "Image processing error: {}", e),
+            TetraError::NotEnoughData { expected, actual } => write!(
+                f,
+                "Not enough data was provided to fill a buffer - expected {}, found {}.",
+                expected, actual
+            ),
             TetraError::NoAudioDevice => write!(f, "No audio device was available for playback."),
             TetraError::FailedToDecodeAudio(e) => write!(f, "Failed to decode audio: {}", e),
             TetraError::__Nonexhaustive => unreachable!(),
@@ -67,6 +83,7 @@ impl Error for TetraError {
             TetraError::Sdl(_) => None,
             TetraError::OpenGl(_) => None,
             TetraError::Image(e) => Some(e),
+            TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,
             TetraError::FailedToDecodeAudio(e) => Some(e),
             TetraError::__Nonexhaustive => unreachable!(),

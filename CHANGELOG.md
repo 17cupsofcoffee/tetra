@@ -6,9 +6,18 @@ This project adheres to Semantic Versioning.
 
 ## Upcoming
 
+### Added
+
+* A `from_rgba` constructor has been added to `Texture`.
+* `from_file_data` constructors have been added to `Texture` and `Sound`. These function the same as the `from_data` constructors, but are more clearly named to reflect the fact that they expect *encoded* data, not *raw* data.
+
 ### Changed
 
 * The `tetras` example has been updated to demonstrate how you could approach adding multiple screens/states to a game.
+
+### Deprecated
+
+* The `from_data` constructors have been deprecated.
 
 ## [0.2.12] - 2019-02-07
 
