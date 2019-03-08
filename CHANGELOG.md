@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Added
+
+* `graphics::set_letterbox_color` allows you to set the color of the letterbox bars shown in certain scaling modes.
+
 ## [0.2.13] - 2019-03-05
 
 ### Added

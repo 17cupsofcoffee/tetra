@@ -91,6 +91,7 @@ pub(crate) struct GraphicsContext {
     internal_height: i32,
     scaling: ScreenScaling,
     screen_rect: Rectangle,
+    letterbox_color: Color,
 
     font_cache: GlyphBrush<'static>,
 }
@@ -203,6 +204,7 @@ impl GraphicsContext {
             internal_height,
             scaling,
             screen_rect,
+            letterbox_color: color::BLACK,
 
             font_cache,
         })
@@ -674,7 +676,7 @@ pub fn present(ctx: &mut Context) {
     set_texture_ex(ctx, ActiveTexture::Framebuffer);
     let user_shader = set_shader_ex(ctx, ActiveShader::Default);
 
-    clear(ctx, color::BLACK);
+    clear(ctx, ctx.graphics.letterbox_color);
 
     let screen_rect = ctx.graphics.screen_rect;
 
@@ -776,6 +778,14 @@ pub fn set_scaling(ctx: &mut Context, scaling: ScreenScaling) {
     }
 
     update_screen_rect(ctx);
+}
+
+/// Sets the color of the letterbox bars that are displayed when scaling the screen.
+/// 
+/// For information on which scaling modes can cause letterboxing, see the docs for
+/// [`ScreenScaling`](./scaling/enum.ScreenScaling.html).
+pub fn set_letterbox_color(ctx: &mut Context, color: Color) {
+    ctx.graphics.letterbox_color = color;
 }
 
 pub(crate) fn set_backbuffer_size(ctx: &mut Context, width: i32, height: i32) {
