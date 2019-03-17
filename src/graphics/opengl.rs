@@ -34,7 +34,15 @@ impl GLDevice {
         unsafe {
             gl::Enable(gl::CULL_FACE);
             gl::Enable(gl::BLEND);
-            gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+
+            // This default might want to change if we introduce
+            // custom blending modes.
+            gl::BlendFuncSeparate(
+                gl::SRC_ALPHA,
+                gl::ONE_MINUS_SRC_ALPHA,
+                gl::ONE,
+                gl::ONE_MINUS_SRC_ALPHA,
+            );
 
             // This is only needed for Core GL - if we wanted to be uber compatible, we'd
             // turn it off on older versions.
@@ -75,6 +83,12 @@ impl GLDevice {
         unsafe {
             gl::ClearColor(r, g, b, a);
             gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+    }
+
+    pub fn front_face(&mut self, front_face: FrontFace) {
+        unsafe {
+            gl::FrontFace(front_face.into());
         }
     }
 
@@ -532,6 +546,21 @@ impl From<TextureFormat> for GLenum {
             TextureFormat::Rgba => gl::RGBA,
             TextureFormat::Rgb => gl::RGB,
             TextureFormat::Red => gl::RED,
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum FrontFace {
+    Clockwise,
+    CounterClockwise,
+}
+
+impl From<FrontFace> for GLenum {
+    fn from(front_face: FrontFace) -> GLenum {
+        match front_face {
+            FrontFace::Clockwise => gl::CW,
+            FrontFace::CounterClockwise => gl::CCW,
         }
     }
 }

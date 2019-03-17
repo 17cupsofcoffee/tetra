@@ -93,12 +93,7 @@ impl Texture {
     ///
     /// If not enough data is provided to fill the texture, a `TetraError::NotEnoughData`
     /// will be returned. This is to prevent OpenGL from reading uninitialized memory.
-    pub fn from_rgba(
-        ctx: &mut Context,
-        width: i32,
-        height: i32,
-        data: &[u8],
-    ) -> Result<Texture> {
+    pub fn from_rgba(ctx: &mut Context, width: i32, height: i32, data: &[u8]) -> Result<Texture> {
         let expected = (width * height * 4) as usize;
         let actual = data.len();
 
