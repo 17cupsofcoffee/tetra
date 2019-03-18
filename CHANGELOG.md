@@ -15,6 +15,7 @@ This project adheres to Semantic Versioning.
 
 * Alpha blending should now work in a more predictable way. This may need further tweaks later on.
 * The renderer now flips drawing automatically when drawing to a framebuffer, due to how OpenGL stores textures. This is similar to how FNA and Love2D handle the same problem.
+* The renderer no longer implicitly re-binds shaders after calling `graphics::present`.
 
 ## [0.2.13] - 2019-03-05
 
