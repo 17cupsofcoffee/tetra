@@ -24,26 +24,6 @@ install:
       brew update
       && brew install sdl2;
     fi
-  - if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ "${TRAVIS_RUST_VERSION}" == "1.31.0" ]; then
-      (test -x $HOME/.cargo/bin/cargo-install-update || cargo install cargo-update)
-      && (test -x $HOME/.cargo/bin/mdbook || cargo install --vers "^0.1" mdbook)
-      && cargo install-update -a;
-    fi
 
 script:
   - cargo test --verbose
-  - if [ "${TRAVIS_OS_NAME}" == "linux" ] && [ "${TRAVIS_RUST_VERSION}" == "1.31.0" ]; then
-      mdbook build;
-    fi
-
-deploy:
-  provider: pages
-  skip-cleanup: true
-  github-token: $GITHUB_TOKEN
-  local-dir: book
-  keep-history: false
-  fqdn: tetra.seventeencups.net
-  on:
-    branch: master
-    condition: $TRAVIS_OS_NAME == "linux"
-    condition: $TRAVIS_RUST_VERSION == "1.31.0"
