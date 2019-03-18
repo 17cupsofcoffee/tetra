@@ -117,6 +117,7 @@ impl GraphicsContext {
         let backbuffer_fb = device.new_framebuffer();
         device.attach_texture_to_framebuffer(&backbuffer_fb, &backbuffer_texture, false);
         device.set_viewport(0, 0, backbuffer_width, backbuffer_height);
+        device.front_face(FrontFace::Clockwise);
         let backbuffer = Canvas::from_handle(backbuffer_texture, backbuffer_fb);
 
         let indices: Vec<u32> = INDEX_ARRAY
