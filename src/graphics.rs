@@ -691,6 +691,8 @@ pub fn present(ctx: &mut Context) {
 
     flush(ctx);
     ctx.window.gl_swap_window();
+
+    set_canvas_ex(ctx, ActiveCanvas::Backbuffer);
 }
 
 /// Gets the internal width of the screen.
