@@ -10,7 +10,7 @@ This project adheres to Semantic Versioning.
 
 * `graphics::set_letterbox_color` allows you to set the color of the letterbox bars shown in certain scaling modes.
 * Basic support for off-screen rendering/'render to texture' has been implemented, in the form of the `Canvas` object.
-* A `keyboard_animation` example has been added, showing how to change animations based on the player's input. ([@mgocobachi](https://github.com/mgocobachi) in [#96](https://github.com/17cupsofcoffee/tetra/pull/110))
+* An `animation_controller` example has been added, showing how to change animations based on the player's input. ([@mgocobachi](https://github.com/mgocobachi) in [#96](https://github.com/17cupsofcoffee/tetra/pull/110))
 
 ### Changed
 
