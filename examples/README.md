@@ -25,6 +25,7 @@ don't break when rendered by mdbook.
 | [`canvas`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/render_target.rs) | Graphics | Uses a custom render target to apply post-processing effects. |
 | [`audio`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/audi.rs) | Audio | Plays back an audio file. |
 | [`keyboard`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/keyboard.rs) | Input | Moves a texture around based on keyboard input. |
+| [`keyboard_animation`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/keyboard_animation.rs) | Input | Moves a sprite with its animation around based on keyboard input. |
 | [`mouse`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/mouse.rs) | Input | Moves a texture around based on mouse input. |
 | [`gamepad`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/gamepad.rs) | Input | Displays the input from a connected gamepad. |
 | [`text_input`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/text_input.rs) | Input | Displays text as it is typed in by the player. |
