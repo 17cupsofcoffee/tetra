@@ -54,7 +54,7 @@ impl Font {
         Ok(Font { id })
     }
 
-    /// Loads a font from a slice of binary data.
+    /// Loads a font from a slice of binary TTF data.
     ///
     /// This is useful in combination with `include_bytes`, as it allows you to
     /// include your fonts directly in the binary.
@@ -62,10 +62,20 @@ impl Font {
     /// Note that this function currently requires the slice to have the `'static`
     /// lifetime due to the way that the font cache is implemented - this may change
     /// in the future.
-    pub fn from_data(ctx: &mut Context, data: &'static [u8]) -> Font {
+    pub fn from_file_data(ctx: &mut Context, data: &'static [u8]) -> Font {
         let id = ctx.graphics.font_cache.add_font_bytes(data);
 
         Font { id }
+    }
+
+    #[deprecated(
+        since = "0.2.14",
+        note = "Renamed to `from_file_data` for consistency with Texture and Sound."
+    )]
+    #[allow(missing_docs)]
+    #[inline]
+    pub fn from_data(ctx: &mut Context, data: &'static [u8]) -> Font {
+        Font::from_file_data(ctx, data)
     }
 }
 
