@@ -62,8 +62,8 @@
 #![warn(missing_docs)]
 
 pub mod audio;
-pub use glm;
 pub mod error;
+pub mod glm;
 pub mod graphics;
 pub mod input;
 pub mod time;

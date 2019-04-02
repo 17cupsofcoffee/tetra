@@ -1,4 +1,4 @@
-//! Functions and types used for rendering to the screen.
+//! Functions and types relating to rendering.
 //!
 //! This module implements a (hopefully!) efficent quad renderer, which will queue up
 //! drawing operations until it is absolutely necessary to send them to the graphics
@@ -23,12 +23,12 @@ pub use self::shader::Shader;
 pub use self::text::{Font, Text};
 pub use self::texture::Texture;
 pub use self::ui::NineSlice;
-pub use glm::Vec2;
+pub use crate::glm::Vec2;
 
-use glm::{self, Mat3, Mat4};
 use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
 use crate::error::Result;
+use crate::glm::{self, Mat3, Mat4};
 use crate::graphics::opengl::{
     BufferUsage, FrontFace, GLDevice, GLIndexBuffer, GLVertexBuffer, TextureFormat,
 };

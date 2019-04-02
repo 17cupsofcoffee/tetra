@@ -1,7 +1,6 @@
 use std::rc::Rc;
 
-use glm::Mat4;
-
+use crate::glm::{self, Mat4};
 use crate::graphics::opengl::{GLFramebuffer, GLTexture, TextureFormat};
 use crate::graphics::{DrawParams, Drawable, Texture};
 use crate::Context;

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Changed
+
+* The way that `nalgebra-glm` is re-exported has been changed slightly, to make it so we can provide a bit more documentation. This should not have any impact on usage or the public facing API.
+
 ## [0.2.14] - 2019-03-30
 
 ### Added

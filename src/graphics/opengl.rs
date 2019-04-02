@@ -3,11 +3,11 @@ use std::mem;
 use std::ptr;
 
 use gl::{self, types::*};
-use glm::Mat4;
 use sdl2::video::{GLContext, Window};
 use sdl2::VideoSubsystem;
 
 use crate::error::{Result, TetraError};
+use crate::glm::Mat4;
 
 pub struct GLDevice {
     _ctx: GLContext,

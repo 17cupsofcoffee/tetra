@@ -1,4 +1,4 @@
-//! Functions and types relating to handling user input (e.g. keyboards, mice, gamepads).
+//! Functions and types relating to handling the player's input.
 //!
 //! # Gamepads
 //!
@@ -8,13 +8,13 @@
 //! If a controller is disconnected, the next controller to be connected will take its index - otherwise,
 //! a new one will be allocated. This behaviour might be made smarter in future versions.
 
-use glm::Vec2;
 use hashbrown::{HashMap, HashSet};
 use sdl2::controller::{Axis as SdlAxis, Button as SdlButton, GameController};
 use sdl2::event::Event;
 use sdl2::{GameControllerSubsystem, Sdl};
 
 use crate::error::{Result, TetraError};
+use crate::glm::Vec2;
 use crate::graphics;
 use crate::Context;
 
