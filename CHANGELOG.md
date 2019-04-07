@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
-## Upcoming
+## [0.2.15] - 2019-04-07
 
 ### Added
 
@@ -286,6 +286,7 @@ This project adheres to Semantic Versioning.
 
 * Initial release!
 
+[0.2.15]: https://github.com/17cupsofcoffee/tetra/compare/0.2.14..0.2.15
 [0.2.14]: https://github.com/17cupsofcoffee/tetra/compare/0.2.13..0.2.14
 [0.2.13]: https://github.com/17cupsofcoffee/tetra/compare/0.2.12..0.2.13
 [0.2.12]: https://github.com/17cupsofcoffee/tetra/compare/0.2.11..0.2.12
