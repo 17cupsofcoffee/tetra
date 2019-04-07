@@ -6,6 +6,10 @@ This project adheres to Semantic Versioning.
 
 ## Upcoming
 
+### Added
+
+* `Animation`, `Text` and `NineSlice` now expose more getters and setters, allowing more of their state to be accessed and manipulated after creation.
+
 ### Changed
 
 * The way that `nalgebra-glm` is re-exported has been changed slightly, to make it so we can provide a bit more documentation. This should not have any impact on usage or the public facing API.

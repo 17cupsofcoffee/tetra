@@ -111,6 +111,11 @@ impl Text {
         }
     }
 
+    /// Gets the content of the text.
+    pub fn content(&self) -> &str {
+        &self.content
+    }
+
     /// Sets the content of the text.
     pub fn set_content<S>(&mut self, content: S)
     where
@@ -139,9 +144,20 @@ impl Text {
             })
     }
 
+    /// Gets the font of the text.
+    pub fn font(&self) -> &Font {
+        &self.font
+    }
+
     /// Sets the font of the text.
     pub fn set_font(&mut self, font: Font) {
         self.font = font;
+    }
+
+    /// Gets the size of the text.
+    pub fn size(&self) -> f32 {
+        // This is fine, because we only let the user set uniform scales.
+        self.size.x
     }
 
     /// Sets the size of the text.

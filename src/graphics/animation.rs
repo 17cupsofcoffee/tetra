@@ -40,23 +40,48 @@ impl Animation {
         }
     }
 
-    /// Set new frames for this animation, while keeping the old texture and frame length. This will reset the current animation.
-    pub fn set_frames(&mut self, new_frames: Vec<Rectangle>) {
-        self.frames = new_frames;
-        self.current_frame = 0;
-        self.timer = 0;
-    }
-
-    /// Set the new frame length for this animation. This will make the animation run at the new length right away.
-    /// If you want to reset the animation to 0, call `restart`
-    pub fn set_frame_length(&mut self, new_frame_length: i32) {
-        self.frame_length = new_frame_length;
-    }
-
-    /// Will restart the current animation from the beginning.
+    /// Restarts the animation from the first frame.
     pub fn restart(&mut self) {
         self.current_frame = 0;
         self.timer = 0;
+    }
+
+    /// Gets the texture currently being used by the animation.
+    pub fn texture(&self) -> &Texture {
+        &self.texture
+    }
+
+    /// Sets the texture that will be used by the animation.
+    ///
+    /// This method will not change the frame definitions or current state of the animation,
+    /// so it can be used for e.g. swapping spritesheets. If you need to change the slicing
+    /// for the new texture, call `set_frames`.
+    pub fn set_texture(&mut self, texture: Texture) {
+        self.texture = texture;
+    }
+
+    /// Gets the sections of the texture being displayed for each frame of the animation.
+    pub fn frames(&self) -> &[Rectangle] {
+        &self.frames
+    }
+
+    /// Sets the sections of the texture being displayed for each frame of the animation.
+    ///
+    /// This method will reset the animation back to frame zero.
+    pub fn set_frames(&mut self, new_frames: Vec<Rectangle>) {
+        self.frames = new_frames;
+
+        self.restart();
+    }
+
+    /// Gets the number of ticks that each frame of the animation lasts for.
+    pub fn frame_length(&self) -> i32 {
+        self.frame_length
+    }
+
+    /// Sets the number of ticks that each frame of the animation lasts for.
+    pub fn set_frame_length(&mut self, new_frame_length: i32) {
+        self.frame_length = new_frame_length;
     }
 }
 

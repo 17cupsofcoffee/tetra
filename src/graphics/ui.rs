@@ -15,7 +15,7 @@ pub struct NineSlice {
 }
 
 impl NineSlice {
-    /// Creates a new NineSlice from the given texture.
+    /// Creates a new panel from the given texture.
     ///
     /// The `fill_rect` is used to determine how to slice the texture - it should be set
     /// to the region of the texture that represents the center of the panel.
@@ -26,6 +26,60 @@ impl NineSlice {
             height,
             fill_rect,
         }
+    }
+
+    /// Gets the underlying texture for the panel.
+    pub fn texture(&self) -> &Texture {
+        &self.texture
+    }
+
+    /// Sets the underlying texture for the panel.
+    ///
+    /// This will not adjust the way that the texture is sliced, so you may need to also call
+    /// `set_fill_rect`.
+    pub fn set_texture(&mut self, texture: Texture) {
+        self.texture = texture;
+    }
+
+    /// Gets the width of the panel.
+    pub fn width(&self) -> f32 {
+        self.width
+    }
+
+    /// Sets the width of the panel.
+    pub fn set_width(&mut self, width: f32) {
+        self.width = width;
+    }
+
+    /// Gets the height of the panel.
+    pub fn height(&self) -> f32 {
+        self.height
+    }
+
+    /// Sets the height of the panel.
+    pub fn set_height(&mut self, height: f32) {
+        self.height = height;
+    }
+
+    /// Gets the size of the panel.
+    pub fn size(&self) -> (f32, f32) {
+        (self.width, self.height)
+    }
+
+    /// Sets the size of the panel.
+    pub fn set_size(&mut self, width: f32, height: f32) {
+        self.width = width;
+        self.height = height;
+    }
+
+    /// Gets the section of the texture that is being used to fill the center of the panel.
+    pub fn fill_rect(&self) -> &Rectangle {
+        &self.fill_rect
+    }
+
+    /// Sets the section of the texture that should fill the center of the panel.
+    pub fn set_fill_rect(&mut self, fill_rect: Rectangle) {
+        self.fill_rect = fill_rect;
     }
 }
 
