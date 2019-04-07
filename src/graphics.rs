@@ -32,6 +32,7 @@ use crate::glm::{self, Mat3, Mat4};
 use crate::graphics::opengl::{
     BufferUsage, FrontFace, GLDevice, GLIndexBuffer, GLVertexBuffer, TextureFormat,
 };
+use crate::graphics::text::FontQuad;
 use crate::window;
 use crate::Context;
 
@@ -87,7 +88,7 @@ pub(crate) struct GraphicsContext {
     screen_rect: Rectangle,
     letterbox_color: Color,
 
-    font_cache: GlyphBrush<'static>,
+    font_cache: GlyphBrush<'static, FontQuad>,
 }
 
 impl GraphicsContext {

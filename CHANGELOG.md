@@ -13,6 +13,14 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * The way that `nalgebra-glm` is re-exported has been changed slightly, to make it so we can provide a bit more documentation. This should not have any impact on usage or the public facing API.
+* Updated `gl` to 0.32.2.
+* Updated `nalgebra-glm` to 0.4.0.
+* Updated `hashbrown` to 0.2.0.
+* Updated `glyph_brush` to 0.4.1.
+
+### Removed
+
+* The workaround for the issues with `rand_core` has been removed, as the underlying issue has been fixed. You may need to `cargo clean` if this causes issues.
 
 ## [0.2.14] - 2019-03-30
 

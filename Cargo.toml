@@ -17,13 +17,12 @@ sdl2_static_link = ["sdl2/static-link"]
 
 [dependencies]
 gl = "0.11.0"
-sdl2 = "0.32.1"
+sdl2 = "0.32.2"
 image = "0.21.0"
-nalgebra-glm = "0.2.0"
-hashbrown = "0.1.8"
-glyph_brush = "0.2.4"
+nalgebra-glm = "0.4.0"
+hashbrown = "0.2.0"
+glyph_brush = "0.4.1"
 rodio = "0.8.1"
 
 [dev-dependencies]
 rand = "0.6"
-rand_core = "0.2.2" # workaround, see https://github.com/rust-random/rand/issues/645

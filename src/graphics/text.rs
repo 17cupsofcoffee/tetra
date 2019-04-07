@@ -14,7 +14,8 @@ use crate::graphics::{
 };
 use crate::Context;
 
-struct FontQuad {
+#[derive(Clone)]
+pub(crate) struct FontQuad {
     x1: f32,
     y1: f32,
     x2: f32,
