@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use crate::glm::{self, Mat4};
-use crate::graphics::opengl::{GLFramebuffer, GLTexture, TextureFormat};
+use crate::graphics::opengl::{GLDevice, GLFramebuffer};
 use crate::graphics::{DrawParams, Drawable, Texture};
 use crate::Context;
 
@@ -23,20 +23,16 @@ pub struct Canvas {
 impl Canvas {
     /// Creates a new canvas.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Canvas {
-        let texture = ctx.gl.new_texture(width, height, TextureFormat::Rgba);
-        let framebuffer = ctx.gl.new_framebuffer();
-        ctx.gl
-            .attach_texture_to_framebuffer(&framebuffer, &texture, true);
-
-        Canvas::from_handle(texture, framebuffer)
+        Canvas::with_device(&mut ctx.gl, width, height)
     }
 
-    pub(crate) fn from_handle(texture: GLTexture, framebuffer: GLFramebuffer) -> Canvas {
-        let width = texture.width();
-        let height = texture.height();
+    pub(crate) fn with_device(device: &mut GLDevice, width: i32, height: i32) -> Canvas {
+        let texture = Texture::with_device_empty(device, width, height);
+        let framebuffer = device.new_framebuffer();
+        device.attach_texture_to_framebuffer(&framebuffer, &texture.handle, true);
 
         Canvas {
-            texture: Texture::from_handle(texture),
+            texture,
             framebuffer: Rc::new(framebuffer),
             projection: glm::ortho(0.0, width as f32, 0.0, height as f32, -1.0, 1.0),
         }

@@ -200,11 +200,8 @@ impl Text {
                 Err(BrushError::TextureTooSmall { suggested, .. }) => {
                     let (width, height) = suggested;
 
-                    *texture_ref = Texture::from_handle(device_ref.new_texture(
-                        width as i32,
-                        height as i32,
-                        TextureFormat::Rgba,
-                    ));
+                    *texture_ref =
+                        Texture::with_device_empty(device_ref, width as i32, height as i32);
 
                     ctx.graphics.font_cache.resize_texture(width, height);
                 }

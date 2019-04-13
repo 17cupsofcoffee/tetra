@@ -113,13 +113,9 @@ impl GraphicsContext {
         let screen_rect =
             scaling.get_screen_rect(internal_width, internal_height, window_width, window_height);
 
-        let backbuffer_texture =
-            device.new_texture(backbuffer_width, backbuffer_height, TextureFormat::Rgba);
-        let backbuffer_fb = device.new_framebuffer();
-        device.attach_texture_to_framebuffer(&backbuffer_fb, &backbuffer_texture, false);
+        let backbuffer = Canvas::with_device(device, backbuffer_width, backbuffer_height);
         device.set_viewport(0, 0, backbuffer_width, backbuffer_height);
         device.front_face(FrontFace::Clockwise);
-        let backbuffer = Canvas::from_handle(backbuffer_texture, backbuffer_fb);
 
         let indices: Vec<u32> = INDEX_ARRAY
             .iter()
@@ -143,19 +139,16 @@ impl GraphicsContext {
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
-        let default_shader = Shader::from_handle(device.compile_program(
+        let default_shader = Shader::with_device(
+            device,
             shader::DEFAULT_VERTEX_SHADER,
             shader::DEFAULT_FRAGMENT_SHADER,
-        )?);
+        )?;
 
         let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
         let (width, height) = font_cache.texture_dimensions();
 
-        let font_cache_texture = Texture::from_handle(device.new_texture(
-            width as i32,
-            height as i32,
-            TextureFormat::Rgba,
-        ));
+        let font_cache_texture = Texture::with_device_empty(device, width as i32, height as i32);
 
         Ok(GraphicsContext {
             vertex_buffer,

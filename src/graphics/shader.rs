@@ -5,7 +5,7 @@ use std::path::Path;
 use std::rc::Rc;
 
 use crate::error::Result;
-use crate::graphics::opengl::GLProgram;
+use crate::graphics::opengl::{GLDevice, GLProgram};
 use crate::Context;
 
 #[doc(inline)]
@@ -64,8 +64,8 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        Shader::from_string(
-            ctx,
+        Shader::with_device(
+            &mut ctx.gl,
             &fs::read_to_string(vertex_path)?,
             &fs::read_to_string(fragment_path)?,
         )
@@ -84,7 +84,11 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        Shader::from_string(ctx, &fs::read_to_string(path)?, DEFAULT_FRAGMENT_SHADER)
+        Shader::with_device(
+            &mut ctx.gl,
+            &fs::read_to_string(path)?,
+            DEFAULT_FRAGMENT_SHADER,
+        )
     }
 
     /// Creates a new shader program from the given fragment shader file.
@@ -100,7 +104,11 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        Shader::from_string(ctx, DEFAULT_VERTEX_SHADER, &fs::read_to_string(path)?)
+        Shader::with_device(
+            &mut ctx.gl,
+            DEFAULT_VERTEX_SHADER,
+            &fs::read_to_string(path)?,
+        )
     }
 
     /// Creates a new shader program from the given strings.
@@ -113,15 +121,19 @@ impl Shader {
         vertex_shader: &str,
         fragment_shader: &str,
     ) -> Result<Shader> {
-        ctx.gl
-            .compile_program(vertex_shader, fragment_shader)
-            .map(Shader::from_handle)
+        Shader::with_device(&mut ctx.gl, vertex_shader, fragment_shader)
     }
 
-    pub(crate) fn from_handle(handle: GLProgram) -> Shader {
-        Shader {
+    pub(crate) fn with_device(
+        device: &mut GLDevice,
+        vertex_shader: &str,
+        fragment_shader: &str,
+    ) -> Result<Shader> {
+        let handle = device.compile_program(vertex_shader, fragment_shader)?;
+
+        Ok(Shader {
             handle: Rc::new(handle),
-        }
+        })
     }
 
     /// Sets the value of the specifed uniform parameter.
