@@ -69,9 +69,6 @@ pub mod input;
 pub mod time;
 pub mod window;
 
-use std::collections::VecDeque;
-use std::time::{Duration, Instant};
-
 use sdl2::event::{Event, WindowEvent};
 use sdl2::video::{FullscreenType, GLProfile, Window};
 use sdl2::Sdl;
@@ -82,6 +79,7 @@ use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
 use crate::graphics::ScreenScaling;
 use crate::input::InputContext;
+use crate::time::TimeContext;
 
 /// A trait representing a type that contains game state and provides logic for updating it
 /// and drawing it to the screen. This is where you'll write your game logic!
@@ -124,14 +122,13 @@ pub struct Context {
     graphics: GraphicsContext,
     input: InputContext,
     audio: AudioContext,
+    time: TimeContext,
 
     window_width: i32,
     window_height: i32,
     fullscreen: bool,
     running: bool,
     quit_on_escape: bool,
-    tick_rate: Duration,
-    fps_tracker: VecDeque<f64>,
 }
 
 impl Context {
@@ -159,25 +156,14 @@ impl Context {
     where
         S: State,
     {
+        self.running = true;
         self.window.show();
+        time::reset(self);
 
         let mut events = self.sdl.event_pump().map_err(TetraError::Sdl)?;
 
-        let mut last_time = Instant::now();
-        let mut lag = Duration::from_secs(0);
-
-        self.running = true;
-
         while self.running {
-            let current_time = Instant::now();
-            let elapsed = current_time - last_time;
-            last_time = current_time;
-            lag += elapsed;
-
-            // Since we fill the buffer when we create the context, we can cycle it
-            // here and it shouldn't reallocate.
-            self.fps_tracker.pop_front();
-            self.fps_tracker.push_back(time::duration_to_f64(elapsed));
+            time::tick(self);
 
             for event in events.poll_iter() {
                 if let Err(e) = self
@@ -189,19 +175,18 @@ impl Context {
                 }
             }
 
-            while lag >= self.tick_rate {
+            while time::is_tick_ready(self) {
                 if let Err(e) = state.update(self) {
                     self.running = false;
                     return Err(e);
                 }
 
                 input::cleanup_after_state_update(self);
-                lag -= self.tick_rate;
+
+                time::consume_tick(self);
             }
 
-            let dt = time::duration_to_f64(lag) / time::duration_to_f64(self.tick_rate);
-
-            if let Err(e) = state.draw(self, dt) {
+            if let Err(e) = state.draw(self, time::get_alpha(self)) {
                 self.running = false;
                 return Err(e);
             }
@@ -502,6 +487,7 @@ impl<'a> ContextBuilder<'a> {
         }
 
         let mut gl = GLDevice::new(&video, &window, self.vsync)?;
+
         let graphics = GraphicsContext::new(
             &mut gl,
             window_width,
@@ -510,12 +496,9 @@ impl<'a> ContextBuilder<'a> {
             self.internal_height,
             self.scaling,
         )?;
-        let input = InputContext::new(&sdl)?;
 
-        // We fill the buffer with values so that the FPS counter doesn't jitter
-        // at startup.
-        let mut fps_tracker = VecDeque::with_capacity(200);
-        fps_tracker.resize(200, 1.0 / 60.0);
+        let input = InputContext::new(&sdl)?;
+        let time = TimeContext::new(self.tick_rate);
 
         Ok(Context {
             sdl,
@@ -524,14 +507,13 @@ impl<'a> ContextBuilder<'a> {
             graphics,
             input,
             audio,
+            time,
 
             window_width,
             window_height,
             fullscreen: self.fullscreen,
             running: false,
             quit_on_escape: self.quit_on_escape,
-            tick_rate: time::f64_to_duration(self.tick_rate),
-            fps_tracker,
         })
     }
 }
