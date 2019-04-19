@@ -23,13 +23,18 @@ pub struct Canvas {
 impl Canvas {
     /// Creates a new canvas.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Canvas {
-        Canvas::with_device(&mut ctx.gl, width, height)
+        Canvas::with_device(&mut ctx.gl, width, height, true)
     }
 
-    pub(crate) fn with_device(device: &mut GLDevice, width: i32, height: i32) -> Canvas {
+    pub(crate) fn with_device(
+        device: &mut GLDevice,
+        width: i32,
+        height: i32,
+        rebind_previous: bool,
+    ) -> Canvas {
         let texture = Texture::with_device_empty(device, width, height);
         let framebuffer = device.new_framebuffer();
-        device.attach_texture_to_framebuffer(&framebuffer, &texture.handle, true);
+        device.attach_texture_to_framebuffer(&framebuffer, &texture.handle, rebind_previous);
 
         Canvas {
             texture,

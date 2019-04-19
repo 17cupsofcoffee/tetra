@@ -113,7 +113,7 @@ impl GraphicsContext {
         let screen_rect =
             scaling.get_screen_rect(internal_width, internal_height, window_width, window_height);
 
-        let backbuffer = Canvas::with_device(device, backbuffer_width, backbuffer_height);
+        let backbuffer = Canvas::with_device(device, backbuffer_width, backbuffer_height, false);
         device.set_viewport(0, 0, backbuffer_width, backbuffer_height);
         device.front_face(FrontFace::Clockwise);
 

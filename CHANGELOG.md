@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Fixed
+
+* Fixed issue with the backbuffer not being bound on the first frame.
+
 ## [0.2.16] - 2019-04-07
 
 ### Changed
