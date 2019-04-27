@@ -348,8 +348,7 @@ impl GameScene {
     }
 
     fn check_for_game_over(&self) -> bool {
-        self.board[0].iter().any(|segment| segment.is_some())
-            || self.board[1].iter().any(|segment| segment.is_some())
+        self.board[0].iter().any(Option::is_some) || self.board[1].iter().any(Option::is_some)
     }
 
     fn board_blocks(&self) -> impl Iterator<Item = (i32, i32, Color)> + '_ {
