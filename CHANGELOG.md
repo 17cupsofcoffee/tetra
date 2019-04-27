@@ -6,6 +6,10 @@ This project adheres to Semantic Versioning.
 
 ## Upcoming
 
+### Added
+
+* An example of how to interpolate between ticks using the `dt` has been added.
+
 ### Fixed
 
 * Fixed issue with the backbuffer not being bound on the first frame.

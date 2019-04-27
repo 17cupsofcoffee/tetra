@@ -23,6 +23,7 @@ don't break when rendered by mdbook.
 | [`scaling`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/scaling.rs) | Graphics | Demonstrates the different screen scaling algorithms. |
 | [`shaders`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/shaders.rs) | Graphics | Uses a custom shader to render a texture. |
 | [`canvas`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/canvas.rs) | Graphics | Uses a custom render target to apply post-processing effects. |
+| [`interpolation`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/interpolation.rs) | Graphics | Demonstrates how to interpolate between ticks. |
 | [`audio`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/audio.rs) | Audio | Plays back an audio file. |
 | [`keyboard`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/keyboard.rs) | Input | Moves a texture around based on keyboard input. |
 | [`animation_controller`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/animation_controller.rs) | Input | Moves a sprite around, with the animation changing based on keyboard input. |
