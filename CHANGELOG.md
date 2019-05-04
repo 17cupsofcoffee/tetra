@@ -14,6 +14,7 @@ This project adheres to Semantic Versioning.
 ### Fixed
 
 * Fixed issue with the backbuffer not being bound on the first frame.
+* Disconnecting a gamepad while a button is down no longer causes a panic.
 
 ## [0.2.16] - 2019-04-07
 

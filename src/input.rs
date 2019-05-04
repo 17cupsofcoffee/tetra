@@ -171,6 +171,8 @@ impl InputContext {
 }
 
 pub(crate) fn handle_event(ctx: &mut Context, event: Event) -> Result {
+    let event = dbg!(event);
+
     match event {
         Event::KeyDown {
             keycode: Some(k), ..
@@ -221,40 +223,46 @@ pub(crate) fn handle_event(ctx: &mut Context, event: Event) -> Result {
             ctx.input.pads[i] = None;
         }
         Event::ControllerButtonDown { which, button, .. } => {
-            let i = ctx.input.sdl_pad_indexes[&which];
-            let pad = ctx.input.pads[i].as_mut().unwrap();
-            pad.current_button_state.insert(button.into());
+            if let Some(i) = ctx.input.sdl_pad_indexes.get(&which) {
+                if let Some(Some(pad)) = ctx.input.pads.get_mut(*i) {
+                    pad.current_button_state.insert(button.into());
+                }
+            }
         }
         Event::ControllerButtonUp { which, button, .. } => {
-            let i = ctx.input.sdl_pad_indexes[&which];
-            let pad = ctx.input.pads[i].as_mut().unwrap();
-            pad.current_button_state.remove(&button.into());
+            if let Some(i) = ctx.input.sdl_pad_indexes.get(&which) {
+                if let Some(Some(pad)) = ctx.input.pads.get_mut(*i) {
+                    pad.current_button_state.remove(&button.into());
+                }
+            }
         }
         Event::ControllerAxisMotion {
             which, axis, value, ..
         } => {
-            let i = ctx.input.sdl_pad_indexes[&which];
-            let pad = ctx.input.pads[i].as_mut().unwrap();
-            pad.current_axis_state
-                .insert(axis.into(), f32::from(value) / 32767.0);
+            if let Some(i) = ctx.input.sdl_pad_indexes.get(&which) {
+                if let Some(Some(pad)) = ctx.input.pads.get_mut(*i) {
+                    pad.current_axis_state
+                        .insert(axis.into(), f32::from(value) / 32767.0);
 
-            match axis {
-                SdlAxis::TriggerLeft => {
-                    if value > 0 {
-                        pad.current_button_state.insert(GamepadButton::LeftTrigger);
-                    } else {
-                        pad.current_button_state.remove(&GamepadButton::LeftTrigger);
+                    match axis {
+                        SdlAxis::TriggerLeft => {
+                            if value > 0 {
+                                pad.current_button_state.insert(GamepadButton::LeftTrigger);
+                            } else {
+                                pad.current_button_state.remove(&GamepadButton::LeftTrigger);
+                            }
+                        }
+                        SdlAxis::TriggerRight => {
+                            if value > 0 {
+                                pad.current_button_state.insert(GamepadButton::RightTrigger);
+                            } else {
+                                pad.current_button_state
+                                    .remove(&GamepadButton::RightTrigger);
+                            }
+                        }
+                        _ => {}
                     }
                 }
-                SdlAxis::TriggerRight => {
-                    if value > 0 {
-                        pad.current_button_state.insert(GamepadButton::RightTrigger);
-                    } else {
-                        pad.current_button_state
-                            .remove(&GamepadButton::RightTrigger);
-                    }
-                }
-                _ => {}
             }
         }
         _ => {}
