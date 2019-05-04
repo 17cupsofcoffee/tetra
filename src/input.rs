@@ -171,8 +171,6 @@ impl InputContext {
 }
 
 pub(crate) fn handle_event(ctx: &mut Context, event: Event) -> Result {
-    let event = dbg!(event);
-
     match event {
         Event::KeyDown {
             keycode: Some(k), ..
