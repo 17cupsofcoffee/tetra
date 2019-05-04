@@ -9,6 +9,7 @@ This project adheres to Semantic Versioning.
 ### Added
 
 * An example of how to interpolate between ticks using the `dt` has been added.
+* Basic support for gamepad vibration has been added.
 
 ### Fixed
 

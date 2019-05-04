@@ -11,10 +11,11 @@
 use hashbrown::{HashMap, HashSet};
 use sdl2::controller::{Axis as SdlAxis, Button as SdlButton, GameController};
 use sdl2::event::Event;
+use sdl2::sys::SDL_HAPTIC_INFINITY;
 use sdl2::{GameControllerSubsystem, Sdl};
 
 use crate::error::{Result, TetraError};
-use crate::glm::Vec2;
+use crate::glm::{self, Vec2};
 use crate::graphics;
 use crate::Context;
 
@@ -114,15 +115,22 @@ struct GamepadState {
     current_button_state: HashSet<GamepadButton>,
     previous_button_state: HashSet<GamepadButton>,
     current_axis_state: HashMap<GamepadAxis, f32>,
+    supports_vibration: bool,
 }
 
 impl GamepadState {
-    pub(crate) fn new(sdl_controller: GameController) -> GamepadState {
+    pub(crate) fn new(mut sdl_controller: GameController) -> GamepadState {
+        // We initialize haptic feedback up front, so that there's no delay
+        // when the game requests it.
+
+        let supports_vibration = sdl_controller.set_rumble(0, 0, SDL_HAPTIC_INFINITY).is_ok();
+
         GamepadState {
             sdl_controller,
             current_button_state: HashSet::new(),
             previous_button_state: HashSet::new(),
             current_axis_state: HashMap::new(),
+            supports_vibration,
         }
     }
 }
@@ -537,4 +545,56 @@ pub fn get_gamepad_stick_position(
         get_gamepad_axis_position(ctx, gamepad_index, x_axis),
         get_gamepad_axis_position(ctx, gamepad_index, y_axis),
     )
+}
+
+/// Returns whether or not the specified gamepad supports vibration.
+///
+/// If the gamepad is disconnected, this will always return `false`.
+pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_index: usize) -> bool {
+    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
+        pad.supports_vibration
+    } else {
+        false
+    }
+}
+
+/// Sets the specified gamepad's motors to vibrate indefinitely.
+pub fn set_gamepad_vibration(
+    ctx: &mut Context,
+    gamepad_index: usize,
+    left_motor: f32,
+    right_motor: f32,
+) {
+    start_gamepad_vibration(
+        ctx,
+        gamepad_index,
+        left_motor,
+        right_motor,
+        SDL_HAPTIC_INFINITY,
+    );
+}
+
+/// Sets the specified gamepad's motors to vibrate for a set duration, specified in milliseconds.
+/// After this time has passed, the vibration will automatically stop.
+pub fn start_gamepad_vibration(
+    ctx: &mut Context,
+    gamepad_index: usize,
+    left_motor: f32,
+    right_motor: f32,
+    duration: u32,
+) {
+    if let Some(Some(pad)) = ctx.input.pads.get_mut(gamepad_index) {
+        // We don't really care about errors here - they'll only really happen if the
+        // gamepad is disconnected.
+        let _ = pad.sdl_controller.set_rumble(
+            (glm::clamp_scalar(left_motor, 0.0, 1.0) * 65535.0) as u16,
+            (glm::clamp_scalar(right_motor, 0.0, 1.0) * 65535.0) as u16,
+            duration,
+        );
+    }
+}
+
+/// Stops the specified gamepad's motors from vibrating.
+pub fn stop_gamepad_vibration(ctx: &mut Context, gamepad_index: usize) {
+    start_gamepad_vibration(ctx, gamepad_index, 0.0, 0.0, SDL_HAPTIC_INFINITY);
 }

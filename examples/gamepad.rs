@@ -150,6 +150,10 @@ impl State for GameState {
         self.connected = input::is_gamepad_connected(ctx, 0);
 
         if self.connected {
+            if input::get_gamepad_buttons_pressed(ctx, 0).count() > 0 {
+                input::start_gamepad_vibration(ctx, 0, 1.0, 1.0, 100);
+            }
+
             self.a = input::is_gamepad_button_down(ctx, 0, GamepadButton::A);
             self.b = input::is_gamepad_button_down(ctx, 0, GamepadButton::B);
             self.x = input::is_gamepad_button_down(ctx, 0, GamepadButton::X);
