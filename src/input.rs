@@ -597,5 +597,9 @@ pub fn start_gamepad_vibration(
 
 /// Stops the specified gamepad's motors from vibrating.
 pub fn stop_gamepad_vibration(ctx: &mut Context, gamepad_index: usize) {
-    start_gamepad_vibration(ctx, gamepad_index, 0.0, SDL_HAPTIC_INFINITY);
+    if let Some(Some(pad)) = ctx.input.pads.get_mut(gamepad_index) {
+        if let Some(haptic) = &mut pad.sdl_haptic {
+            haptic.rumble_stop();
+        }
+    }
 }
