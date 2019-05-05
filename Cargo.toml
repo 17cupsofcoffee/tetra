@@ -16,12 +16,12 @@ sdl2_bundled = ["sdl2/bundled"]
 sdl2_static_link = ["sdl2/static-link"]
 
 [dependencies]
-gl = "0.11.0"
+gl = "0.12.0"
 sdl2 = "0.32.2"
-image = "0.21.0"
+image = "0.21.1"
 nalgebra-glm = "0.2.0"
-hashbrown = "0.2.0"
-glyph_brush = "0.4.1"
+hashbrown = "0.3.0"
+glyph_brush = "0.5.0"
 rodio = "0.8.1"
 
 [dev-dependencies]

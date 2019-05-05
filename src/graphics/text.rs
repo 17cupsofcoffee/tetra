@@ -179,18 +179,12 @@ impl Text {
     fn check_for_update(&self, ctx: &mut Context) {
         ctx.graphics.font_cache.queue(self.build_section());
 
-        let screen_dimensions = (
-            graphics::get_internal_width(ctx) as u32,
-            graphics::get_internal_height(ctx) as u32,
-        );
-
         // to avoid some borrow checker/closure weirdness
         let texture_ref = &mut ctx.graphics.font_cache_texture;
         let device_ref = &mut ctx.gl;
 
         let action = loop {
             let attempted_action = ctx.graphics.font_cache.process_queued(
-                screen_dimensions,
                 |rect, data| update_texture(device_ref, texture_ref, rect, data),
                 |v| glyph_to_quad(&v),
             );

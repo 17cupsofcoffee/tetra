@@ -11,6 +11,13 @@ This project adheres to Semantic Versioning.
 * An example of how to interpolate between ticks using the `dt` has been added.
 * Basic support for gamepad vibration has been added.
 
+### Changed
+
+* Updated `gl` to 0.12.0.
+* Updated `image` to 0.21.1.
+* Updated `hashbrown` to 0.3.0.
+* Updated `glyph-brush` to 0.5.0. 
+
 ### Fixed
 
 * Fixed issue with the backbuffer not being bound on the first frame.
@@ -31,7 +38,7 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * The way that `nalgebra-glm` is re-exported has been changed slightly, to make it so we can provide a bit more documentation. This should not have any impact on usage or the public facing API.
-* Updated `gl` to 0.32.2.
+* Updated `sdl2` to 0.32.2.
 * Updated `nalgebra-glm` to 0.4.0.
 * Updated `hashbrown` to 0.2.0.
 * Updated `glyph_brush` to 0.4.1.
