@@ -11,11 +11,12 @@
 use hashbrown::{HashMap, HashSet};
 use sdl2::controller::{Axis as SdlAxis, Button as SdlButton, GameController};
 use sdl2::event::Event;
+use sdl2::haptic::Haptic;
 use sdl2::sys::SDL_HAPTIC_INFINITY;
-use sdl2::{GameControllerSubsystem, Sdl};
+use sdl2::{GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl};
 
 use crate::error::{Result, TetraError};
-use crate::glm::{self, Vec2};
+use crate::glm::Vec2;
 use crate::graphics;
 use crate::Context;
 
@@ -111,26 +112,25 @@ pub enum GamepadStick {
 }
 
 struct GamepadState {
+    // NOTE: The SDL docs say to close the haptic device before the joystick, so
+    // I've ordered the fields accordingly.
+    sdl_haptic: Option<Haptic>,
     sdl_controller: GameController,
+
     current_button_state: HashSet<GamepadButton>,
     previous_button_state: HashSet<GamepadButton>,
     current_axis_state: HashMap<GamepadAxis, f32>,
-    supports_vibration: bool,
 }
 
 impl GamepadState {
-    pub(crate) fn new(mut sdl_controller: GameController) -> GamepadState {
-        // We initialize haptic feedback up front, so that there's no delay
-        // when the game requests it.
-
-        let supports_vibration = sdl_controller.set_rumble(0, 0, SDL_HAPTIC_INFINITY).is_ok();
-
+    pub(crate) fn new(sdl_controller: GameController, sdl_haptic: Option<Haptic>) -> GamepadState {
         GamepadState {
+            sdl_haptic,
             sdl_controller,
+
             current_button_state: HashSet::new(),
             previous_button_state: HashSet::new(),
             current_axis_state: HashMap::new(),
-            supports_vibration,
         }
     }
 }
@@ -145,13 +145,18 @@ pub(crate) struct InputContext {
     mouse_position: Vec2,
 
     controller_sys: GameControllerSubsystem,
+    _joystick_sys: JoystickSubsystem,
+    haptic_sys: HapticSubsystem,
     pads: Vec<Option<GamepadState>>,
     sdl_pad_indexes: HashMap<i32, usize>,
 }
 
 impl InputContext {
     pub(crate) fn new(sdl: &Sdl) -> Result<InputContext> {
+        let _joystick_sys = sdl.joystick().map_err(TetraError::Sdl)?;
         let controller_sys = sdl.game_controller().map_err(TetraError::Sdl)?;
+        let haptic_sys = sdl.haptic().map_err(TetraError::Sdl)?;
+
         sdl2::hint::set("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
 
         Ok(InputContext {
@@ -164,6 +169,8 @@ impl InputContext {
             mouse_position: Vec2::zeros(),
 
             controller_sys,
+            _joystick_sys,
+            haptic_sys,
             pads: Vec::new(),
             sdl_pad_indexes: HashMap::new(),
         })
@@ -202,19 +209,23 @@ pub(crate) fn handle_event(ctx: &mut Context, event: Event) -> Result {
         }
         Event::ControllerDeviceAdded { which, .. } => {
             let controller = ctx.input.controller_sys.open(which)?;
+            let haptic = ctx.input.haptic_sys.open_from_joystick_id(which).ok();
+
             let id = controller.instance_id();
 
             for (i, slot) in ctx.input.pads.iter_mut().enumerate() {
                 if slot.is_none() {
                     ctx.input.sdl_pad_indexes.insert(id, i);
-                    *slot = Some(GamepadState::new(controller));
+                    *slot = Some(GamepadState::new(controller, haptic));
                     return Ok(());
                 }
             }
 
             // There wasn't an existing free slot...
             ctx.input.sdl_pad_indexes.insert(id, ctx.input.pads.len());
-            ctx.input.pads.push(Some(GamepadState::new(controller)));
+            ctx.input
+                .pads
+                .push(Some(GamepadState::new(controller, haptic)));
         }
         Event::ControllerDeviceRemoved { which, .. } => {
             let i = ctx.input.sdl_pad_indexes.remove(&which).unwrap();
@@ -558,26 +569,15 @@ pub fn get_gamepad_stick_position(
 /// If the gamepad is disconnected, this will always return `false`.
 pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_index: usize) -> bool {
     if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
-        pad.supports_vibration
+        pad.sdl_haptic.is_some()
     } else {
         false
     }
 }
 
 /// Sets the specified gamepad's motors to vibrate indefinitely.
-pub fn set_gamepad_vibration(
-    ctx: &mut Context,
-    gamepad_index: usize,
-    left_motor: f32,
-    right_motor: f32,
-) {
-    start_gamepad_vibration(
-        ctx,
-        gamepad_index,
-        left_motor,
-        right_motor,
-        SDL_HAPTIC_INFINITY,
-    );
+pub fn set_gamepad_vibration(ctx: &mut Context, gamepad_index: usize, strength: f32) {
+    start_gamepad_vibration(ctx, gamepad_index, strength, SDL_HAPTIC_INFINITY);
 }
 
 /// Sets the specified gamepad's motors to vibrate for a set duration, specified in milliseconds.
@@ -585,22 +585,17 @@ pub fn set_gamepad_vibration(
 pub fn start_gamepad_vibration(
     ctx: &mut Context,
     gamepad_index: usize,
-    left_motor: f32,
-    right_motor: f32,
+    strength: f32,
     duration: u32,
 ) {
     if let Some(Some(pad)) = ctx.input.pads.get_mut(gamepad_index) {
-        // We don't really care about errors here - they'll only really happen if the
-        // gamepad is disconnected.
-        let _ = pad.sdl_controller.set_rumble(
-            (glm::clamp_scalar(left_motor, 0.0, 1.0) * 65535.0) as u16,
-            (glm::clamp_scalar(right_motor, 0.0, 1.0) * 65535.0) as u16,
-            duration,
-        );
+        if let Some(haptic) = &mut pad.sdl_haptic {
+            haptic.rumble_play(strength, duration);
+        }
     }
 }
 
 /// Stops the specified gamepad's motors from vibrating.
 pub fn stop_gamepad_vibration(ctx: &mut Context, gamepad_index: usize) {
-    start_gamepad_vibration(ctx, gamepad_index, 0.0, 0.0, SDL_HAPTIC_INFINITY);
+    start_gamepad_vibration(ctx, gamepad_index, 0.0, SDL_HAPTIC_INFINITY);
 }
