@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Added
+
+* The `tetras` example now has sound effects and music.
+
 ## [0.2.17] - 2019-05-05
 
 ### Added

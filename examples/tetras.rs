@@ -3,6 +3,7 @@
 // and the ggez-goodies scene stack.
 
 use rand::{self, Rng};
+use tetra::audio::Sound;
 use tetra::graphics::{self, Color, DrawParams, Font, Text, Texture, Vec2};
 use tetra::input::{self, Key};
 use tetra::window;
@@ -23,7 +24,7 @@ fn main() -> tetra::Result {
         .resizable(true)
         .quit_on_escape(true)
         .build()?
-        .run(&mut SceneManager::new(Box::new(TitleScene::new())))
+        .run_with(|ctx| Ok(SceneManager::new(Box::new(TitleScene::new(ctx)?))))
 }
 
 // === Scene Management ===
@@ -103,11 +104,16 @@ struct TitleScene {
 }
 
 impl TitleScene {
-    fn new() -> TitleScene {
-        TitleScene {
+    fn new(ctx: &mut Context) -> tetra::Result<TitleScene> {
+        // Setting a Sound to repeat without holding on to the SoundInstance
+        // is usually a bad practice, as it means you can never stop playback.
+        // In our case though, we want it to repeat forever, so it's fine!
+        Sound::new("./examples/resources/bgm.wav")?.repeat(ctx)?;
+
+        Ok(TitleScene {
             title_text: Text::new("Tetras", Font::default(), 36.0),
             help_text: Text::new("An extremely legally distinct puzzle game\n\nControls:\nA and D to move\nQ and E to rotate\nS to drop one row\nSpace to hard drop\n\nPress Space to start.", Font::default(), 16.0),
-        }
+        })
     }
 }
 
@@ -270,6 +276,12 @@ enum Move {
 struct GameScene {
     backdrop_texture: Texture,
     block_texture: Texture,
+
+    soft_drop_sound: Sound,
+    hard_drop_sound: Sound,
+    line_clear_sound: Sound,
+    game_over_sound: Sound,
+
     block: Block,
     drop_timer: i32,
     move_timer: i32,
@@ -284,6 +296,12 @@ impl GameScene {
         Ok(GameScene {
             backdrop_texture: Texture::new(ctx, "./examples/resources/backdrop.png")?,
             block_texture: Texture::new(ctx, "./examples/resources/block.png")?,
+
+            soft_drop_sound: Sound::new("./examples/resources/softdrop.wav")?,
+            hard_drop_sound: Sound::new("./examples/resources/harddrop.wav")?,
+            line_clear_sound: Sound::new("./examples/resources/lineclear.wav")?,
+            game_over_sound: Sound::new("./examples/resources/gameover.wav")?,
+
             block: Block::new(),
             drop_timer: 0,
             move_timer: 0,
@@ -325,13 +343,17 @@ impl GameScene {
         }
     }
 
-    fn check_for_clears(&mut self) {
+    fn check_for_clears(&mut self) -> bool {
+        let mut cleared = false;
+
         'outer: for y in 0..22 {
             for x in 0..10 {
                 if self.board[y][x].is_none() {
                     continue 'outer;
                 }
             }
+
+            cleared = true;
 
             self.score += 1;
             self.score_text
@@ -345,6 +367,8 @@ impl GameScene {
                 }
             }
         }
+
+        cleared
     }
 
     fn check_for_game_over(&self) -> bool {
@@ -457,10 +481,15 @@ impl Scene for GameScene {
             }
             Some(Move::Drop) => {
                 if self.collides(0, 1) {
+                    self.soft_drop_sound.play_with(ctx, 0.5, 1.0)?;
                     self.lock();
-                    self.check_for_clears();
+
+                    if self.check_for_clears() {
+                        self.line_clear_sound.play_with(ctx, 0.5, 1.0)?;
+                    }
 
                     if self.check_for_game_over() {
+                        self.game_over_sound.play_with(ctx, 0.2, 1.0)?;
                         return Ok(Transition::Pop);
                     }
 
@@ -474,10 +503,15 @@ impl Scene for GameScene {
                     self.block.y += 1;
                 }
 
+                self.hard_drop_sound.play_with(ctx, 0.5, 1.0)?;
                 self.lock();
-                self.check_for_clears();
+
+                if self.check_for_clears() {
+                    self.line_clear_sound.play_with(ctx, 0.5, 1.0)?;
+                }
 
                 if self.check_for_game_over() {
+                    self.game_over_sound.play_with(ctx, 0.2, 1.0)?;
                     return Ok(Transition::Pop);
                 }
 
