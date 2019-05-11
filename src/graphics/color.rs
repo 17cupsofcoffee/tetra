@@ -62,3 +62,18 @@ pub const WHITE: Color = Color {
     b: 1.0,
     a: 1.0,
 };
+
+#[cfg(test)]
+mod tests {
+    use super::Color;
+
+    #[test]
+    fn rgb8_creation() {
+        let c1 = Color::rgb8(100, 149, 236);
+        let c2 = Color::rgb(0.39, 0.58, 0.92);
+
+        assert!((c1.r - c2.r).abs() < 0.01);
+        assert!((c1.g - c2.g).abs() < 0.01);
+        assert!((c1.b - c2.b).abs() < 0.01);
+    }
+}
