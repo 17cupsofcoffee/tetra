@@ -9,6 +9,7 @@ This project adheres to Semantic Versioning.
 ### Added
 
 * The `tetras` example now has sound effects and music.
+* There are now constructors for `Color` that take `u8` values. ([@aaneto](https://github.com/aaneto) in [#124](https://github.com/17cupsofcoffee/tetra/pull/124))
 
 ## [0.2.17] - 2019-05-05
 
@@ -60,7 +61,7 @@ This project adheres to Semantic Versioning.
 
 * `graphics::set_letterbox_color` allows you to set the color of the letterbox bars shown in certain scaling modes.
 * Basic support for off-screen rendering/'render to texture' has been implemented, in the form of the `Canvas` object.
-* An `animation_controller` example has been added, showing how to change animations based on the player's input. ([@mgocobachi](https://github.com/mgocobachi) in [#96](https://github.com/17cupsofcoffee/tetra/pull/110))
+* An `animation_controller` example has been added, showing how to change animations based on the player's input. ([@mgocobachi](https://github.com/mgocobachi) in [#110](https://github.com/17cupsofcoffee/tetra/pull/110))
 * A `from_file_data` constructor has been added to `Font`, for consistency with `Texture` and `Sound`.
 
 ### Changed
