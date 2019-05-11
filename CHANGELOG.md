@@ -11,6 +11,10 @@ This project adheres to Semantic Versioning.
 * The `tetras` example now has sound effects and music.
 * There are now constructors for `Color` that take `u8` values. ([@aaneto](https://github.com/aaneto) in [#124](https://github.com/17cupsofcoffee/tetra/pull/124))
 
+### Changed
+
+* Tetra now requires Rust 1.32 or higher. While I personally consider this to be a breaking change and was going to save it for 0.3, a dependency has forced our hand by increasing *their* minimum Rust version in a patch release, breaking 1.31 support for all versions of Tetra :(
+
 ## [0.2.17] - 2019-05-05
 
 ### Added

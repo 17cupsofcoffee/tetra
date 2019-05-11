@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/17cupsofcoffee/tetra.svg?branch=master)](https://travis-ci.org/17cupsofcoffee/tetra)
 [![Crates.io](https://img.shields.io/crates/v/tetra.svg)](https://crates.io/crates/tetra)
-[![Minimum Rust Version](https://img.shields.io/badge/minimum%20rust%20version-1.31-orange.svg)](https://www.rust-lang.org/tools/install)
+[![Minimum Rust Version](https://img.shields.io/badge/minimum%20rust%20version-1.32-orange.svg)](https://www.rust-lang.org/tools/install)
 [![Documentation](https://docs.rs/tetra/badge.svg)](https://docs.rs/tetra)
 [![License](https://img.shields.io/crates/l/tetra.svg)](LICENSE)
 [![Gitter chat](https://badges.gitter.im/tetra-rs/community.png)](https://gitter.im/tetra-rs/community)
@@ -33,7 +33,7 @@ To add Tetra to your project, add the following line to your `Cargo.toml` file:
 tetra = "0.2"
 ```
 
-Tetra currently requires Rust 1.31 or higher.
+Tetra currently requires Rust 1.32 or higher.
 
 You will also need to install the SDL2 native libraries - full details are provided in the [documentation](https://tetra.seventeencups.net/tutorial/installation.html). 
 
