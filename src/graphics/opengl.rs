@@ -278,7 +278,7 @@ impl GLDevice {
 
             gl::GetShaderiv(shader_id, gl::INFO_LOG_LENGTH, &mut max_len);
 
-            let mut result = vec![0u8; max_len as usize];
+            let mut result = vec![0_u8; max_len as usize];
             let mut result_len = 0 as GLsizei;
             gl::GetShaderInfoLog(
                 shader_id,
@@ -303,7 +303,7 @@ impl GLDevice {
 
             gl::GetProgramiv(program_id, gl::INFO_LOG_LENGTH, &mut max_len);
 
-            let mut result = vec![0u8; max_len as usize];
+            let mut result = vec![0_u8; max_len as usize];
             let mut result_len = 0 as GLsizei;
             gl::GetProgramInfoLog(
                 program_id,

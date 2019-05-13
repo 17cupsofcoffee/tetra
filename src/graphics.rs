@@ -390,7 +390,7 @@ impl From<Vec2> for DrawParams {
 
 /// Represents a type that can be drawn.
 ///
-/// [graphics::draw](fn.draw.html) can be used to draw without importing this trait, which is sometimes
+/// [`graphics::draw`](fn.draw.html) can be used to draw without importing this trait, which is sometimes
 /// more convienent.
 pub trait Drawable {
     /// Draws `self` to the screen (or a canvas, if one is enabled), using the specified parameters.
@@ -446,7 +446,18 @@ pub(crate) fn push_quad(
     }
 
     // Branching here might be a bit of a premature optimization...
-    let (ox1, oy1, ox2, oy2, ox3, oy3, ox4, oy4) = if params.rotation != 0.0 {
+    let (ox1, oy1, ox2, oy2, ox3, oy3, ox4, oy4) = if params.rotation == 0.0 {
+        (
+            params.position.x + fx,
+            params.position.y + fy,
+            params.position.x + fx,
+            params.position.y + fy2,
+            params.position.x + fx2,
+            params.position.y + fy2,
+            params.position.x + fx2,
+            params.position.y + fy,
+        )
+    } else {
         let sin = params.rotation.sin();
         let cos = params.rotation.cos();
         (
@@ -458,17 +469,6 @@ pub(crate) fn push_quad(
             params.position.y + (sin * fx2) + (cos * fy2),
             params.position.x + (cos * fx2) - (sin * fy),
             params.position.y + (sin * fx2) + (cos * fy),
-        )
-    } else {
-        (
-            params.position.x + fx,
-            params.position.y + fy,
-            params.position.x + fx,
-            params.position.y + fy2,
-            params.position.x + fx2,
-            params.position.y + fy2,
-            params.position.x + fx2,
-            params.position.y + fy,
         )
     };
 
