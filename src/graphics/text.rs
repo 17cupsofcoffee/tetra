@@ -239,7 +239,7 @@ fn update_texture(gl: &mut GLDevice, texture: &Texture, rect: Rect<u32>, data: &
     }
 
     gl.set_texture_data(
-        &texture.handle,
+        &texture.handle.borrow(),
         &padded_data,
         rect.min.x as i32,
         rect.min.y as i32,

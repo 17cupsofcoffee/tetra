@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::glm::{self, Mat4};
 use crate::graphics::opengl::{GLDevice, GLFramebuffer};
-use crate::graphics::{DrawParams, Drawable, Texture};
+use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
 use crate::Context;
 
 /// A 2D texture that can be used for off-screen rendering.
@@ -34,7 +34,11 @@ impl Canvas {
     ) -> Canvas {
         let texture = Texture::with_device_empty(device, width, height);
         let framebuffer = device.new_framebuffer();
-        device.attach_texture_to_framebuffer(&framebuffer, &texture.handle, rebind_previous);
+        device.attach_texture_to_framebuffer(
+            &framebuffer,
+            &texture.handle.borrow(),
+            rebind_previous,
+        );
 
         Canvas {
             texture,
@@ -51,6 +55,16 @@ impl Canvas {
     /// Returns the height of the canvas.
     pub fn height(&self) -> i32 {
         self.texture.height()
+    }
+
+    /// Returns the filter mode being used by the canvas.
+    pub fn filter_mode(&self) -> FilterMode {
+        self.texture.filter_mode()
+    }
+
+    /// Sets the filter mode that should be used by the canvas.
+    pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
+        self.texture.set_filter_mode(ctx, filter_mode);
     }
 
     /// Returns the canvas' underlying texture.

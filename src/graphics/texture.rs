@@ -1,5 +1,6 @@
 //! Functions and types relating to textures.
 
+use std::cell::RefCell;
 use std::path::Path;
 use std::rc::Rc;
 
@@ -7,7 +8,7 @@ use image;
 
 use crate::error::{Result, TetraError};
 use crate::graphics::opengl::{GLDevice, GLTexture, TextureFormat};
-use crate::graphics::{self, DrawParams, Drawable, Rectangle};
+use crate::graphics::{self, DrawParams, Drawable, FilterMode, Rectangle};
 use crate::Context;
 
 /// A 2D texture, held in GPU memory.
@@ -28,7 +29,7 @@ use crate::Context;
 /// and so can be cloned with little overhead.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Texture {
-    pub(crate) handle: Rc<GLTexture>,
+    pub(crate) handle: Rc<RefCell<GLTexture>>,
 }
 
 impl Texture {
@@ -125,7 +126,7 @@ impl Texture {
         device.set_texture_data(&handle, &data, 0, 0, width, height, TextureFormat::Rgba);
 
         Ok(Texture {
-            handle: Rc::new(handle),
+            handle: Rc::new(RefCell::new(handle)),
         })
     }
 
@@ -133,18 +134,30 @@ impl Texture {
         let handle = device.new_texture(width, height, TextureFormat::Rgba);
 
         Texture {
-            handle: Rc::new(handle),
+            handle: Rc::new(RefCell::new(handle)),
         }
     }
 
     /// Returns the width of the texture.
     pub fn width(&self) -> i32 {
-        self.handle.width()
+        self.handle.borrow().width()
     }
 
     /// Returns the height of the texture.
     pub fn height(&self) -> i32 {
-        self.handle.height()
+        self.handle.borrow().height()
+    }
+
+    /// Returns the filter mode being used by the texture.
+    pub fn filter_mode(&self) -> FilterMode {
+        self.handle.borrow().filter_mode()
+    }
+
+    /// Sets the filter mode that should be used by the texture.
+    pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
+        self.handle
+            .borrow_mut()
+            .set_filter_mode(&mut ctx.gl, filter_mode);
     }
 }
 

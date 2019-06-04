@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Added
+
+* Textures and canvases now provide a method for setting the texture filtering mode.
+
 ## [0.2.18] - 2019-05-18
 
 ### Added

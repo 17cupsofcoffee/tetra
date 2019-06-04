@@ -388,6 +388,20 @@ impl From<Vec2> for DrawParams {
     }
 }
 
+/// Represents the different filtering algorithms that can be used when scaling an image.
+///
+/// Tetra currently defaults to using `Nearest` for all newly created textures.
+#[derive(Debug, Clone, Copy)]
+pub enum FilterMode {
+    /// Nearest-neighbor interpolation. This preserves hard edges and details, but may look pixelated.
+    ///
+    /// If you're using pixel art, this is probably the scaling mode you should use.
+    Nearest,
+
+    /// Linear interpolation. This smooths images when scaling them up or down.
+    Linear,
+}
+
 /// Represents a type that can be drawn.
 ///
 /// [`graphics::draw`](fn.draw.html) can be used to draw without importing this trait, which is sometimes
@@ -632,7 +646,7 @@ pub fn flush(ctx: &mut Context) {
             ActiveCanvas::User(r) => &r.projection,
         };
 
-        ctx.gl.bind_texture(&texture.handle);
+        ctx.gl.bind_texture(&texture.handle.borrow());
 
         ctx.gl.bind_program(&shader.handle);
         ctx.gl

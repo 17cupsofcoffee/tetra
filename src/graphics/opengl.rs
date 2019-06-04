@@ -8,6 +8,7 @@ use sdl2::VideoSubsystem;
 
 use crate::error::{Result, TetraError};
 use crate::glm::Mat4;
+use crate::graphics::FilterMode;
 
 pub struct GLDevice {
     _ctx: GLContext,
@@ -341,7 +342,12 @@ impl GLDevice {
             let mut id = 0;
             gl::GenTextures(1, &mut id);
 
-            let texture = GLTexture { id, width, height };
+            let texture = GLTexture {
+                id,
+                width,
+                height,
+                filter_mode: FilterMode::Nearest,
+            };
 
             self.bind_texture(&texture);
 
@@ -396,6 +402,34 @@ impl GLDevice {
                 gl::UNSIGNED_BYTE,
                 data.as_ptr() as *const GLvoid,
             )
+        }
+    }
+
+    pub fn set_texture_min_filter(&mut self, texture: &GLTexture, filter_mode: FilterMode) {
+        self.bind_texture(&texture);
+
+        let gl_filter_mode: GLenum = filter_mode.into();
+
+        unsafe {
+            gl::TexParameteri(
+                gl::TEXTURE_2D,
+                gl::TEXTURE_MIN_FILTER,
+                gl_filter_mode as GLint,
+            );
+        }
+    }
+
+    pub fn set_texture_mag_filter(&mut self, texture: &GLTexture, filter_mode: FilterMode) {
+        self.bind_texture(&texture);
+
+        let gl_filter_mode: GLenum = filter_mode.into();
+
+        unsafe {
+            gl::TexParameteri(
+                gl::TEXTURE_2D,
+                gl::TEXTURE_MAG_FILTER,
+                gl_filter_mode as GLint,
+            );
         }
     }
 
@@ -565,6 +599,16 @@ impl From<FrontFace> for GLenum {
     }
 }
 
+#[doc(hidden)]
+impl From<FilterMode> for GLenum {
+    fn from(filter_mode: FilterMode) -> GLenum {
+        match filter_mode {
+            FilterMode::Nearest => gl::NEAREST,
+            FilterMode::Linear => gl::LINEAR,
+        }
+    }
+}
+
 pub struct GLVertexBuffer {
     id: GLuint,
     count: usize,
@@ -661,6 +705,7 @@ pub struct GLTexture {
     id: GLuint,
     width: i32,
     height: i32,
+    filter_mode: FilterMode,
 }
 
 impl GLTexture {
@@ -670,6 +715,16 @@ impl GLTexture {
 
     pub fn height(&self) -> i32 {
         self.height
+    }
+
+    pub fn filter_mode(&self) -> FilterMode {
+        self.filter_mode
+    }
+
+    pub fn set_filter_mode(&mut self, device: &mut GLDevice, filter_mode: FilterMode) {
+        device.set_texture_min_filter(self, filter_mode);
+        device.set_texture_mag_filter(self, filter_mode);
+        self.filter_mode = filter_mode;
     }
 }
 
