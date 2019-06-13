@@ -783,6 +783,16 @@ pub fn set_letterbox_color(ctx: &mut Context, color: Color) {
     ctx.graphics.letterbox_color = color;
 }
 
+/// Returns the filter mode that will be used by newly created textures and canvases.
+pub fn get_default_filter_mode(ctx: &Context) -> FilterMode {
+    ctx.gl.get_default_filter_mode()
+}
+
+/// Sets the filter mode that will be used by newly created textures and canvases.
+pub fn set_default_filter_mode(ctx: &mut Context, filter_mode: FilterMode) {
+    ctx.gl.set_default_filter_mode(filter_mode);
+}
+
 pub(crate) fn set_backbuffer_size(ctx: &mut Context, width: i32, height: i32) {
     if ctx.graphics.backbuffer.width() != width || ctx.graphics.backbuffer.height() != height {
         ctx.graphics.backbuffer = Canvas::new(ctx, width, height);

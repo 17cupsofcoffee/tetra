@@ -19,6 +19,9 @@ pub struct GLDevice {
     current_texture: GLuint,
     current_framebuffer: GLuint,
     current_vertex_array: GLuint,
+
+    // TODO: I kinda don't like this being here, should probably be on the graphics context.
+    default_filter_mode: FilterMode,
 }
 
 impl GLDevice {
@@ -76,6 +79,8 @@ impl GLDevice {
                 current_texture: 0,
                 current_framebuffer: 0,
                 current_vertex_array,
+
+                default_filter_mode: FilterMode::Nearest,
             })
         }
     }
@@ -346,15 +351,17 @@ impl GLDevice {
                 id,
                 width,
                 height,
-                filter_mode: FilterMode::Nearest,
+                filter_mode: self.default_filter_mode,
             };
 
             self.bind_texture(&texture);
 
+            let gl_filter_mode: GLenum = self.default_filter_mode.into();
+
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as GLint);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as GLint);
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl::NEAREST as GLint);
-            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::NEAREST as GLint);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MIN_FILTER, gl_filter_mode as GLint);
+            gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl_filter_mode as GLint);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_BASE_LEVEL, 0);
             gl::TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAX_LEVEL, 0);
 
@@ -540,6 +547,14 @@ impl GLDevice {
                 self.current_framebuffer = 0;
             }
         }
+    }
+
+    pub fn get_default_filter_mode(&self) -> FilterMode {
+        self.default_filter_mode
+    }
+
+    pub fn set_default_filter_mode(&mut self, filter_mode: FilterMode) {
+        self.default_filter_mode = filter_mode;
     }
 }
 
