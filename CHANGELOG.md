@@ -10,6 +10,12 @@ This project adheres to Semantic Versioning.
 
 * Textures and canvases now provide a method for setting the texture filtering mode.
 
+### Changed
+
+* Updated `image` to 0.21.2.
+* Updated `hashbrown` to 0.5.0.
+* Updated `rodio` to 0.9.0.
+
 ## [0.2.18] - 2019-05-18
 
 ### Added

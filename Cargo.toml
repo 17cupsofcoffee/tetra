@@ -18,11 +18,11 @@ sdl2_static_link = ["sdl2/static-link"]
 [dependencies]
 gl = "0.12.0"
 sdl2 = "0.32.2"
-image = "0.21.1"
+image = "0.21.2"
 nalgebra-glm = "0.4.0"
-hashbrown = "0.3.0"
+hashbrown = "0.5.0"
 glyph_brush = "0.5.0"
-rodio = "0.8.1"
+rodio = "0.9.0"
 
 [dev-dependencies]
 rand = "0.6"
