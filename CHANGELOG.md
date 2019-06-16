@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+### Changed
+
+* All of the SDL2 code is now localized to a single `platform` module. This is a first step towards decoupling the engine from any particular windowing library.
+
+### Fixed
+
+* `window::is_mouse_visible` now actually returns a value (whoops).
+
 ## [0.2.19] - 2019-06-13
 
 ### Added

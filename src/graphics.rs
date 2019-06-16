@@ -33,6 +33,7 @@ use crate::graphics::opengl::{
     BufferUsage, FrontFace, GLDevice, GLIndexBuffer, GLVertexBuffer, TextureFormat,
 };
 use crate::graphics::text::FontQuad;
+use crate::platform;
 use crate::window;
 use crate::Context;
 
@@ -694,7 +695,8 @@ pub fn present(ctx: &mut Context) {
     );
 
     flush(ctx);
-    ctx.window.gl_swap_window();
+
+    platform::swap_buffers(ctx);
 
     set_canvas_ex(ctx, ActiveCanvas::Backbuffer);
 }
@@ -745,7 +747,13 @@ pub fn set_internal_size(ctx: &mut Context, width: i32, height: i32) {
 
     } else {
         set_backbuffer_size(ctx, width, height);
-        update_screen_rect(ctx);
+        update_screen_rect(
+            ctx,
+            ctx.graphics.internal_width,
+            ctx.graphics.internal_height,
+            window::get_width(ctx),
+            window::get_height(ctx),
+        );
     }
 }
 
@@ -772,7 +780,13 @@ pub fn set_scaling(ctx: &mut Context, scaling: ScreenScaling) {
         );
     }
 
-    update_screen_rect(ctx);
+    update_screen_rect(
+        ctx,
+        ctx.graphics.internal_width,
+        ctx.graphics.internal_height,
+        window::get_width(ctx),
+        window::get_height(ctx),
+    );
 }
 
 /// Sets the color of the letterbox bars that are displayed when scaling the screen.
@@ -793,6 +807,22 @@ pub fn set_default_filter_mode(ctx: &mut Context, filter_mode: FilterMode) {
     ctx.gl.set_default_filter_mode(filter_mode);
 }
 
+pub(crate) fn set_window_projection(ctx: &mut Context, width: i32, height: i32) {
+    ctx.graphics.window_projection = glm::ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
+
+    if let ScreenScaling::Resize = get_scaling(ctx) {
+        set_backbuffer_size(ctx, width, height);
+    }
+
+    update_screen_rect(
+        ctx,
+        ctx.graphics.internal_width,
+        ctx.graphics.internal_height,
+        width,
+        height,
+    );
+}
+
 pub(crate) fn set_backbuffer_size(ctx: &mut Context, width: i32, height: i32) {
     if ctx.graphics.backbuffer.width() != width || ctx.graphics.backbuffer.height() != height {
         ctx.graphics.backbuffer = Canvas::new(ctx, width, height);
@@ -803,15 +833,17 @@ pub(crate) fn set_backbuffer_size(ctx: &mut Context, width: i32, height: i32) {
     }
 }
 
-pub(crate) fn update_screen_rect(ctx: &mut Context) {
+pub(crate) fn update_screen_rect(
+    ctx: &mut Context,
+    internal_width: i32,
+    internal_height: i32,
+    window_width: i32,
+    window_height: i32,
+) {
     ctx.graphics.screen_rect = ctx.graphics.scaling.get_screen_rect(
-        ctx.graphics.backbuffer.width(),
-        ctx.graphics.backbuffer.height(),
-        window::get_width(ctx),
-        window::get_height(ctx),
+        internal_width,
+        internal_height,
+        window_width,
+        window_height,
     );
-}
-
-pub(crate) fn set_window_projection(ctx: &mut Context, width: i32, height: i32) {
-    ctx.graphics.window_projection = glm::ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
 }

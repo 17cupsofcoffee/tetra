@@ -3,16 +3,12 @@ use std::mem;
 use std::ptr;
 
 use gl::{self, types::*};
-use sdl2::video::{GLContext, Window};
-use sdl2::VideoSubsystem;
 
 use crate::error::{Result, TetraError};
 use crate::glm::Mat4;
 use crate::graphics::FilterMode;
 
 pub struct GLDevice {
-    _ctx: GLContext,
-
     current_vertex_buffer: GLuint,
     current_index_buffer: GLuint,
     current_program: GLuint,
@@ -25,14 +21,7 @@ pub struct GLDevice {
 }
 
 impl GLDevice {
-    pub fn new(video: &VideoSubsystem, window: &Window, vsync: bool) -> Result<GLDevice> {
-        let _ctx = window.gl_create_context().map_err(TetraError::OpenGl)?;
-        gl::load_with(|name| video.gl_get_proc_address(name) as *const _);
-
-        video
-            .gl_set_swap_interval(if vsync { 1 } else { 0 })
-            .map_err(TetraError::Sdl)?;
-
+    pub fn new() -> GLDevice {
         let mut current_vertex_array = 0;
 
         unsafe {
@@ -67,21 +56,20 @@ impl GLDevice {
                 "OpenGL Vendor: {}",
                 CStr::from_ptr(gl::GetString(gl::VENDOR) as *const _).to_string_lossy()
             );
+        }
 
-            println!("Swap Interval: {:?}", video.gl_get_swap_interval());
+        // TODO: Find a nice way of exposing this via the platform layer
+        // println!("Swap Interval: {:?}", video.gl_get_swap_interval());
 
-            Ok(GLDevice {
-                _ctx,
+        GLDevice {
+            current_vertex_buffer: 0,
+            current_index_buffer: 0,
+            current_program: 0,
+            current_texture: 0,
+            current_framebuffer: 0,
+            current_vertex_array,
 
-                current_vertex_buffer: 0,
-                current_index_buffer: 0,
-                current_program: 0,
-                current_texture: 0,
-                current_framebuffer: 0,
-                current_vertex_array,
-
-                default_filter_mode: FilterMode::Nearest,
-            })
+            default_filter_mode: FilterMode::Nearest,
         }
     }
 

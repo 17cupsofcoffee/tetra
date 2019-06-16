@@ -66,12 +66,9 @@ pub mod error;
 pub mod glm;
 pub mod graphics;
 pub mod input;
+mod platform;
 pub mod time;
 pub mod window;
-
-use sdl2::event::{Event, WindowEvent};
-use sdl2::video::{FullscreenType, GLProfile, Window};
-use sdl2::Sdl;
 
 use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};
@@ -79,6 +76,7 @@ use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
 use crate::graphics::ScreenScaling;
 use crate::input::InputContext;
+use crate::platform::SdlPlatform;
 use crate::time::TimeContext;
 
 /// A trait representing a type that contains game state and provides logic for updating it
@@ -116,17 +114,14 @@ pub trait State {
 
 /// A struct containing all of the 'global' state within the framework.
 pub struct Context {
-    sdl: Sdl,
-    window: Window,
+    platform: SdlPlatform,
     gl: GLDevice,
+
     graphics: GraphicsContext,
     input: InputContext,
     audio: AudioContext,
     time: TimeContext,
 
-    window_width: i32,
-    window_height: i32,
-    fullscreen: bool,
     running: bool,
     quit_on_escape: bool,
 }
@@ -157,22 +152,16 @@ impl Context {
         S: State,
     {
         self.running = true;
-        self.window.show();
-        time::reset(self);
 
-        let mut events = self.sdl.event_pump().map_err(TetraError::Sdl)?;
+        platform::show_window(self);
+        time::reset(self);
 
         while self.running {
             time::tick(self);
 
-            for event in events.poll_iter() {
-                if let Err(e) = self
-                    .handle_event(event)
-                    .and_then(|event| input::handle_event(self, event))
-                {
-                    self.running = false;
-                    return Err(e);
-                }
+            if let Err(e) = platform::handle_events(self) {
+                self.running = false;
+                return Err(e);
             }
 
             while time::is_tick_ready(self) {
@@ -196,7 +185,7 @@ impl Context {
             std::thread::yield_now();
         }
 
-        self.window.hide();
+        platform::hide_window(self);
 
         Ok(())
     }
@@ -242,20 +231,6 @@ impl Context {
     {
         let state = &mut init(self)?;
         self.run(state)
-    }
-
-    fn handle_event(&mut self, event: Event) -> Result<Event> {
-        match event {
-            Event::Quit { .. } => self.running = false, // TODO: Add a way to override this
-            Event::Window { win_event, .. } => {
-                if let WindowEvent::SizeChanged(x, y) = win_event {
-                    window::set_size_ex(self, x, y, true)
-                }
-            }
-            _ => {}
-        }
-
-        Ok(event)
     }
 }
 
@@ -420,73 +395,8 @@ impl<'a> ContextBuilder<'a> {
     pub fn build(&self) -> Result<Context> {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
         let audio = AudioContext::new();
-
-        let sdl = sdl2::init().map_err(TetraError::Sdl)?;
-        let video = sdl.video().map_err(TetraError::Sdl)?;
-
-        let gl_attr = video.gl_attr();
-        gl_attr.set_context_profile(GLProfile::Core);
-        gl_attr.set_context_version(3, 2);
-        gl_attr.set_red_size(8);
-        gl_attr.set_green_size(8);
-        gl_attr.set_blue_size(8);
-        gl_attr.set_alpha_size(8);
-        gl_attr.set_double_buffer(true);
-        // TODO: Will need to add some more here if we start using the depth/stencil buffers
-
-        let (mut window_width, mut window_height) = if let Some(size) = self.window_size {
-            size
-        } else if let Some(scale) = self.window_scale {
-            (self.internal_width * scale, self.internal_height * scale)
-        } else {
-            (self.internal_width, self.internal_height)
-        };
-
-        let mut window_builder =
-            video.window(self.title, window_width as u32, window_height as u32);
-
-        window_builder.hidden().position_centered().opengl();
-
-        if self.resizable {
-            window_builder.resizable();
-        }
-
-        if self.borderless {
-            window_builder.borderless();
-        }
-
-        sdl.mouse().show_cursor(self.show_mouse);
-
-        let mut window = window_builder.build()?;
-
-        // We wait until the window has been created to fiddle with this stuff as:
-        // a) we don't want to blow away the window size settings
-        // b) we don't know what monitor they're on until the window is created
-
-        if self.maximized {
-            window.maximize();
-            let size = window.drawable_size();
-            window_width = size.0 as i32;
-            window_height = size.1 as i32;
-        } else if self.minimized {
-            window.minimize();
-            let size = window.drawable_size();
-            window_width = size.0 as i32;
-            window_height = size.1 as i32;
-        }
-
-        if self.fullscreen {
-            window
-                .display_mode()
-                .and_then(|m| {
-                    window_width = m.w;
-                    window_height = m.h;
-                    window.set_fullscreen(FullscreenType::Desktop)
-                })
-                .map_err(TetraError::Sdl)?;
-        }
-
-        let mut gl = GLDevice::new(&video, &window, self.vsync)?;
+        let (platform, window_width, window_height) = SdlPlatform::new(self)?;
+        let mut gl = GLDevice::new();
 
         let graphics = GraphicsContext::new(
             &mut gl,
@@ -497,21 +407,18 @@ impl<'a> ContextBuilder<'a> {
             self.scaling,
         )?;
 
-        let input = InputContext::new(&sdl)?;
+        let input = InputContext::new();
         let time = TimeContext::new(self.tick_rate);
 
         Ok(Context {
-            sdl,
-            window,
+            platform,
             gl,
+
             graphics,
             input,
             audio,
             time,
 
-            window_width,
-            window_height,
-            fullscreen: self.fullscreen,
             running: false,
             quit_on_escape: self.quit_on_escape,
         })

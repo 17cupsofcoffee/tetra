@@ -9,17 +9,13 @@
 //! a new one will be allocated. This behaviour might be made smarter in future versions.
 
 use hashbrown::{HashMap, HashSet};
-use sdl2::controller::{Axis as SdlAxis, Button as SdlButton, GameController};
-use sdl2::event::Event;
-use sdl2::haptic::Haptic;
-use sdl2::sys::SDL_HAPTIC_INFINITY;
-use sdl2::{GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl};
 
-use crate::error::{Result, TetraError};
 use crate::glm::Vec2;
 use crate::graphics;
+use crate::platform;
 use crate::Context;
 
+// TODO: Replace these with Tetra-specific types
 pub use sdl2::keyboard::Keycode as Key;
 pub use sdl2::mouse::MouseButton;
 
@@ -45,28 +41,6 @@ pub enum GamepadButton {
     Guide,
 }
 
-impl From<SdlButton> for GamepadButton {
-    fn from(button: SdlButton) -> GamepadButton {
-        match button {
-            SdlButton::A => GamepadButton::A,
-            SdlButton::B => GamepadButton::B,
-            SdlButton::X => GamepadButton::X,
-            SdlButton::Y => GamepadButton::Y,
-            SdlButton::DPadUp => GamepadButton::Up,
-            SdlButton::DPadDown => GamepadButton::Down,
-            SdlButton::DPadLeft => GamepadButton::Left,
-            SdlButton::DPadRight => GamepadButton::Right,
-            SdlButton::LeftShoulder => GamepadButton::LeftShoulder,
-            SdlButton::LeftStick => GamepadButton::LeftStick,
-            SdlButton::RightShoulder => GamepadButton::RightShoulder,
-            SdlButton::RightStick => GamepadButton::RightStick,
-            SdlButton::Start => GamepadButton::Start,
-            SdlButton::Back => GamepadButton::Back,
-            SdlButton::Guide => GamepadButton::Guide,
-        }
-    }
-}
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[allow(missing_docs)]
 pub enum GamepadAxis {
@@ -78,32 +52,6 @@ pub enum GamepadAxis {
     RightTrigger,
 }
 
-impl From<GamepadAxis> for SdlAxis {
-    fn from(axis: GamepadAxis) -> SdlAxis {
-        match axis {
-            GamepadAxis::LeftStickX => SdlAxis::LeftX,
-            GamepadAxis::LeftStickY => SdlAxis::LeftY,
-            GamepadAxis::LeftTrigger => SdlAxis::TriggerLeft,
-            GamepadAxis::RightStickX => SdlAxis::RightX,
-            GamepadAxis::RightStickY => SdlAxis::RightY,
-            GamepadAxis::RightTrigger => SdlAxis::TriggerRight,
-        }
-    }
-}
-
-impl From<SdlAxis> for GamepadAxis {
-    fn from(axis: SdlAxis) -> GamepadAxis {
-        match axis {
-            SdlAxis::LeftX => GamepadAxis::LeftStickX,
-            SdlAxis::LeftY => GamepadAxis::LeftStickY,
-            SdlAxis::TriggerLeft => GamepadAxis::LeftTrigger,
-            SdlAxis::RightX => GamepadAxis::RightStickX,
-            SdlAxis::RightY => GamepadAxis::RightStickY,
-            SdlAxis::TriggerRight => GamepadAxis::RightTrigger,
-        }
-    }
-}
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[allow(missing_docs)]
 pub enum GamepadStick {
@@ -111,27 +59,33 @@ pub enum GamepadStick {
     RightStick,
 }
 
-struct GamepadState {
-    // NOTE: The SDL docs say to close the haptic device before the joystick, so
-    // I've ordered the fields accordingly.
-    sdl_haptic: Option<Haptic>,
-    sdl_controller: GameController,
-
+pub(crate) struct GamepadState {
+    platform_id: i32,
     current_button_state: HashSet<GamepadButton>,
     previous_button_state: HashSet<GamepadButton>,
     current_axis_state: HashMap<GamepadAxis, f32>,
 }
 
 impl GamepadState {
-    pub(crate) fn new(sdl_controller: GameController, sdl_haptic: Option<Haptic>) -> GamepadState {
+    pub(crate) fn new(platform_id: i32) -> GamepadState {
         GamepadState {
-            sdl_haptic,
-            sdl_controller,
-
+            platform_id,
             current_button_state: HashSet::new(),
             previous_button_state: HashSet::new(),
             current_axis_state: HashMap::new(),
         }
+    }
+
+    pub(crate) fn set_button_down(&mut self, btn: GamepadButton) {
+        self.current_button_state.insert(btn);
+    }
+
+    pub(crate) fn set_button_up(&mut self, btn: GamepadButton) {
+        self.current_button_state.remove(&btn);
+    }
+
+    pub(crate) fn set_axis_position(&mut self, axis: GamepadAxis, value: f32) {
+        self.current_axis_state.insert(axis, value);
     }
 }
 
@@ -144,22 +98,12 @@ pub(crate) struct InputContext {
     previous_mouse_state: HashSet<MouseButton>,
     mouse_position: Vec2,
 
-    controller_sys: GameControllerSubsystem,
-    _joystick_sys: JoystickSubsystem,
-    haptic_sys: HapticSubsystem,
     pads: Vec<Option<GamepadState>>,
-    sdl_pad_indexes: HashMap<i32, usize>,
 }
 
 impl InputContext {
-    pub(crate) fn new(sdl: &Sdl) -> Result<InputContext> {
-        let _joystick_sys = sdl.joystick().map_err(TetraError::Sdl)?;
-        let controller_sys = sdl.game_controller().map_err(TetraError::Sdl)?;
-        let haptic_sys = sdl.haptic().map_err(TetraError::Sdl)?;
-
-        sdl2::hint::set("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
-
-        Ok(InputContext {
+    pub(crate) fn new() -> InputContext {
+        InputContext {
             current_key_state: HashSet::new(),
             previous_key_state: HashSet::new(),
             current_text_input: None,
@@ -168,116 +112,70 @@ impl InputContext {
             previous_mouse_state: HashSet::new(),
             mouse_position: Vec2::zeros(),
 
-            controller_sys,
-            _joystick_sys,
-            haptic_sys,
             pads: Vec::new(),
-            sdl_pad_indexes: HashMap::new(),
-        })
+        }
     }
 }
 
-pub(crate) fn handle_event(ctx: &mut Context, event: Event) -> Result {
-    match event {
-        Event::KeyDown {
-            keycode: Some(k), ..
-        } => {
-            if let Key::Escape = k {
-                if ctx.quit_on_escape {
-                    ctx.running = false;
-                }
-            }
+pub(crate) fn set_key_down(ctx: &mut Context, key: Key) {
+    ctx.input.current_key_state.insert(key);
+}
 
-            ctx.input.current_key_state.insert(k);
-        }
-        Event::KeyUp {
-            keycode: Some(k), ..
-        } => {
-            // TODO: This can cause some inputs to be missed at low tick rates.
-            // Could consider buffering input releases like Otter2D does?
-            ctx.input.current_key_state.remove(&k);
-        }
-        Event::MouseButtonDown { mouse_btn, .. } => {
-            ctx.input.current_mouse_state.insert(mouse_btn);
-        }
-        Event::MouseButtonUp { mouse_btn, .. } => {
-            ctx.input.current_mouse_state.remove(&mouse_btn);
-        }
-        Event::MouseMotion { x, y, .. } => ctx.input.mouse_position = Vec2::new(x as f32, y as f32),
-        Event::TextInput { text, .. } => {
-            ctx.input.current_text_input = Some(text);
-        }
-        Event::ControllerDeviceAdded { which, .. } => {
-            let controller = ctx.input.controller_sys.open(which)?;
-            let haptic = ctx.input.haptic_sys.open_from_joystick_id(which).ok();
+pub(crate) fn set_key_up(ctx: &mut Context, key: Key) {
+    ctx.input.current_key_state.remove(&key);
+}
 
-            let id = controller.instance_id();
+pub(crate) fn set_mouse_button_down(ctx: &mut Context, btn: MouseButton) {
+    ctx.input.current_mouse_state.insert(btn);
+}
 
-            for (i, slot) in ctx.input.pads.iter_mut().enumerate() {
-                if slot.is_none() {
-                    ctx.input.sdl_pad_indexes.insert(id, i);
-                    *slot = Some(GamepadState::new(controller, haptic));
-                    return Ok(());
-                }
-            }
+pub(crate) fn set_mouse_button_up(ctx: &mut Context, btn: MouseButton) {
+    ctx.input.current_mouse_state.remove(&btn);
+}
 
-            // There wasn't an existing free slot...
-            ctx.input.sdl_pad_indexes.insert(id, ctx.input.pads.len());
-            ctx.input
-                .pads
-                .push(Some(GamepadState::new(controller, haptic)));
-        }
-        Event::ControllerDeviceRemoved { which, .. } => {
-            let i = ctx.input.sdl_pad_indexes.remove(&which).unwrap();
-            ctx.input.pads[i] = None;
-        }
-        Event::ControllerButtonDown { which, button, .. } => {
-            if let Some(i) = ctx.input.sdl_pad_indexes.get(&which) {
-                if let Some(Some(pad)) = ctx.input.pads.get_mut(*i) {
-                    pad.current_button_state.insert(button.into());
-                }
-            }
-        }
-        Event::ControllerButtonUp { which, button, .. } => {
-            if let Some(i) = ctx.input.sdl_pad_indexes.get(&which) {
-                if let Some(Some(pad)) = ctx.input.pads.get_mut(*i) {
-                    pad.current_button_state.remove(&button.into());
-                }
-            }
-        }
-        Event::ControllerAxisMotion {
-            which, axis, value, ..
-        } => {
-            if let Some(i) = ctx.input.sdl_pad_indexes.get(&which) {
-                if let Some(Some(pad)) = ctx.input.pads.get_mut(*i) {
-                    pad.current_axis_state
-                        .insert(axis.into(), f32::from(value) / 32767.0);
+pub(crate) fn set_mouse_position(ctx: &mut Context, position: Vec2) {
+    ctx.input.mouse_position = position;
+}
 
-                    match axis {
-                        SdlAxis::TriggerLeft => {
-                            if value > 0 {
-                                pad.current_button_state.insert(GamepadButton::LeftTrigger);
-                            } else {
-                                pad.current_button_state.remove(&GamepadButton::LeftTrigger);
-                            }
-                        }
-                        SdlAxis::TriggerRight => {
-                            if value > 0 {
-                                pad.current_button_state.insert(GamepadButton::RightTrigger);
-                            } else {
-                                pad.current_button_state
-                                    .remove(&GamepadButton::RightTrigger);
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-            }
+pub(crate) fn set_text_input(ctx: &mut Context, text: Option<String>) {
+    ctx.input.current_text_input = text;
+}
+
+pub(crate) fn add_gamepad(ctx: &mut Context, platform_id: i32) -> usize {
+    for (i, slot) in ctx.input.pads.iter_mut().enumerate() {
+        if slot.is_none() {
+            *slot = Some(GamepadState::new(platform_id));
+            return i;
         }
-        _ => {}
     }
 
-    Ok(())
+    // There wasn't an existing free slot...
+    let i = ctx.input.pads.len();
+    ctx.input.pads.push(Some(GamepadState::new(platform_id)));
+    i
+}
+
+pub(crate) fn remove_gamepad(ctx: &mut Context, gamepad_index: usize) {
+    ctx.input.pads[gamepad_index] = None;
+}
+
+pub(crate) fn get_gamepad(ctx: &Context, gamepad_index: usize) -> Option<&GamepadState> {
+    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
+        Some(pad)
+    } else {
+        None
+    }
+}
+
+pub(crate) fn get_gamepad_mut(
+    ctx: &mut Context,
+    gamepad_index: usize,
+) -> Option<&mut GamepadState> {
+    if let Some(Some(pad)) = ctx.input.pads.get_mut(gamepad_index) {
+        Some(pad)
+    } else {
+        None
+    }
 }
 
 pub(crate) fn cleanup_after_state_update(ctx: &mut Context) {
@@ -388,27 +286,21 @@ pub fn get_mouse_position(ctx: &Context) -> Vec2 {
 
 /// Returns true if the specified gamepad is currently connected.
 pub fn is_gamepad_connected(ctx: &Context, gamepad_index: usize) -> bool {
-    if let Some(Some(_)) = ctx.input.pads.get(gamepad_index) {
-        true
-    } else {
-        false
-    }
+    get_gamepad(ctx, gamepad_index).is_some()
 }
 
 /// Returns the name of the specified gamepad, or `None` if it is not connected.
 pub fn get_gamepad_name(ctx: &Context, gamepad_index: usize) -> Option<String> {
-    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
-        Some(pad.sdl_controller.name())
-    } else {
-        None
-    }
+    get_gamepad(ctx, gamepad_index)
+        .map(|g| g.platform_id)
+        .map(|id| platform::get_gamepad_name(ctx, id))
 }
 
 /// Returns true if the specified gamepad button is currently down.
 ///
 /// If the gamepad is disconnected, this will always return `false`.
 pub fn is_gamepad_button_down(ctx: &Context, gamepad_index: usize, button: GamepadButton) -> bool {
-    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
+    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
         pad.current_button_state.contains(&button)
     } else {
         false
@@ -419,7 +311,7 @@ pub fn is_gamepad_button_down(ctx: &Context, gamepad_index: usize, button: Gamep
 ///
 /// If the gamepad is disconnected, this will always return `true`.
 pub fn is_gamepad_button_up(ctx: &Context, gamepad_index: usize, button: GamepadButton) -> bool {
-    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
+    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
         !pad.current_button_state.contains(&button)
     } else {
         true
@@ -434,7 +326,7 @@ pub fn is_gamepad_button_pressed(
     gamepad_index: usize,
     button: GamepadButton,
 ) -> bool {
-    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
+    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
         !pad.previous_button_state.contains(&button) && pad.current_button_state.contains(&button)
     } else {
         false
@@ -449,7 +341,7 @@ pub fn is_gamepad_button_released(
     gamepad_index: usize,
     button: GamepadButton,
 ) -> bool {
-    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
+    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
         pad.previous_button_state.contains(&button) && !pad.current_button_state.contains(&button)
     } else {
         false
@@ -489,7 +381,7 @@ pub fn get_gamepad_buttons_down(
     ctx: &Context,
     gamepad_index: usize,
 ) -> impl Iterator<Item = &GamepadButton> {
-    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
+    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
         GamepadIterator::Connected(pad.current_button_state.iter())
     } else {
         GamepadIterator::Disconnected
@@ -503,7 +395,7 @@ pub fn get_gamepad_buttons_pressed(
     ctx: &Context,
     gamepad_index: usize,
 ) -> impl Iterator<Item = &GamepadButton> {
-    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
+    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
         GamepadIterator::Connected(
             pad.current_button_state
                 .difference(&pad.previous_button_state),
@@ -520,7 +412,7 @@ pub fn get_gamepad_buttons_released(
     ctx: &Context,
     gamepad_index: usize,
 ) -> impl Iterator<Item = &GamepadButton> {
-    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
+    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
         GamepadIterator::Connected(
             pad.previous_button_state
                 .difference(&pad.current_button_state),
@@ -534,7 +426,7 @@ pub fn get_gamepad_buttons_released(
 ///
 /// If the gamepad is disconnected, this will always return `0.0`.
 pub fn get_gamepad_axis_position(ctx: &Context, gamepad_index: usize, axis: GamepadAxis) -> f32 {
-    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
+    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
         if let Some(value) = pad.current_axis_state.get(&axis) {
             *value
         } else {
@@ -568,8 +460,8 @@ pub fn get_gamepad_stick_position(
 ///
 /// If the gamepad is disconnected, this will always return `false`.
 pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_index: usize) -> bool {
-    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
-        pad.sdl_haptic.is_some()
+    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
+        platform::is_gamepad_vibration_supported(ctx, pad.platform_id)
     } else {
         false
     }
@@ -577,7 +469,9 @@ pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_index: usize) -> bo
 
 /// Sets the specified gamepad's motors to vibrate indefinitely.
 pub fn set_gamepad_vibration(ctx: &mut Context, gamepad_index: usize, strength: f32) {
-    start_gamepad_vibration(ctx, gamepad_index, strength, SDL_HAPTIC_INFINITY);
+    if let Some(platform_id) = get_gamepad(ctx, gamepad_index).map(|g| g.platform_id) {
+        platform::set_gamepad_vibration(ctx, platform_id, strength);
+    }
 }
 
 /// Sets the specified gamepad's motors to vibrate for a set duration, specified in milliseconds.
@@ -588,18 +482,14 @@ pub fn start_gamepad_vibration(
     strength: f32,
     duration: u32,
 ) {
-    if let Some(Some(pad)) = ctx.input.pads.get_mut(gamepad_index) {
-        if let Some(haptic) = &mut pad.sdl_haptic {
-            haptic.rumble_play(strength, duration);
-        }
+    if let Some(platform_id) = get_gamepad(ctx, gamepad_index).map(|g| g.platform_id) {
+        platform::start_gamepad_vibration(ctx, platform_id, strength, duration);
     }
 }
 
 /// Stops the specified gamepad's motors from vibrating.
 pub fn stop_gamepad_vibration(ctx: &mut Context, gamepad_index: usize) {
-    if let Some(Some(pad)) = ctx.input.pads.get_mut(gamepad_index) {
-        if let Some(haptic) = &mut pad.sdl_haptic {
-            haptic.rumble_stop();
-        }
+    if let Some(platform_id) = get_gamepad(ctx, gamepad_index).map(|g| g.platform_id) {
+        platform::stop_gamepad_vibration(ctx, platform_id);
     }
 }
