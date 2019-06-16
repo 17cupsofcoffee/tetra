@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
 ### Changed
 
 * All of the SDL2 code is now localized to a single `platform` module. This is a first step towards decoupling the engine from any particular windowing library.
