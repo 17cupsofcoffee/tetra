@@ -55,9 +55,7 @@
 //!
 //! ## Support/Feedback
 //!
-//! As mentioned above, Tetra is fairly early in development, so there's likely to be bugs/flaky docs/general weirdness. Please feel free to leave an issue/PR if you find something!
-//!
-//! You can also contact me via [Twitter](https://twitter.com/17cupsofcoffee), or find me lurking in the #gamedev channel on the [Rust Community Discord](https://bit.ly/rust-community).
+//! As mentioned above, Tetra is fairly early in development, so there's likely to be bugs/flaky docs/general weirdness. Please feel free to open an issue/PR if you find something! You can also contact me via [Twitter](https://twitter.com/17cupsofcoffee), or find me lurking in the #game-and-graphics-dev channel on the [Rust Community Discord](https://bit.ly/rust-community).
 
 #![warn(missing_docs)]
 
