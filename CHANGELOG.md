@@ -9,6 +9,7 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * All of the SDL2 code is now localized to a single `platform` module. This is a first step towards decoupling the engine from any particular windowing library.
+* Updated `glyph-brush` to 0.5.2.
 
 ### Fixed
 
