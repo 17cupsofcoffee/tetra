@@ -11,7 +11,7 @@ This project adheres to Semantic Versioning.
 * All of the SDL2 code is now localized to a single `platform` module. This is a first step towards decoupling the engine from any particular windowing library.
 * The public module structure of `graphics` has been simplified, so that only animation and GUI code is grouped into submodules, not 'primitive' types. The existing paths have been deprecated.
 * The `BLACK` and `WHITE` color constants are now associated with the type, not the module. The existing constants have been deprecated.
-* `Color::rgb` and `Color::rgba` are now `const fn`.
+* `Color::rgb`, `Color::rgba` and `Rectangle::new` are now `const fn`.
 * Updated `glyph-brush` to 0.5.3.
 
 ### Fixed

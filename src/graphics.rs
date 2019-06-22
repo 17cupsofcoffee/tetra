@@ -209,7 +209,7 @@ pub struct Rectangle {
 
 impl Rectangle {
     /// Creates a new `Rectangle`.
-    pub fn new(x: f32, y: f32, width: f32, height: f32) -> Rectangle {
+    pub const fn new(x: f32, y: f32, width: f32, height: f32) -> Rectangle {
         Rectangle {
             x,
             y,
