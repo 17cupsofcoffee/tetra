@@ -18,12 +18,12 @@ pub struct Color {
 
 impl Color {
     /// Creates a new `Color`, with the specified RGB values and the alpha set to 1.0.
-    pub fn rgb(r: f32, g: f32, b: f32) -> Color {
+    pub const fn rgb(r: f32, g: f32, b: f32) -> Color {
         Color { r, g, b, a: 1.0 }
     }
 
     /// Creates a new `Color`, with the specified RGBA values.
-    pub fn rgba(r: f32, g: f32, b: f32, a: f32) -> Color {
+    pub const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Color {
         Color { r, g, b, a }
     }
 
@@ -45,9 +45,22 @@ impl Color {
 
         Color { r, g, b, a }
     }
+
+    // These constants should remain at the bottom of the impl block to keep
+    // the docs readable - don't want to have to scroll through a load of colors
+    // to get to the methods!
+
+    /// Shortcut for `Color::rgb(0.0, 0.0, 0.0)`.
+    pub const BLACK: Color = Color::rgb(0.0, 0.0, 0.0);
+
+    /// Shortcut for `Color::rgb(1.0, 1.0, 1.0)`.
+    pub const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 }
 
 /// Shortcut for `Color::rgb(0.0, 0.0, 0.0)`.
+#[deprecated(
+    note = "this constant is now available directly on the 'Color' type as 'Color::BLACK'"
+)]
 pub const BLACK: Color = Color {
     r: 0.0,
     g: 0.0,
@@ -56,6 +69,9 @@ pub const BLACK: Color = Color {
 };
 
 /// Shortcut for `Color::rgb(1.0, 1.0, 1.0)`.
+#[deprecated(
+    note = "this constant is now available directly on the 'Color' type as 'Color::WHITE'"
+)]
 pub const WHITE: Color = Color {
     r: 1.0,
     g: 1.0,

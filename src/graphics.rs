@@ -7,13 +7,21 @@
 
 pub mod animation;
 mod canvas;
-pub mod color;
 pub(crate) mod opengl;
-pub mod scaling;
-pub mod shader;
-pub mod text;
-pub mod texture;
 pub mod ui;
+
+// TODO: Make all of the below modules private in 0.3.0.
+
+#[doc(hidden)]
+pub mod color;
+#[doc(hidden)]
+pub mod scaling;
+#[doc(hidden)]
+pub mod shader;
+#[doc(hidden)]
+pub mod text;
+#[doc(hidden)]
+pub mod texture;
 
 pub use self::animation::Animation;
 pub use self::canvas::*;
@@ -176,7 +184,7 @@ impl GraphicsContext {
             internal_height,
             scaling,
             screen_rect,
-            letterbox_color: color::BLACK,
+            letterbox_color: Color::BLACK,
 
             font_cache,
         })
@@ -374,7 +382,7 @@ impl Default for DrawParams {
             scale: Vec2::new(1.0, 1.0),
             origin: Vec2::new(0.0, 0.0),
             rotation: 0.0,
-            color: color::WHITE,
+            color: Color::WHITE,
             clip: None,
         }
     }
