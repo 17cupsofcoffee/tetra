@@ -4,12 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
-## Upcoming
+## [Upcoming]
 
 ### Changed
 
 * All of the SDL2 code is now localized to a single `platform` module. This is a first step towards decoupling the engine from any particular windowing library.
-* Updated `glyph-brush` to 0.5.2.
+* Updated `glyph-brush` to 0.5.3.
 
 ### Fixed
 
@@ -347,6 +347,7 @@ This project adheres to Semantic Versioning.
 
 * Initial release!
 
+[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.2.19..HEAD
 [0.2.19]: https://github.com/17cupsofcoffee/tetra/compare/0.2.18..0.2.19
 [0.2.18]: https://github.com/17cupsofcoffee/tetra/compare/0.2.17..0.2.18
 [0.2.17]: https://github.com/17cupsofcoffee/tetra/compare/0.2.16..0.2.17
