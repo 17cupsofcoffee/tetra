@@ -166,7 +166,7 @@ impl Text {
         self.size = Scale::uniform(size);
     }
 
-    fn build_section(&self) -> Section {
+    fn build_section(&self) -> Section<'_> {
         Section {
             text: &self.content,
             scale: self.size,

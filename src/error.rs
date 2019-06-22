@@ -58,7 +58,7 @@ pub enum TetraError {
 }
 
 impl Display for TetraError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             TetraError::Io(e) => write!(f, "IO error: {}", e),
             TetraError::Sdl(e) => write!(f, "SDL error: {}", e),

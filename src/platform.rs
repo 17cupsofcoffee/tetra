@@ -39,7 +39,7 @@ struct SdlController {
 }
 
 impl SdlPlatform {
-    pub fn new(builder: &ContextBuilder) -> Result<(SdlPlatform, i32, i32)> {
+    pub fn new(builder: &ContextBuilder<'_>) -> Result<(SdlPlatform, i32, i32)> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
 
         let video_sys = sdl.video().map_err(TetraError::Sdl)?;
