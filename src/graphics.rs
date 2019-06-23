@@ -27,7 +27,7 @@ pub use self::animation::Animation;
 pub use self::canvas::*;
 pub use self::color::Color;
 pub use self::scaling::ScreenScaling;
-pub use self::shader::Shader;
+pub use self::shader::{Shader, DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER, UniformValue};
 pub use self::text::{Font, Text};
 pub use self::texture::Texture;
 pub use self::ui::NineSlice;
