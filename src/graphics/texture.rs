@@ -121,7 +121,7 @@ impl Texture {
             return Err(TetraError::NotEnoughData { expected, actual });
         }
 
-        let handle = device.new_texture(width, height, TextureFormat::Rgba);
+        let handle = device.new_texture(width, height, TextureFormat::Rgba)?;
 
         device.set_texture_data(&handle, &data, 0, 0, width, height, TextureFormat::Rgba);
 
@@ -130,12 +130,16 @@ impl Texture {
         })
     }
 
-    pub(crate) fn with_device_empty(device: &mut GLDevice, width: i32, height: i32) -> Texture {
-        let handle = device.new_texture(width, height, TextureFormat::Rgba);
+    pub(crate) fn with_device_empty(
+        device: &mut GLDevice,
+        width: i32,
+        height: i32,
+    ) -> Result<Texture> {
+        let handle = device.new_texture(width, height, TextureFormat::Rgba)?;
 
-        Texture {
+        Ok(Texture {
             handle: Rc::new(RefCell::new(handle)),
-        }
+        })
     }
 
     /// Returns the width of the texture.

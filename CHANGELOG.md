@@ -9,6 +9,7 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * All of the SDL2 code is now localized to a single `platform` module. This is a first step towards decoupling the engine from any particular windowing library.
+* The OpenGL backend is now implemented using [glow](https://github.com/grovesNL/glow).
 * The public module structure of `graphics` has been simplified, so that only animation and GUI code is grouped into submodules, not 'primitive' types. The existing paths have been deprecated.
 * The `BLACK` and `WHITE` color constants are now associated with the type, not the module. The existing constants have been deprecated.
 * `Color::rgb`, `Color::rgba` and `Rectangle::new` are now `const fn`.

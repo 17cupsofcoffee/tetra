@@ -1,16 +1,18 @@
-/// The platform abstraction used for windowing, input and creating the GL context.
-///
-/// All code interacting with SDL must be placed within this module. This is to facilitate
-/// creating alternate backends in the future.
-///
-/// The interface for this module is *not* stable, and will likely not be made public
-/// in its current form.
+//! The platform abstraction used for windowing, input and creating the GL context.
+//!
+//! All code interacting with SDL must be placed within this module. This is to facilitate
+//! creating alternate backends in the future.
+//!
+//! The interface for this module is *not* stable, and will likely not be made public
+//! in its current form.
+
+use glow::native::Context as GlContext;
 use hashbrown::HashMap;
 use sdl2::controller::{Axis as SdlAxis, Button as SdlButton, GameController};
 use sdl2::event::{Event, WindowEvent};
 use sdl2::haptic::Haptic;
 use sdl2::sys::SDL_HAPTIC_INFINITY;
-use sdl2::video::{FullscreenType, GLContext, GLProfile, Window};
+use sdl2::video::{FullscreenType, GLContext as SdlGlContext, GLProfile, Window};
 use sdl2::{GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem};
 
 use crate::error::{Result, TetraError};
@@ -27,8 +29,7 @@ pub struct SdlPlatform {
     controller_sys: GameControllerSubsystem,
     _joystick_sys: JoystickSubsystem,
     haptic_sys: HapticSubsystem,
-
-    _gl_ctx: GLContext,
+    _gl_sys: SdlGlContext,
 
     controllers: HashMap<i32, SdlController>,
 
@@ -46,7 +47,7 @@ struct SdlController {
 }
 
 impl SdlPlatform {
-    pub fn new(builder: &ContextBuilder<'_>) -> Result<(SdlPlatform, i32, i32)> {
+    pub fn new(builder: &ContextBuilder<'_>) -> Result<(SdlPlatform, GlContext, i32, i32)> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
 
         let video_sys = sdl.video().map_err(TetraError::Sdl)?;
@@ -122,8 +123,9 @@ impl SdlPlatform {
                 .map_err(TetraError::Sdl)?;
         }
 
-        let gl_ctx = window.gl_create_context().map_err(TetraError::OpenGl)?;
-        gl::load_with(|name| video_sys.gl_get_proc_address(name) as *const _);
+        let gl_sys = window.gl_create_context().map_err(TetraError::OpenGl)?;
+        let gl_ctx =
+            GlContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _);
 
         video_sys
             .gl_set_swap_interval(if builder.vsync { 1 } else { 0 })
@@ -137,8 +139,7 @@ impl SdlPlatform {
             controller_sys,
             _joystick_sys: joystick_sys,
             haptic_sys,
-
-            _gl_ctx: gl_ctx,
+            _gl_sys: gl_sys,
 
             controllers: HashMap::new(),
 
@@ -147,7 +148,7 @@ impl SdlPlatform {
             fullscreen: builder.fullscreen,
         };
 
-        Ok((platform, window_width, window_height))
+        Ok((platform, gl_ctx, window_width, window_height))
     }
 }
 

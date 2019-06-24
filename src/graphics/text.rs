@@ -195,7 +195,8 @@ impl Text {
                     let (width, height) = suggested;
 
                     *texture_ref =
-                        Texture::with_device_empty(device_ref, width as i32, height as i32);
+                        Texture::with_device_empty(device_ref, width as i32, height as i32)
+                            .expect("Could not recreate font cache texture");
 
                     ctx.graphics.font_cache.resize_texture(width, height);
                 }

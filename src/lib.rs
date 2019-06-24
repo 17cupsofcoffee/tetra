@@ -393,8 +393,8 @@ impl<'a> ContextBuilder<'a> {
     pub fn build(&self) -> Result<Context> {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
         let audio = AudioContext::new();
-        let (platform, window_width, window_height) = SdlPlatform::new(self)?;
-        let mut gl = GLDevice::new();
+        let (platform, gl_context, window_width, window_height) = SdlPlatform::new(self)?;
+        let mut gl = GLDevice::new(gl_context)?;
 
         let graphics = GraphicsContext::new(
             &mut gl,

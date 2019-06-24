@@ -27,7 +27,7 @@ pub use self::animation::Animation;
 pub use self::canvas::*;
 pub use self::color::Color;
 pub use self::scaling::ScreenScaling;
-pub use self::shader::{Shader, DEFAULT_VERTEX_SHADER, DEFAULT_FRAGMENT_SHADER, UniformValue};
+pub use self::shader::{Shader, UniformValue, DEFAULT_FRAGMENT_SHADER, DEFAULT_VERTEX_SHADER};
 pub use self::text::{Font, Text};
 pub use self::texture::Texture;
 pub use self::ui::NineSlice;
@@ -88,8 +88,8 @@ pub(crate) struct GraphicsContext {
     backbuffer: Canvas,
 
     vertex_data: Vec<f32>,
-    element_capacity: usize,
-    element_count: usize,
+    element_capacity: i32,
+    element_count: i32,
 
     internal_width: i32,
     internal_height: i32,
@@ -117,7 +117,7 @@ impl GraphicsContext {
         let screen_rect =
             scaling.get_screen_rect(internal_width, internal_height, window_width, window_height);
 
-        let backbuffer = Canvas::with_device(device, backbuffer_width, backbuffer_height, false);
+        let backbuffer = Canvas::with_device(device, backbuffer_width, backbuffer_height, false)?;
         device.set_viewport(0, 0, backbuffer_width, backbuffer_height);
         device.front_face(FrontFace::Clockwise);
 
@@ -133,13 +133,13 @@ impl GraphicsContext {
             MAX_VERTICES * VERTEX_STRIDE,
             VERTEX_STRIDE,
             BufferUsage::DynamicDraw,
-        );
+        )?;
 
         device.set_vertex_buffer_attribute(&vertex_buffer, 0, 2, 0);
         device.set_vertex_buffer_attribute(&vertex_buffer, 1, 2, 2);
         device.set_vertex_buffer_attribute(&vertex_buffer, 2, 4, 4);
 
-        let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::StaticDraw);
+        let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::StaticDraw)?;
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
@@ -152,7 +152,7 @@ impl GraphicsContext {
         let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
         let (width, height) = font_cache.texture_dimensions();
 
-        let font_cache_texture = Texture::with_device_empty(device, width as i32, height as i32);
+        let font_cache_texture = Texture::with_device_empty(device, width as i32, height as i32)?;
 
         Ok(GraphicsContext {
             vertex_buffer,
@@ -177,7 +177,7 @@ impl GraphicsContext {
             backbuffer,
 
             vertex_data: Vec::with_capacity(MAX_VERTICES * VERTEX_STRIDE),
-            element_capacity: MAX_INDICES,
+            element_capacity: MAX_INDICES as i32,
             element_count: 0,
 
             internal_width,
@@ -605,14 +605,14 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 
         match &ctx.graphics.canvas {
             ActiveCanvas::Window => {
-                ctx.gl.bind_default_framebuffer();
+                ctx.gl.bind_framebuffer(None);
                 ctx.gl.front_face(FrontFace::CounterClockwise);
                 ctx.gl
                     .set_viewport(0, 0, window::get_width(ctx), window::get_height(ctx));
             }
             ActiveCanvas::Backbuffer => {
                 ctx.gl
-                    .bind_framebuffer(&ctx.graphics.backbuffer.framebuffer);
+                    .bind_framebuffer(Some(&ctx.graphics.backbuffer.framebuffer));
                 ctx.gl.front_face(FrontFace::Clockwise);
                 ctx.gl.set_viewport(
                     0,
@@ -622,7 +622,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 );
             }
             ActiveCanvas::User(r) => {
-                ctx.gl.bind_framebuffer(&r.framebuffer);
+                ctx.gl.bind_framebuffer(Some(&r.framebuffer));
                 ctx.gl.front_face(FrontFace::Clockwise);
                 ctx.gl.set_viewport(0, 0, r.width(), r.height());
             }
@@ -655,13 +655,13 @@ pub fn flush(ctx: &mut Context) {
             ActiveCanvas::User(r) => &r.projection,
         };
 
-        ctx.gl.bind_texture(&texture.handle.borrow());
+        ctx.gl.bind_texture(Some(&texture.handle.borrow()));
 
-        ctx.gl.bind_program(&shader.handle);
+        ctx.gl.bind_program(Some(&shader.handle));
         ctx.gl
             .set_uniform(&shader.handle, "u_projection", &projection);
 
-        ctx.gl.bind_vertex_buffer(&ctx.graphics.vertex_buffer);
+        ctx.gl.bind_vertex_buffer(Some(&ctx.graphics.vertex_buffer));
         ctx.gl
             .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
 
