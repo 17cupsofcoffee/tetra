@@ -1,7 +1,7 @@
 use std::mem;
 use std::rc::Rc;
 
-use glow::Context as _;
+use glow::Context as GlowContext;
 
 use crate::error::{Result, TetraError};
 use crate::glm::Mat4;
@@ -9,11 +9,11 @@ use crate::graphics::FilterMode;
 
 type GlContext = glow::native::Context;
 
-type BufferId = <GlContext as glow::Context>::Buffer;
-type ProgramId = <GlContext as glow::Context>::Program;
-type TextureId = <GlContext as glow::Context>::Texture;
-type FramebufferId = <GlContext as glow::Context>::Framebuffer;
-type VertexArrayId = <GlContext as glow::Context>::VertexArray;
+type BufferId = <GlContext as GlowContext>::Buffer;
+type ProgramId = <GlContext as GlowContext>::Program;
+type TextureId = <GlContext as GlowContext>::Texture;
+type FramebufferId = <GlContext as GlowContext>::Framebuffer;
+type VertexArrayId = <GlContext as GlowContext>::VertexArray;
 
 pub struct GLDevice {
     gl: Rc<GlContext>,
