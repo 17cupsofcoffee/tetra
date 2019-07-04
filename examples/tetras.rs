@@ -41,7 +41,7 @@ trait Scene {
 
 enum Transition {
     None,
-    Push(Box<Scene>),
+    Push(Box<dyn Scene>),
     Pop,
 }
 
@@ -49,11 +49,11 @@ enum Transition {
 // of your scenes, but that adds a bit of extra boilerplate - your choice!
 
 struct SceneManager {
-    scenes: Vec<Box<Scene>>,
+    scenes: Vec<Box<dyn Scene>>,
 }
 
 impl SceneManager {
-    fn new(initial_scene: Box<Scene>) -> SceneManager {
+    fn new(initial_scene: Box<dyn Scene>) -> SceneManager {
         SceneManager {
             scenes: vec![initial_scene],
         }
