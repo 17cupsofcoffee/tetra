@@ -1,7 +1,13 @@
+trigger:
+- master
+
+pr:
+- master
+
 strategy:
   matrix:
     stable:
-      rustup_toolchain: stable
+      rustup_toolchain: 1.32.0
     beta:
       rustup_toolchain: beta
     nightly:
