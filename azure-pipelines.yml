@@ -3,6 +3,9 @@ pool:
 
 steps:
 - script: |
+    sudo apt-get install libsdl2-dev libasound2-dev
+  displayName: Install native dependencies
+- script: |
     curl https://sh.rustup.rs -sSf | sh -s -- -y
     echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
   displayName: Install Rust
