@@ -1,6 +1,6 @@
 //! Functions and types relating to the game window.
 
-use crate::platform;
+use crate::platform::Platform;
 use crate::{Context, Result};
 
 /// Quits the game, if it is currently running.
@@ -13,7 +13,7 @@ pub fn quit(ctx: &mut Context) {
 
 /// Gets the current title of the window.
 pub fn get_title(ctx: &Context) -> &str {
-    platform::get_window_title(ctx)
+    ctx.platform.get_window_title()
 }
 
 /// Sets the title of the window.
@@ -21,37 +21,37 @@ pub fn set_title<S>(ctx: &mut Context, title: S)
 where
     S: AsRef<str>,
 {
-    platform::set_window_title(ctx, title)
+    ctx.platform.set_window_title(title);
 }
 
 /// Gets the width of the window.
 pub fn get_width(ctx: &Context) -> i32 {
-    platform::get_window_width(ctx)
+    ctx.platform.get_window_size().0
 }
 
 /// Sets the width of the window.
 pub fn set_width(ctx: &mut Context, width: i32) {
-    set_size(ctx, width, platform::get_window_height(ctx));
+    set_size(ctx, width, get_height(ctx));
 }
 
 /// Gets the height of the window.
 pub fn get_height(ctx: &Context) -> i32 {
-    platform::get_window_height(ctx)
+    ctx.platform.get_window_size().1
 }
 
 /// Sets the height of the window.
 pub fn set_height(ctx: &mut Context, height: i32) {
-    set_size(ctx, platform::get_window_width(ctx), height);
+    set_size(ctx, get_width(ctx), height);
 }
 
 /// Gets the size of the window.
 pub fn get_size(ctx: &Context) -> (i32, i32) {
-    platform::get_window_size(ctx)
+    ctx.platform.get_window_size()
 }
 
 /// Sets the size of the window.
 pub fn set_size(ctx: &mut Context, width: i32, height: i32) {
-    platform::set_window_size(ctx, width, height);
+    ctx.platform.set_window_size(width, height);
 }
 
 /// Enables fullscreen if it is currently disabled, or vice-versa.
@@ -61,7 +61,7 @@ pub fn set_size(ctx: &mut Context, width: i32, height: i32) {
 /// If the application's fullscreen state could not be changed, this function
 /// will return a `TetraError::Sdl`.
 pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
-    platform::toggle_fullscreen(ctx)
+    ctx.platform.toggle_fullscreen()
 }
 
 /// Enables fullscreen.
@@ -71,7 +71,7 @@ pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
 /// If the application's fullscreen state could not be changed, this function
 /// will return a `TetraError::Sdl`.
 pub fn enable_fullscreen(ctx: &mut Context) -> Result {
-    platform::enable_fullscreen(ctx)
+    ctx.platform.enable_fullscreen()
 }
 
 /// Disables fullscreen.
@@ -81,25 +81,25 @@ pub fn enable_fullscreen(ctx: &mut Context) -> Result {
 /// If the application's fullscreen state could not be changed, this function
 /// will return a `TetraError::Sdl`.
 pub fn disable_fullscreen(ctx: &mut Context) -> Result {
-    platform::disable_fullscreen(ctx)
+    ctx.platform.disable_fullscreen()
 }
 
 /// Returns whether or not the window is currently in fullscreen mode.
 pub fn is_fullscreen(ctx: &Context) -> bool {
-    platform::is_fullscreen(ctx)
+    ctx.platform.is_fullscreen()
 }
 
 /// Makes the mouse cursor visible.
 pub fn show_mouse(ctx: &mut Context) {
-    platform::set_mouse_visible(ctx, true);
+    ctx.platform.set_mouse_visible(true);
 }
 
 /// Hides the mouse cursor.
 pub fn hide_mouse(ctx: &mut Context) {
-    platform::set_mouse_visible(ctx, false);
+    ctx.platform.set_mouse_visible(false);
 }
 
 /// Returns whether or not the mouse cursor is currently visible.
 pub fn is_mouse_visible(ctx: &Context) -> bool {
-    platform::is_mouse_visible(ctx)
+    ctx.platform.is_mouse_visible()
 }

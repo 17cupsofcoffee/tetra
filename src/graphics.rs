@@ -41,7 +41,7 @@ use crate::graphics::opengl::{
     BufferUsage, FrontFace, GLDevice, GLIndexBuffer, GLVertexBuffer, TextureFormat,
 };
 use crate::graphics::text::FontQuad;
-use crate::platform;
+use crate::platform::Platform;
 use crate::window;
 use crate::Context;
 
@@ -704,7 +704,7 @@ pub fn present(ctx: &mut Context) {
 
     flush(ctx);
 
-    platform::swap_buffers(ctx);
+    ctx.platform.swap_buffers();
 
     set_canvas_ex(ctx, ActiveCanvas::Backbuffer);
 }

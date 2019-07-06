@@ -74,7 +74,7 @@ use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
 use crate::graphics::ScreenScaling;
 use crate::input::InputContext;
-use crate::platform::SdlPlatform;
+use crate::platform::{ActivePlatform, Platform};
 use crate::time::TimeContext;
 
 /// A trait representing a type that contains game state and provides logic for updating it
@@ -112,7 +112,7 @@ pub trait State {
 
 /// A struct containing all of the 'global' state within the framework.
 pub struct Context {
-    platform: SdlPlatform,
+    platform: ActivePlatform,
     gl: GLDevice,
 
     graphics: GraphicsContext,
@@ -151,13 +151,13 @@ impl Context {
     {
         self.running = true;
 
-        platform::show_window(self);
+        self.platform.show_window();
         time::reset(self);
 
         while self.running {
             time::tick(self);
 
-            if let Err(e) = platform::handle_events(self) {
+            if let Err(e) = ActivePlatform::handle_events(self) {
                 self.running = false;
                 return Err(e);
             }
@@ -183,7 +183,7 @@ impl Context {
             std::thread::yield_now();
         }
 
-        platform::hide_window(self);
+        self.platform.hide_window();
 
         Ok(())
     }
@@ -393,8 +393,8 @@ impl<'a> ContextBuilder<'a> {
     pub fn build(&self) -> Result<Context> {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
         let audio = AudioContext::new();
-        let (platform, gl_context, window_width, window_height) = SdlPlatform::new(self)?;
-        let mut gl = GLDevice::new(gl_context)?;
+        let (platform, gl_ctx, window_width, window_height) = ActivePlatform::new(self)?;
+        let mut gl = GLDevice::new(gl_ctx)?;
 
         let graphics = GraphicsContext::new(
             &mut gl,

@@ -12,7 +12,7 @@ use hashbrown::{HashMap, HashSet};
 
 use crate::glm::Vec2;
 use crate::graphics;
-use crate::platform;
+use crate::platform::Platform;
 use crate::Context;
 
 // TODO: Replace these with Tetra-specific types
@@ -293,7 +293,7 @@ pub fn is_gamepad_connected(ctx: &Context, gamepad_index: usize) -> bool {
 pub fn get_gamepad_name(ctx: &Context, gamepad_index: usize) -> Option<String> {
     get_gamepad(ctx, gamepad_index)
         .map(|g| g.platform_id)
-        .map(|id| platform::get_gamepad_name(ctx, id))
+        .map(|id| ctx.platform.get_gamepad_name(id))
 }
 
 /// Returns true if the specified gamepad button is currently down.
@@ -461,7 +461,7 @@ pub fn get_gamepad_stick_position(
 /// If the gamepad is disconnected, this will always return `false`.
 pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_index: usize) -> bool {
     if let Some(pad) = get_gamepad(ctx, gamepad_index) {
-        platform::is_gamepad_vibration_supported(ctx, pad.platform_id)
+        ctx.platform.is_gamepad_vibration_supported(pad.platform_id)
     } else {
         false
     }
@@ -470,7 +470,7 @@ pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_index: usize) -> bo
 /// Sets the specified gamepad's motors to vibrate indefinitely.
 pub fn set_gamepad_vibration(ctx: &mut Context, gamepad_index: usize, strength: f32) {
     if let Some(platform_id) = get_gamepad(ctx, gamepad_index).map(|g| g.platform_id) {
-        platform::set_gamepad_vibration(ctx, platform_id, strength);
+        ctx.platform.set_gamepad_vibration(platform_id, strength);
     }
 }
 
@@ -483,13 +483,14 @@ pub fn start_gamepad_vibration(
     duration: u32,
 ) {
     if let Some(platform_id) = get_gamepad(ctx, gamepad_index).map(|g| g.platform_id) {
-        platform::start_gamepad_vibration(ctx, platform_id, strength, duration);
+        ctx.platform
+            .start_gamepad_vibration(platform_id, strength, duration);
     }
 }
 
 /// Stops the specified gamepad's motors from vibrating.
 pub fn stop_gamepad_vibration(ctx: &mut Context, gamepad_index: usize) {
     if let Some(platform_id) = get_gamepad(ctx, gamepad_index).map(|g| g.platform_id) {
-        platform::stop_gamepad_vibration(ctx, platform_id);
+        ctx.platform.stop_gamepad_vibration(platform_id);
     }
 }
