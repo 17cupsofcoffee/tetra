@@ -5,6 +5,7 @@ pub use sdl::SdlPlatform as ActivePlatform;
 use glow::Context as GlowContext;
 
 use crate::error::Result;
+use crate::graphics::{Canvas, FilterMode, Shader, Texture, UniformValue};
 use crate::{Context, ContextBuilder};
 
 pub trait Platform: Sized {
@@ -40,4 +41,35 @@ pub trait Platform: Sized {
     fn set_gamepad_vibration(&mut self, platform_id: i32, strength: f32);
     fn start_gamepad_vibration(&mut self, platform_id: i32, strength: f32, duration: u32);
     fn stop_gamepad_vibration(&mut self, platform_id: i32);
+}
+
+pub trait GraphicsDevice {
+    fn create_texture(&mut self, width: i32, height: i32, data: &[u8]) -> Result<Texture>;
+    fn create_texture_empty(&mut self, width: i32, height: i32) -> Result<Texture>;
+    fn bind_texture(&mut self, texture: Option<&Texture>);
+    fn set_texture_data(
+        &mut self,
+        texture: &Texture,
+        data: &[u8],
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+    );
+    fn set_texture_filter_mode(&mut self, texture: &Texture, filter_mode: FilterMode);
+
+    fn create_shader(&mut self, vertex_shader: &str, fragment_shader: &str) -> Result<Shader>;
+    fn bind_shader(&mut self, shader: Option<&Shader>);
+    fn set_uniform<T>(&mut self, shader: &Shader, name: &str, value: T)
+    where
+        T: UniformValue;
+
+    fn create_canvas(&mut self, width: i32, height: i32, rebind_previous: bool) -> Result<Canvas>;
+    fn bind_canvas(&mut self, canvas: Option<&Canvas>);
+    fn attach_texture_to_canvas(
+        &mut self,
+        canvas: &Canvas,
+        texture: &Texture,
+        rebind_previous: bool,
+    );
 }
