@@ -8,9 +8,8 @@ use glyph_brush::rusttype::{Rect, Scale};
 use glyph_brush::{BrushAction, BrushError, FontId, GlyphCruncher, GlyphVertex, Section};
 
 use crate::error::Result;
-use crate::graphics::opengl::GLDevice;
 use crate::graphics::{self, ActiveTexture, DrawParams, Drawable, Rectangle, Texture};
-use crate::platform::GraphicsDevice;
+use crate::platform::{ActiveGraphicsDevice, GraphicsDevice};
 use crate::Context;
 
 #[derive(Clone)]
@@ -180,7 +179,7 @@ impl Text {
 
         // to avoid some borrow checker/closure weirdness
         let texture_ref = &mut ctx.graphics.font_cache_texture;
-        let device_ref = &mut ctx.gl;
+        let device_ref = &mut ctx.graphics_device;
 
         let action = loop {
             let attempted_action = ctx.graphics.font_cache.process_queued(
@@ -228,7 +227,12 @@ impl Drawable for Text {
     }
 }
 
-fn update_texture(gl: &mut GLDevice, texture: &Texture, rect: Rect<u32>, data: &[u8]) {
+fn update_texture(
+    device: &mut ActiveGraphicsDevice,
+    texture: &Texture,
+    rect: Rect<u32>,
+    data: &[u8],
+) {
     let mut padded_data = Vec::with_capacity(data.len() * 4);
 
     for a in data {
@@ -238,7 +242,7 @@ fn update_texture(gl: &mut GLDevice, texture: &Texture, rect: Rect<u32>, data: &
         padded_data.push(*a);
     }
 
-    gl.set_texture_data(
+    device.set_texture_data(
         texture,
         &padded_data,
         rect.min.x as i32,

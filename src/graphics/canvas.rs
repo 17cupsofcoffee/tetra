@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
 use crate::glm::Mat4;
-use crate::graphics::opengl::GLFramebuffer;
 use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
+use crate::platform::opengl::GLFramebuffer;
 use crate::platform::GraphicsDevice;
 use crate::Context;
 
@@ -25,7 +25,7 @@ impl Canvas {
     /// Creates a new canvas.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Canvas {
         // TODO: Make this return Result in 0.3
-        ctx.gl
+        ctx.graphics_device
             .create_canvas(width, height, true)
             .expect("Could not create canvas")
     }

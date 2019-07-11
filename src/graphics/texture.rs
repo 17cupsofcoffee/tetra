@@ -7,8 +7,8 @@ use std::rc::Rc;
 use image;
 
 use crate::error::Result;
-use crate::graphics::opengl::GLTexture;
 use crate::graphics::{self, DrawParams, Drawable, FilterMode, Rectangle};
+use crate::platform::opengl::GLTexture;
 use crate::platform::GraphicsDevice;
 use crate::Context;
 
@@ -96,7 +96,7 @@ impl Texture {
     /// If not enough data is provided to fill the texture, a `TetraError::NotEnoughData`
     /// will be returned. This is to prevent OpenGL from reading uninitialized memory.
     pub fn from_rgba(ctx: &mut Context, width: i32, height: i32, data: &[u8]) -> Result<Texture> {
-        ctx.gl.create_texture(width, height, data)
+        ctx.graphics_device.create_texture(width, height, data)
     }
 
     #[deprecated(
@@ -126,7 +126,8 @@ impl Texture {
 
     /// Sets the filter mode that should be used by the texture.
     pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
-        ctx.gl.set_texture_filter_mode(self, filter_mode);
+        ctx.graphics_device
+            .set_texture_filter_mode(self, filter_mode);
     }
 }
 

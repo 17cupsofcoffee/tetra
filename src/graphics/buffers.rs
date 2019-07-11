@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
-use crate::graphics::opengl::GLIndexBuffer;
-use crate::graphics::opengl::GLVertexBuffer;
+use crate::platform::opengl::GLIndexBuffer;
+use crate::platform::opengl::GLVertexBuffer;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct VertexBuffer {

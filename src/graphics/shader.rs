@@ -5,12 +5,12 @@ use std::path::Path;
 use std::rc::Rc;
 
 use crate::error::Result;
-use crate::graphics::opengl::GLProgram;
+use crate::platform::opengl::GLProgram;
 use crate::platform::GraphicsDevice;
 use crate::Context;
 
 #[doc(inline)]
-pub use crate::graphics::opengl::UniformValue;
+pub use crate::platform::opengl::UniformValue;
 
 /// The default vertex shader.
 ///
@@ -65,7 +65,7 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        ctx.gl.create_shader(
+        ctx.graphics_device.create_shader(
             &fs::read_to_string(vertex_path)?,
             &fs::read_to_string(fragment_path)?,
         )
@@ -84,7 +84,7 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        ctx.gl
+        ctx.graphics_device
             .create_shader(&fs::read_to_string(path)?, DEFAULT_FRAGMENT_SHADER)
     }
 
@@ -101,7 +101,7 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        ctx.gl
+        ctx.graphics_device
             .create_shader(DEFAULT_VERTEX_SHADER, &fs::read_to_string(path)?)
     }
 
@@ -115,7 +115,8 @@ impl Shader {
         vertex_shader: &str,
         fragment_shader: &str,
     ) -> Result<Shader> {
-        ctx.gl.create_shader(vertex_shader, fragment_shader)
+        ctx.graphics_device
+            .create_shader(vertex_shader, fragment_shader)
     }
 
     /// Sets the value of the specifed uniform parameter.
@@ -123,6 +124,6 @@ impl Shader {
     where
         V: UniformValue,
     {
-        ctx.gl.set_uniform(self, name, value);
+        ctx.graphics_device.set_uniform(self, name, value);
     }
 }

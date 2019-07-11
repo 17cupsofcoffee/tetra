@@ -1,5 +1,7 @@
+pub(crate) mod opengl;
 mod sdl;
 
+pub use opengl::GLDevice as ActiveGraphicsDevice;
 pub use sdl::SdlPlatform as ActivePlatform;
 
 use glow::Context as GlowContext;

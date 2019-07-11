@@ -8,7 +8,6 @@
 pub mod animation;
 mod buffers;
 mod canvas;
-pub(crate) mod opengl;
 pub mod ui;
 
 // TODO: Make all of the below modules private in 0.3.0.
@@ -39,9 +38,8 @@ use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
 use crate::error::Result;
 use crate::glm::{self, Mat3, Mat4};
-use crate::graphics::opengl::GLDevice;
 use crate::graphics::text::FontQuad;
-use crate::platform::{GraphicsDevice, Platform};
+use crate::platform::{ActiveGraphicsDevice, GraphicsDevice, Platform};
 use crate::window;
 use crate::Context;
 
@@ -102,7 +100,7 @@ pub(crate) struct GraphicsContext {
 
 impl GraphicsContext {
     pub(crate) fn new(
-        device: &mut GLDevice,
+        device: &mut ActiveGraphicsDevice,
         window_width: i32,
         window_height: i32,
         internal_width: i32,
@@ -439,7 +437,8 @@ pub trait Drawable {
 
 /// Clears the screen (or a canvas, if one is enabled) to the specified color.
 pub fn clear(ctx: &mut Context, color: Color) {
-    ctx.gl.clear(color.r, color.g, color.b, color.a);
+    ctx.graphics_device
+        .clear(color.r, color.g, color.b, color.a);
 }
 
 // TODO: This function really needs cleaning up before it can be exposed publicly.
@@ -616,15 +615,16 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 
         match &ctx.graphics.canvas {
             ActiveCanvas::Window => {
-                ctx.gl.bind_canvas(None);
-                ctx.gl.front_face(FrontFace::CounterClockwise);
-                ctx.gl
+                ctx.graphics_device.bind_canvas(None);
+                ctx.graphics_device.front_face(FrontFace::CounterClockwise);
+                ctx.graphics_device
                     .viewport(0, 0, window::get_width(ctx), window::get_height(ctx));
             }
             ActiveCanvas::Backbuffer => {
-                ctx.gl.bind_canvas(Some(&ctx.graphics.backbuffer));
-                ctx.gl.front_face(FrontFace::Clockwise);
-                ctx.gl.viewport(
+                ctx.graphics_device
+                    .bind_canvas(Some(&ctx.graphics.backbuffer));
+                ctx.graphics_device.front_face(FrontFace::Clockwise);
+                ctx.graphics_device.viewport(
                     0,
                     0,
                     ctx.graphics.backbuffer.width(),
@@ -632,9 +632,9 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 );
             }
             ActiveCanvas::User(r) => {
-                ctx.gl.bind_canvas(Some(r));
-                ctx.gl.front_face(FrontFace::Clockwise);
-                ctx.gl.viewport(0, 0, r.width(), r.height());
+                ctx.graphics_device.bind_canvas(Some(r));
+                ctx.graphics_device.front_face(FrontFace::Clockwise);
+                ctx.graphics_device.viewport(0, 0, r.width(), r.height());
             }
         }
     }
@@ -665,16 +665,23 @@ pub fn flush(ctx: &mut Context) {
             ActiveCanvas::User(r) => &r.projection,
         };
 
-        ctx.gl.bind_texture(Some(texture));
+        ctx.graphics_device.bind_texture(Some(texture));
 
-        ctx.gl.bind_shader(Some(shader));
-        ctx.gl.set_uniform(shader, "u_projection", &projection);
+        ctx.graphics_device.bind_shader(Some(shader));
 
-        ctx.gl.bind_vertex_buffer(Some(&ctx.graphics.vertex_buffer));
-        ctx.gl
-            .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
+        ctx.graphics_device
+            .set_uniform(shader, "u_projection", &projection);
 
-        ctx.gl
+        ctx.graphics_device
+            .bind_vertex_buffer(Some(&ctx.graphics.vertex_buffer));
+
+        ctx.graphics_device.set_vertex_buffer_data(
+            &ctx.graphics.vertex_buffer,
+            &ctx.graphics.vertex_data,
+            0,
+        );
+
+        ctx.graphics_device
             .draw_elements(&ctx.graphics.index_buffer, ctx.graphics.element_count);
 
         ctx.graphics.vertex_data.clear();
@@ -816,12 +823,12 @@ pub fn set_letterbox_color(ctx: &mut Context, color: Color) {
 
 /// Returns the filter mode that will be used by newly created textures and canvases.
 pub fn get_default_filter_mode(ctx: &Context) -> FilterMode {
-    ctx.gl.get_default_filter_mode()
+    ctx.graphics_device.get_default_filter_mode()
 }
 
 /// Sets the filter mode that will be used by newly created textures and canvases.
 pub fn set_default_filter_mode(ctx: &mut Context, filter_mode: FilterMode) {
-    ctx.gl.set_default_filter_mode(filter_mode);
+    ctx.graphics_device.set_default_filter_mode(filter_mode);
 }
 
 pub(crate) fn set_window_projection(ctx: &mut Context, width: i32, height: i32) {
@@ -845,7 +852,7 @@ pub(crate) fn set_backbuffer_size(ctx: &mut Context, width: i32, height: i32) {
         ctx.graphics.backbuffer = Canvas::new(ctx, width, height);
 
         if let ActiveCanvas::Backbuffer = ctx.graphics.canvas {
-            ctx.gl.viewport(0, 0, width, height);
+            ctx.graphics_device.viewport(0, 0, width, height);
         }
     }
 }
