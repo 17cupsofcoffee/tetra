@@ -6,8 +6,9 @@ use glow::Context as GlowContext;
 
 use crate::error::{Result, TetraError};
 use crate::glm::{self, Mat4};
-use crate::graphics::FilterMode;
-use crate::graphics::{Canvas, Shader, Texture};
+use crate::graphics::{
+    BufferUsage, Canvas, FilterMode, FrontFace, IndexBuffer, Shader, Texture, VertexBuffer,
+};
 use crate::platform::GraphicsDevice;
 
 type GlContext = glow::native::Context;
@@ -33,6 +34,175 @@ pub struct GLDevice {
 }
 
 impl GraphicsDevice for GLDevice {
+    fn clear(&mut self, r: f32, g: f32, b: f32, a: f32) {
+        unsafe {
+            self.gl.clear_color(r, g, b, a);
+            self.gl.clear(glow::COLOR_BUFFER_BIT);
+        }
+    }
+
+    fn front_face(&mut self, front_face: FrontFace) {
+        unsafe {
+            self.gl.front_face(front_face.into());
+        }
+    }
+
+    fn viewport(&mut self, x: i32, y: i32, width: i32, height: i32) {
+        unsafe {
+            self.gl.viewport(x, y, width, height);
+        }
+    }
+
+    fn draw_elements(&mut self, index_buffer: &IndexBuffer, count: i32) {
+        unsafe {
+            self.bind_index_buffer(Some(index_buffer));
+
+            self.gl
+                .draw_elements(glow::TRIANGLES, count, glow::UNSIGNED_INT, 0);
+        }
+    }
+
+    fn create_vertex_buffer(
+        &mut self,
+        count: usize,
+        stride: usize,
+        usage: BufferUsage,
+    ) -> Result<VertexBuffer> {
+        unsafe {
+            let id = self.gl.create_buffer().map_err(TetraError::OpenGl)?;
+
+            let handle = GLVertexBuffer {
+                gl: Rc::clone(&self.gl),
+                id,
+                count,
+                stride,
+            };
+
+            let buffer = VertexBuffer {
+                handle: Rc::new(handle),
+            };
+
+            self.bind_vertex_buffer(Some(&buffer));
+
+            self.gl.buffer_data_size(
+                glow::ARRAY_BUFFER,
+                (count * mem::size_of::<f32>()) as i32,
+                usage.into(),
+            );
+
+            Ok(buffer)
+        }
+    }
+
+    fn bind_vertex_buffer(&mut self, buffer: Option<&VertexBuffer>) {
+        unsafe {
+            let id = buffer.map(|x| x.handle.id);
+
+            if self.current_vertex_buffer != id {
+                self.gl.bind_buffer(glow::ARRAY_BUFFER, id);
+                self.current_vertex_buffer = id;
+            }
+        }
+    }
+
+    fn set_vertex_buffer_attribute(
+        &mut self,
+        buffer: &VertexBuffer,
+        index: u32,
+        size: i32,
+        offset: usize,
+    ) {
+        // TODO: This feels a bit unergonomic...
+
+        unsafe {
+            self.bind_vertex_buffer(Some(buffer));
+
+            self.gl.vertex_attrib_pointer_f32(
+                index,
+                size,
+                glow::FLOAT,
+                false,
+                (buffer.handle.stride * mem::size_of::<f32>()) as i32,
+                (offset * mem::size_of::<f32>()) as i32,
+            );
+
+            self.gl.enable_vertex_attrib_array(index);
+        }
+    }
+
+    fn set_vertex_buffer_data(&mut self, buffer: &VertexBuffer, data: &[f32], offset: usize) {
+        unsafe {
+            self.bind_vertex_buffer(Some(buffer));
+
+            // TODO: What if we want to discard what's already there?
+            // TODO: Is this cast safe?
+
+            let byte_len = std::mem::size_of_val(data) / std::mem::size_of::<u8>();
+            let byte_slice = std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_len);
+
+            self.gl.buffer_sub_data_u8_slice(
+                glow::ARRAY_BUFFER,
+                (offset * mem::size_of::<f32>()) as i32,
+                byte_slice,
+            );
+        }
+    }
+
+    fn create_index_buffer(&mut self, count: usize, usage: BufferUsage) -> Result<IndexBuffer> {
+        unsafe {
+            let id = self.gl.create_buffer().map_err(TetraError::OpenGl)?;
+
+            let handle = GLIndexBuffer {
+                gl: Rc::clone(&self.gl),
+                id,
+                count,
+            };
+
+            let buffer = IndexBuffer {
+                handle: Rc::new(handle),
+            };
+
+            self.bind_index_buffer(Some(&buffer));
+
+            self.gl.buffer_data_size(
+                glow::ELEMENT_ARRAY_BUFFER,
+                (count * mem::size_of::<u32>()) as i32,
+                usage.into(),
+            );
+
+            Ok(buffer)
+        }
+    }
+
+    fn bind_index_buffer(&mut self, buffer: Option<&IndexBuffer>) {
+        unsafe {
+            let id = buffer.map(|x| x.handle.id);
+
+            if self.current_index_buffer != id {
+                self.gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, id);
+                self.current_index_buffer = id;
+            }
+        }
+    }
+
+    fn set_index_buffer_data(&mut self, buffer: &IndexBuffer, data: &[u32], offset: usize) {
+        unsafe {
+            self.bind_index_buffer(Some(buffer));
+
+            // TODO: What if we want to discard what's already there?
+            // TODO: Is this cast safe?
+
+            let byte_len = std::mem::size_of_val(data) / std::mem::size_of::<u8>();
+            let byte_slice = std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_len);
+
+            self.gl.buffer_sub_data_u8_slice(
+                glow::ELEMENT_ARRAY_BUFFER,
+                (offset * mem::size_of::<u32>()) as i32,
+                byte_slice,
+            );
+        }
+    }
+
     fn create_texture(&mut self, width: i32, height: i32, data: &[u8]) -> Result<Texture> {
         let expected = (width * height * 4) as usize;
         let actual = data.len();
@@ -353,167 +523,6 @@ impl GLDevice {
         }
     }
 
-    pub fn clear(&mut self, r: f32, g: f32, b: f32, a: f32) {
-        unsafe {
-            self.gl.clear_color(r, g, b, a);
-            self.gl.clear(glow::COLOR_BUFFER_BIT);
-        }
-    }
-
-    pub fn front_face(&mut self, front_face: FrontFace) {
-        unsafe {
-            self.gl.front_face(front_face.into());
-        }
-    }
-
-    pub fn new_vertex_buffer(
-        &mut self,
-        count: usize,
-        stride: usize,
-        usage: BufferUsage,
-    ) -> Result<GLVertexBuffer> {
-        unsafe {
-            let id = self.gl.create_buffer().map_err(TetraError::OpenGl)?;
-
-            let buffer = GLVertexBuffer {
-                gl: Rc::clone(&self.gl),
-                id,
-                count,
-                stride,
-            };
-
-            self.bind_vertex_buffer(Some(&buffer));
-
-            self.gl.buffer_data_size(
-                glow::ARRAY_BUFFER,
-                (count * mem::size_of::<f32>()) as i32,
-                usage.into(),
-            );
-
-            Ok(buffer)
-        }
-    }
-
-    pub fn set_vertex_buffer_attribute(
-        &mut self,
-        buffer: &GLVertexBuffer,
-        index: u32,
-        size: i32,
-        offset: usize,
-    ) {
-        // TODO: This feels a bit unergonomic...
-
-        unsafe {
-            self.bind_vertex_buffer(Some(buffer));
-
-            self.gl.vertex_attrib_pointer_f32(
-                index,
-                size,
-                glow::FLOAT,
-                false,
-                (buffer.stride * mem::size_of::<f32>()) as i32,
-                (offset * mem::size_of::<f32>()) as i32,
-            );
-
-            self.gl.enable_vertex_attrib_array(index);
-        }
-    }
-
-    pub fn set_vertex_buffer_data(&mut self, buffer: &GLVertexBuffer, data: &[f32], offset: usize) {
-        unsafe {
-            self.bind_vertex_buffer(Some(buffer));
-
-            // TODO: What if we want to discard what's already there?
-            // TODO: Is this cast safe?
-
-            let byte_len = std::mem::size_of_val(data) / std::mem::size_of::<u8>();
-            let byte_slice = std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_len);
-
-            self.gl.buffer_sub_data_u8_slice(
-                glow::ARRAY_BUFFER,
-                (offset * mem::size_of::<f32>()) as i32,
-                byte_slice,
-            );
-        }
-    }
-
-    pub fn new_index_buffer(&mut self, count: usize, usage: BufferUsage) -> Result<GLIndexBuffer> {
-        unsafe {
-            let id = self.gl.create_buffer().map_err(TetraError::OpenGl)?;
-
-            let buffer = GLIndexBuffer {
-                gl: Rc::clone(&self.gl),
-                id,
-                count,
-            };
-
-            self.bind_index_buffer(Some(&buffer));
-
-            self.gl.buffer_data_size(
-                glow::ELEMENT_ARRAY_BUFFER,
-                (count * mem::size_of::<u32>()) as i32,
-                usage.into(),
-            );
-
-            Ok(buffer)
-        }
-    }
-
-    pub fn set_index_buffer_data(&mut self, buffer: &GLIndexBuffer, data: &[u32], offset: usize) {
-        unsafe {
-            self.bind_index_buffer(Some(buffer));
-
-            // TODO: What if we want to discard what's already there?
-            // TODO: Is this cast safe?
-
-            let byte_len = std::mem::size_of_val(data) / std::mem::size_of::<u8>();
-            let byte_slice = std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_len);
-
-            self.gl.buffer_sub_data_u8_slice(
-                glow::ELEMENT_ARRAY_BUFFER,
-                (offset * mem::size_of::<u32>()) as i32,
-                byte_slice,
-            );
-        }
-    }
-
-    pub fn set_viewport(&mut self, x: i32, y: i32, width: i32, height: i32) {
-        unsafe {
-            self.gl.viewport(x, y, width, height);
-        }
-    }
-
-    pub fn draw_elements(&mut self, index_buffer: &GLIndexBuffer, count: i32) {
-        unsafe {
-            self.bind_index_buffer(Some(index_buffer));
-
-            self.gl
-                .draw_elements(glow::TRIANGLES, count, glow::UNSIGNED_INT, 0);
-        }
-    }
-
-    pub fn bind_vertex_buffer(&mut self, buffer: Option<&GLVertexBuffer>) {
-        unsafe {
-            let id = buffer.map(|x| x.id);
-
-            if self.current_vertex_buffer != id {
-                self.gl.bind_buffer(glow::ARRAY_BUFFER, id);
-                self.current_vertex_buffer = id;
-            }
-        }
-    }
-
-    pub fn bind_index_buffer(&mut self, buffer: Option<&GLIndexBuffer>) {
-        unsafe {
-            let id = buffer.map(|x| x.id);
-
-            if self.current_index_buffer != id {
-                self.gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, id);
-                self.current_index_buffer = id;
-            }
-        }
-    }
-
     pub fn get_default_filter_mode(&self) -> FilterMode {
         self.default_filter_mode
     }
@@ -535,12 +544,17 @@ impl Drop for GLDevice {
     }
 }
 
-#[derive(Clone, Copy)]
-pub enum BufferUsage {
-    StaticDraw,
-    DynamicDraw,
+#[doc(hidden)]
+impl From<FilterMode> for i32 {
+    fn from(filter_mode: FilterMode) -> i32 {
+        match filter_mode {
+            FilterMode::Nearest => glow::NEAREST as i32,
+            FilterMode::Linear => glow::LINEAR as i32,
+        }
+    }
 }
 
+#[doc(hidden)]
 impl From<BufferUsage> for u32 {
     fn from(buffer_usage: BufferUsage) -> u32 {
         match buffer_usage {
@@ -550,27 +564,12 @@ impl From<BufferUsage> for u32 {
     }
 }
 
-#[derive(Clone, Copy)]
-pub enum FrontFace {
-    Clockwise,
-    CounterClockwise,
-}
-
+#[doc(hidden)]
 impl From<FrontFace> for u32 {
     fn from(front_face: FrontFace) -> u32 {
         match front_face {
             FrontFace::Clockwise => glow::CW,
             FrontFace::CounterClockwise => glow::CCW,
-        }
-    }
-}
-
-#[doc(hidden)]
-impl From<FilterMode> for i32 {
-    fn from(filter_mode: FilterMode) -> i32 {
-        match filter_mode {
-            FilterMode::Nearest => glow::NEAREST as i32,
-            FilterMode::Linear => glow::LINEAR as i32,
         }
     }
 }

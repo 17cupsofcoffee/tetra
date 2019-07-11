@@ -5,10 +5,13 @@ pub use sdl::SdlPlatform as ActivePlatform;
 use glow::Context as GlowContext;
 
 use crate::error::Result;
-use crate::graphics::{Canvas, FilterMode, Shader, Texture, UniformValue};
+use crate::graphics::{
+    BufferUsage, Canvas, FilterMode, FrontFace, IndexBuffer, Shader, Texture, UniformValue,
+    VertexBuffer,
+};
 use crate::{Context, ContextBuilder};
 
-pub trait Platform: Sized {
+pub(crate) trait Platform: Sized {
     type GlContext: GlowContext;
 
     fn new(builder: &ContextBuilder<'_>) -> Result<(Self, Self::GlContext, i32, i32)>;
@@ -43,7 +46,34 @@ pub trait Platform: Sized {
     fn stop_gamepad_vibration(&mut self, platform_id: i32);
 }
 
-pub trait GraphicsDevice {
+pub(crate) trait GraphicsDevice {
+    fn clear(&mut self, r: f32, g: f32, b: f32, a: f32);
+
+    fn front_face(&mut self, front_face: FrontFace);
+    fn viewport(&mut self, x: i32, y: i32, width: i32, height: i32);
+
+    fn draw_elements(&mut self, index_buffer: &IndexBuffer, count: i32);
+
+    fn create_vertex_buffer(
+        &mut self,
+        count: usize,
+        stride: usize,
+        usage: BufferUsage,
+    ) -> Result<VertexBuffer>;
+    fn bind_vertex_buffer(&mut self, buffer: Option<&VertexBuffer>);
+    fn set_vertex_buffer_attribute(
+        &mut self,
+        buffer: &VertexBuffer,
+        index: u32,
+        size: i32,
+        offset: usize,
+    );
+    fn set_vertex_buffer_data(&mut self, buffer: &VertexBuffer, data: &[f32], offset: usize);
+
+    fn create_index_buffer(&mut self, count: usize, usage: BufferUsage) -> Result<IndexBuffer>;
+    fn bind_index_buffer(&mut self, buffer: Option<&IndexBuffer>);
+    fn set_index_buffer_data(&mut self, buffer: &IndexBuffer, data: &[u32], offset: usize);
+
     fn create_texture(&mut self, width: i32, height: i32, data: &[u8]) -> Result<Texture>;
     fn create_texture_empty(&mut self, width: i32, height: i32) -> Result<Texture>;
     fn bind_texture(&mut self, texture: Option<&Texture>);

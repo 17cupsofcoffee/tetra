@@ -6,6 +6,7 @@
 //! rendering.
 
 pub mod animation;
+mod buffers;
 mod canvas;
 pub(crate) mod opengl;
 pub mod ui;
@@ -24,6 +25,7 @@ pub mod text;
 pub mod texture;
 
 pub use self::animation::Animation;
+pub(crate) use self::buffers::{IndexBuffer, VertexBuffer};
 pub use self::canvas::*;
 pub use self::color::Color;
 pub use self::scaling::ScreenScaling;
@@ -37,7 +39,7 @@ use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
 use crate::error::Result;
 use crate::glm::{self, Mat3, Mat4};
-use crate::graphics::opengl::{BufferUsage, FrontFace, GLDevice, GLIndexBuffer, GLVertexBuffer};
+use crate::graphics::opengl::GLDevice;
 use crate::graphics::text::FontQuad;
 use crate::platform::{GraphicsDevice, Platform};
 use crate::window;
@@ -71,8 +73,8 @@ pub(crate) enum ActiveCanvas {
 }
 
 pub(crate) struct GraphicsContext {
-    vertex_buffer: GLVertexBuffer,
-    index_buffer: GLIndexBuffer,
+    vertex_buffer: VertexBuffer,
+    index_buffer: IndexBuffer,
 
     texture: Option<ActiveTexture>,
     font_cache_texture: Texture,
@@ -116,7 +118,7 @@ impl GraphicsContext {
             scaling.get_screen_rect(internal_width, internal_height, window_width, window_height);
 
         let backbuffer = device.create_canvas(backbuffer_width, backbuffer_height, false)?;
-        device.set_viewport(0, 0, backbuffer_width, backbuffer_height);
+        device.viewport(0, 0, backbuffer_width, backbuffer_height);
         device.front_face(FrontFace::Clockwise);
 
         let indices: Vec<u32> = INDEX_ARRAY
@@ -127,7 +129,7 @@ impl GraphicsContext {
             .map(|(i, vertex)| vertex + i as u32 / 6 * 4)
             .collect();
 
-        let vertex_buffer = device.new_vertex_buffer(
+        let vertex_buffer = device.create_vertex_buffer(
             MAX_VERTICES * VERTEX_STRIDE,
             VERTEX_STRIDE,
             BufferUsage::DynamicDraw,
@@ -137,7 +139,7 @@ impl GraphicsContext {
         device.set_vertex_buffer_attribute(&vertex_buffer, 1, 2, 2);
         device.set_vertex_buffer_attribute(&vertex_buffer, 2, 4, 4);
 
-        let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::StaticDraw)?;
+        let index_buffer = device.create_index_buffer(MAX_INDICES, BufferUsage::StaticDraw)?;
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
@@ -408,6 +410,18 @@ pub enum FilterMode {
     Linear,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub(crate) enum BufferUsage {
+    StaticDraw,
+    DynamicDraw,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) enum FrontFace {
+    Clockwise,
+    CounterClockwise,
+}
+
 /// Represents a type that can be drawn.
 ///
 /// [`graphics::draw`](fn.draw.html) can be used to draw without importing this trait, which is sometimes
@@ -605,12 +619,12 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.gl.bind_canvas(None);
                 ctx.gl.front_face(FrontFace::CounterClockwise);
                 ctx.gl
-                    .set_viewport(0, 0, window::get_width(ctx), window::get_height(ctx));
+                    .viewport(0, 0, window::get_width(ctx), window::get_height(ctx));
             }
             ActiveCanvas::Backbuffer => {
                 ctx.gl.bind_canvas(Some(&ctx.graphics.backbuffer));
                 ctx.gl.front_face(FrontFace::Clockwise);
-                ctx.gl.set_viewport(
+                ctx.gl.viewport(
                     0,
                     0,
                     ctx.graphics.backbuffer.width(),
@@ -620,7 +634,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
             ActiveCanvas::User(r) => {
                 ctx.gl.bind_canvas(Some(r));
                 ctx.gl.front_face(FrontFace::Clockwise);
-                ctx.gl.set_viewport(0, 0, r.width(), r.height());
+                ctx.gl.viewport(0, 0, r.width(), r.height());
             }
         }
     }
@@ -831,7 +845,7 @@ pub(crate) fn set_backbuffer_size(ctx: &mut Context, width: i32, height: i32) {
         ctx.graphics.backbuffer = Canvas::new(ctx, width, height);
 
         if let ActiveCanvas::Backbuffer = ctx.graphics.canvas {
-            ctx.gl.set_viewport(0, 0, width, height);
+            ctx.gl.viewport(0, 0, width, height);
         }
     }
 }
