@@ -1,6 +1,5 @@
 //! Functions and types relating to the game window.
 
-use crate::platform::Platform;
 use crate::{Context, Result};
 
 /// Quits the game, if it is currently running.

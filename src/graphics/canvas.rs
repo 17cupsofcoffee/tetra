@@ -3,7 +3,6 @@ use std::rc::Rc;
 use crate::glm::Mat4;
 use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
 use crate::platform::opengl::GLFramebuffer;
-use crate::platform::GraphicsDevice;
 use crate::Context;
 
 /// A 2D texture that can be used for off-screen rendering.

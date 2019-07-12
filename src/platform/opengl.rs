@@ -7,9 +7,9 @@ use glow::Context as GlowContext;
 use crate::error::{Result, TetraError};
 use crate::glm::{self, Mat4};
 use crate::graphics::{
-    BufferUsage, Canvas, FilterMode, FrontFace, IndexBuffer, Shader, Texture, VertexBuffer,
+    BufferUsage, Canvas, FilterMode, FrontFace, IndexBuffer, Shader, Texture, UniformValue,
+    VertexBuffer,
 };
-use crate::platform::GraphicsDevice;
 
 type GlContext = glow::native::Context;
 
@@ -33,27 +33,68 @@ pub struct GLDevice {
     default_filter_mode: FilterMode,
 }
 
-impl GraphicsDevice for GLDevice {
-    fn clear(&mut self, r: f32, g: f32, b: f32, a: f32) {
+impl GLDevice {
+    pub(crate) fn new(gl: GlContext) -> Result<GLDevice> {
+        unsafe {
+            gl.enable(glow::CULL_FACE);
+            gl.enable(glow::BLEND);
+
+            // This default might want to change if we introduce
+            // custom blending modes.
+            gl.blend_func_separate(
+                glow::SRC_ALPHA,
+                glow::ONE_MINUS_SRC_ALPHA,
+                glow::ONE,
+                glow::ONE_MINUS_SRC_ALPHA,
+            );
+
+            // This is only needed for Core GL - if we wanted to be uber compatible, we'd
+            // turn it off on older versions.
+            let current_vertex_array = gl.create_vertex_array().map_err(TetraError::OpenGl)?;
+            gl.bind_vertex_array(Some(current_vertex_array));
+
+            println!("OpenGL Device: {}", gl.get_parameter_string(glow::RENDERER));
+            println!("OpenGL Driver: {}", gl.get_parameter_string(glow::VERSION));
+            println!("OpenGL Vendor: {}", gl.get_parameter_string(glow::VENDOR));
+
+            // TODO: Find a nice way of exposing this via the platform layer
+            // println!("Swap Interval: {:?}", video.gl_get_swap_interval());
+
+            Ok(GLDevice {
+                gl: Rc::new(gl),
+
+                current_vertex_buffer: None,
+                current_index_buffer: None,
+                current_program: None,
+                current_texture: None,
+                current_framebuffer: None,
+                current_vertex_array: Some(current_vertex_array),
+
+                default_filter_mode: FilterMode::Nearest,
+            })
+        }
+    }
+
+    pub(crate) fn clear(&mut self, r: f32, g: f32, b: f32, a: f32) {
         unsafe {
             self.gl.clear_color(r, g, b, a);
             self.gl.clear(glow::COLOR_BUFFER_BIT);
         }
     }
 
-    fn front_face(&mut self, front_face: FrontFace) {
+    pub(crate) fn front_face(&mut self, front_face: FrontFace) {
         unsafe {
             self.gl.front_face(front_face.into());
         }
     }
 
-    fn viewport(&mut self, x: i32, y: i32, width: i32, height: i32) {
+    pub(crate) fn viewport(&mut self, x: i32, y: i32, width: i32, height: i32) {
         unsafe {
             self.gl.viewport(x, y, width, height);
         }
     }
 
-    fn draw_elements(&mut self, index_buffer: &IndexBuffer, count: i32) {
+    pub(crate) fn draw_elements(&mut self, index_buffer: &IndexBuffer, count: i32) {
         unsafe {
             self.bind_index_buffer(Some(index_buffer));
 
@@ -62,7 +103,7 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn create_vertex_buffer(
+    pub(crate) fn create_vertex_buffer(
         &mut self,
         count: usize,
         stride: usize,
@@ -94,7 +135,7 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn bind_vertex_buffer(&mut self, buffer: Option<&VertexBuffer>) {
+    pub(crate) fn bind_vertex_buffer(&mut self, buffer: Option<&VertexBuffer>) {
         unsafe {
             let id = buffer.map(|x| x.handle.id);
 
@@ -105,7 +146,7 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn set_vertex_buffer_attribute(
+    pub(crate) fn set_vertex_buffer_attribute(
         &mut self,
         buffer: &VertexBuffer,
         index: u32,
@@ -130,7 +171,12 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn set_vertex_buffer_data(&mut self, buffer: &VertexBuffer, data: &[f32], offset: usize) {
+    pub(crate) fn set_vertex_buffer_data(
+        &mut self,
+        buffer: &VertexBuffer,
+        data: &[f32],
+        offset: usize,
+    ) {
         unsafe {
             self.bind_vertex_buffer(Some(buffer));
 
@@ -148,7 +194,11 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn create_index_buffer(&mut self, count: usize, usage: BufferUsage) -> Result<IndexBuffer> {
+    pub(crate) fn create_index_buffer(
+        &mut self,
+        count: usize,
+        usage: BufferUsage,
+    ) -> Result<IndexBuffer> {
         unsafe {
             let id = self.gl.create_buffer().map_err(TetraError::OpenGl)?;
 
@@ -174,7 +224,7 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn bind_index_buffer(&mut self, buffer: Option<&IndexBuffer>) {
+    pub(crate) fn bind_index_buffer(&mut self, buffer: Option<&IndexBuffer>) {
         unsafe {
             let id = buffer.map(|x| x.handle.id);
 
@@ -185,7 +235,12 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn set_index_buffer_data(&mut self, buffer: &IndexBuffer, data: &[u32], offset: usize) {
+    pub(crate) fn set_index_buffer_data(
+        &mut self,
+        buffer: &IndexBuffer,
+        data: &[u32],
+        offset: usize,
+    ) {
         unsafe {
             self.bind_index_buffer(Some(buffer));
 
@@ -203,7 +258,12 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn create_texture(&mut self, width: i32, height: i32, data: &[u8]) -> Result<Texture> {
+    pub(crate) fn create_texture(
+        &mut self,
+        width: i32,
+        height: i32,
+        data: &[u8],
+    ) -> Result<Texture> {
         let expected = (width * height * 4) as usize;
         let actual = data.len();
 
@@ -218,7 +278,7 @@ impl GraphicsDevice for GLDevice {
         Ok(texture)
     }
 
-    fn create_texture_empty(&mut self, width: i32, height: i32) -> Result<Texture> {
+    pub(crate) fn create_texture_empty(&mut self, width: i32, height: i32) -> Result<Texture> {
         unsafe {
             let id = self.gl.create_texture().map_err(TetraError::OpenGl)?;
 
@@ -279,7 +339,7 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn bind_texture(&mut self, texture: Option<&Texture>) {
+    pub(crate) fn bind_texture(&mut self, texture: Option<&Texture>) {
         unsafe {
             let id = texture.map(|x| x.handle.borrow().id);
 
@@ -291,7 +351,7 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn set_texture_data(
+    pub(crate) fn set_texture_data(
         &mut self,
         texture: &Texture,
         data: &[u8],
@@ -317,7 +377,7 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn set_texture_filter_mode(&mut self, texture: &Texture, filter_mode: FilterMode) {
+    pub(crate) fn set_texture_filter_mode(&mut self, texture: &Texture, filter_mode: FilterMode) {
         self.bind_texture(Some(texture));
 
         unsafe {
@@ -337,7 +397,11 @@ impl GraphicsDevice for GLDevice {
         texture.handle.borrow_mut().filter_mode = filter_mode;
     }
 
-    fn create_shader(&mut self, vertex_shader: &str, fragment_shader: &str) -> Result<Shader> {
+    pub(crate) fn create_shader(
+        &mut self,
+        vertex_shader: &str,
+        fragment_shader: &str,
+    ) -> Result<Shader> {
         unsafe {
             let program_id = self.gl.create_program().map_err(TetraError::OpenGl)?;
 
@@ -397,7 +461,7 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn bind_shader(&mut self, shader: Option<&Shader>) {
+    pub(crate) fn bind_shader(&mut self, shader: Option<&Shader>) {
         unsafe {
             let id = shader.map(|x| x.handle.id);
 
@@ -408,7 +472,7 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn set_uniform<T>(&mut self, shader: &Shader, name: &str, value: T)
+    pub(crate) fn set_uniform<T>(&mut self, shader: &Shader, name: &str, value: T)
     where
         T: UniformValue,
     {
@@ -420,7 +484,12 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn create_canvas(&mut self, width: i32, height: i32, rebind_previous: bool) -> Result<Canvas> {
+    pub(crate) fn create_canvas(
+        &mut self,
+        width: i32,
+        height: i32,
+        rebind_previous: bool,
+    ) -> Result<Canvas> {
         unsafe {
             let texture = self.create_texture_empty(width, height)?;
 
@@ -443,7 +512,7 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn bind_canvas(&mut self, canvas: Option<&Canvas>) {
+    pub(crate) fn bind_canvas(&mut self, canvas: Option<&Canvas>) {
         unsafe {
             let id = canvas.map(|x| x.framebuffer.id);
 
@@ -454,7 +523,7 @@ impl GraphicsDevice for GLDevice {
         }
     }
 
-    fn attach_texture_to_canvas(
+    pub(crate) fn attach_texture_to_canvas(
         &mut self,
         canvas: &Canvas,
         texture: &Texture,
@@ -479,55 +548,12 @@ impl GraphicsDevice for GLDevice {
             }
         }
     }
-}
 
-impl GLDevice {
-    pub fn new(gl: GlContext) -> Result<GLDevice> {
-        unsafe {
-            gl.enable(glow::CULL_FACE);
-            gl.enable(glow::BLEND);
-
-            // This default might want to change if we introduce
-            // custom blending modes.
-            gl.blend_func_separate(
-                glow::SRC_ALPHA,
-                glow::ONE_MINUS_SRC_ALPHA,
-                glow::ONE,
-                glow::ONE_MINUS_SRC_ALPHA,
-            );
-
-            // This is only needed for Core GL - if we wanted to be uber compatible, we'd
-            // turn it off on older versions.
-            let current_vertex_array = gl.create_vertex_array().map_err(TetraError::OpenGl)?;
-            gl.bind_vertex_array(Some(current_vertex_array));
-
-            println!("OpenGL Device: {}", gl.get_parameter_string(glow::RENDERER));
-            println!("OpenGL Driver: {}", gl.get_parameter_string(glow::VERSION));
-            println!("OpenGL Vendor: {}", gl.get_parameter_string(glow::VENDOR));
-
-            // TODO: Find a nice way of exposing this via the platform layer
-            // println!("Swap Interval: {:?}", video.gl_get_swap_interval());
-
-            Ok(GLDevice {
-                gl: Rc::new(gl),
-
-                current_vertex_buffer: None,
-                current_index_buffer: None,
-                current_program: None,
-                current_texture: None,
-                current_framebuffer: None,
-                current_vertex_array: Some(current_vertex_array),
-
-                default_filter_mode: FilterMode::Nearest,
-            })
-        }
-    }
-
-    pub fn get_default_filter_mode(&self) -> FilterMode {
+    pub(crate) fn get_default_filter_mode(&self) -> FilterMode {
         self.default_filter_mode
     }
 
-    pub fn set_default_filter_mode(&mut self, filter_mode: FilterMode) {
+    pub(crate) fn set_default_filter_mode(&mut self, filter_mode: FilterMode) {
         self.default_filter_mode = filter_mode;
     }
 }
@@ -656,25 +682,6 @@ pub struct GLFramebuffer {
 }
 
 handle_impls!(GLFramebuffer, delete_framebuffer);
-
-mod sealed {
-    use super::*;
-    pub trait UniformValueTypes {}
-    impl UniformValueTypes for i32 {}
-    impl UniformValueTypes for f32 {}
-    impl UniformValueTypes for Mat4 {}
-    impl<'a, T> UniformValueTypes for &'a T where T: UniformValueTypes {}
-}
-
-/// Represents a type that can be passed as a uniform value to a shader.
-///
-/// As the implementation of this trait currently interacts directly with the OpenGL layer,
-/// it's marked as a [sealed trait](https://rust-lang-nursery.github.io/api-guidelines/future-proofing.html#sealed-traits-protect-against-downstream-implementations-c-sealed),
-/// and can't be implemented outside of Tetra. This might change in the future!
-pub trait UniformValue: sealed::UniformValueTypes {
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<u32>);
-}
 
 impl UniformValue for i32 {
     #[doc(hidden)]

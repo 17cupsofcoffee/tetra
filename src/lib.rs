@@ -73,7 +73,7 @@ pub use crate::error::{Result, TetraError};
 use crate::graphics::GraphicsContext;
 use crate::graphics::ScreenScaling;
 use crate::input::InputContext;
-use crate::platform::{ActiveGraphicsDevice, ActivePlatform, Platform};
+use crate::platform::{GraphicsDevice, Platform};
 use crate::time::TimeContext;
 
 /// A trait representing a type that contains game state and provides logic for updating it
@@ -111,8 +111,8 @@ pub trait State {
 
 /// A struct containing all of the 'global' state within the framework.
 pub struct Context {
-    platform: ActivePlatform,
-    graphics_device: ActiveGraphicsDevice,
+    platform: Platform,
+    graphics_device: GraphicsDevice,
 
     graphics: GraphicsContext,
     input: InputContext,
@@ -156,7 +156,7 @@ impl Context {
         while self.running {
             time::tick(self);
 
-            if let Err(e) = ActivePlatform::handle_events(self) {
+            if let Err(e) = Platform::handle_events(self) {
                 self.running = false;
                 return Err(e);
             }
@@ -392,8 +392,7 @@ impl<'a> ContextBuilder<'a> {
     pub fn build(&self) -> Result<Context> {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
         let audio = AudioContext::new();
-        let (platform, gl_ctx, window_width, window_height) = ActivePlatform::new(self)?;
-        let mut graphics_device = ActiveGraphicsDevice::new(gl_ctx)?;
+        let (platform, mut graphics_device, window_width, window_height) = Platform::new(self)?;
 
         let graphics = GraphicsContext::new(
             &mut graphics_device,

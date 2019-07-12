@@ -39,7 +39,7 @@ use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 use crate::error::Result;
 use crate::glm::{self, Mat3, Mat4};
 use crate::graphics::text::FontQuad;
-use crate::platform::{ActiveGraphicsDevice, GraphicsDevice, Platform};
+use crate::platform::GraphicsDevice;
 use crate::window;
 use crate::Context;
 
@@ -100,7 +100,7 @@ pub(crate) struct GraphicsContext {
 
 impl GraphicsContext {
     pub(crate) fn new(
-        device: &mut ActiveGraphicsDevice,
+        device: &mut GraphicsDevice,
         window_width: i32,
         window_height: i32,
         internal_width: i32,

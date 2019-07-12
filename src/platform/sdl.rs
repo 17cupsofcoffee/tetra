@@ -17,7 +17,7 @@ use sdl2::{GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, Vid
 use crate::error::{Result, TetraError};
 use crate::graphics::{self, Vec2};
 use crate::input::{self, GamepadAxis, GamepadButton, Key};
-use crate::platform::Platform;
+use crate::platform::GraphicsDevice;
 use crate::{Context, ContextBuilder};
 
 pub struct SdlPlatform {
@@ -45,10 +45,8 @@ struct SdlController {
     slot: usize,
 }
 
-impl Platform for SdlPlatform {
-    type GlContext = glow::native::Context;
-
-    fn new(builder: &ContextBuilder<'_>) -> Result<(Self, Self::GlContext, i32, i32)> {
+impl SdlPlatform {
+    pub fn new(builder: &ContextBuilder<'_>) -> Result<(SdlPlatform, GraphicsDevice, i32, i32)> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
 
         let video_sys = sdl.video().map_err(TetraError::Sdl)?;
@@ -125,8 +123,10 @@ impl Platform for SdlPlatform {
         }
 
         let gl_sys = window.gl_create_context().map_err(TetraError::OpenGl)?;
-        let gl_ctx =
-            Self::GlContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _);
+        let gl_ctx = glow::native::Context::from_loader_function(|s| {
+            video_sys.gl_get_proc_address(s) as *const _
+        });
+        let device = GraphicsDevice::new(gl_ctx)?;
 
         video_sys
             .gl_set_swap_interval(if builder.vsync { 1 } else { 0 })
@@ -149,10 +149,10 @@ impl Platform for SdlPlatform {
             fullscreen: builder.fullscreen,
         };
 
-        Ok((platform, gl_ctx, window_width, window_height))
+        Ok((platform, device, window_width, window_height))
     }
 
-    fn handle_events(ctx: &mut Context) -> Result {
+    pub fn handle_events(ctx: &mut Context) -> Result {
         let mut events = ctx.platform.sdl.event_pump().map_err(TetraError::Sdl)?;
 
         for event in events.poll_iter() {
@@ -280,36 +280,36 @@ impl Platform for SdlPlatform {
         Ok(())
     }
 
-    fn show_window(&mut self) {
+    pub fn show_window(&mut self) {
         self.window.show();
     }
 
-    fn hide_window(&mut self) {
+    pub fn hide_window(&mut self) {
         self.window.hide();
     }
 
-    fn get_window_title(&self) -> &str {
+    pub fn get_window_title(&self) -> &str {
         self.window.title()
     }
 
-    fn set_window_title<S>(&mut self, title: S)
+    pub fn set_window_title<S>(&mut self, title: S)
     where
         S: AsRef<str>,
     {
         self.window.set_title(title.as_ref()).unwrap();
     }
 
-    fn get_window_size(&self) -> (i32, i32) {
+    pub fn get_window_size(&self) -> (i32, i32) {
         (self.window_width, self.window_height)
     }
 
-    fn set_window_size(&mut self, width: i32, height: i32) {
+    pub fn set_window_size(&mut self, width: i32, height: i32) {
         self.window_width = width;
         self.window_height = height;
         self.window.set_size(width as u32, height as u32).unwrap();
     }
 
-    fn toggle_fullscreen(&mut self) -> Result {
+    pub fn toggle_fullscreen(&mut self) -> Result {
         if self.fullscreen {
             self.disable_fullscreen()
         } else {
@@ -317,7 +317,7 @@ impl Platform for SdlPlatform {
         }
     }
 
-    fn enable_fullscreen(&mut self) -> Result {
+    pub fn enable_fullscreen(&mut self) -> Result {
         if !self.fullscreen {
             self.window
                 .display_mode()
@@ -332,7 +332,7 @@ impl Platform for SdlPlatform {
         }
     }
 
-    fn disable_fullscreen(&mut self) -> Result {
+    pub fn disable_fullscreen(&mut self) -> Result {
         if self.fullscreen {
             self.window
                 .set_fullscreen(FullscreenType::Off)
@@ -346,35 +346,35 @@ impl Platform for SdlPlatform {
         }
     }
 
-    fn is_fullscreen(&self) -> bool {
+    pub fn is_fullscreen(&self) -> bool {
         self.fullscreen
     }
 
-    fn set_mouse_visible(&mut self, mouse_visible: bool) {
+    pub fn set_mouse_visible(&mut self, mouse_visible: bool) {
         self.sdl.mouse().show_cursor(mouse_visible);
     }
 
-    fn is_mouse_visible(&self) -> bool {
+    pub fn is_mouse_visible(&self) -> bool {
         self.sdl.mouse().is_cursor_showing()
     }
 
-    fn swap_buffers(&self) {
+    pub fn swap_buffers(&self) {
         self.window.gl_swap_window();
     }
 
-    fn get_gamepad_name(&self, platform_id: i32) -> String {
+    pub fn get_gamepad_name(&self, platform_id: i32) -> String {
         self.controllers[&platform_id].controller.name()
     }
 
-    fn is_gamepad_vibration_supported(&self, platform_id: i32) -> bool {
+    pub fn is_gamepad_vibration_supported(&self, platform_id: i32) -> bool {
         self.controllers[&platform_id].haptic.is_some()
     }
 
-    fn set_gamepad_vibration(&mut self, platform_id: i32, strength: f32) {
+    pub fn set_gamepad_vibration(&mut self, platform_id: i32, strength: f32) {
         self.start_gamepad_vibration(platform_id, strength, SDL_HAPTIC_INFINITY);
     }
 
-    fn start_gamepad_vibration(&mut self, platform_id: i32, strength: f32, duration: u32) {
+    pub fn start_gamepad_vibration(&mut self, platform_id: i32, strength: f32, duration: u32) {
         if let Some(haptic) = self
             .controllers
             .get_mut(&platform_id)
@@ -384,7 +384,7 @@ impl Platform for SdlPlatform {
         }
     }
 
-    fn stop_gamepad_vibration(&mut self, platform_id: i32) {
+    pub fn stop_gamepad_vibration(&mut self, platform_id: i32) {
         if let Some(haptic) = self
             .controllers
             .get_mut(&platform_id)

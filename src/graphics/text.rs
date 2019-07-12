@@ -9,7 +9,7 @@ use glyph_brush::{BrushAction, BrushError, FontId, GlyphCruncher, GlyphVertex, S
 
 use crate::error::Result;
 use crate::graphics::{self, ActiveTexture, DrawParams, Drawable, Rectangle, Texture};
-use crate::platform::{ActiveGraphicsDevice, GraphicsDevice};
+use crate::platform::GraphicsDevice;
 use crate::Context;
 
 #[derive(Clone)]
@@ -227,12 +227,7 @@ impl Drawable for Text {
     }
 }
 
-fn update_texture(
-    device: &mut ActiveGraphicsDevice,
-    texture: &Texture,
-    rect: Rect<u32>,
-    data: &[u8],
-) {
+fn update_texture(device: &mut GraphicsDevice, texture: &Texture, rect: Rect<u32>, data: &[u8]) {
     let mut padded_data = Vec::with_capacity(data.len() * 4);
 
     for a in data {

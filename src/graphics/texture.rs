@@ -9,7 +9,6 @@ use image;
 use crate::error::Result;
 use crate::graphics::{self, DrawParams, Drawable, FilterMode, Rectangle};
 use crate::platform::opengl::GLTexture;
-use crate::platform::GraphicsDevice;
 use crate::Context;
 
 /// A 2D texture, held in GPU memory.

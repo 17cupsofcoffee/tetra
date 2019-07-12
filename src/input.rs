@@ -12,7 +12,6 @@ use hashbrown::{HashMap, HashSet};
 
 use crate::glm::Vec2;
 use crate::graphics;
-use crate::platform::Platform;
 use crate::Context;
 
 // TODO: Replace these with Tetra-specific types
