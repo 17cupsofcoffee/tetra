@@ -19,7 +19,7 @@ type TextureId = <GlContext as GlowContext>::Texture;
 type FramebufferId = <GlContext as GlowContext>::Framebuffer;
 type VertexArrayId = <GlContext as GlowContext>::VertexArray;
 
-pub struct GLDevice {
+pub struct GraphicsDevice {
     gl: Rc<GlContext>,
 
     current_vertex_buffer: Option<BufferId>,
@@ -33,8 +33,8 @@ pub struct GLDevice {
     default_filter_mode: FilterMode,
 }
 
-impl GLDevice {
-    pub(crate) fn new(gl: GlContext) -> Result<GLDevice> {
+impl GraphicsDevice {
+    pub(crate) fn new(gl: GlContext) -> Result<GraphicsDevice> {
         unsafe {
             gl.enable(glow::CULL_FACE);
             gl.enable(glow::BLEND);
@@ -60,7 +60,7 @@ impl GLDevice {
             // TODO: Find a nice way of exposing this via the platform layer
             // println!("Swap Interval: {:?}", video.gl_get_swap_interval());
 
-            Ok(GLDevice {
+            Ok(GraphicsDevice {
                 gl: Rc::new(gl),
 
                 current_vertex_buffer: None,
@@ -112,7 +112,7 @@ impl GLDevice {
         unsafe {
             let id = self.gl.create_buffer().map_err(TetraError::OpenGl)?;
 
-            let handle = GLVertexBuffer {
+            let handle = VertexBufferHandle {
                 gl: Rc::clone(&self.gl),
                 id,
                 count,
@@ -202,7 +202,7 @@ impl GLDevice {
         unsafe {
             let id = self.gl.create_buffer().map_err(TetraError::OpenGl)?;
 
-            let handle = GLIndexBuffer {
+            let handle = IndexBufferHandle {
                 gl: Rc::clone(&self.gl),
                 id,
                 count,
@@ -282,7 +282,7 @@ impl GLDevice {
         unsafe {
             let id = self.gl.create_texture().map_err(TetraError::OpenGl)?;
 
-            let handle = GLTexture {
+            let handle = TextureHandle {
                 gl: Rc::clone(&self.gl),
 
                 id,
@@ -446,7 +446,7 @@ impl GLDevice {
             self.gl.delete_shader(vertex_id);
             self.gl.delete_shader(fragment_id);
 
-            let handle = GLProgram {
+            let handle = ProgramHandle {
                 gl: Rc::clone(&self.gl),
                 id: program_id,
             };
@@ -495,7 +495,7 @@ impl GLDevice {
 
             let id = self.gl.create_framebuffer().map_err(TetraError::OpenGl)?;
 
-            let handle = GLFramebuffer {
+            let handle = FramebufferHandle {
                 gl: Rc::clone(&self.gl),
                 id,
             };
@@ -558,7 +558,7 @@ impl GLDevice {
     }
 }
 
-impl Drop for GLDevice {
+impl Drop for GraphicsDevice {
     fn drop(&mut self) {
         unsafe {
             self.gl.bind_vertex_array(None);
@@ -619,7 +619,7 @@ macro_rules! handle_impls {
 }
 
 #[derive(Debug)]
-pub struct GLVertexBuffer {
+pub struct VertexBufferHandle {
     gl: Rc<GlContext>,
 
     id: BufferId,
@@ -627,29 +627,29 @@ pub struct GLVertexBuffer {
     stride: usize,
 }
 
-handle_impls!(GLVertexBuffer, delete_buffer);
+handle_impls!(VertexBufferHandle, delete_buffer);
 
 #[derive(Debug)]
-pub struct GLIndexBuffer {
+pub struct IndexBufferHandle {
     gl: Rc<GlContext>,
 
     id: BufferId,
     count: usize,
 }
 
-handle_impls!(GLIndexBuffer, delete_buffer);
+handle_impls!(IndexBufferHandle, delete_buffer);
 
 #[derive(Debug)]
-pub struct GLProgram {
+pub struct ProgramHandle {
     gl: Rc<GlContext>,
 
     id: ProgramId,
 }
 
-handle_impls!(GLProgram, delete_program);
+handle_impls!(ProgramHandle, delete_program);
 
 #[derive(Debug)]
-pub struct GLTexture {
+pub struct TextureHandle {
     gl: Rc<GlContext>,
 
     id: TextureId,
@@ -658,9 +658,9 @@ pub struct GLTexture {
     filter_mode: FilterMode,
 }
 
-handle_impls!(GLTexture, delete_texture);
+handle_impls!(TextureHandle, delete_texture);
 
-impl GLTexture {
+impl TextureHandle {
     pub fn width(&self) -> i32 {
         self.width
     }
@@ -675,13 +675,13 @@ impl GLTexture {
 }
 
 #[derive(Debug)]
-pub struct GLFramebuffer {
+pub struct FramebufferHandle {
     gl: Rc<GlContext>,
 
     id: FramebufferId,
 }
 
-handle_impls!(GLFramebuffer, delete_framebuffer);
+handle_impls!(FramebufferHandle, delete_framebuffer);
 
 impl UniformValue for i32 {
     #[doc(hidden)]

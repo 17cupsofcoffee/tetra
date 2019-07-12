@@ -2,9 +2,8 @@ mod opengl;
 mod sdl;
 
 pub(crate) use opengl::{
-    GLDevice as GraphicsDevice, GLFramebuffer as FramebufferHandle,
-    GLIndexBuffer as IndexBufferHandle, GLProgram as ProgramHandle, GLTexture as TextureHandle,
-    GLVertexBuffer as VertexBufferHandle,
+    FramebufferHandle, GraphicsDevice, IndexBufferHandle, ProgramHandle, TextureHandle,
+    VertexBufferHandle,
 };
 
-pub(crate) use sdl::SdlPlatform as Platform;
+pub(crate) use sdl::Platform;

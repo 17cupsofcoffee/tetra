@@ -20,7 +20,7 @@ use crate::input::{self, GamepadAxis, GamepadButton, Key};
 use crate::platform::GraphicsDevice;
 use crate::{Context, ContextBuilder};
 
-pub struct SdlPlatform {
+pub struct Platform {
     sdl: Sdl,
     window: Window,
 
@@ -45,8 +45,8 @@ struct SdlController {
     slot: usize,
 }
 
-impl SdlPlatform {
-    pub fn new(builder: &ContextBuilder<'_>) -> Result<(SdlPlatform, GraphicsDevice, i32, i32)> {
+impl Platform {
+    pub fn new(builder: &ContextBuilder<'_>) -> Result<(Platform, GraphicsDevice, i32, i32)> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
 
         let video_sys = sdl.video().map_err(TetraError::Sdl)?;
@@ -132,7 +132,7 @@ impl SdlPlatform {
             .gl_set_swap_interval(if builder.vsync { 1 } else { 0 })
             .map_err(TetraError::Sdl)?;
 
-        let platform = SdlPlatform {
+        let platform = Platform {
             sdl,
             window,
 
