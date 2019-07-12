@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::glm::Mat4;
 use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
-use crate::platform::opengl::GLFramebuffer;
+use crate::platform::FramebufferHandle;
 use crate::Context;
 
 /// A 2D texture that can be used for off-screen rendering.
@@ -16,7 +16,7 @@ use crate::Context;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Canvas {
     pub(crate) texture: Texture,
-    pub(crate) framebuffer: Rc<GLFramebuffer>,
+    pub(crate) framebuffer: Rc<FramebufferHandle>,
     pub(crate) projection: Mat4,
 }
 

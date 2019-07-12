@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use crate::error::Result;
 use crate::glm::Mat4;
-use crate::platform::opengl::GLProgram;
+use crate::platform::ProgramHandle;
 use crate::Context;
 
 /// The default vertex shader.
@@ -47,7 +47,7 @@ pub static DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.fra
 /// You can also set data into your own uniform variables via the `set_uniform` method.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shader {
-    pub(crate) handle: Rc<GLProgram>,
+    pub(crate) handle: Rc<ProgramHandle>,
 }
 
 impl Shader {

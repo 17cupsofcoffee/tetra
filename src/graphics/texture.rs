@@ -8,7 +8,7 @@ use image;
 
 use crate::error::Result;
 use crate::graphics::{self, DrawParams, Drawable, FilterMode, Rectangle};
-use crate::platform::opengl::GLTexture;
+use crate::platform::TextureHandle;
 use crate::Context;
 
 /// A 2D texture, held in GPU memory.
@@ -29,7 +29,7 @@ use crate::Context;
 /// and so can be cloned with little overhead.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Texture {
-    pub(crate) handle: Rc<RefCell<GLTexture>>,
+    pub(crate) handle: Rc<RefCell<TextureHandle>>,
 }
 
 impl Texture {

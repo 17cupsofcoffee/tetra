@@ -1,14 +1,14 @@
 use std::rc::Rc;
 
-use crate::platform::opengl::GLIndexBuffer;
-use crate::platform::opengl::GLVertexBuffer;
+use crate::platform::IndexBufferHandle;
+use crate::platform::VertexBufferHandle;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct VertexBuffer {
-    pub(crate) handle: Rc<GLVertexBuffer>,
+    pub(crate) handle: Rc<VertexBufferHandle>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct IndexBuffer {
-    pub(crate) handle: Rc<GLIndexBuffer>,
+    pub(crate) handle: Rc<IndexBufferHandle>,
 }
