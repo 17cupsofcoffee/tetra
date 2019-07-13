@@ -70,10 +70,11 @@ pub mod window;
 
 use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};
+use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
 use crate::graphics::ScreenScaling;
 use crate::input::InputContext;
-use crate::platform::{GraphicsDevice, Platform};
+use crate::platform::SdlPlatform;
 use crate::time::TimeContext;
 
 /// A trait representing a type that contains game state and provides logic for updating it
@@ -111,8 +112,8 @@ pub trait State {
 
 /// A struct containing all of the 'global' state within the framework.
 pub struct Context {
-    platform: Platform,
-    graphics_device: GraphicsDevice,
+    platform: SdlPlatform,
+    gl: GLDevice,
 
     graphics: GraphicsContext,
     input: InputContext,
@@ -150,13 +151,13 @@ impl Context {
     {
         self.running = true;
 
-        self.platform.show_window();
+        platform::show_window(self);
         time::reset(self);
 
         while self.running {
             time::tick(self);
 
-            if let Err(e) = Platform::handle_events(self) {
+            if let Err(e) = platform::handle_events(self) {
                 self.running = false;
                 return Err(e);
             }
@@ -182,7 +183,7 @@ impl Context {
             std::thread::yield_now();
         }
 
-        self.platform.hide_window();
+        platform::hide_window(self);
 
         Ok(())
     }
@@ -392,10 +393,11 @@ impl<'a> ContextBuilder<'a> {
     pub fn build(&self) -> Result<Context> {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
         let audio = AudioContext::new();
-        let (platform, mut graphics_device, window_width, window_height) = Platform::new(self)?;
+        let (platform, gl_context, window_width, window_height) = SdlPlatform::new(self)?;
+        let mut gl = GLDevice::new(gl_context)?;
 
         let graphics = GraphicsContext::new(
-            &mut graphics_device,
+            &mut gl,
             window_width,
             window_height,
             self.internal_width,
@@ -408,7 +410,7 @@ impl<'a> ContextBuilder<'a> {
 
         Ok(Context {
             platform,
-            graphics_device,
+            gl,
 
             graphics,
             input,

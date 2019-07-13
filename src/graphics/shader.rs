@@ -5,9 +5,11 @@ use std::path::Path;
 use std::rc::Rc;
 
 use crate::error::Result;
-use crate::glm::Mat4;
-use crate::platform::ProgramHandle;
+use crate::graphics::opengl::{GLDevice, GLProgram};
 use crate::Context;
+
+#[doc(inline)]
+pub use crate::graphics::opengl::UniformValue;
 
 /// The default vertex shader.
 ///
@@ -47,7 +49,7 @@ pub static DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.fra
 /// You can also set data into your own uniform variables via the `set_uniform` method.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shader {
-    pub(crate) handle: Rc<ProgramHandle>,
+    pub(crate) handle: Rc<GLProgram>,
 }
 
 impl Shader {
@@ -62,7 +64,8 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        ctx.graphics_device.create_shader(
+        Shader::with_device(
+            &mut ctx.gl,
             &fs::read_to_string(vertex_path)?,
             &fs::read_to_string(fragment_path)?,
         )
@@ -81,8 +84,11 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        ctx.graphics_device
-            .create_shader(&fs::read_to_string(path)?, DEFAULT_FRAGMENT_SHADER)
+        Shader::with_device(
+            &mut ctx.gl,
+            &fs::read_to_string(path)?,
+            DEFAULT_FRAGMENT_SHADER,
+        )
     }
 
     /// Creates a new shader program from the given fragment shader file.
@@ -98,8 +104,11 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        ctx.graphics_device
-            .create_shader(DEFAULT_VERTEX_SHADER, &fs::read_to_string(path)?)
+        Shader::with_device(
+            &mut ctx.gl,
+            DEFAULT_VERTEX_SHADER,
+            &fs::read_to_string(path)?,
+        )
     }
 
     /// Creates a new shader program from the given strings.
@@ -112,8 +121,19 @@ impl Shader {
         vertex_shader: &str,
         fragment_shader: &str,
     ) -> Result<Shader> {
-        ctx.graphics_device
-            .create_shader(vertex_shader, fragment_shader)
+        Shader::with_device(&mut ctx.gl, vertex_shader, fragment_shader)
+    }
+
+    pub(crate) fn with_device(
+        device: &mut GLDevice,
+        vertex_shader: &str,
+        fragment_shader: &str,
+    ) -> Result<Shader> {
+        let handle = device.compile_program(vertex_shader, fragment_shader)?;
+
+        Ok(Shader {
+            handle: Rc::new(handle),
+        })
     }
 
     /// Sets the value of the specifed uniform parameter.
@@ -121,25 +141,6 @@ impl Shader {
     where
         V: UniformValue,
     {
-        ctx.graphics_device.set_uniform(self, name, value);
+        ctx.gl.set_uniform(&self.handle, name, value);
     }
-}
-
-/// Represents a type that can be passed as a uniform value to a shader.
-///
-/// As the implementation of this trait currently interacts directly with the OpenGL layer,
-/// it's marked as a [sealed trait](https://rust-lang-nursery.github.io/api-guidelines/future-proofing.html#sealed-traits-protect-against-downstream-implementations-c-sealed),
-/// and can't be implemented outside of Tetra. This might change in the future!
-pub trait UniformValue: sealed::UniformValueTypes {
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<u32>);
-}
-
-mod sealed {
-    use super::*;
-    pub trait UniformValueTypes {}
-    impl UniformValueTypes for i32 {}
-    impl UniformValueTypes for f32 {}
-    impl UniformValueTypes for Mat4 {}
-    impl<'a, T> UniformValueTypes for &'a T where T: UniformValueTypes {}
 }

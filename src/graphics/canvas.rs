@@ -1,8 +1,9 @@
 use std::rc::Rc;
 
-use crate::glm::Mat4;
+use crate::error::Result;
+use crate::glm::{self, Mat4};
+use crate::graphics::opengl::{GLDevice, GLFramebuffer};
 use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
-use crate::platform::FramebufferHandle;
 use crate::Context;
 
 /// A 2D texture that can be used for off-screen rendering.
@@ -16,7 +17,7 @@ use crate::Context;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Canvas {
     pub(crate) texture: Texture,
-    pub(crate) framebuffer: Rc<FramebufferHandle>,
+    pub(crate) framebuffer: Rc<GLFramebuffer>,
     pub(crate) projection: Mat4,
 }
 
@@ -24,9 +25,29 @@ impl Canvas {
     /// Creates a new canvas.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Canvas {
         // TODO: Make this return Result in 0.3
-        ctx.graphics_device
-            .create_canvas(width, height, true)
-            .expect("Could not create canvas")
+        Canvas::with_device(&mut ctx.gl, width, height, true).expect("Could not create canvas")
+    }
+
+    pub(crate) fn with_device(
+        device: &mut GLDevice,
+        width: i32,
+        height: i32,
+        rebind_previous: bool,
+    ) -> Result<Canvas> {
+        let texture = Texture::with_device_empty(device, width, height)?;
+        let framebuffer = device.new_framebuffer()?;
+
+        device.attach_texture_to_framebuffer(
+            &framebuffer,
+            &texture.handle.borrow(),
+            rebind_previous,
+        );
+
+        Ok(Canvas {
+            texture,
+            framebuffer: Rc::new(framebuffer),
+            projection: glm::ortho(0.0, width as f32, 0.0, height as f32, -1.0, 1.0),
+        })
     }
 
     /// Returns the width of the canvas.

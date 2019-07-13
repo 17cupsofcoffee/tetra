@@ -8,8 +8,10 @@ use glyph_brush::rusttype::{Rect, Scale};
 use glyph_brush::{BrushAction, BrushError, FontId, GlyphCruncher, GlyphVertex, Section};
 
 use crate::error::Result;
-use crate::graphics::{self, ActiveTexture, DrawParams, Drawable, Rectangle, Texture};
-use crate::platform::GraphicsDevice;
+use crate::graphics::opengl::GLDevice;
+use crate::graphics::{
+    self, ActiveTexture, DrawParams, Drawable, Rectangle, Texture, TextureFormat,
+};
 use crate::Context;
 
 #[derive(Clone)]
@@ -179,7 +181,7 @@ impl Text {
 
         // to avoid some borrow checker/closure weirdness
         let texture_ref = &mut ctx.graphics.font_cache_texture;
-        let device_ref = &mut ctx.graphics_device;
+        let device_ref = &mut ctx.gl;
 
         let action = loop {
             let attempted_action = ctx.graphics.font_cache.process_queued(
@@ -192,9 +194,9 @@ impl Text {
                 Err(BrushError::TextureTooSmall { suggested, .. }) => {
                     let (width, height) = suggested;
 
-                    *texture_ref = device_ref
-                        .create_texture_empty(width as i32, height as i32)
-                        .expect("Could not recreate font cache texture");
+                    *texture_ref =
+                        Texture::with_device_empty(device_ref, width as i32, height as i32)
+                            .expect("Could not recreate font cache texture");
 
                     ctx.graphics.font_cache.resize_texture(width, height);
                 }
@@ -227,7 +229,7 @@ impl Drawable for Text {
     }
 }
 
-fn update_texture(device: &mut GraphicsDevice, texture: &Texture, rect: Rect<u32>, data: &[u8]) {
+fn update_texture(gl: &mut GLDevice, texture: &Texture, rect: Rect<u32>, data: &[u8]) {
     let mut padded_data = Vec::with_capacity(data.len() * 4);
 
     for a in data {
@@ -237,13 +239,14 @@ fn update_texture(device: &mut GraphicsDevice, texture: &Texture, rect: Rect<u32
         padded_data.push(*a);
     }
 
-    device.set_texture_data(
-        texture,
+    gl.set_texture_data(
+        &texture.handle.borrow(),
         &padded_data,
         rect.min.x as i32,
         rect.min.y as i32,
         rect.width() as i32,
         rect.height() as i32,
+        TextureFormat::Rgba,
     );
 }
 

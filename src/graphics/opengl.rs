@@ -1,15 +1,11 @@
-use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 
 use glow::Context as GlowContext;
 
 use crate::error::{Result, TetraError};
-use crate::glm::{self, Mat4};
-use crate::graphics::{
-    BufferUsage, Canvas, FilterMode, FrontFace, IndexBuffer, Shader, Texture, UniformValue,
-    VertexBuffer,
-};
+use crate::glm::Mat4;
+use crate::graphics::FilterMode;
 
 type GlContext = glow::native::Context;
 
@@ -19,7 +15,7 @@ type TextureId = <GlContext as GlowContext>::Texture;
 type FramebufferId = <GlContext as GlowContext>::Framebuffer;
 type VertexArrayId = <GlContext as GlowContext>::VertexArray;
 
-pub struct GraphicsDevice {
+pub struct GLDevice {
     gl: Rc<GlContext>,
 
     current_vertex_buffer: Option<BufferId>,
@@ -33,8 +29,8 @@ pub struct GraphicsDevice {
     default_filter_mode: FilterMode,
 }
 
-impl GraphicsDevice {
-    pub(crate) fn new(gl: GlContext) -> Result<GraphicsDevice> {
+impl GLDevice {
+    pub fn new(gl: GlContext) -> Result<GLDevice> {
         unsafe {
             gl.enable(glow::CULL_FACE);
             gl.enable(glow::BLEND);
@@ -60,7 +56,7 @@ impl GraphicsDevice {
             // TODO: Find a nice way of exposing this via the platform layer
             // println!("Swap Interval: {:?}", video.gl_get_swap_interval());
 
-            Ok(GraphicsDevice {
+            Ok(GLDevice {
                 gl: Rc::new(gl),
 
                 current_vertex_buffer: None,
@@ -75,52 +71,33 @@ impl GraphicsDevice {
         }
     }
 
-    pub(crate) fn clear(&mut self, r: f32, g: f32, b: f32, a: f32) {
+    pub fn clear(&mut self, r: f32, g: f32, b: f32, a: f32) {
         unsafe {
             self.gl.clear_color(r, g, b, a);
             self.gl.clear(glow::COLOR_BUFFER_BIT);
         }
     }
 
-    pub(crate) fn front_face(&mut self, front_face: FrontFace) {
+    pub fn front_face(&mut self, front_face: FrontFace) {
         unsafe {
             self.gl.front_face(front_face.into());
         }
     }
 
-    pub(crate) fn viewport(&mut self, x: i32, y: i32, width: i32, height: i32) {
-        unsafe {
-            self.gl.viewport(x, y, width, height);
-        }
-    }
-
-    pub(crate) fn draw_elements(&mut self, index_buffer: &IndexBuffer, count: i32) {
-        unsafe {
-            self.bind_index_buffer(Some(index_buffer));
-
-            self.gl
-                .draw_elements(glow::TRIANGLES, count, glow::UNSIGNED_INT, 0);
-        }
-    }
-
-    pub(crate) fn create_vertex_buffer(
+    pub fn new_vertex_buffer(
         &mut self,
         count: usize,
         stride: usize,
         usage: BufferUsage,
-    ) -> Result<VertexBuffer> {
+    ) -> Result<GLVertexBuffer> {
         unsafe {
             let id = self.gl.create_buffer().map_err(TetraError::OpenGl)?;
 
-            let handle = VertexBufferHandle {
+            let buffer = GLVertexBuffer {
                 gl: Rc::clone(&self.gl),
                 id,
                 count,
                 stride,
-            };
-
-            let buffer = VertexBuffer {
-                handle: Rc::new(handle),
             };
 
             self.bind_vertex_buffer(Some(&buffer));
@@ -135,20 +112,9 @@ impl GraphicsDevice {
         }
     }
 
-    pub(crate) fn bind_vertex_buffer(&mut self, buffer: Option<&VertexBuffer>) {
-        unsafe {
-            let id = buffer.map(|x| x.handle.id);
-
-            if self.current_vertex_buffer != id {
-                self.gl.bind_buffer(glow::ARRAY_BUFFER, id);
-                self.current_vertex_buffer = id;
-            }
-        }
-    }
-
-    pub(crate) fn set_vertex_buffer_attribute(
+    pub fn set_vertex_buffer_attribute(
         &mut self,
-        buffer: &VertexBuffer,
+        buffer: &GLVertexBuffer,
         index: u32,
         size: i32,
         offset: usize,
@@ -163,7 +129,7 @@ impl GraphicsDevice {
                 size,
                 glow::FLOAT,
                 false,
-                (buffer.handle.stride * mem::size_of::<f32>()) as i32,
+                (buffer.stride * mem::size_of::<f32>()) as i32,
                 (offset * mem::size_of::<f32>()) as i32,
             );
 
@@ -171,12 +137,7 @@ impl GraphicsDevice {
         }
     }
 
-    pub(crate) fn set_vertex_buffer_data(
-        &mut self,
-        buffer: &VertexBuffer,
-        data: &[f32],
-        offset: usize,
-    ) {
+    pub fn set_vertex_buffer_data(&mut self, buffer: &GLVertexBuffer, data: &[f32], offset: usize) {
         unsafe {
             self.bind_vertex_buffer(Some(buffer));
 
@@ -194,22 +155,14 @@ impl GraphicsDevice {
         }
     }
 
-    pub(crate) fn create_index_buffer(
-        &mut self,
-        count: usize,
-        usage: BufferUsage,
-    ) -> Result<IndexBuffer> {
+    pub fn new_index_buffer(&mut self, count: usize, usage: BufferUsage) -> Result<GLIndexBuffer> {
         unsafe {
             let id = self.gl.create_buffer().map_err(TetraError::OpenGl)?;
 
-            let handle = IndexBufferHandle {
+            let buffer = GLIndexBuffer {
                 gl: Rc::clone(&self.gl),
                 id,
                 count,
-            };
-
-            let buffer = IndexBuffer {
-                handle: Rc::new(handle),
             };
 
             self.bind_index_buffer(Some(&buffer));
@@ -224,23 +177,7 @@ impl GraphicsDevice {
         }
     }
 
-    pub(crate) fn bind_index_buffer(&mut self, buffer: Option<&IndexBuffer>) {
-        unsafe {
-            let id = buffer.map(|x| x.handle.id);
-
-            if self.current_index_buffer != id {
-                self.gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, id);
-                self.current_index_buffer = id;
-            }
-        }
-    }
-
-    pub(crate) fn set_index_buffer_data(
-        &mut self,
-        buffer: &IndexBuffer,
-        data: &[u32],
-        offset: usize,
-    ) {
+    pub fn set_index_buffer_data(&mut self, buffer: &GLIndexBuffer, data: &[u32], offset: usize) {
         unsafe {
             self.bind_index_buffer(Some(buffer));
 
@@ -258,150 +195,11 @@ impl GraphicsDevice {
         }
     }
 
-    pub(crate) fn create_texture(
-        &mut self,
-        width: i32,
-        height: i32,
-        data: &[u8],
-    ) -> Result<Texture> {
-        let expected = (width * height * 4) as usize;
-        let actual = data.len();
-
-        if expected > actual {
-            return Err(TetraError::NotEnoughData { expected, actual });
-        }
-
-        let texture = self.create_texture_empty(width, height)?;
-
-        self.set_texture_data(&texture, &data, 0, 0, width, height);
-
-        Ok(texture)
-    }
-
-    pub(crate) fn create_texture_empty(&mut self, width: i32, height: i32) -> Result<Texture> {
-        unsafe {
-            let id = self.gl.create_texture().map_err(TetraError::OpenGl)?;
-
-            let handle = TextureHandle {
-                gl: Rc::clone(&self.gl),
-
-                id,
-                width,
-                height,
-                filter_mode: self.default_filter_mode,
-            };
-
-            let texture = Texture {
-                handle: Rc::new(RefCell::new(handle)),
-            };
-
-            self.bind_texture(Some(&texture));
-
-            self.gl
-                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_WRAP_S, glow::REPEAT as i32);
-
-            self.gl
-                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_WRAP_T, glow::REPEAT as i32);
-
-            self.gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
-                glow::TEXTURE_MIN_FILTER,
-                self.default_filter_mode.into(),
-            );
-
-            self.gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
-                glow::TEXTURE_MAG_FILTER,
-                self.default_filter_mode.into(),
-            );
-
-            // TODO: I don't think we need mipmaps?
-
-            self.gl
-                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_BASE_LEVEL, 0);
-
-            self.gl
-                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_MAX_LEVEL, 0);
-
-            self.gl.tex_image_2d(
-                glow::TEXTURE_2D,
-                0,
-                glow::RGBA as i32, // love 2 deal with legacy apis
-                width,
-                height,
-                0,
-                glow::RGBA,
-                glow::UNSIGNED_BYTE,
-                None,
-            );
-
-            Ok(texture)
-        }
-    }
-
-    pub(crate) fn bind_texture(&mut self, texture: Option<&Texture>) {
-        unsafe {
-            let id = texture.map(|x| x.handle.borrow().id);
-
-            if self.current_texture != id {
-                self.gl.active_texture(glow::TEXTURE0);
-                self.gl.bind_texture(glow::TEXTURE_2D, id);
-                self.current_texture = id;
-            }
-        }
-    }
-
-    pub(crate) fn set_texture_data(
-        &mut self,
-        texture: &Texture,
-        data: &[u8],
-        x: i32,
-        y: i32,
-        width: i32,
-        height: i32,
-    ) {
-        unsafe {
-            self.bind_texture(Some(texture));
-
-            self.gl.tex_sub_image_2d_u8_slice(
-                glow::TEXTURE_2D,
-                0,
-                x,
-                y,
-                width,
-                height,
-                glow::RGBA,
-                glow::UNSIGNED_BYTE,
-                Some(data),
-            )
-        }
-    }
-
-    pub(crate) fn set_texture_filter_mode(&mut self, texture: &Texture, filter_mode: FilterMode) {
-        self.bind_texture(Some(texture));
-
-        unsafe {
-            self.gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
-                glow::TEXTURE_MIN_FILTER,
-                filter_mode.into(),
-            );
-
-            self.gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
-                glow::TEXTURE_MAG_FILTER,
-                filter_mode.into(),
-            );
-        }
-
-        texture.handle.borrow_mut().filter_mode = filter_mode;
-    }
-
-    pub(crate) fn create_shader(
+    pub fn compile_program(
         &mut self,
         vertex_shader: &str,
         fragment_shader: &str,
-    ) -> Result<Shader> {
+    ) -> Result<GLProgram> {
         unsafe {
             let program_id = self.gl.create_program().map_err(TetraError::OpenGl)?;
 
@@ -446,99 +244,170 @@ impl GraphicsDevice {
             self.gl.delete_shader(vertex_id);
             self.gl.delete_shader(fragment_id);
 
-            let handle = ProgramHandle {
+            let program = GLProgram {
                 gl: Rc::clone(&self.gl),
                 id: program_id,
             };
 
-            let shader = Shader {
-                handle: Rc::new(handle),
-            };
+            self.set_uniform(&program, "u_texture", 0);
 
-            self.set_uniform(&shader, "u_texture", 0);
-
-            Ok(shader)
+            Ok(program)
         }
     }
 
-    pub(crate) fn bind_shader(&mut self, shader: Option<&Shader>) {
-        unsafe {
-            let id = shader.map(|x| x.handle.id);
-
-            if self.current_program != id {
-                self.gl.use_program(id);
-                self.current_program = id;
-            }
-        }
-    }
-
-    pub(crate) fn set_uniform<T>(&mut self, shader: &Shader, name: &str, value: T)
+    pub fn set_uniform<T>(&mut self, program: &GLProgram, name: &str, value: T)
     where
         T: UniformValue,
     {
         unsafe {
-            self.bind_shader(Some(shader));
+            self.bind_program(Some(program));
 
-            let location = self.gl.get_uniform_location(shader.handle.id, name);
-            value.set_uniform(shader, location);
+            let location = self.gl.get_uniform_location(program.id, name);
+            value.set_uniform(program, location);
         }
     }
 
-    pub(crate) fn create_canvas(
+    pub fn new_texture(
         &mut self,
         width: i32,
         height: i32,
-        rebind_previous: bool,
-    ) -> Result<Canvas> {
+        format: TextureFormat,
+    ) -> Result<GLTexture> {
+        // TODO: I don't think we need mipmaps?
         unsafe {
-            let texture = self.create_texture_empty(width, height)?;
+            let id = self.gl.create_texture().map_err(TetraError::OpenGl)?;
 
+            let texture = GLTexture {
+                gl: Rc::clone(&self.gl),
+
+                id,
+                width,
+                height,
+                filter_mode: self.default_filter_mode,
+            };
+
+            self.bind_texture(Some(&texture));
+
+            self.gl
+                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_WRAP_S, glow::REPEAT as i32);
+
+            self.gl
+                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_WRAP_T, glow::REPEAT as i32);
+
+            self.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MIN_FILTER,
+                self.default_filter_mode.into(),
+            );
+
+            self.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MAG_FILTER,
+                self.default_filter_mode.into(),
+            );
+
+            self.gl
+                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_BASE_LEVEL, 0);
+
+            self.gl
+                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_MAX_LEVEL, 0);
+
+            let format = format.into();
+
+            self.gl.tex_image_2d(
+                glow::TEXTURE_2D,
+                0,
+                format as i32, // love 2 deal with legacy apis
+                width,
+                height,
+                0,
+                format,
+                glow::UNSIGNED_BYTE,
+                None,
+            );
+
+            Ok(texture)
+        }
+    }
+
+    pub fn set_texture_data(
+        &mut self,
+        texture: &GLTexture,
+        data: &[u8],
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+        format: TextureFormat,
+    ) {
+        unsafe {
+            self.bind_texture(Some(texture));
+
+            self.gl.tex_sub_image_2d_u8_slice(
+                glow::TEXTURE_2D,
+                0,
+                x,
+                y,
+                width,
+                height,
+                format.into(),
+                glow::UNSIGNED_BYTE,
+                Some(data),
+            )
+        }
+    }
+
+    pub fn set_texture_min_filter(&mut self, texture: &GLTexture, filter_mode: FilterMode) {
+        self.bind_texture(Some(texture));
+
+        unsafe {
+            self.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MIN_FILTER,
+                filter_mode.into(),
+            );
+        }
+    }
+
+    pub fn set_texture_mag_filter(&mut self, texture: &GLTexture, filter_mode: FilterMode) {
+        self.bind_texture(Some(texture));
+
+        unsafe {
+            self.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MAG_FILTER,
+                filter_mode.into(),
+            );
+        }
+    }
+
+    pub fn new_framebuffer(&mut self) -> Result<GLFramebuffer> {
+        unsafe {
             let id = self.gl.create_framebuffer().map_err(TetraError::OpenGl)?;
 
-            let handle = FramebufferHandle {
+            Ok(GLFramebuffer {
                 gl: Rc::clone(&self.gl),
                 id,
-            };
-
-            let canvas = Canvas {
-                texture,
-                framebuffer: Rc::new(handle),
-                projection: glm::ortho(0.0, width as f32, 0.0, height as f32, -1.0, 1.0),
-            };
-
-            self.attach_texture_to_canvas(&canvas, &canvas.texture, rebind_previous);
-
-            Ok(canvas)
+            })
         }
     }
 
-    pub(crate) fn bind_canvas(&mut self, canvas: Option<&Canvas>) {
-        unsafe {
-            let id = canvas.map(|x| x.framebuffer.id);
-
-            if self.current_framebuffer != id {
-                self.gl.bind_framebuffer(glow::FRAMEBUFFER, id);
-                self.current_framebuffer = id;
-            }
-        }
-    }
-
-    pub(crate) fn attach_texture_to_canvas(
+    pub fn attach_texture_to_framebuffer(
         &mut self,
-        canvas: &Canvas,
-        texture: &Texture,
+        framebuffer: &GLFramebuffer,
+        texture: &GLTexture,
         rebind_previous: bool,
     ) {
         unsafe {
             let previous_id = self.current_framebuffer;
 
-            self.bind_canvas(Some(canvas));
+            self.bind_framebuffer(Some(framebuffer));
 
             self.gl.framebuffer_texture_2d(
                 glow::FRAMEBUFFER,
                 glow::COLOR_ATTACHMENT0,
                 glow::TEXTURE_2D,
-                Some(texture.handle.borrow().id),
+                Some(texture.id),
                 0,
             );
 
@@ -549,16 +418,87 @@ impl GraphicsDevice {
         }
     }
 
-    pub(crate) fn get_default_filter_mode(&self) -> FilterMode {
+    pub fn set_viewport(&mut self, x: i32, y: i32, width: i32, height: i32) {
+        unsafe {
+            self.gl.viewport(x, y, width, height);
+        }
+    }
+
+    pub fn draw_elements(&mut self, index_buffer: &GLIndexBuffer, count: i32) {
+        unsafe {
+            self.bind_index_buffer(Some(index_buffer));
+
+            self.gl
+                .draw_elements(glow::TRIANGLES, count, glow::UNSIGNED_INT, 0);
+        }
+    }
+
+    pub fn bind_vertex_buffer(&mut self, buffer: Option<&GLVertexBuffer>) {
+        unsafe {
+            let id = buffer.map(|x| x.id);
+
+            if self.current_vertex_buffer != id {
+                self.gl.bind_buffer(glow::ARRAY_BUFFER, id);
+                self.current_vertex_buffer = id;
+            }
+        }
+    }
+
+    pub fn bind_index_buffer(&mut self, buffer: Option<&GLIndexBuffer>) {
+        unsafe {
+            let id = buffer.map(|x| x.id);
+
+            if self.current_index_buffer != id {
+                self.gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, id);
+                self.current_index_buffer = id;
+            }
+        }
+    }
+
+    pub fn bind_program(&mut self, program: Option<&GLProgram>) {
+        unsafe {
+            let id = program.map(|x| x.id);
+
+            if self.current_program != id {
+                self.gl.use_program(id);
+                self.current_program = id;
+            }
+        }
+    }
+
+    pub fn bind_texture(&mut self, texture: Option<&GLTexture>) {
+        unsafe {
+            let id = texture.map(|x| x.id);
+
+            if self.current_texture != id {
+                self.gl.active_texture(glow::TEXTURE0);
+                self.gl.bind_texture(glow::TEXTURE_2D, id);
+                self.current_texture = id;
+            }
+        }
+    }
+
+    pub fn bind_framebuffer(&mut self, framebuffer: Option<&GLFramebuffer>) {
+        unsafe {
+            let id = framebuffer.map(|x| x.id);
+
+            if self.current_framebuffer != id {
+                self.gl.bind_framebuffer(glow::FRAMEBUFFER, id);
+                self.current_framebuffer = id;
+            }
+        }
+    }
+
+    pub fn get_default_filter_mode(&self) -> FilterMode {
         self.default_filter_mode
     }
 
-    pub(crate) fn set_default_filter_mode(&mut self, filter_mode: FilterMode) {
+    pub fn set_default_filter_mode(&mut self, filter_mode: FilterMode) {
         self.default_filter_mode = filter_mode;
     }
 }
 
-impl Drop for GraphicsDevice {
+impl Drop for GLDevice {
     fn drop(&mut self) {
         unsafe {
             self.gl.bind_vertex_array(None);
@@ -570,17 +510,12 @@ impl Drop for GraphicsDevice {
     }
 }
 
-#[doc(hidden)]
-impl From<FilterMode> for i32 {
-    fn from(filter_mode: FilterMode) -> i32 {
-        match filter_mode {
-            FilterMode::Nearest => glow::NEAREST as i32,
-            FilterMode::Linear => glow::LINEAR as i32,
-        }
-    }
+#[derive(Clone, Copy)]
+pub enum BufferUsage {
+    StaticDraw,
+    DynamicDraw,
 }
 
-#[doc(hidden)]
 impl From<BufferUsage> for u32 {
     fn from(buffer_usage: BufferUsage) -> u32 {
         match buffer_usage {
@@ -590,12 +525,44 @@ impl From<BufferUsage> for u32 {
     }
 }
 
-#[doc(hidden)]
+#[derive(Clone, Copy)]
+pub enum TextureFormat {
+    Rgba,
+    Rgb,
+    Red,
+}
+
+impl From<TextureFormat> for u32 {
+    fn from(texture_format: TextureFormat) -> u32 {
+        match texture_format {
+            TextureFormat::Rgba => glow::RGBA,
+            TextureFormat::Rgb => glow::RGB,
+            TextureFormat::Red => glow::RED,
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum FrontFace {
+    Clockwise,
+    CounterClockwise,
+}
+
 impl From<FrontFace> for u32 {
     fn from(front_face: FrontFace) -> u32 {
         match front_face {
             FrontFace::Clockwise => glow::CW,
             FrontFace::CounterClockwise => glow::CCW,
+        }
+    }
+}
+
+#[doc(hidden)]
+impl From<FilterMode> for i32 {
+    fn from(filter_mode: FilterMode) -> i32 {
+        match filter_mode {
+            FilterMode::Nearest => glow::NEAREST as i32,
+            FilterMode::Linear => glow::LINEAR as i32,
         }
     }
 }
@@ -619,7 +586,7 @@ macro_rules! handle_impls {
 }
 
 #[derive(Debug)]
-pub struct VertexBufferHandle {
+pub struct GLVertexBuffer {
     gl: Rc<GlContext>,
 
     id: BufferId,
@@ -627,29 +594,29 @@ pub struct VertexBufferHandle {
     stride: usize,
 }
 
-handle_impls!(VertexBufferHandle, delete_buffer);
+handle_impls!(GLVertexBuffer, delete_buffer);
 
 #[derive(Debug)]
-pub struct IndexBufferHandle {
+pub struct GLIndexBuffer {
     gl: Rc<GlContext>,
 
     id: BufferId,
     count: usize,
 }
 
-handle_impls!(IndexBufferHandle, delete_buffer);
+handle_impls!(GLIndexBuffer, delete_buffer);
 
 #[derive(Debug)]
-pub struct ProgramHandle {
+pub struct GLProgram {
     gl: Rc<GlContext>,
 
     id: ProgramId,
 }
 
-handle_impls!(ProgramHandle, delete_program);
+handle_impls!(GLProgram, delete_program);
 
 #[derive(Debug)]
-pub struct TextureHandle {
+pub struct GLTexture {
     gl: Rc<GlContext>,
 
     id: TextureId,
@@ -658,9 +625,9 @@ pub struct TextureHandle {
     filter_mode: FilterMode,
 }
 
-handle_impls!(TextureHandle, delete_texture);
+handle_impls!(GLTexture, delete_texture);
 
-impl TextureHandle {
+impl GLTexture {
     pub fn width(&self) -> i32 {
         self.width
     }
@@ -672,34 +639,59 @@ impl TextureHandle {
     pub fn filter_mode(&self) -> FilterMode {
         self.filter_mode
     }
+
+    pub fn set_filter_mode(&mut self, device: &mut GLDevice, filter_mode: FilterMode) {
+        device.set_texture_min_filter(self, filter_mode);
+        device.set_texture_mag_filter(self, filter_mode);
+        self.filter_mode = filter_mode;
+    }
 }
 
 #[derive(Debug)]
-pub struct FramebufferHandle {
+pub struct GLFramebuffer {
     gl: Rc<GlContext>,
 
     id: FramebufferId,
 }
 
-handle_impls!(FramebufferHandle, delete_framebuffer);
+handle_impls!(GLFramebuffer, delete_framebuffer);
+
+mod sealed {
+    use super::*;
+    pub trait UniformValueTypes {}
+    impl UniformValueTypes for i32 {}
+    impl UniformValueTypes for f32 {}
+    impl UniformValueTypes for Mat4 {}
+    impl<'a, T> UniformValueTypes for &'a T where T: UniformValueTypes {}
+}
+
+/// Represents a type that can be passed as a uniform value to a shader.
+///
+/// As the implementation of this trait currently interacts directly with the OpenGL layer,
+/// it's marked as a [sealed trait](https://rust-lang-nursery.github.io/api-guidelines/future-proofing.html#sealed-traits-protect-against-downstream-implementations-c-sealed),
+/// and can't be implemented outside of Tetra. This might change in the future!
+pub trait UniformValue: sealed::UniformValueTypes {
+    #[doc(hidden)]
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<u32>);
+}
 
 impl UniformValue for i32 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<u32>) {
-        shader.handle.gl.uniform_1_i32(location, *self);
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<u32>) {
+        program.gl.uniform_1_i32(location, *self);
     }
 }
 
 impl UniformValue for f32 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<u32>) {
-        shader.handle.gl.uniform_1_f32(location, *self);
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<u32>) {
+        program.gl.uniform_1_f32(location, *self);
     }
 }
 
 impl UniformValue for Mat4 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<u32>) {
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<u32>) {
         let slice = self.as_slice();
 
         // I don't think there's a scenario where this wouldn't be true,
@@ -708,8 +700,7 @@ impl UniformValue for Mat4 {
 
         let array_ref = slice.as_ptr() as *const [f32; 16];
 
-        shader
-            .handle
+        program
             .gl
             .uniform_matrix_4_f32_slice(location, false, &*array_ref);
     }
@@ -720,7 +711,7 @@ where
     T: UniformValue,
 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<u32>) {
-        (**self).set_uniform(shader, location);
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<u32>) {
+        (**self).set_uniform(program, location);
     }
 }

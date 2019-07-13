@@ -6,8 +6,8 @@
 //! rendering.
 
 pub mod animation;
-mod buffers;
 mod canvas;
+pub(crate) mod opengl;
 pub mod ui;
 
 // TODO: Make all of the below modules private in 0.3.0.
@@ -24,7 +24,6 @@ pub mod text;
 pub mod texture;
 
 pub use self::animation::Animation;
-pub(crate) use self::buffers::{IndexBuffer, VertexBuffer};
 pub use self::canvas::*;
 pub use self::color::Color;
 pub use self::scaling::ScreenScaling;
@@ -38,8 +37,11 @@ use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
 use crate::error::Result;
 use crate::glm::{self, Mat3, Mat4};
+use crate::graphics::opengl::{
+    BufferUsage, FrontFace, GLDevice, GLIndexBuffer, GLVertexBuffer, TextureFormat,
+};
 use crate::graphics::text::FontQuad;
-use crate::platform::GraphicsDevice;
+use crate::platform;
 use crate::window;
 use crate::Context;
 
@@ -71,8 +73,8 @@ pub(crate) enum ActiveCanvas {
 }
 
 pub(crate) struct GraphicsContext {
-    vertex_buffer: VertexBuffer,
-    index_buffer: IndexBuffer,
+    vertex_buffer: GLVertexBuffer,
+    index_buffer: GLIndexBuffer,
 
     texture: Option<ActiveTexture>,
     font_cache_texture: Texture,
@@ -100,7 +102,7 @@ pub(crate) struct GraphicsContext {
 
 impl GraphicsContext {
     pub(crate) fn new(
-        device: &mut GraphicsDevice,
+        device: &mut GLDevice,
         window_width: i32,
         window_height: i32,
         internal_width: i32,
@@ -115,8 +117,8 @@ impl GraphicsContext {
         let screen_rect =
             scaling.get_screen_rect(internal_width, internal_height, window_width, window_height);
 
-        let backbuffer = device.create_canvas(backbuffer_width, backbuffer_height, false)?;
-        device.viewport(0, 0, backbuffer_width, backbuffer_height);
+        let backbuffer = Canvas::with_device(device, backbuffer_width, backbuffer_height, false)?;
+        device.set_viewport(0, 0, backbuffer_width, backbuffer_height);
         device.front_face(FrontFace::Clockwise);
 
         let indices: Vec<u32> = INDEX_ARRAY
@@ -127,7 +129,7 @@ impl GraphicsContext {
             .map(|(i, vertex)| vertex + i as u32 / 6 * 4)
             .collect();
 
-        let vertex_buffer = device.create_vertex_buffer(
+        let vertex_buffer = device.new_vertex_buffer(
             MAX_VERTICES * VERTEX_STRIDE,
             VERTEX_STRIDE,
             BufferUsage::DynamicDraw,
@@ -137,11 +139,12 @@ impl GraphicsContext {
         device.set_vertex_buffer_attribute(&vertex_buffer, 1, 2, 2);
         device.set_vertex_buffer_attribute(&vertex_buffer, 2, 4, 4);
 
-        let index_buffer = device.create_index_buffer(MAX_INDICES, BufferUsage::StaticDraw)?;
+        let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::StaticDraw)?;
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
-        let default_shader = device.create_shader(
+        let default_shader = Shader::with_device(
+            device,
             shader::DEFAULT_VERTEX_SHADER,
             shader::DEFAULT_FRAGMENT_SHADER,
         )?;
@@ -149,7 +152,7 @@ impl GraphicsContext {
         let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
         let (width, height) = font_cache.texture_dimensions();
 
-        let font_cache_texture = device.create_texture_empty(width as i32, height as i32)?;
+        let font_cache_texture = Texture::with_device_empty(device, width as i32, height as i32)?;
 
         Ok(GraphicsContext {
             vertex_buffer,
@@ -408,18 +411,6 @@ pub enum FilterMode {
     Linear,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub(crate) enum BufferUsage {
-    StaticDraw,
-    DynamicDraw,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub(crate) enum FrontFace {
-    Clockwise,
-    CounterClockwise,
-}
-
 /// Represents a type that can be drawn.
 ///
 /// [`graphics::draw`](fn.draw.html) can be used to draw without importing this trait, which is sometimes
@@ -437,8 +428,7 @@ pub trait Drawable {
 
 /// Clears the screen (or a canvas, if one is enabled) to the specified color.
 pub fn clear(ctx: &mut Context, color: Color) {
-    ctx.graphics_device
-        .clear(color.r, color.g, color.b, color.a);
+    ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
 // TODO: This function really needs cleaning up before it can be exposed publicly.
@@ -615,16 +605,16 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 
         match &ctx.graphics.canvas {
             ActiveCanvas::Window => {
-                ctx.graphics_device.bind_canvas(None);
-                ctx.graphics_device.front_face(FrontFace::CounterClockwise);
-                ctx.graphics_device
-                    .viewport(0, 0, window::get_width(ctx), window::get_height(ctx));
+                ctx.gl.bind_framebuffer(None);
+                ctx.gl.front_face(FrontFace::CounterClockwise);
+                ctx.gl
+                    .set_viewport(0, 0, window::get_width(ctx), window::get_height(ctx));
             }
             ActiveCanvas::Backbuffer => {
-                ctx.graphics_device
-                    .bind_canvas(Some(&ctx.graphics.backbuffer));
-                ctx.graphics_device.front_face(FrontFace::Clockwise);
-                ctx.graphics_device.viewport(
+                ctx.gl
+                    .bind_framebuffer(Some(&ctx.graphics.backbuffer.framebuffer));
+                ctx.gl.front_face(FrontFace::Clockwise);
+                ctx.gl.set_viewport(
                     0,
                     0,
                     ctx.graphics.backbuffer.width(),
@@ -632,9 +622,9 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 );
             }
             ActiveCanvas::User(r) => {
-                ctx.graphics_device.bind_canvas(Some(r));
-                ctx.graphics_device.front_face(FrontFace::Clockwise);
-                ctx.graphics_device.viewport(0, 0, r.width(), r.height());
+                ctx.gl.bind_framebuffer(Some(&r.framebuffer));
+                ctx.gl.front_face(FrontFace::Clockwise);
+                ctx.gl.set_viewport(0, 0, r.width(), r.height());
             }
         }
     }
@@ -665,23 +655,17 @@ pub fn flush(ctx: &mut Context) {
             ActiveCanvas::User(r) => &r.projection,
         };
 
-        ctx.graphics_device.bind_texture(Some(texture));
+        ctx.gl.bind_texture(Some(&texture.handle.borrow()));
 
-        ctx.graphics_device.bind_shader(Some(shader));
+        ctx.gl.bind_program(Some(&shader.handle));
+        ctx.gl
+            .set_uniform(&shader.handle, "u_projection", &projection);
 
-        ctx.graphics_device
-            .set_uniform(shader, "u_projection", &projection);
+        ctx.gl.bind_vertex_buffer(Some(&ctx.graphics.vertex_buffer));
+        ctx.gl
+            .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
 
-        ctx.graphics_device
-            .bind_vertex_buffer(Some(&ctx.graphics.vertex_buffer));
-
-        ctx.graphics_device.set_vertex_buffer_data(
-            &ctx.graphics.vertex_buffer,
-            &ctx.graphics.vertex_data,
-            0,
-        );
-
-        ctx.graphics_device
+        ctx.gl
             .draw_elements(&ctx.graphics.index_buffer, ctx.graphics.element_count);
 
         ctx.graphics.vertex_data.clear();
@@ -720,7 +704,7 @@ pub fn present(ctx: &mut Context) {
 
     flush(ctx);
 
-    ctx.platform.swap_buffers();
+    platform::swap_buffers(ctx);
 
     set_canvas_ex(ctx, ActiveCanvas::Backbuffer);
 }
@@ -823,12 +807,12 @@ pub fn set_letterbox_color(ctx: &mut Context, color: Color) {
 
 /// Returns the filter mode that will be used by newly created textures and canvases.
 pub fn get_default_filter_mode(ctx: &Context) -> FilterMode {
-    ctx.graphics_device.get_default_filter_mode()
+    ctx.gl.get_default_filter_mode()
 }
 
 /// Sets the filter mode that will be used by newly created textures and canvases.
 pub fn set_default_filter_mode(ctx: &mut Context, filter_mode: FilterMode) {
-    ctx.graphics_device.set_default_filter_mode(filter_mode);
+    ctx.gl.set_default_filter_mode(filter_mode);
 }
 
 pub(crate) fn set_window_projection(ctx: &mut Context, width: i32, height: i32) {
@@ -852,7 +836,7 @@ pub(crate) fn set_backbuffer_size(ctx: &mut Context, width: i32, height: i32) {
         ctx.graphics.backbuffer = Canvas::new(ctx, width, height);
 
         if let ActiveCanvas::Backbuffer = ctx.graphics.canvas {
-            ctx.graphics_device.viewport(0, 0, width, height);
+            ctx.gl.set_viewport(0, 0, width, height);
         }
     }
 }
