@@ -6,8 +6,8 @@ use std::rc::Rc;
 
 use image;
 
-use crate::error::{Result, TetraError};
-use crate::graphics::opengl::{GLDevice, GLTexture, TextureFormat};
+use crate::error::Result;
+use crate::graphics::opengl::GLTexture;
 use crate::graphics::{self, DrawParams, Drawable, FilterMode, Rectangle};
 use crate::Context;
 
@@ -95,7 +95,7 @@ impl Texture {
     /// If not enough data is provided to fill the texture, a `TetraError::NotEnoughData`
     /// will be returned. This is to prevent OpenGL from reading uninitialized memory.
     pub fn from_rgba(ctx: &mut Context, width: i32, height: i32, data: &[u8]) -> Result<Texture> {
-        Texture::with_device(&mut ctx.gl, width, height, data)
+        ctx.gl.new_texture(width, height, data)
     }
 
     #[deprecated(
@@ -106,40 +106,6 @@ impl Texture {
     #[inline]
     pub fn from_data(ctx: &mut Context, data: &[u8]) -> Result<Texture> {
         Texture::from_file_data(ctx, data)
-    }
-
-    pub(crate) fn with_device(
-        device: &mut GLDevice,
-        width: i32,
-        height: i32,
-        data: &[u8],
-    ) -> Result<Texture> {
-        let expected = (width * height * 4) as usize;
-        let actual = data.len();
-
-        if expected > actual {
-            return Err(TetraError::NotEnoughData { expected, actual });
-        }
-
-        let handle = device.new_texture(width, height, TextureFormat::Rgba)?;
-
-        device.set_texture_data(&handle, &data, 0, 0, width, height, TextureFormat::Rgba);
-
-        Ok(Texture {
-            handle: Rc::new(RefCell::new(handle)),
-        })
-    }
-
-    pub(crate) fn with_device_empty(
-        device: &mut GLDevice,
-        width: i32,
-        height: i32,
-    ) -> Result<Texture> {
-        let handle = device.new_texture(width, height, TextureFormat::Rgba)?;
-
-        Ok(Texture {
-            handle: Rc::new(RefCell::new(handle)),
-        })
     }
 
     /// Returns the width of the texture.
@@ -159,9 +125,7 @@ impl Texture {
 
     /// Sets the filter mode that should be used by the texture.
     pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
-        self.handle
-            .borrow_mut()
-            .set_filter_mode(&mut ctx.gl, filter_mode);
+        ctx.gl.set_texture_filter_mode(self, filter_mode);
     }
 }
 

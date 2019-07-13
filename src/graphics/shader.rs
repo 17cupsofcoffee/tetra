@@ -5,7 +5,7 @@ use std::path::Path;
 use std::rc::Rc;
 
 use crate::error::Result;
-use crate::graphics::opengl::{GLDevice, GLProgram};
+use crate::graphics::opengl::GLProgram;
 use crate::Context;
 
 #[doc(inline)]
@@ -64,8 +64,7 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        Shader::with_device(
-            &mut ctx.gl,
+        ctx.gl.new_shader(
             &fs::read_to_string(vertex_path)?,
             &fs::read_to_string(fragment_path)?,
         )
@@ -84,11 +83,8 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        Shader::with_device(
-            &mut ctx.gl,
-            &fs::read_to_string(path)?,
-            DEFAULT_FRAGMENT_SHADER,
-        )
+        ctx.gl
+            .new_shader(&fs::read_to_string(path)?, DEFAULT_FRAGMENT_SHADER)
     }
 
     /// Creates a new shader program from the given fragment shader file.
@@ -104,11 +100,8 @@ impl Shader {
     where
         P: AsRef<Path>,
     {
-        Shader::with_device(
-            &mut ctx.gl,
-            DEFAULT_VERTEX_SHADER,
-            &fs::read_to_string(path)?,
-        )
+        ctx.gl
+            .new_shader(DEFAULT_VERTEX_SHADER, &fs::read_to_string(path)?)
     }
 
     /// Creates a new shader program from the given strings.
@@ -121,19 +114,7 @@ impl Shader {
         vertex_shader: &str,
         fragment_shader: &str,
     ) -> Result<Shader> {
-        Shader::with_device(&mut ctx.gl, vertex_shader, fragment_shader)
-    }
-
-    pub(crate) fn with_device(
-        device: &mut GLDevice,
-        vertex_shader: &str,
-        fragment_shader: &str,
-    ) -> Result<Shader> {
-        let handle = device.compile_program(vertex_shader, fragment_shader)?;
-
-        Ok(Shader {
-            handle: Rc::new(handle),
-        })
+        ctx.gl.new_shader(vertex_shader, fragment_shader)
     }
 
     /// Sets the value of the specifed uniform parameter.
@@ -141,6 +122,6 @@ impl Shader {
     where
         V: UniformValue,
     {
-        ctx.gl.set_uniform(&self.handle, name, value);
+        ctx.gl.set_uniform(self, name, value);
     }
 }

@@ -6,6 +6,7 @@
 //! rendering.
 
 pub mod animation;
+mod buffers;
 mod canvas;
 pub(crate) mod opengl;
 pub mod ui;
@@ -32,14 +33,13 @@ pub use self::text::{Font, Text};
 pub use self::texture::Texture;
 pub use self::ui::NineSlice;
 pub use crate::glm::Vec2;
+pub(crate) use crate::graphics::buffers::{IndexBuffer, VertexBuffer};
 
 use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
 use crate::error::Result;
 use crate::glm::{self, Mat3, Mat4};
-use crate::graphics::opengl::{
-    BufferUsage, FrontFace, GLDevice, GLIndexBuffer, GLVertexBuffer, TextureFormat,
-};
+use crate::graphics::opengl::{BufferUsage, FrontFace, GLDevice};
 use crate::graphics::text::FontQuad;
 use crate::platform;
 use crate::window;
@@ -73,8 +73,8 @@ pub(crate) enum ActiveCanvas {
 }
 
 pub(crate) struct GraphicsContext {
-    vertex_buffer: GLVertexBuffer,
-    index_buffer: GLIndexBuffer,
+    vertex_buffer: VertexBuffer,
+    index_buffer: IndexBuffer,
 
     texture: Option<ActiveTexture>,
     font_cache_texture: Texture,
@@ -117,8 +117,9 @@ impl GraphicsContext {
         let screen_rect =
             scaling.get_screen_rect(internal_width, internal_height, window_width, window_height);
 
-        let backbuffer = Canvas::with_device(device, backbuffer_width, backbuffer_height, false)?;
-        device.set_viewport(0, 0, backbuffer_width, backbuffer_height);
+        let backbuffer = device.new_canvas(backbuffer_width, backbuffer_height, false)?;
+
+        device.viewport(0, 0, backbuffer_width, backbuffer_height);
         device.front_face(FrontFace::Clockwise);
 
         let indices: Vec<u32> = INDEX_ARRAY
@@ -143,16 +144,14 @@ impl GraphicsContext {
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
-        let default_shader = Shader::with_device(
-            device,
+        let default_shader = device.new_shader(
             shader::DEFAULT_VERTEX_SHADER,
             shader::DEFAULT_FRAGMENT_SHADER,
         )?;
 
         let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
         let (width, height) = font_cache.texture_dimensions();
-
-        let font_cache_texture = Texture::with_device_empty(device, width as i32, height as i32)?;
+        let font_cache_texture = device.new_texture_empty(width as i32, height as i32)?;
 
         Ok(GraphicsContext {
             vertex_buffer,
@@ -605,16 +604,15 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 
         match &ctx.graphics.canvas {
             ActiveCanvas::Window => {
-                ctx.gl.bind_framebuffer(None);
+                ctx.gl.bind_canvas(None);
                 ctx.gl.front_face(FrontFace::CounterClockwise);
                 ctx.gl
-                    .set_viewport(0, 0, window::get_width(ctx), window::get_height(ctx));
+                    .viewport(0, 0, window::get_width(ctx), window::get_height(ctx));
             }
             ActiveCanvas::Backbuffer => {
-                ctx.gl
-                    .bind_framebuffer(Some(&ctx.graphics.backbuffer.framebuffer));
+                ctx.gl.bind_canvas(Some(&ctx.graphics.backbuffer));
                 ctx.gl.front_face(FrontFace::Clockwise);
-                ctx.gl.set_viewport(
+                ctx.gl.viewport(
                     0,
                     0,
                     ctx.graphics.backbuffer.width(),
@@ -622,9 +620,9 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 );
             }
             ActiveCanvas::User(r) => {
-                ctx.gl.bind_framebuffer(Some(&r.framebuffer));
+                ctx.gl.bind_canvas(Some(r));
                 ctx.gl.front_face(FrontFace::Clockwise);
-                ctx.gl.set_viewport(0, 0, r.width(), r.height());
+                ctx.gl.viewport(0, 0, r.width(), r.height());
             }
         }
     }
@@ -655,18 +653,18 @@ pub fn flush(ctx: &mut Context) {
             ActiveCanvas::User(r) => &r.projection,
         };
 
-        ctx.gl.bind_texture(Some(&texture.handle.borrow()));
+        ctx.gl.set_uniform(shader, "u_projection", &projection);
 
-        ctx.gl.bind_program(Some(&shader.handle));
-        ctx.gl
-            .set_uniform(&shader.handle, "u_projection", &projection);
-
-        ctx.gl.bind_vertex_buffer(Some(&ctx.graphics.vertex_buffer));
         ctx.gl
             .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
 
-        ctx.gl
-            .draw_elements(&ctx.graphics.index_buffer, ctx.graphics.element_count);
+        ctx.gl.draw_elements(
+            &ctx.graphics.vertex_buffer,
+            &ctx.graphics.index_buffer,
+            texture,
+            shader,
+            ctx.graphics.element_count,
+        );
 
         ctx.graphics.vertex_data.clear();
         ctx.graphics.element_count = 0;
@@ -836,7 +834,7 @@ pub(crate) fn set_backbuffer_size(ctx: &mut Context, width: i32, height: i32) {
         ctx.graphics.backbuffer = Canvas::new(ctx, width, height);
 
         if let ActiveCanvas::Backbuffer = ctx.graphics.canvas {
-            ctx.gl.set_viewport(0, 0, width, height);
+            ctx.gl.viewport(0, 0, width, height);
         }
     }
 }
