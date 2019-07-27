@@ -8,8 +8,6 @@
 
 Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event handling and OpenGL 3.2+ for rendering.
 
-**Note that Tetra is still extremely early in development!** It may/will have bugs and missing features. That said, you're welcome to give it a go and let me know what you think :)
-
 * [Website/Tutorial](https://tetra.seventeencups.net) 
 * [API Docs](https://docs.rs/tetra)
 * [FAQ](https://tetra.seventeencups.net/FAQ)
@@ -67,4 +65,4 @@ The full list of examples is available [here](https://github.com/17cupsofcoffee/
 
 ## Support/Feedback
 
-As mentioned above, Tetra is fairly early in development, so there's likely to be bugs/flaky docs/general weirdness. Please feel free to open an issue/PR if you find something! You can also contact me via [Twitter](https://twitter.com/17cupsofcoffee), or find me lurking in the #game-and-graphics-dev channel on the [Rust Community Discord](https://bit.ly/rust-community).
+Tetra is fairly early in development, so you might run into bugs/flaky docs/general weirdness. Please feel free to open an issue/PR if you find something! You can also contact me via [Twitter](https://twitter.com/17cupsofcoffee), or find me lurking in the #game-and-graphics-dev channel on the [Rust Community Discord](https://bit.ly/rust-community).
