@@ -8,7 +8,7 @@
 
 Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event handling and OpenGL 3.2+ for rendering.
 
-* [Website/Tutorial](https://tetra.seventeencups.net) 
+* [Website/Tutorial](https://tetra.seventeencups.net)
 * [API Docs](https://docs.rs/tetra)
 * [FAQ](https://tetra.seventeencups.net/FAQ)
 
@@ -32,7 +32,7 @@ tetra = "0.2"
 
 Tetra currently requires Rust 1.32 or higher.
 
-You will also need to install the SDL2 native libraries - full details are provided in the [documentation](https://tetra.seventeencups.net/tutorial/installation.html). 
+You will also need to install the SDL2 native libraries - full details are provided in the [documentation](https://tetra.seventeencups.net/tutorial/installation.html).
 
 ## Examples
 
@@ -46,7 +46,7 @@ struct GameState;
 
 impl State for GameState {
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
-        // Cornflour blue, as is tradition
+        // Cornflower blue, as is tradition
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
         Ok(())
     }

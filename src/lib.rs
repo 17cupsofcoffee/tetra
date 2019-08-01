@@ -36,7 +36,7 @@
 //!
 //! impl State for GameState {
 //!     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
-//!         // Cornflour blue, as is tradition
+//!         // Cornflower blue, as is tradition
 //!         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
 //!         Ok(())
 //!     }
