@@ -125,6 +125,38 @@ pub struct Context {
 }
 
 impl Context {
+    pub(crate) fn new(builder: &ContextBuilder<'_>) -> Result<Context> {
+        // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
+        let audio = AudioContext::new();
+        let (platform, gl_context, window_width, window_height) = SdlPlatform::new(builder)?;
+        let mut gl = GLDevice::new(gl_context)?;
+
+        let graphics = GraphicsContext::new(
+            &mut gl,
+            window_width,
+            window_height,
+            builder.internal_width,
+            builder.internal_height,
+            builder.scaling,
+        )?;
+
+        let input = InputContext::new();
+        let time = TimeContext::new(builder.tick_rate);
+
+        Ok(Context {
+            platform,
+            gl,
+
+            graphics,
+            input,
+            audio,
+            time,
+
+            running: false,
+            quit_on_escape: builder.quit_on_escape,
+        })
+    }
+
     /// Runs the game using the provided `State` implementation.
     ///
     /// # Errors
@@ -391,35 +423,7 @@ impl<'a> ContextBuilder<'a> {
     /// If an error is encountered during initialization of the context, this method will
     /// return the error. This will usually be either `TetraError::Sdl` or `TetraError::OpenGl`.
     pub fn build(&self) -> Result<Context> {
-        // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
-        let audio = AudioContext::new();
-        let (platform, gl_context, window_width, window_height) = SdlPlatform::new(self)?;
-        let mut gl = GLDevice::new(gl_context)?;
-
-        let graphics = GraphicsContext::new(
-            &mut gl,
-            window_width,
-            window_height,
-            self.internal_width,
-            self.internal_height,
-            self.scaling,
-        )?;
-
-        let input = InputContext::new();
-        let time = TimeContext::new(self.tick_rate);
-
-        Ok(Context {
-            platform,
-            gl,
-
-            graphics,
-            input,
-            audio,
-            time,
-
-            running: false,
-            quit_on_escape: self.quit_on_escape,
-        })
+        Context::new(self)
     }
 }
 
