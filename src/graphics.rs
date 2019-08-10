@@ -28,7 +28,7 @@ pub(crate) use crate::graphics::buffers::{IndexBuffer, VertexBuffer};
 use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
 use crate::error::Result;
-use crate::glm::{self, Mat3, Mat4};
+use crate::glm::{self, Mat4};
 use crate::graphics::opengl::{BufferUsage, FrontFace, GLDevice};
 use crate::graphics::text::FontQuad;
 use crate::platform;
