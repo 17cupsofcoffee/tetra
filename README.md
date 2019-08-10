@@ -65,4 +65,4 @@ The full list of examples is available [here](https://github.com/17cupsofcoffee/
 
 ## Support/Feedback
 
-Tetra is fairly early in development, so you might run into bugs/flaky docs/general weirdness. Please feel free to open an issue/PR if you find something! You can also contact me via [Twitter](https://twitter.com/17cupsofcoffee), or find me lurking in the #game-and-graphics-dev channel on the [Rust Community Discord](https://bit.ly/rust-community).
+Tetra is fairly early in development, so you might run into bugs/flaky docs/general weirdness. Please feel free to open an issue/PR if you find something! You can also contact me via [Twitter](https://twitter.com/17cupsofcoffee), or find me lurking in the #games-and-graphics channel on the [Rust Community Discord](https://bit.ly/rust-community).
