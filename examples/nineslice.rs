@@ -1,4 +1,5 @@
-use tetra::graphics::{self, Color, NineSlice, Rectangle, Texture, Vec2};
+use tetra::graphics::ui::NineSlice;
+use tetra::graphics::{self, Color, Rectangle, Texture, Vec2};
 use tetra::{Context, ContextBuilder, State};
 
 struct GameState {

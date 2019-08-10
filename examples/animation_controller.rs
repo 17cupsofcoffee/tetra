@@ -3,7 +3,8 @@
 // lines may be added to Tetra itself later, but for now it's not too hard to
 // roll your own!
 
-use tetra::graphics::{self, Animation, Color, DrawParams, Drawable, Rectangle, Texture, Vec2};
+use tetra::graphics::animation::Animation;
+use tetra::graphics::{self, Color, DrawParams, Drawable, Rectangle, Texture, Vec2};
 use tetra::input::{self, Key};
 use tetra::{Context, ContextBuilder, State};
 
