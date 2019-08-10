@@ -10,6 +10,14 @@ This project adheres to Semantic Versioning.
 
 * Updated `glow` to 0.2.2.
 
+### Removed
+
+* Removed deprecated sub-modules from `graphics`.
+* Removed deprecated `color::BLACK` and `color::WHITE` constants - use `Color::BLACK` and `Color::WHITE` instead.
+* Removed deprecated `from_data` constructors - use `from_file_data` instead.
+* Removed deprecated `DrawParams::build_matrix` method.
+* Removed re-exports of `Animation` and `NineSlice` from `graphics` - from now on this functionality will be accessible via `graphics::animation` and `graphics::ui` respectively.
+
 ## [0.2.20] - 2019-07-13
 
 ### Changed

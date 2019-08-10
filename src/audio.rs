@@ -79,16 +79,6 @@ impl Sound {
         Sound { data: data.into() }
     }
 
-    #[deprecated(
-        since = "0.2.13",
-        note = "Renamed to `from_file_data` to disambiguate from other sound data formats (e.g. PCM)."
-    )]
-    #[allow(missing_docs)]
-    #[inline]
-    pub fn from_data(data: &[u8]) -> Sound {
-        Sound::from_file_data(data)
-    }
-
     /// Plays the sound.
     ///
     /// # Errors

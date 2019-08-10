@@ -8,30 +8,20 @@
 pub mod animation;
 mod buffers;
 mod canvas;
+mod color;
 pub(crate) mod opengl;
+mod scaling;
+mod shader;
+mod text;
+mod texture;
 pub mod ui;
 
-// TODO: Make all of the below modules private in 0.3.0.
-
-#[doc(hidden)]
-pub mod color;
-#[doc(hidden)]
-pub mod scaling;
-#[doc(hidden)]
-pub mod shader;
-#[doc(hidden)]
-pub mod text;
-#[doc(hidden)]
-pub mod texture;
-
-pub use self::animation::Animation;
 pub use self::canvas::*;
-pub use self::color::Color;
-pub use self::scaling::ScreenScaling;
-pub use self::shader::{Shader, UniformValue, DEFAULT_FRAGMENT_SHADER, DEFAULT_VERTEX_SHADER};
-pub use self::text::{Font, Text};
-pub use self::texture::Texture;
-pub use self::ui::NineSlice;
+pub use self::color::*;
+pub use self::scaling::*;
+pub use self::shader::*;
+pub use self::text::*;
+pub use self::texture::*;
 pub use crate::glm::Vec2;
 pub(crate) use crate::graphics::buffers::{IndexBuffer, VertexBuffer};
 
@@ -359,18 +349,6 @@ impl DrawParams {
     pub fn clip(mut self, clip: Rectangle) -> DrawParams {
         self.clip = Some(clip);
         self
-    }
-
-    #[deprecated(
-        since = "0.2.6",
-        note = "This was only intended for internal use, but was made public by mistake."
-    )]
-    #[doc(hidden)]
-    pub fn build_matrix(&self) -> Mat3 {
-        glm::translation2d(&self.position)
-            * glm::rotation2d(self.rotation)
-            * glm::scaling2d(&self.scale)
-            * glm::translation2d(&-self.origin)
     }
 }
 

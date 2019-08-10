@@ -57,28 +57,6 @@ impl Color {
     pub const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 }
 
-/// Shortcut for `Color::rgb(0.0, 0.0, 0.0)`.
-#[deprecated(
-    note = "this constant is now available directly on the 'Color' type as 'Color::BLACK'"
-)]
-pub const BLACK: Color = Color {
-    r: 0.0,
-    g: 0.0,
-    b: 0.0,
-    a: 1.0,
-};
-
-/// Shortcut for `Color::rgb(1.0, 1.0, 1.0)`.
-#[deprecated(
-    note = "this constant is now available directly on the 'Color' type as 'Color::WHITE'"
-)]
-pub const WHITE: Color = Color {
-    r: 1.0,
-    g: 1.0,
-    b: 1.0,
-    a: 1.0,
-};
-
 #[cfg(test)]
 mod tests {
     use super::Color;

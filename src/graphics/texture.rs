@@ -98,16 +98,6 @@ impl Texture {
         ctx.gl.new_texture(width, height, data)
     }
 
-    #[deprecated(
-        since = "0.2.13",
-        note = "Renamed to `from_file_data` to disambiguate from other image data formats (e.g. RGBA)."
-    )]
-    #[allow(missing_docs)]
-    #[inline]
-    pub fn from_data(ctx: &mut Context, data: &[u8]) -> Result<Texture> {
-        Texture::from_file_data(ctx, data)
-    }
-
     /// Returns the width of the texture.
     pub fn width(&self) -> i32 {
         self.handle.borrow().width()

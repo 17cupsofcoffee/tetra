@@ -66,16 +66,6 @@ impl Font {
 
         Font { id }
     }
-
-    #[deprecated(
-        since = "0.2.14",
-        note = "Renamed to `from_file_data` for consistency with Texture and Sound."
-    )]
-    #[allow(missing_docs)]
-    #[inline]
-    pub fn from_data(ctx: &mut Context, data: &'static [u8]) -> Font {
-        Font::from_file_data(ctx, data)
-    }
 }
 
 impl Default for Font {
