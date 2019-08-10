@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Changed
+
+* Updated `glow` to 0.2.2.
+
 ## [0.2.20] - 2019-07-13
 
 ### Changed
