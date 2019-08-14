@@ -9,6 +9,7 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * Updated `glow` to 0.2.2.
+* Updated `hashbrown` to 0.6.0.
 
 ### Removed
 
