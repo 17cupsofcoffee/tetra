@@ -127,9 +127,8 @@ impl State for GameState {
     }
 }
 
-fn main() -> tetra::Result {
+fn main() {
     ContextBuilder::new("BunnyMark", WIDTH, HEIGHT)
         .quit_on_escape(true)
-        .build()?
-        .run_with(GameState::new)
+        .run_with(GameState::new);
 }

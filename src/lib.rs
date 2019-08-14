@@ -76,7 +76,7 @@ use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
 use crate::graphics::ScreenScaling;
 use crate::input::InputContext;
-use crate::platform::SdlPlatform;
+use crate::platform::Platform;
 use crate::time::TimeContext;
 
 /// A trait representing a type that contains game state and provides logic for updating it
@@ -110,11 +110,15 @@ pub trait State {
     fn draw(&mut self, ctx: &mut Context, dt: f64) -> Result {
         Ok(())
     }
+
+    fn error(error: TetraError) {
+        println!("Error: {}", error);
+    }
 }
 
 /// A struct containing all of the 'global' state within the framework.
 pub struct Context {
-    platform: SdlPlatform,
+    platform: Platform,
     gl: GLDevice,
 
     graphics: GraphicsContext,
@@ -130,7 +134,7 @@ impl Context {
     pub(crate) fn new(builder: &ContextBuilder<'_>) -> Result<Context> {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
         let audio = AudioContext::new();
-        let (platform, gl_context, window_width, window_height) = SdlPlatform::new(builder)?;
+        let (platform, gl_context, window_width, window_height) = Platform::new(builder)?;
         let mut gl = GLDevice::new(gl_context)?;
 
         let graphics = GraphicsContext::new(
@@ -157,112 +161,6 @@ impl Context {
             running: false,
             quit_on_escape: builder.quit_on_escape,
         })
-    }
-
-    /// Runs the game using the provided `State` implementation.
-    ///
-    /// # Errors
-    ///
-    /// If the `State` returns an error from `update` or `draw`, the game will stop
-    /// running and this method will return the error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// # use tetra::{Context, ContextBuilder, State};
-    /// #
-    /// struct GameState;
-    ///
-    /// impl State for GameState { }
-    ///
-    /// fn main() -> tetra::Result {
-    ///    ContextBuilder::default().build()?.run(&mut GameState)
-    /// }
-    /// ```
-    pub fn run<S>(&mut self, state: &mut S) -> Result
-    where
-        S: State,
-    {
-        self.running = true;
-
-        platform::show_window(self);
-        time::reset(self);
-
-        while self.running {
-            time::tick(self);
-
-            if let Err(e) = platform::handle_events(self) {
-                self.running = false;
-                return Err(e);
-            }
-
-            while time::is_tick_ready(self) {
-                if let Err(e) = state.update(self) {
-                    self.running = false;
-                    return Err(e);
-                }
-
-                input::cleanup_after_state_update(self);
-
-                time::consume_tick(self);
-            }
-
-            if let Err(e) = state.draw(self, time::get_alpha(self)) {
-                self.running = false;
-                return Err(e);
-            }
-
-            graphics::present(self);
-
-            std::thread::yield_now();
-        }
-
-        platform::hide_window(self);
-
-        Ok(())
-    }
-
-    /// Constructs an implementation of `State` using the given closure, and then runs it.
-    ///
-    /// This is mainly handy when chaining methods, as it allows you to call your `State` constructor
-    /// without breaking the chain.
-    ///
-    /// # Errors
-    ///
-    /// If the `State` returns an error from `update` or `draw`, the game will stop
-    /// running and this method will return the error.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// # use tetra::graphics::Texture;
-    /// # use tetra::{Context, ContextBuilder, State};
-    /// #
-    /// struct GameState {
-    ///     texture: Texture,
-    /// }
-    ///
-    /// impl GameState {
-    ///     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
-    ///         Ok(GameState {
-    ///             texture: Texture::new(ctx, "./examples/resources/player.png")?,
-    ///         })
-    ///     }
-    /// }
-    ///
-    /// impl State for GameState { }
-    ///
-    /// fn main() -> tetra::Result {
-    ///    ContextBuilder::default().build()?.run_with(GameState::new)
-    /// }
-    /// ```
-    pub fn run_with<S, F>(&mut self, init: F) -> Result
-    where
-        S: State,
-        F: FnOnce(&mut Context) -> Result<S>,
-    {
-        let state = &mut init(self)?;
-        self.run(state)
     }
 }
 
@@ -427,6 +325,25 @@ impl<'a> ContextBuilder<'a> {
     pub fn build(&self) -> Result<Context> {
         Context::new(self)
     }
+
+    pub fn run<S>(&self, state: S)
+    where
+        S: State,
+    {
+        if let Err(e) = run_impl(self, |_| Ok(state)) {
+            S::error(e);
+        }
+    }
+
+    pub fn run_with<S, F>(&self, init: F)
+    where
+        S: State,
+        F: FnOnce(&mut Context) -> Result<S>,
+    {
+        if let Err(e) = run_impl(self, init) {
+            S::error(e);
+        }
+    }
 }
 
 impl<'a> Default for ContextBuilder<'a> {
@@ -449,4 +366,51 @@ impl<'a> Default for ContextBuilder<'a> {
             quit_on_escape: false,
         }
     }
+}
+
+fn run_impl<S, F>(builder: &ContextBuilder<'_>, init: F) -> Result
+where
+    S: State,
+    F: FnOnce(&mut Context) -> Result<S>,
+{
+    let mut ctx = &mut Context::new(builder)?;
+    let mut state = init(ctx)?;
+
+    ctx.running = true;
+
+    platform::show_window(ctx);
+    time::reset(ctx);
+
+    while ctx.running {
+        time::tick(ctx);
+
+        if let Err(e) = platform::handle_events(ctx) {
+            ctx.running = false;
+            return Err(e);
+        }
+
+        while time::is_tick_ready(ctx) {
+            if let Err(e) = state.update(ctx) {
+                ctx.running = false;
+                return Err(e);
+            }
+
+            input::cleanup_after_state_update(ctx);
+
+            time::consume_tick(ctx);
+        }
+
+        if let Err(e) = state.draw(ctx, time::get_alpha(ctx)) {
+            ctx.running = false;
+            return Err(e);
+        }
+
+        graphics::present(ctx);
+
+        std::thread::yield_now();
+    }
+
+    platform::hide_window(ctx);
+
+    Ok(())
 }

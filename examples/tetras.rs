@@ -19,12 +19,11 @@ const BOARD_OFFSET_X: i32 = (SCREEN_WIDTH - BOARD_WIDTH) / 2;
 const BOARD_OFFSET_Y: i32 = (SCREEN_HEIGHT - BOARD_HEIGHT) / 2;
 const SCORE_OFFSET_Y: i32 = BOARD_OFFSET_Y + BOARD_HEIGHT + 4;
 
-fn main() -> tetra::Result {
+fn main() {
     ContextBuilder::new("Tetras", 640, 480)
         .resizable(true)
         .quit_on_escape(true)
-        .build()?
-        .run_with(|ctx| Ok(SceneManager::new(Box::new(TitleScene::new(ctx)?))))
+        .run_with(|ctx| Ok(SceneManager::new(Box::new(TitleScene::new(ctx)?))));
 }
 
 // === Scene Management ===

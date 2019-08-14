@@ -44,10 +44,9 @@ impl State for GameState {
     }
 }
 
-fn main() -> tetra::Result {
+fn main() {
     ContextBuilder::new("Keyboard Input", 640, 480)
         .resizable(true)
         .quit_on_escape(true)
-        .build()?
-        .run(&mut GameState::new())
+        .run(GameState::new());
 }

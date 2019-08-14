@@ -134,11 +134,10 @@ impl State for GameState {
     }
 }
 
-fn main() -> tetra::Result {
+fn main() {
     ContextBuilder::new("Controlling Animations", 480, 320)
         .maximized(false)
         .resizable(false)
         .quit_on_escape(true)
-        .build()?
-        .run_with(GameState::new)
+        .run_with(GameState::new);
 }
