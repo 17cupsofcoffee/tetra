@@ -44,10 +44,8 @@
 //!     }
 //! }
 //!
-//! fn main() -> tetra::Result {
-//!     ContextBuilder::new("Hello, world!", 1280, 720)
-//!         .build()?
-//!         .run(&mut GameState)
+//! fn main() {
+//!     ContextBuilder::new("Hello, world!", 1280, 720).run(GameState);
 //! }
 //! ```
 //!
