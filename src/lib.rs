@@ -129,7 +129,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub(crate) fn new(builder: &ContextBuilder<'_>) -> Result<Context> {
+    pub(crate) fn new(builder: &ContextBuilder) -> Result<Context> {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
         let audio = AudioContext::new();
         let (platform, gl_context, window_width, window_height) = Platform::new(builder)?;
@@ -164,8 +164,8 @@ impl Context {
 
 /// Creates a new `Context` based on the provided options.
 #[derive(Debug, Clone)]
-pub struct ContextBuilder<'a> {
-    title: &'a str,
+pub struct ContextBuilder {
+    title: String,
     internal_width: i32,
     internal_height: i32,
     window_size: Option<(i32, i32)>,
@@ -182,11 +182,14 @@ pub struct ContextBuilder<'a> {
     quit_on_escape: bool,
 }
 
-impl<'a> ContextBuilder<'a> {
+impl ContextBuilder {
     /// Creates a new ContextBuilder.
-    pub fn new(title: &'a str, width: i32, height: i32) -> ContextBuilder<'a> {
+    pub fn new<S>(title: S, width: i32, height: i32) -> ContextBuilder
+    where
+        S: Into<String>,
+    {
         ContextBuilder {
-            title,
+            title: title.into(),
             internal_width: width,
             internal_height: height,
 
@@ -197,15 +200,18 @@ impl<'a> ContextBuilder<'a> {
     /// Sets the title of the window.
     ///
     /// Defaults to `"Tetra"`.
-    pub fn title(&mut self, title: &'a str) -> &mut ContextBuilder<'a> {
-        self.title = title;
+    pub fn title<S>(&mut self, title: S) -> &mut ContextBuilder
+    where
+        S: Into<String>,
+    {
+        self.title = title.into();
         self
     }
 
     /// Sets the internal resolution of the screen.
     ///
     /// Defaults to `1280 x 720`.
-    pub fn size(&mut self, width: i32, height: i32) -> &mut ContextBuilder<'a> {
+    pub fn size(&mut self, width: i32, height: i32) -> &mut ContextBuilder {
         self.internal_width = width;
         self.internal_height = height;
         self
@@ -215,7 +221,7 @@ impl<'a> ContextBuilder<'a> {
     ///
     /// Defaults to `ScreenScaling::ShowAllPixelPerfect`, which will maintain the screen's aspect ratio
     /// by letterboxing.
-    pub fn scaling(&mut self, scaling: ScreenScaling) -> &mut ContextBuilder<'a> {
+    pub fn scaling(&mut self, scaling: ScreenScaling) -> &mut ContextBuilder {
         self.scaling = scaling;
         self
     }
@@ -226,7 +232,7 @@ impl<'a> ContextBuilder<'a> {
     /// to be different from the window size.
     ///
     /// This will take precedence over `window_scale`.
-    pub fn window_size(&mut self, width: i32, height: i32) -> &mut ContextBuilder<'a> {
+    pub fn window_size(&mut self, width: i32, height: i32) -> &mut ContextBuilder {
         self.window_size = Some((width, height));
         self
     }
@@ -237,7 +243,7 @@ impl<'a> ContextBuilder<'a> {
     /// to be different from the window size.
     ///
     /// `window_size` will take precedence over this.
-    pub fn window_scale(&mut self, scale: i32) -> &mut ContextBuilder<'a> {
+    pub fn window_scale(&mut self, scale: i32) -> &mut ContextBuilder {
         self.window_scale = Some(scale);
         self
     }
@@ -245,7 +251,7 @@ impl<'a> ContextBuilder<'a> {
     /// Enables or disables vsync.
     ///
     /// Defaults to `true`.
-    pub fn vsync(&mut self, vsync: bool) -> &mut ContextBuilder<'a> {
+    pub fn vsync(&mut self, vsync: bool) -> &mut ContextBuilder {
         self.vsync = vsync;
         self
     }
@@ -253,7 +259,7 @@ impl<'a> ContextBuilder<'a> {
     /// Sets the game's update tick rate, in ticks per second.
     ///
     /// Defaults to `60.0`.
-    pub fn tick_rate(&mut self, tick_rate: f64) -> &mut ContextBuilder<'a> {
+    pub fn tick_rate(&mut self, tick_rate: f64) -> &mut ContextBuilder {
         self.tick_rate = 1.0 / tick_rate;
         self
     }
@@ -261,7 +267,7 @@ impl<'a> ContextBuilder<'a> {
     /// Sets whether or not the window should start in fullscreen.
     ///
     /// Defaults to `false`.
-    pub fn fullscreen(&mut self, fullscreen: bool) -> &mut ContextBuilder<'a> {
+    pub fn fullscreen(&mut self, fullscreen: bool) -> &mut ContextBuilder {
         self.fullscreen = fullscreen;
         self
     }
@@ -269,7 +275,7 @@ impl<'a> ContextBuilder<'a> {
     /// Sets whether or not the window should start maximized.
     ///
     /// Defaults to `false`.
-    pub fn maximized(&mut self, maximized: bool) -> &mut ContextBuilder<'a> {
+    pub fn maximized(&mut self, maximized: bool) -> &mut ContextBuilder {
         self.maximized = maximized;
         self
     }
@@ -277,7 +283,7 @@ impl<'a> ContextBuilder<'a> {
     /// Sets whether or not the window should start minimized.
     ///
     /// Defaults to `false`.
-    pub fn minimized(&mut self, minimized: bool) -> &mut ContextBuilder<'a> {
+    pub fn minimized(&mut self, minimized: bool) -> &mut ContextBuilder {
         self.minimized = minimized;
         self
     }
@@ -285,7 +291,7 @@ impl<'a> ContextBuilder<'a> {
     /// Sets whether or not the window should be resizable.
     ///
     /// Defaults to `false`.
-    pub fn resizable(&mut self, resizable: bool) -> &mut ContextBuilder<'a> {
+    pub fn resizable(&mut self, resizable: bool) -> &mut ContextBuilder {
         self.resizable = resizable;
         self
     }
@@ -293,7 +299,7 @@ impl<'a> ContextBuilder<'a> {
     /// Sets whether or not the window should be borderless.
     ///
     /// Defaults to `false`.
-    pub fn borderless(&mut self, borderless: bool) -> &mut ContextBuilder<'a> {
+    pub fn borderless(&mut self, borderless: bool) -> &mut ContextBuilder {
         self.borderless = borderless;
         self
     }
@@ -301,7 +307,7 @@ impl<'a> ContextBuilder<'a> {
     /// Sets whether or not the mouse cursor should be visible.
     ///
     /// Defaults to `false`.
-    pub fn show_mouse(&mut self, show_mouse: bool) -> &mut ContextBuilder<'a> {
+    pub fn show_mouse(&mut self, show_mouse: bool) -> &mut ContextBuilder {
         self.show_mouse = show_mouse;
         self
     }
@@ -309,7 +315,7 @@ impl<'a> ContextBuilder<'a> {
     /// Sets whether or not the game should close when the Escape key is pressed.
     ///
     /// Defaults to `false`.
-    pub fn quit_on_escape(&mut self, quit_on_escape: bool) -> &mut ContextBuilder<'a> {
+    pub fn quit_on_escape(&mut self, quit_on_escape: bool) -> &mut ContextBuilder {
         self.quit_on_escape = quit_on_escape;
         self
     }
@@ -344,10 +350,10 @@ impl<'a> ContextBuilder<'a> {
     }
 }
 
-impl<'a> Default for ContextBuilder<'a> {
-    fn default() -> ContextBuilder<'a> {
+impl Default for ContextBuilder {
+    fn default() -> ContextBuilder {
         ContextBuilder {
-            title: "Tetra",
+            title: "Tetra".into(),
             internal_width: 1280,
             internal_height: 720,
             window_size: None,
@@ -366,7 +372,7 @@ impl<'a> Default for ContextBuilder<'a> {
     }
 }
 
-fn run_impl<S, F>(builder: &ContextBuilder<'_>, init: F) -> Result
+fn run_impl<S, F>(builder: &ContextBuilder, init: F) -> Result
 where
     S: State,
     F: FnOnce(&mut Context) -> Result<S>,

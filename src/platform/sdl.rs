@@ -39,7 +39,7 @@ struct SdlController {
 }
 
 impl Platform {
-    pub fn new(builder: &ContextBuilder<'_>) -> Result<(Platform, GlContext, i32, i32)> {
+    pub fn new(builder: &ContextBuilder) -> Result<(Platform, GlContext, i32, i32)> {
         let sdl = sdl2::init().map_err(TetraError::Sdl)?;
 
         let video_sys = sdl.video().map_err(TetraError::Sdl)?;
@@ -72,7 +72,7 @@ impl Platform {
         };
 
         let mut window_builder =
-            video_sys.window(builder.title, window_width as u32, window_height as u32);
+            video_sys.window(&builder.title, window_width as u32, window_height as u32);
 
         window_builder.hidden().position_centered().opengl();
 
