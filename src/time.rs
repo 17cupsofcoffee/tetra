@@ -1,7 +1,8 @@
 //! Functions and types relating to measuring and manipulating time.
 
 use std::collections::VecDeque;
-use std::time::{Duration, Instant};
+
+use instant::{Duration, Instant};
 
 use crate::Context;
 
