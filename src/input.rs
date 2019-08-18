@@ -15,9 +15,18 @@ use crate::graphics;
 use crate::platform;
 use crate::Context;
 
-// TODO: Replace these with Tetra-specific types
+// TODO: Replace this with a Tetra-specific type
 pub use sdl2::keyboard::Keycode as Key;
-pub use sdl2::mouse::MouseButton;
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[allow(missing_docs)]
+pub enum MouseButton {
+    Left,
+    Middle,
+    Right,
+    X1,
+    X2,
+}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[allow(missing_docs)]

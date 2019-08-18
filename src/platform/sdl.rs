@@ -1,15 +1,16 @@
 use glow::native::Context as GlContext;
 use hashbrown::HashMap;
-use sdl2::controller::{Axis as SdlAxis, Button as SdlButton, GameController};
+use sdl2::controller::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, GameController};
 use sdl2::event::{Event, WindowEvent};
 use sdl2::haptic::Haptic;
+use sdl2::mouse::MouseButton as SdlMouseButton;
 use sdl2::sys::SDL_HAPTIC_INFINITY;
 use sdl2::video::{FullscreenType, GLContext as SdlGlContext, GLProfile, Window};
 use sdl2::{GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem};
 
 use crate::error::{Result, TetraError};
 use crate::graphics::{self, Vec2};
-use crate::input::{self, GamepadAxis, GamepadButton, Key};
+use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
 use crate::window;
 use crate::{Context, ContextBuilder};
 
@@ -180,11 +181,15 @@ pub fn handle_events(ctx: &mut Context) -> Result {
             }
 
             Event::MouseButtonDown { mouse_btn, .. } => {
-                input::set_mouse_button_down(ctx, mouse_btn);
+                if let Some(b) = into_mouse_button(mouse_btn) {
+                    input::set_mouse_button_down(ctx, b);
+                }
             }
 
             Event::MouseButtonUp { mouse_btn, .. } => {
-                input::set_mouse_button_up(ctx, mouse_btn);
+                if let Some(b) = into_mouse_button(mouse_btn) {
+                    input::set_mouse_button_up(ctx, b);
+                }
             }
 
             Event::MouseMotion { x, y, .. } => {
@@ -243,7 +248,7 @@ pub fn handle_events(ctx: &mut Context) -> Result {
                         pad.set_axis_position(axis.into(), f32::from(value) / 32767.0);
 
                         match axis {
-                            SdlAxis::TriggerLeft => {
+                            SdlGamepadAxis::TriggerLeft => {
                                 if value > 0 {
                                     pad.set_button_down(GamepadButton::LeftTrigger);
                                 } else {
@@ -251,7 +256,7 @@ pub fn handle_events(ctx: &mut Context) -> Result {
                                 }
                             }
 
-                            SdlAxis::TriggerRight => {
+                            SdlGamepadAxis::TriggerRight => {
                                 if value > 0 {
                                     pad.set_button_down(GamepadButton::RightTrigger);
                                 } else {
@@ -402,50 +407,62 @@ pub fn stop_gamepad_vibration(ctx: &mut Context, platform_id: i32) {
     }
 }
 
-impl From<SdlButton> for GamepadButton {
-    fn from(button: SdlButton) -> GamepadButton {
+// TODO: Replace this with TryFrom once we're on a high enough minimum Rust version?
+fn into_mouse_button(button: SdlMouseButton) -> Option<MouseButton> {
+    match button {
+        SdlMouseButton::Left => Some(MouseButton::Left),
+        SdlMouseButton::Middle => Some(MouseButton::Middle),
+        SdlMouseButton::Right => Some(MouseButton::Right),
+        SdlMouseButton::X1 => Some(MouseButton::X1),
+        SdlMouseButton::X2 => Some(MouseButton::X2),
+        _ => None,
+    }
+}
+
+impl From<SdlGamepadButton> for GamepadButton {
+    fn from(button: SdlGamepadButton) -> GamepadButton {
         match button {
-            SdlButton::A => GamepadButton::A,
-            SdlButton::B => GamepadButton::B,
-            SdlButton::X => GamepadButton::X,
-            SdlButton::Y => GamepadButton::Y,
-            SdlButton::DPadUp => GamepadButton::Up,
-            SdlButton::DPadDown => GamepadButton::Down,
-            SdlButton::DPadLeft => GamepadButton::Left,
-            SdlButton::DPadRight => GamepadButton::Right,
-            SdlButton::LeftShoulder => GamepadButton::LeftShoulder,
-            SdlButton::LeftStick => GamepadButton::LeftStick,
-            SdlButton::RightShoulder => GamepadButton::RightShoulder,
-            SdlButton::RightStick => GamepadButton::RightStick,
-            SdlButton::Start => GamepadButton::Start,
-            SdlButton::Back => GamepadButton::Back,
-            SdlButton::Guide => GamepadButton::Guide,
+            SdlGamepadButton::A => GamepadButton::A,
+            SdlGamepadButton::B => GamepadButton::B,
+            SdlGamepadButton::X => GamepadButton::X,
+            SdlGamepadButton::Y => GamepadButton::Y,
+            SdlGamepadButton::DPadUp => GamepadButton::Up,
+            SdlGamepadButton::DPadDown => GamepadButton::Down,
+            SdlGamepadButton::DPadLeft => GamepadButton::Left,
+            SdlGamepadButton::DPadRight => GamepadButton::Right,
+            SdlGamepadButton::LeftShoulder => GamepadButton::LeftShoulder,
+            SdlGamepadButton::LeftStick => GamepadButton::LeftStick,
+            SdlGamepadButton::RightShoulder => GamepadButton::RightShoulder,
+            SdlGamepadButton::RightStick => GamepadButton::RightStick,
+            SdlGamepadButton::Start => GamepadButton::Start,
+            SdlGamepadButton::Back => GamepadButton::Back,
+            SdlGamepadButton::Guide => GamepadButton::Guide,
         }
     }
 }
 
-impl From<GamepadAxis> for SdlAxis {
-    fn from(axis: GamepadAxis) -> SdlAxis {
+impl From<GamepadAxis> for SdlGamepadAxis {
+    fn from(axis: GamepadAxis) -> SdlGamepadAxis {
         match axis {
-            GamepadAxis::LeftStickX => SdlAxis::LeftX,
-            GamepadAxis::LeftStickY => SdlAxis::LeftY,
-            GamepadAxis::LeftTrigger => SdlAxis::TriggerLeft,
-            GamepadAxis::RightStickX => SdlAxis::RightX,
-            GamepadAxis::RightStickY => SdlAxis::RightY,
-            GamepadAxis::RightTrigger => SdlAxis::TriggerRight,
+            GamepadAxis::LeftStickX => SdlGamepadAxis::LeftX,
+            GamepadAxis::LeftStickY => SdlGamepadAxis::LeftY,
+            GamepadAxis::LeftTrigger => SdlGamepadAxis::TriggerLeft,
+            GamepadAxis::RightStickX => SdlGamepadAxis::RightX,
+            GamepadAxis::RightStickY => SdlGamepadAxis::RightY,
+            GamepadAxis::RightTrigger => SdlGamepadAxis::TriggerRight,
         }
     }
 }
 
-impl From<SdlAxis> for GamepadAxis {
-    fn from(axis: SdlAxis) -> GamepadAxis {
+impl From<SdlGamepadAxis> for GamepadAxis {
+    fn from(axis: SdlGamepadAxis) -> GamepadAxis {
         match axis {
-            SdlAxis::LeftX => GamepadAxis::LeftStickX,
-            SdlAxis::LeftY => GamepadAxis::LeftStickY,
-            SdlAxis::TriggerLeft => GamepadAxis::LeftTrigger,
-            SdlAxis::RightX => GamepadAxis::RightStickX,
-            SdlAxis::RightY => GamepadAxis::RightStickY,
-            SdlAxis::TriggerRight => GamepadAxis::RightTrigger,
+            SdlGamepadAxis::LeftX => GamepadAxis::LeftStickX,
+            SdlGamepadAxis::LeftY => GamepadAxis::LeftStickY,
+            SdlGamepadAxis::TriggerLeft => GamepadAxis::LeftTrigger,
+            SdlGamepadAxis::RightX => GamepadAxis::RightStickX,
+            SdlGamepadAxis::RightY => GamepadAxis::RightStickY,
+            SdlGamepadAxis::TriggerRight => GamepadAxis::RightTrigger,
         }
     }
 }
