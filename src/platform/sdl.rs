@@ -6,8 +6,11 @@ use sdl2::haptic::Haptic;
 use sdl2::keyboard::Keycode as SdlKey;
 use sdl2::mouse::MouseButton as SdlMouseButton;
 use sdl2::sys::SDL_HAPTIC_INFINITY;
-use sdl2::video::{FullscreenType, GLContext as SdlGlContext, GLProfile, Window};
-use sdl2::{GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem};
+use sdl2::video::{FullscreenType, GLContext as SdlGlContext, GLProfile, Window, WindowBuildError};
+use sdl2::{
+    GameControllerSubsystem, HapticSubsystem, IntegerOrSdlError, JoystickSubsystem, Sdl,
+    VideoSubsystem,
+};
 
 use crate::error::{Result, TetraError};
 use crate::graphics::{self, Vec2};
@@ -615,5 +618,19 @@ impl From<SdlGamepadAxis> for GamepadAxis {
             SdlGamepadAxis::RightY => GamepadAxis::RightStickY,
             SdlGamepadAxis::TriggerRight => GamepadAxis::RightTrigger,
         }
+    }
+}
+
+#[doc(hidden)]
+impl From<WindowBuildError> for TetraError {
+    fn from(e: WindowBuildError) -> TetraError {
+        TetraError::Sdl(e.to_string())
+    }
+}
+
+#[doc(hidden)]
+impl From<IntegerOrSdlError> for TetraError {
+    fn from(e: IntegerOrSdlError) -> TetraError {
+        TetraError::Sdl(e.to_string())
     }
 }

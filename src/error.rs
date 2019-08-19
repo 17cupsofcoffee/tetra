@@ -7,8 +7,6 @@ use std::result;
 
 use image::ImageError;
 use rodio::decoder::DecoderError;
-use sdl2::video::WindowBuildError;
-use sdl2::IntegerOrSdlError;
 
 /// A specialized `Result` type for Tetra.
 ///
@@ -100,18 +98,6 @@ impl From<io::Error> for TetraError {
 impl From<ImageError> for TetraError {
     fn from(e: ImageError) -> TetraError {
         TetraError::Image(e)
-    }
-}
-
-impl From<WindowBuildError> for TetraError {
-    fn from(e: WindowBuildError) -> TetraError {
-        TetraError::Sdl(e.to_string())
-    }
-}
-
-impl From<IntegerOrSdlError> for TetraError {
-    fn from(e: IntegerOrSdlError) -> TetraError {
-        TetraError::Sdl(e.to_string())
     }
 }
 
