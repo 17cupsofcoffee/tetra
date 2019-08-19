@@ -3,6 +3,7 @@ use hashbrown::HashMap;
 use sdl2::controller::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, GameController};
 use sdl2::event::{Event, WindowEvent};
 use sdl2::haptic::Haptic;
+use sdl2::keyboard::Keycode as SdlKey;
 use sdl2::mouse::MouseButton as SdlMouseButton;
 use sdl2::sys::SDL_HAPTIC_INFINITY;
 use sdl2::video::{FullscreenType, GLContext as SdlGlContext, GLProfile, Window};
@@ -163,21 +164,25 @@ pub fn handle_events(ctx: &mut Context) -> Result {
             Event::KeyDown {
                 keycode: Some(k), ..
             } => {
-                if let Key::Escape = k {
+                if let SdlKey::Escape = k {
                     if ctx.quit_on_escape {
                         ctx.running = false;
                     }
                 }
 
-                input::set_key_down(ctx, k);
+                if let Some(k) = into_key(k) {
+                    input::set_key_down(ctx, k);
+                }
             }
 
             Event::KeyUp {
                 keycode: Some(k), ..
             } => {
-                // TODO: This can cause some inputs to be missed at low tick rates.
-                // Could consider buffering input releases like Otter2D does?
-                input::set_key_up(ctx, k);
+                if let Some(k) = into_key(k) {
+                    // TODO: This can cause some inputs to be missed at low tick rates.
+                    // Could consider buffering input releases like Otter2D does?
+                    input::set_key_up(ctx, k);
+                }
             }
 
             Event::MouseButtonDown { mouse_btn, .. } => {
@@ -407,7 +412,8 @@ pub fn stop_gamepad_vibration(ctx: &mut Context, platform_id: i32) {
     }
 }
 
-// TODO: Replace this with TryFrom once we're on a high enough minimum Rust version?
+// TODO: Replace these with TryFrom once we're on a high enough minimum Rust version?
+
 fn into_mouse_button(button: SdlMouseButton) -> Option<MouseButton> {
     match button {
         SdlMouseButton::Left => Some(MouseButton::Left),
@@ -419,6 +425,149 @@ fn into_mouse_button(button: SdlMouseButton) -> Option<MouseButton> {
     }
 }
 
+fn into_key(key: SdlKey) -> Option<Key> {
+    match key {
+        SdlKey::A => Some(Key::A),
+        SdlKey::B => Some(Key::B),
+        SdlKey::C => Some(Key::C),
+        SdlKey::D => Some(Key::D),
+        SdlKey::E => Some(Key::E),
+        SdlKey::F => Some(Key::F),
+        SdlKey::G => Some(Key::G),
+        SdlKey::H => Some(Key::H),
+        SdlKey::I => Some(Key::I),
+        SdlKey::J => Some(Key::J),
+        SdlKey::K => Some(Key::K),
+        SdlKey::L => Some(Key::L),
+        SdlKey::M => Some(Key::M),
+        SdlKey::N => Some(Key::N),
+        SdlKey::O => Some(Key::O),
+        SdlKey::P => Some(Key::P),
+        SdlKey::Q => Some(Key::Q),
+        SdlKey::R => Some(Key::R),
+        SdlKey::S => Some(Key::S),
+        SdlKey::T => Some(Key::T),
+        SdlKey::U => Some(Key::U),
+        SdlKey::V => Some(Key::V),
+        SdlKey::W => Some(Key::W),
+        SdlKey::X => Some(Key::X),
+        SdlKey::Y => Some(Key::Y),
+        SdlKey::Z => Some(Key::Z),
+
+        SdlKey::Num0 => Some(Key::Num0),
+        SdlKey::Num1 => Some(Key::Num1),
+        SdlKey::Num2 => Some(Key::Num2),
+        SdlKey::Num3 => Some(Key::Num3),
+        SdlKey::Num4 => Some(Key::Num4),
+        SdlKey::Num5 => Some(Key::Num5),
+        SdlKey::Num6 => Some(Key::Num6),
+        SdlKey::Num7 => Some(Key::Num7),
+        SdlKey::Num8 => Some(Key::Num8),
+        SdlKey::Num9 => Some(Key::Num9),
+
+        SdlKey::F1 => Some(Key::F1),
+        SdlKey::F2 => Some(Key::F2),
+        SdlKey::F3 => Some(Key::F3),
+        SdlKey::F4 => Some(Key::F4),
+        SdlKey::F5 => Some(Key::F5),
+        SdlKey::F6 => Some(Key::F6),
+        SdlKey::F7 => Some(Key::F7),
+        SdlKey::F8 => Some(Key::F8),
+        SdlKey::F9 => Some(Key::F9),
+        SdlKey::F10 => Some(Key::F10),
+        SdlKey::F11 => Some(Key::F11),
+        SdlKey::F12 => Some(Key::F12),
+        SdlKey::F13 => Some(Key::F13),
+        SdlKey::F14 => Some(Key::F14),
+        SdlKey::F15 => Some(Key::F15),
+        SdlKey::F16 => Some(Key::F16),
+        SdlKey::F17 => Some(Key::F17),
+        SdlKey::F18 => Some(Key::F18),
+        SdlKey::F19 => Some(Key::F19),
+        SdlKey::F20 => Some(Key::F20),
+        SdlKey::F21 => Some(Key::F21),
+        SdlKey::F22 => Some(Key::F22),
+        SdlKey::F23 => Some(Key::F23),
+        SdlKey::F24 => Some(Key::F24),
+
+        SdlKey::NumLockClear => Some(Key::NumLock),
+        SdlKey::Kp1 => Some(Key::NumPad1),
+        SdlKey::Kp2 => Some(Key::NumPad2),
+        SdlKey::Kp3 => Some(Key::NumPad3),
+        SdlKey::Kp4 => Some(Key::NumPad4),
+        SdlKey::Kp5 => Some(Key::NumPad5),
+        SdlKey::Kp6 => Some(Key::NumPad6),
+        SdlKey::Kp7 => Some(Key::NumPad7),
+        SdlKey::Kp8 => Some(Key::NumPad8),
+        SdlKey::Kp9 => Some(Key::NumPad9),
+        SdlKey::Kp0 => Some(Key::NumPad0),
+        SdlKey::KpPlus => Some(Key::NumPadPlus),
+        SdlKey::KpMinus => Some(Key::NumPadMinus),
+        SdlKey::KpMultiply => Some(Key::NumPadMultiply),
+        SdlKey::KpDivide => Some(Key::NumPadDivide),
+        SdlKey::KpEnter => Some(Key::NumPadEnter),
+
+        SdlKey::LCtrl => Some(Key::LeftCtrl),
+        SdlKey::LShift => Some(Key::LeftShift),
+        SdlKey::LAlt => Some(Key::LeftAlt),
+        SdlKey::RCtrl => Some(Key::RightCtrl),
+        SdlKey::RShift => Some(Key::RightShift),
+        SdlKey::RAlt => Some(Key::RightAlt),
+
+        SdlKey::Up => Some(Key::Up),
+        SdlKey::Down => Some(Key::Down),
+        SdlKey::Left => Some(Key::Left),
+        SdlKey::Right => Some(Key::Right),
+
+        SdlKey::Ampersand => Some(Key::Ampersand),
+        SdlKey::Asterisk => Some(Key::Asterisk),
+        SdlKey::At => Some(Key::At),
+        SdlKey::Backquote => Some(Key::Backquote),
+        SdlKey::Backslash => Some(Key::Backslash),
+        SdlKey::Backspace => Some(Key::Backspace),
+        SdlKey::CapsLock => Some(Key::CapsLock),
+        SdlKey::Caret => Some(Key::Caret),
+        SdlKey::Colon => Some(Key::Colon),
+        SdlKey::Comma => Some(Key::Comma),
+        SdlKey::Delete => Some(Key::Delete),
+        SdlKey::Dollar => Some(Key::Dollar),
+        SdlKey::Quotedbl => Some(Key::DoubleQuote),
+        SdlKey::End => Some(Key::End),
+        SdlKey::Return => Some(Key::Enter),
+        SdlKey::Equals => Some(Key::Equals),
+        SdlKey::Escape => Some(Key::Escape),
+        SdlKey::Exclaim => Some(Key::Exclaim),
+        SdlKey::Greater => Some(Key::GreaterThan),
+        SdlKey::Hash => Some(Key::Hash),
+        SdlKey::Home => Some(Key::Home),
+        SdlKey::Insert => Some(Key::Insert),
+        SdlKey::LeftBracket => Some(Key::LeftBracket),
+        SdlKey::LeftParen => Some(Key::LeftParen),
+        SdlKey::Less => Some(Key::LessThan),
+        SdlKey::Minus => Some(Key::Minus),
+        SdlKey::PageDown => Some(Key::PageDown),
+        SdlKey::PageUp => Some(Key::PageUp),
+        SdlKey::Pause => Some(Key::Pause),
+        SdlKey::Percent => Some(Key::Percent),
+        SdlKey::Period => Some(Key::Period),
+        SdlKey::Plus => Some(Key::Plus),
+        SdlKey::PrintScreen => Some(Key::PrintScreen),
+        SdlKey::Question => Some(Key::Question),
+        SdlKey::Quote => Some(Key::Quote),
+        SdlKey::RightBracket => Some(Key::RightBracket),
+        SdlKey::RightParen => Some(Key::RightParen),
+        SdlKey::ScrollLock => Some(Key::ScrollLock),
+        SdlKey::Semicolon => Some(Key::Semicolon),
+        SdlKey::Slash => Some(Key::Slash),
+        SdlKey::Space => Some(Key::Space),
+        SdlKey::Tab => Some(Key::Tab),
+        SdlKey::Underscore => Some(Key::Underscore),
+
+        _ => None,
+    }
+}
+
+#[doc(hidden)]
 impl From<SdlGamepadButton> for GamepadButton {
     fn from(button: SdlGamepadButton) -> GamepadButton {
         match button {
@@ -441,6 +590,7 @@ impl From<SdlGamepadButton> for GamepadButton {
     }
 }
 
+#[doc(hidden)]
 impl From<GamepadAxis> for SdlGamepadAxis {
     fn from(axis: GamepadAxis) -> SdlGamepadAxis {
         match axis {
@@ -454,6 +604,7 @@ impl From<GamepadAxis> for SdlGamepadAxis {
     }
 }
 
+#[doc(hidden)]
 impl From<SdlGamepadAxis> for GamepadAxis {
     fn from(axis: SdlGamepadAxis) -> GamepadAxis {
         match axis {

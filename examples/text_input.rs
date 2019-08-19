@@ -18,7 +18,7 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        if input::is_key_pressed(ctx, Key::Return) {
+        if input::is_key_pressed(ctx, Key::Enter) {
             self.input += "\n";
             self.text.set_content(self.input.as_str());
         }
