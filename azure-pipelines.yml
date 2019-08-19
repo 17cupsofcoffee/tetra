@@ -18,6 +18,7 @@ pool:
 
 steps:
 - script: |
+    sudo apt-get update
     sudo apt-get install libsdl2-dev libasound2-dev
   displayName: Install native dependencies
 - script: |
