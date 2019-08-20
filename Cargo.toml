@@ -18,7 +18,7 @@ sdl2_static_link = ["sdl2/static-link"]
 [dependencies]
 glow = "0.2.3"
 sdl2 = "0.32.2"
-image = "0.21.2"
+image = "0.22.1"
 nalgebra-glm = "0.4.0"
 hashbrown = "0.6.0"
 glyph_brush = "0.5.3"
