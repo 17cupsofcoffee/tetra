@@ -14,6 +14,7 @@ This project adheres to Semantic Versioning.
 * `Key` and `MouseButton` are now Tetra-specific types, rather than re-exporting the SDL versions. Note that some names have been changed for consistency, and some variants have been removed to simplify the docs.
 * Updated `glow` to 0.2.3.
 * Updated `hashbrown` to 0.6.0.
+* Updated `image` to 0.22.1.
 
 ### Removed
 
