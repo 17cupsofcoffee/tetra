@@ -7,7 +7,7 @@ pr:
 strategy:
   matrix:
     stable:
-      rustup_toolchain: 1.32.0
+      rustup_toolchain: 1.36.0
     beta:
       rustup_toolchain: beta
     nightly:

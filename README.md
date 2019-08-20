@@ -12,6 +12,8 @@ Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event hand
 * [API Docs](https://docs.rs/tetra)
 * [FAQ](https://tetra.seventeencups.net/FAQ)
 
+🔧 *Note that development of Tetra 0.3 is currently ongoing in the `master` branch of this repository - to view the code currently published on crates.io, [check the `release` branch](https://github.com/17cupsofcoffee/tetra/tree/release/).*
+
 ## Features
 
 * XNA/MonoGame-inspired API
