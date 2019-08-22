@@ -334,9 +334,7 @@ impl ContextBuilder {
     where
         S: State,
     {
-        if let Err(e) = run_impl(self, |_| Ok(state)) {
-            S::error(e);
-        }
+        run_impl(self, |_| Ok(state));
     }
 
     pub fn run_with<S, F>(&self, init: F)
@@ -344,9 +342,7 @@ impl ContextBuilder {
         S: State,
         F: FnOnce(&mut Context) -> Result<S>,
     {
-        if let Err(e) = run_impl(self, init) {
-            S::error(e);
-        }
+        run_impl(self, init);
     }
 }
 
@@ -372,49 +368,54 @@ impl Default for ContextBuilder {
     }
 }
 
-fn run_impl<S, F>(builder: &ContextBuilder, init: F) -> Result
+fn run_impl<S, F>(builder: &ContextBuilder, init: F)
 where
     S: State,
     F: FnOnce(&mut Context) -> Result<S>,
 {
-    let mut ctx = &mut Context::new(builder)?;
-    let mut state = init(ctx)?;
+    let mut ctx = match Context::new(builder) {
+        Ok(ctx) => ctx,
+        Err(e) => return S::error(e),
+    };
 
-    ctx.running = true;
+    let state = match init(&mut ctx) {
+        Ok(state) => state,
+        Err(e) => return S::error(e),
+    };
 
-    platform::show_window(ctx);
-    time::reset(ctx);
+    time::reset(&mut ctx);
 
-    while ctx.running {
-        time::tick(ctx);
+    platform::run_loop(ctx, state, run_frame);
+}
 
-        if let Err(e) = platform::handle_events(ctx) {
-            ctx.running = false;
-            return Err(e);
-        }
+fn run_frame<S>(ctx: &mut Context, state: &mut S)
+where
+    S: State,
+{
+    time::tick(ctx);
 
-        while time::is_tick_ready(ctx) {
-            if let Err(e) = state.update(ctx) {
-                ctx.running = false;
-                return Err(e);
-            }
-
-            input::cleanup_after_state_update(ctx);
-
-            time::consume_tick(ctx);
-        }
-
-        if let Err(e) = state.draw(ctx, time::get_alpha(ctx)) {
-            ctx.running = false;
-            return Err(e);
-        }
-
-        graphics::present(ctx);
-
-        std::thread::yield_now();
+    if let Err(e) = platform::handle_events(ctx) {
+        ctx.running = false;
+        return S::error(e);
     }
 
-    platform::hide_window(ctx);
+    while time::is_tick_ready(ctx) {
+        if let Err(e) = state.update(ctx) {
+            ctx.running = false;
+            return S::error(e);
+        }
 
-    Ok(())
+        input::cleanup_after_state_update(ctx);
+
+        time::consume_tick(ctx);
+    }
+
+    if let Err(e) = state.draw(ctx, time::get_alpha(ctx)) {
+        ctx.running = false;
+        return S::error(e);
+    }
+
+    graphics::present(ctx);
+
+    std::thread::yield_now();
 }

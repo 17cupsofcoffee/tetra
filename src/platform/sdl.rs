@@ -16,7 +16,7 @@ use crate::error::{Result, TetraError};
 use crate::graphics::{self, Vec2};
 use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
 use crate::window;
-use crate::{Context, ContextBuilder};
+use crate::{Context, ContextBuilder, State};
 
 pub struct Platform {
     sdl: Sdl,
@@ -147,6 +147,20 @@ impl Platform {
 
         Ok((platform, gl_ctx, window_width, window_height))
     }
+}
+
+pub fn run_loop<S>(mut ctx: Context, mut state: S, frame: fn(&mut Context, &mut S))
+where
+    S: State,
+{
+    ctx.running = true;
+    ctx.platform.window.show();
+
+    while ctx.running {
+        frame(&mut ctx, &mut state);
+    }
+
+    ctx.platform.window.hide();
 }
 
 pub fn handle_events(ctx: &mut Context) -> Result {
@@ -283,14 +297,6 @@ pub fn handle_events(ctx: &mut Context) -> Result {
     }
 
     Ok(())
-}
-
-pub fn show_window(ctx: &mut Context) {
-    ctx.platform.window.show();
-}
-
-pub fn hide_window(ctx: &mut Context) {
-    ctx.platform.window.hide();
 }
 
 pub fn get_window_title(ctx: &Context) -> &str {
