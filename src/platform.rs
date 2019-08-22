@@ -6,6 +6,14 @@
 //! The interface for this module is *not* stable, and will likely not be made public
 //! in its current form.
 
+#[cfg(not(target_arch = "wasm32"))]
 mod sdl;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub use sdl::*;
+
+#[cfg(target_arch = "wasm32")]
+mod web;
+
+#[cfg(target_arch = "wasm32")]
+pub use web::*;

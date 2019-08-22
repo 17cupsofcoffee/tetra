@@ -325,21 +325,21 @@ impl ContextBuilder {
     /// # Errors
     ///
     /// If an error is encountered during initialization of the context, this method will
-    /// return the error. This will usually be either `TetraError::Sdl` or `TetraError::OpenGl`.
+    /// return the error. This will usually be either `TetraError::Platform` or `TetraError::OpenGl`.
     pub fn build(&self) -> Result<Context> {
         Context::new(self)
     }
 
     pub fn run<S>(&self, state: S)
     where
-        S: State,
+        S: State + 'static,
     {
         run_impl(self, |_| Ok(state));
     }
 
     pub fn run_with<S, F>(&self, init: F)
     where
-        S: State,
+        S: State + 'static,
         F: FnOnce(&mut Context) -> Result<S>,
     {
         run_impl(self, init);
@@ -370,7 +370,7 @@ impl Default for ContextBuilder {
 
 fn run_impl<S, F>(builder: &ContextBuilder, init: F)
 where
-    S: State,
+    S: State + 'static,
     F: FnOnce(&mut Context) -> Result<S>,
 {
     let mut ctx = match Context::new(builder) {

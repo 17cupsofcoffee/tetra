@@ -12,6 +12,7 @@ This project adheres to Semantic Versioning.
 * `run` and `run_with` no longer return errors back to `main`, as this API does not work well on the web where `main` cannot block. Instead, `State` now has an `error` method that can be used for logging/reporting uncaught errors.
 * `run` and `run_with` are now exposed on `ContextBuilder` rather than `Context`.
 * `Key` and `MouseButton` are now Tetra-specific types, rather than re-exporting the SDL versions. Note that some names have been changed for consistency, and some variants have been removed to simplify the docs.
+* `TetraError::Sdl` is now called `TetraError::Platform`.
 * Updated `glow` to 0.2.3.
 * Updated `hashbrown` to 0.6.0.
 * Updated `image` to 0.22.1.

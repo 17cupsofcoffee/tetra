@@ -7,14 +7,14 @@ use glow::Context as GlowContext;
 use crate::error::{Result, TetraError};
 use crate::glm::{self, Mat4};
 use crate::graphics::{Canvas, FilterMode, IndexBuffer, Shader, Texture, VertexBuffer};
-
-type GlContext = glow::native::Context;
+use crate::platform::GlContext;
 
 type BufferId = <GlContext as GlowContext>::Buffer;
 type ProgramId = <GlContext as GlowContext>::Program;
 type TextureId = <GlContext as GlowContext>::Texture;
 type FramebufferId = <GlContext as GlowContext>::Framebuffer;
 type VertexArrayId = <GlContext as GlowContext>::VertexArray;
+type UniformLocation = <GlContext as GlowContext>::UniformLocation;
 
 pub struct GLDevice {
     gl: Rc<GlContext>,
@@ -674,26 +674,26 @@ mod sealed {
 /// and can't be implemented outside of Tetra. This might change in the future!
 pub trait UniformValue: sealed::UniformValueTypes {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<u32>);
+    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>);
 }
 
 impl UniformValue for i32 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<u32>) {
+    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
         shader.handle.gl.uniform_1_i32(location, *self);
     }
 }
 
 impl UniformValue for f32 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<u32>) {
+    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
         shader.handle.gl.uniform_1_f32(location, *self);
     }
 }
 
 impl UniformValue for Mat4 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<u32>) {
+    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
         let slice = self.as_slice();
 
         // I don't think there's a scenario where this wouldn't be true,
@@ -714,7 +714,7 @@ where
     T: UniformValue,
 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<u32>) {
+    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
         (**self).set_uniform(shader, location);
     }
 }

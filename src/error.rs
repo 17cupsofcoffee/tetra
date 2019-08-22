@@ -23,8 +23,8 @@ pub enum TetraError {
     /// An error that occurred while performing an I/O operation (e.g. while loading a file).
     Io(io::Error),
 
-    /// An error that was returned by SDL.
-    Sdl(String),
+    /// An error that was returned by the platform.
+    Platform(String),
 
     /// An error that was returned by OpenGL.
     OpenGl(String),
@@ -59,7 +59,7 @@ impl Display for TetraError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             TetraError::Io(e) => write!(f, "IO error: {}", e),
-            TetraError::Sdl(e) => write!(f, "SDL error: {}", e),
+            TetraError::Platform(e) => write!(f, "Platform error: {}", e),
             TetraError::OpenGl(e) => write!(f, "OpenGL error: {}", e),
             TetraError::Image(e) => write!(f, "Image processing error: {}", e),
             TetraError::NotEnoughData { expected, actual } => write!(
@@ -78,7 +78,7 @@ impl Error for TetraError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             TetraError::Io(e) => Some(e),
-            TetraError::Sdl(_) => None,
+            TetraError::Platform(_) => None,
             TetraError::OpenGl(_) => None,
             TetraError::Image(e) => Some(e),
             TetraError::NotEnoughData { .. } => None,

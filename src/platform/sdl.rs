@@ -1,4 +1,3 @@
-use glow::native::Context as GlContext;
 use hashbrown::HashMap;
 use sdl2::controller::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, GameController};
 use sdl2::event::{Event, WindowEvent};
@@ -17,6 +16,8 @@ use crate::graphics::{self, Vec2};
 use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
 use crate::window;
 use crate::{Context, ContextBuilder, State};
+
+pub type GlContext = glow::native::Context;
 
 pub struct Platform {
     sdl: Sdl,
@@ -45,12 +46,12 @@ struct SdlController {
 
 impl Platform {
     pub fn new(builder: &ContextBuilder) -> Result<(Platform, GlContext, i32, i32)> {
-        let sdl = sdl2::init().map_err(TetraError::Sdl)?;
+        let sdl = sdl2::init().map_err(TetraError::Platform)?;
 
-        let video_sys = sdl.video().map_err(TetraError::Sdl)?;
-        let joystick_sys = sdl.joystick().map_err(TetraError::Sdl)?;
-        let controller_sys = sdl.game_controller().map_err(TetraError::Sdl)?;
-        let haptic_sys = sdl.haptic().map_err(TetraError::Sdl)?;
+        let video_sys = sdl.video().map_err(TetraError::Platform)?;
+        let joystick_sys = sdl.joystick().map_err(TetraError::Platform)?;
+        let controller_sys = sdl.game_controller().map_err(TetraError::Platform)?;
+        let haptic_sys = sdl.haptic().map_err(TetraError::Platform)?;
 
         sdl2::hint::set("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
 
@@ -117,7 +118,7 @@ impl Platform {
                     window_height = m.h;
                     window.set_fullscreen(FullscreenType::Desktop)
                 })
-                .map_err(TetraError::Sdl)?;
+                .map_err(TetraError::Platform)?;
         }
 
         let gl_sys = window.gl_create_context().map_err(TetraError::OpenGl)?;
@@ -126,7 +127,7 @@ impl Platform {
 
         video_sys
             .gl_set_swap_interval(if builder.vsync { 1 } else { 0 })
-            .map_err(TetraError::Sdl)?;
+            .map_err(TetraError::Platform)?;
 
         let platform = Platform {
             sdl,
@@ -164,7 +165,11 @@ where
 }
 
 pub fn handle_events(ctx: &mut Context) -> Result {
-    let mut events = ctx.platform.sdl.event_pump().map_err(TetraError::Sdl)?;
+    let mut events = ctx
+        .platform
+        .sdl
+        .event_pump()
+        .map_err(TetraError::Platform)?;
 
     for event in events.poll_iter() {
         match event {
@@ -350,7 +355,7 @@ pub fn enable_fullscreen(ctx: &mut Context) -> Result {
                 ctx.platform.window.set_fullscreen(FullscreenType::Desktop)
             })
             .map(|_| ())
-            .map_err(TetraError::Sdl)
+            .map_err(TetraError::Platform)
     } else {
         Ok(())
     }
@@ -365,7 +370,7 @@ pub fn disable_fullscreen(ctx: &mut Context) -> Result {
                 let size = ctx.platform.window.drawable_size();
                 window::set_size(ctx, size.0 as i32, size.1 as i32);
             })
-            .map_err(TetraError::Sdl)
+            .map_err(TetraError::Platform)
     } else {
         Ok(())
     }
@@ -630,13 +635,13 @@ impl From<SdlGamepadAxis> for GamepadAxis {
 #[doc(hidden)]
 impl From<WindowBuildError> for TetraError {
     fn from(e: WindowBuildError) -> TetraError {
-        TetraError::Sdl(e.to_string())
+        TetraError::Platform(e.to_string())
     }
 }
 
 #[doc(hidden)]
 impl From<IntegerOrSdlError> for TetraError {
     fn from(e: IntegerOrSdlError) -> TetraError {
-        TetraError::Sdl(e.to_string())
+        TetraError::Platform(e.to_string())
     }
 }
