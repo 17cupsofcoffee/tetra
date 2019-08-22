@@ -154,7 +154,6 @@ pub fn run_loop<S>(mut ctx: Context, mut state: S, frame: fn(&mut Context, &mut 
 where
     S: State,
 {
-    ctx.running = true;
     ctx.platform.window.show();
 
     while ctx.running {

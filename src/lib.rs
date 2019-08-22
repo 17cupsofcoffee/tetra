@@ -385,6 +385,7 @@ where
 
     time::reset(&mut ctx);
 
+    ctx.running = true;
     platform::run_loop(ctx, state, run_frame);
 }
 

@@ -48,7 +48,10 @@ where
     *init.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         let (ctx, state) = &mut *refs.borrow_mut();
         frame(ctx, state);
-        request_animation_frame(callback.borrow().as_ref().unwrap());
+
+        if ctx.running {
+            request_animation_frame(callback.borrow().as_ref().unwrap());
+        }
     }) as Box<dyn FnMut()>));
 
     request_animation_frame(init.borrow().as_ref().unwrap());
