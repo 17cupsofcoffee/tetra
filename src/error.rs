@@ -6,7 +6,8 @@ use std::io;
 use std::result;
 
 use image::ImageError;
-use rodio::decoder::DecoderError;
+
+use crate::platform::DecoderError;
 
 /// A specialized `Result` type for Tetra.
 ///
@@ -98,11 +99,5 @@ impl From<io::Error> for TetraError {
 impl From<ImageError> for TetraError {
     fn from(e: ImageError) -> TetraError {
         TetraError::Image(e)
-    }
-}
-
-impl From<DecoderError> for TetraError {
-    fn from(e: DecoderError) -> TetraError {
-        TetraError::FailedToDecodeAudio(e)
     }
 }

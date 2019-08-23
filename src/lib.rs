@@ -68,7 +68,6 @@ mod platform;
 pub mod time;
 pub mod window;
 
-use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
@@ -121,7 +120,6 @@ pub struct Context {
 
     graphics: GraphicsContext,
     input: InputContext,
-    audio: AudioContext,
     time: TimeContext,
 
     running: bool,
@@ -130,8 +128,6 @@ pub struct Context {
 
 impl Context {
     pub(crate) fn new(builder: &ContextBuilder) -> Result<Context> {
-        // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
-        let audio = AudioContext::new();
         let (platform, gl_context, window_width, window_height) = Platform::new(builder)?;
         let mut gl = GLDevice::new(gl_context)?;
 
@@ -153,7 +149,6 @@ impl Context {
 
             graphics,
             input,
-            audio,
             time,
 
             running: false,

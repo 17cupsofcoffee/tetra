@@ -1,9 +1,14 @@
 use std::cell::RefCell;
+use std::error::Error;
+use std::fmt::{self, Display, Formatter};
 use std::rc::Rc;
+use std::sync::atomic::AtomicBool;
+use std::sync::{Arc, Mutex};
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
+use crate::audio::{RemoteControls, Sound, SoundInstance};
 use crate::error::{Result, TetraError};
 use crate::{Context, ContextBuilder, State};
 
@@ -127,6 +132,44 @@ pub fn set_gamepad_vibration(ctx: &mut Context, platform_id: i32, strength: f32)
 pub fn start_gamepad_vibration(ctx: &mut Context, platform_id: i32, strength: f32, duration: u32) {}
 
 pub fn stop_gamepad_vibration(ctx: &mut Context, platform_id: i32) {}
+
+// TODO: Find a better way of stubbing the audio stuff out.
+
+pub fn play_sound(
+    ctx: &Context,
+    sound: &Sound,
+    playing: bool,
+    repeating: bool,
+    volume: f32,
+    speed: f32,
+) -> Result<SoundInstance> {
+    let controls = Arc::new(RemoteControls {
+        playing: AtomicBool::new(playing),
+        repeating: AtomicBool::new(repeating),
+        rewind: AtomicBool::new(false),
+        volume: Mutex::new(volume),
+        speed: Mutex::new(speed),
+    });
+
+    Ok(SoundInstance { controls })
+}
+
+pub fn set_master_volume(ctx: &mut Context, volume: f32) {}
+
+pub fn get_master_volume(ctx: &mut Context) -> f32 {
+    1.0
+}
+
+#[derive(Debug)]
+pub struct DecoderError;
+
+impl Display for DecoderError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "dummy decoder error")
+    }
+}
+
+impl Error for DecoderError {}
 
 fn window() -> web_sys::Window {
     web_sys::window().expect("no global `window` exists")

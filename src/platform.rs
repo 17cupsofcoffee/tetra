@@ -7,10 +7,10 @@
 //! in its current form.
 
 #[cfg(not(target_arch = "wasm32"))]
-mod sdl;
+mod native;
 
 #[cfg(not(target_arch = "wasm32"))]
-pub use sdl::*;
+pub use native::*;
 
 #[cfg(target_arch = "wasm32")]
 mod web;
