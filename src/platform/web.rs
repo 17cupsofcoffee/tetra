@@ -66,10 +66,6 @@ pub fn handle_events(ctx: &mut Context) -> Result {
     Ok(())
 }
 
-pub fn show_window(ctx: &mut Context) {}
-
-pub fn hide_window(ctx: &mut Context) {}
-
 pub fn get_window_title(ctx: &Context) -> &str {
     ""
 }
