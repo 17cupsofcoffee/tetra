@@ -212,7 +212,6 @@ impl GLDevice {
             self.gl.bind_attrib_location(program_id, 0, "a_position");
             self.gl.bind_attrib_location(program_id, 1, "a_uv");
             self.gl.bind_attrib_location(program_id, 2, "a_color");
-            self.gl.bind_frag_data_location(program_id, 0, "o_color");
 
             let vertex_id = self
                 .gl

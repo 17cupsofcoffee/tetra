@@ -36,7 +36,7 @@ pub static DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.fra
 ///
 /// # Fragment Shaders
 ///
-/// Fragment shaders have a single `vec4` output called `o_color` - this should be set to the desired output color for the
+/// Fragment shaders should have a single `vec4` output, set to the desired output color for the
 /// fragment.
 ///
 /// # Uniforms
