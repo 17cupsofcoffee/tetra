@@ -21,7 +21,9 @@ image = "0.22.1"
 nalgebra-glm = "0.4.0"
 hashbrown = "0.6.0"
 glyph_brush = "0.5.3"
-instant = { version = "0.1.1", features = ["now", "wasm-bindgen"] }
+
+# https://github.com/sebcrozet/instant/pull/5
+instant = { git = "https://github.com/alanpoon/instant", branch = "window_performance", features = ["now", "wasm-bindgen"] }
 
 [dev-dependencies]
 rand = { version = "0.7", features = ["wasm-bindgen"] }
