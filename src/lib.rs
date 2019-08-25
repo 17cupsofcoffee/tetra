@@ -415,3 +415,16 @@ where
 
     std::thread::yield_now();
 }
+
+// TODO: Switch to a proc macro?
+
+#[macro_export]
+macro_rules! wasm_main {
+    ($name:ident) => {
+        #[cfg_attr(target_arch = "wasm32", ::wasm_bindgen::prelude::wasm_bindgen(start))]
+        pub fn wasm_main() {
+            ::console_error_panic_hook::set_once();
+            $name();
+        }
+    };
+}
