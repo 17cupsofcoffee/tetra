@@ -417,10 +417,12 @@ where
 }
 
 // TODO: Switch to a proc macro?
+// TODO: This doesn't work outside of Tetra, dependencies aren't accessible
 
 #[macro_export]
 macro_rules! wasm_main {
     ($name:ident) => {
+        #[cfg(target_arch = "wasm32")]
         #[cfg_attr(target_arch = "wasm32", ::wasm_bindgen::prelude::wasm_bindgen(start))]
         pub fn wasm_main() {
             ::console_error_panic_hook::set_once();
