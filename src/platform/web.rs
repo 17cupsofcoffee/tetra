@@ -34,6 +34,9 @@ enum Event {
 
 pub struct Platform {
     event_queue: Rc<RefCell<VecDeque<Event>>>,
+
+    keydown_closure: Closure<dyn FnMut(KeyboardEvent)>,
+    keyup_closure: Closure<dyn FnMut(KeyboardEvent)>,
 }
 
 impl Platform {
@@ -57,42 +60,39 @@ impl Platform {
 
         let event_queue = Rc::new(RefCell::new(VecDeque::new()));
 
-        {
-            let event_queue_handle = Rc::clone(&event_queue);
+        let event_queue_handle = Rc::clone(&event_queue);
 
-            let closure = Closure::wrap(Box::new(move |event: web_sys::KeyboardEvent| {
-                if let Some(key) = into_key(event) {
-                    event_queue_handle
-                        .borrow_mut()
-                        .push_back(Event::KeyDown(key));
-                }
-            }) as Box<dyn FnMut(_)>);
+        let keydown_closure = Closure::wrap(Box::new(move |event: KeyboardEvent| {
+            if let Some(key) = into_key(event) {
+                event_queue_handle
+                    .borrow_mut()
+                    .push_back(Event::KeyDown(key));
+            }
+        }) as Box<dyn FnMut(_)>);
 
-            document
-                .add_event_listener_with_callback("keydown", closure.as_ref().unchecked_ref())
-                .unwrap();
+        document
+            .add_event_listener_with_callback("keydown", keydown_closure.as_ref().unchecked_ref())
+            .unwrap();
 
-            closure.forget();
-        }
+        let event_queue_handle = Rc::clone(&event_queue);
 
-        {
-            let event_queue_handle = Rc::clone(&event_queue);
+        let keyup_closure = Closure::wrap(Box::new(move |event: KeyboardEvent| {
+            if let Some(key) = into_key(event) {
+                event_queue_handle.borrow_mut().push_back(Event::KeyUp(key));
+            }
+        }) as Box<dyn FnMut(_)>);
 
-            let closure = Closure::wrap(Box::new(move |event: web_sys::KeyboardEvent| {
-                if let Some(key) = into_key(event) {
-                    event_queue_handle.borrow_mut().push_back(Event::KeyUp(key));
-                }
-            }) as Box<dyn FnMut(_)>);
-
-            document
-                .add_event_listener_with_callback("keyup", closure.as_ref().unchecked_ref())
-                .unwrap();
-
-            closure.forget();
-        }
+        document
+            .add_event_listener_with_callback("keyup", keyup_closure.as_ref().unchecked_ref())
+            .unwrap();
 
         Ok((
-            Platform { event_queue },
+            Platform {
+                event_queue,
+
+                keydown_closure,
+                keyup_closure,
+            },
             GlContext::from_webgl2_context(context),
             640,
             480,
