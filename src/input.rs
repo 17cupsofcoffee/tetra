@@ -11,7 +11,7 @@
 use hashbrown::{HashMap, HashSet};
 
 use crate::glm::Vec2;
-use crate::graphics::{self, ScreenScaling};
+use crate::graphics;
 use crate::platform;
 use crate::Context;
 

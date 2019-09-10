@@ -71,7 +71,7 @@ pub(crate) struct GraphicsContext {
     vertex_buffer: VertexBuffer,
     index_buffer: IndexBuffer,
 
-    texture: Option<ActiveTexture>,
+    texture: ActiveTexture,
     font_cache_texture: Texture,
 
     shader: ActiveShader,
@@ -163,7 +163,7 @@ impl GraphicsContext {
             vertex_buffer,
             index_buffer,
 
-            texture: None,
+            texture: ActiveTexture::FontCache,
             font_cache_texture,
 
             shader: ActiveShader::Default,
@@ -548,11 +548,9 @@ pub fn set_texture(ctx: &mut Context, texture: &Texture) {
 }
 
 pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
-    let wrapped_texture = Some(texture);
-
-    if wrapped_texture != ctx.graphics.texture {
+    if texture != ctx.graphics.texture {
         flush(ctx);
-        ctx.graphics.texture = wrapped_texture;
+        ctx.graphics.texture = texture;
     }
 }
 
@@ -631,15 +629,14 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 pub fn flush(ctx: &mut Context) {
     if !ctx.graphics.vertex_data.is_empty() {
         let texture = match &ctx.graphics.texture {
-            None => return,
-            Some(ActiveTexture::Backbuffer) => ctx
+            ActiveTexture::Backbuffer => ctx
                 .graphics
                 .backbuffer
                 .as_ref()
                 .map(|b| &b.canvas.texture)
                 .unwrap(),
-            Some(ActiveTexture::FontCache) => &ctx.graphics.font_cache_texture,
-            Some(ActiveTexture::User(t)) => &t,
+            ActiveTexture::FontCache => &ctx.graphics.font_cache_texture,
+            ActiveTexture::User(t) => &t,
         };
 
         let shader = match &ctx.graphics.shader {
