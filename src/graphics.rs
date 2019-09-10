@@ -62,6 +62,11 @@ pub(crate) enum ActiveCanvas {
     User(Canvas),
 }
 
+struct Backbuffer {
+    canvas: Canvas,
+    screen_rect: Rectangle,
+}
+
 pub(crate) struct GraphicsContext {
     vertex_buffer: VertexBuffer,
     index_buffer: IndexBuffer,
@@ -75,7 +80,6 @@ pub(crate) struct GraphicsContext {
     window_projection: Mat4,
 
     canvas: ActiveCanvas,
-    backbuffer: Option<Canvas>,
 
     vertex_data: Vec<f32>,
     element_capacity: i32,
@@ -83,8 +87,8 @@ pub(crate) struct GraphicsContext {
 
     internal_width: i32,
     internal_height: i32,
+    backbuffer: Option<Backbuffer>,
     scaling: ScreenScaling,
-    screen_rect: Rectangle,
     letterbox_color: Color,
 
     font_cache: GlyphBrush<'static, FontQuad>,
@@ -99,18 +103,28 @@ impl GraphicsContext {
         internal_height: i32,
         scaling: ScreenScaling,
     ) -> Result<GraphicsContext> {
-        let screen_rect =
-            scaling.get_screen_rect(internal_width, internal_height, window_width, window_height);
-
         let (canvas, backbuffer) = match scaling {
             ScreenScaling::Resize => (ActiveCanvas::Window, None),
             _ => {
-                let backbuffer = device.new_canvas(internal_width, internal_height, false)?;
+                let canvas = device.new_canvas(internal_width, internal_height, false)?;
+
+                let screen_rect = scaling.get_screen_rect(
+                    internal_width,
+                    internal_height,
+                    window_width,
+                    window_height,
+                );
 
                 device.viewport(0, 0, internal_width, internal_height);
                 device.front_face(FrontFace::Clockwise);
 
-                (ActiveCanvas::Backbuffer, Some(backbuffer))
+                (
+                    ActiveCanvas::Backbuffer,
+                    Some(Backbuffer {
+                        canvas,
+                        screen_rect,
+                    }),
+                )
             }
         };
 
@@ -165,7 +179,6 @@ impl GraphicsContext {
             ),
 
             canvas,
-            backbuffer,
 
             vertex_data: Vec::with_capacity(MAX_VERTICES * VERTEX_STRIDE),
             element_capacity: MAX_INDICES as i32,
@@ -173,8 +186,8 @@ impl GraphicsContext {
 
             internal_width,
             internal_height,
+            backbuffer,
             scaling,
-            screen_rect,
             letterbox_color: Color::BLACK,
 
             font_cache,
@@ -590,8 +603,9 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                     .viewport(0, 0, window::get_width(ctx), window::get_height(ctx));
             }
             ActiveCanvas::Backbuffer => {
-                ctx.gl
-                    .bind_canvas(Some(&ctx.graphics.backbuffer.as_ref().unwrap()));
+                ctx.gl.bind_canvas(Some(
+                    ctx.graphics.backbuffer.as_ref().map(|b| &b.canvas).unwrap(),
+                ));
                 ctx.gl.front_face(FrontFace::Clockwise);
                 ctx.gl.viewport(
                     0,
@@ -618,7 +632,12 @@ pub fn flush(ctx: &mut Context) {
     if !ctx.graphics.vertex_data.is_empty() {
         let texture = match &ctx.graphics.texture {
             None => return,
-            Some(ActiveTexture::Backbuffer) => &ctx.graphics.backbuffer.as_ref().unwrap().texture,
+            Some(ActiveTexture::Backbuffer) => ctx
+                .graphics
+                .backbuffer
+                .as_ref()
+                .map(|b| &b.canvas.texture)
+                .unwrap(),
             Some(ActiveTexture::FontCache) => &ctx.graphics.font_cache_texture,
             Some(ActiveTexture::User(t)) => &t,
         };
@@ -630,7 +649,12 @@ pub fn flush(ctx: &mut Context) {
 
         let projection = match &ctx.graphics.canvas {
             ActiveCanvas::Window => &ctx.graphics.window_projection,
-            ActiveCanvas::Backbuffer => &ctx.graphics.backbuffer.as_ref().unwrap().projection,
+            ActiveCanvas::Backbuffer => ctx
+                .graphics
+                .backbuffer
+                .as_ref()
+                .map(|b| &b.canvas.projection)
+                .unwrap(),
             ActiveCanvas::User(r) => &r.projection,
         };
 
@@ -667,7 +691,7 @@ pub fn present(ctx: &mut Context) {
 
         clear(ctx, ctx.graphics.letterbox_color);
 
-        let screen_rect = ctx.graphics.screen_rect;
+        let screen_rect = get_screen_rect(ctx).unwrap();
 
         push_quad(
             ctx,
@@ -732,20 +756,20 @@ pub fn set_internal_size(ctx: &mut Context, width: i32, height: i32) {
     ctx.graphics.internal_height = height;
 
     if ctx.graphics.backbuffer.is_some() {
-        ctx.graphics.backbuffer = Some(Canvas::new(ctx, width, height));
+        ctx.graphics.backbuffer = Some(Backbuffer {
+            canvas: Canvas::new(ctx, width, height),
+            screen_rect: ctx.graphics.scaling.get_screen_rect(
+                width,
+                height,
+                window::get_width(ctx),
+                window::get_height(ctx),
+            ),
+        });
     }
-
-    update_screen_rect(
-        ctx,
-        ctx.graphics.internal_width,
-        ctx.graphics.internal_height,
-        window::get_width(ctx),
-        window::get_height(ctx),
-    );
 }
 
-pub(crate) fn get_screen_rect(ctx: &Context) -> Rectangle {
-    ctx.graphics.screen_rect
+pub(crate) fn get_screen_rect(ctx: &Context) -> Option<Rectangle> {
+    ctx.graphics.backbuffer.as_ref().map(|b| b.screen_rect)
 }
 
 /// Gets the current scaling mode.
@@ -767,25 +791,25 @@ pub fn set_scaling(ctx: &mut Context, scaling: ScreenScaling) {
         }
     } else {
         if ctx.graphics.backbuffer.is_none() {
-            ctx.graphics.backbuffer = Some(Canvas::new(
-                ctx,
-                ctx.graphics.internal_width,
-                ctx.graphics.internal_height,
-            ));
+            ctx.graphics.backbuffer = Some(Backbuffer {
+                canvas: Canvas::new(
+                    ctx,
+                    ctx.graphics.internal_width,
+                    ctx.graphics.internal_height,
+                ),
+                screen_rect: ctx.graphics.scaling.get_screen_rect(
+                    ctx.graphics.internal_width,
+                    ctx.graphics.internal_height,
+                    window::get_width(ctx),
+                    window::get_height(ctx),
+                ),
+            });
         }
 
         if let ActiveCanvas::Window = ctx.graphics.canvas {
             set_canvas_ex(ctx, ActiveCanvas::Backbuffer);
         }
     }
-
-    update_screen_rect(
-        ctx,
-        ctx.graphics.internal_width,
-        ctx.graphics.internal_height,
-        window::get_width(ctx),
-        window::get_height(ctx),
-    );
 }
 
 /// Sets the color of the letterbox bars that are displayed when scaling the screen.
@@ -809,30 +833,16 @@ pub fn set_default_filter_mode(ctx: &mut Context, filter_mode: FilterMode) {
 pub(crate) fn set_window_projection(ctx: &mut Context, width: i32, height: i32) {
     ctx.graphics.window_projection = glm::ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
 
-    update_screen_rect(
-        ctx,
-        ctx.graphics.internal_width,
-        ctx.graphics.internal_height,
-        width,
-        height,
-    );
+    if let Some(backbuffer) = &mut ctx.graphics.backbuffer {
+        backbuffer.screen_rect = ctx.graphics.scaling.get_screen_rect(
+            ctx.graphics.internal_width,
+            ctx.graphics.internal_height,
+            width,
+            height,
+        );
+    }
 
     if let ActiveCanvas::Window = ctx.graphics.canvas {
         ctx.gl.viewport(0, 0, width, height);
     }
-}
-
-pub(crate) fn update_screen_rect(
-    ctx: &mut Context,
-    internal_width: i32,
-    internal_height: i32,
-    window_width: i32,
-    window_height: i32,
-) {
-    ctx.graphics.screen_rect = ctx.graphics.scaling.get_screen_rect(
-        internal_width,
-        internal_height,
-        window_width,
-        window_height,
-    );
 }
