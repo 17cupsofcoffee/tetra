@@ -11,7 +11,7 @@
 use hashbrown::{HashMap, HashSet};
 
 use crate::glm::Vec2;
-use crate::graphics;
+use crate::graphics::{self, ScreenScaling};
 use crate::platform;
 use crate::Context;
 
@@ -412,20 +412,34 @@ pub fn is_mouse_button_released(ctx: &Context, button: MouseButton) -> bool {
 ///
 /// If the screen is scaled, the returned value will be relative to the original size.
 pub fn get_mouse_x(ctx: &Context) -> f32 {
-    let internal_width = graphics::get_internal_width(ctx) as f32;
-    let screen_rect = graphics::get_screen_rect(ctx);
+    let raw_position = ctx.input.mouse_position.x;
 
-    ((ctx.input.mouse_position.x - screen_rect.x) / screen_rect.width) * internal_width
+    match graphics::get_scaling(ctx) {
+        ScreenScaling::Resize => raw_position,
+        _ => {
+            let internal_width = graphics::get_internal_width(ctx) as f32;
+            let screen_rect = graphics::get_screen_rect(ctx);
+
+            ((raw_position - screen_rect.x) / screen_rect.width) * internal_width
+        }
+    }
 }
 
 /// Get the Y co-ordinate of the mouse.
 ///
 /// If the screen is scaled, the returned value will be relative to the original size.
 pub fn get_mouse_y(ctx: &Context) -> f32 {
-    let internal_height = graphics::get_internal_height(ctx) as f32;
-    let screen_rect = graphics::get_screen_rect(ctx);
+    let raw_position = ctx.input.mouse_position.y;
 
-    ((ctx.input.mouse_position.y - screen_rect.y) / screen_rect.height) * internal_height
+    match graphics::get_scaling(ctx) {
+        ScreenScaling::Resize => raw_position,
+        _ => {
+            let internal_height = graphics::get_internal_height(ctx) as f32;
+            let screen_rect = graphics::get_screen_rect(ctx);
+
+            ((ctx.input.mouse_position.y - screen_rect.y) / screen_rect.height) * internal_height
+        }
+    }
 }
 
 /// Get the position of the mouse.
