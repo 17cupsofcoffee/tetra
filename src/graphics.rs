@@ -64,6 +64,7 @@ pub(crate) enum ActiveCanvas {
 
 struct Backbuffer {
     canvas: Canvas,
+    scaling: ScreenScaling,
     screen_rect: Rectangle,
 }
 
@@ -88,7 +89,6 @@ pub(crate) struct GraphicsContext {
     internal_width: i32,
     internal_height: i32,
     backbuffer: Option<Backbuffer>,
-    scaling: ScreenScaling,
     letterbox_color: Color,
 
     font_cache: GlyphBrush<'static, FontQuad>,
@@ -122,6 +122,7 @@ impl GraphicsContext {
                     ActiveCanvas::Backbuffer,
                     Some(Backbuffer {
                         canvas,
+                        scaling,
                         screen_rect,
                     }),
                 )
@@ -187,7 +188,6 @@ impl GraphicsContext {
             internal_width,
             internal_height,
             backbuffer,
-            scaling,
             letterbox_color: Color::BLACK,
 
             font_cache,
@@ -753,15 +753,15 @@ pub fn set_internal_size(ctx: &mut Context, width: i32, height: i32) {
     ctx.graphics.internal_height = height;
 
     if ctx.graphics.backbuffer.is_some() {
-        ctx.graphics.backbuffer = Some(Backbuffer {
-            canvas: Canvas::new(ctx, width, height),
-            screen_rect: ctx.graphics.scaling.get_screen_rect(
-                width,
-                height,
-                window::get_width(ctx),
-                window::get_height(ctx),
-            ),
-        });
+        let canvas = Canvas::new(ctx, width, height);
+        let (window_width, window_height) = window::get_size(ctx);
+        let backbuffer = ctx.graphics.backbuffer.as_mut().unwrap();
+
+        backbuffer.canvas = canvas;
+        backbuffer.screen_rect =
+            backbuffer
+                .scaling
+                .get_screen_rect(width, height, window_width, window_height);
     }
 }
 
@@ -771,14 +771,16 @@ pub(crate) fn get_screen_rect(ctx: &Context) -> Option<Rectangle> {
 
 /// Gets the current scaling mode.
 pub fn get_scaling(ctx: &Context) -> ScreenScaling {
-    ctx.graphics.scaling
+    if let Some(backbuffer) = &ctx.graphics.backbuffer {
+        backbuffer.scaling
+    } else {
+        ScreenScaling::Resize
+    }
 }
 
 /// Sets the current scaling mode.
 pub fn set_scaling(ctx: &mut Context, scaling: ScreenScaling) {
-    ctx.graphics.scaling = scaling;
-
-    if let ScreenScaling::Resize = ctx.graphics.scaling {
+    if let ScreenScaling::Resize = scaling {
         if ctx.graphics.backbuffer.is_some() {
             ctx.graphics.backbuffer = None;
         }
@@ -787,24 +789,32 @@ pub fn set_scaling(ctx: &mut Context, scaling: ScreenScaling) {
             set_canvas_ex(ctx, ActiveCanvas::Window);
         }
     } else {
-        if ctx.graphics.backbuffer.is_none() {
+        let (internal_width, internal_height) = get_internal_size(ctx);
+        let (window_width, window_height) = window::get_size(ctx);
+
+        if let Some(backbuffer) = &mut ctx.graphics.backbuffer {
+            backbuffer.scaling = scaling;
+            backbuffer.screen_rect = scaling.get_screen_rect(
+                internal_width,
+                internal_height,
+                window_width,
+                window_height,
+            );
+        } else {
             ctx.graphics.backbuffer = Some(Backbuffer {
-                canvas: Canvas::new(
-                    ctx,
-                    ctx.graphics.internal_width,
-                    ctx.graphics.internal_height,
-                ),
-                screen_rect: ctx.graphics.scaling.get_screen_rect(
-                    ctx.graphics.internal_width,
-                    ctx.graphics.internal_height,
-                    window::get_width(ctx),
-                    window::get_height(ctx),
+                canvas: Canvas::new(ctx, internal_width, internal_height),
+                scaling,
+                screen_rect: scaling.get_screen_rect(
+                    internal_width,
+                    internal_height,
+                    window_width,
+                    window_height,
                 ),
             });
-        }
 
-        if let ActiveCanvas::Window = ctx.graphics.canvas {
-            set_canvas_ex(ctx, ActiveCanvas::Backbuffer);
+            if let ActiveCanvas::Window = ctx.graphics.canvas {
+                set_canvas_ex(ctx, ActiveCanvas::Backbuffer);
+            }
         }
     }
 }
@@ -831,7 +841,7 @@ pub(crate) fn set_window_projection(ctx: &mut Context, width: i32, height: i32) 
     ctx.graphics.window_projection = glm::ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
 
     if let Some(backbuffer) = &mut ctx.graphics.backbuffer {
-        backbuffer.screen_rect = ctx.graphics.scaling.get_screen_rect(
+        backbuffer.screen_rect = backbuffer.scaling.get_screen_rect(
             ctx.graphics.internal_width,
             ctx.graphics.internal_height,
             width,
