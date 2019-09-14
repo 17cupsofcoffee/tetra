@@ -4,7 +4,9 @@
 
 use rand::{self, Rng};
 use tetra::audio::Sound;
-use tetra::graphics::{self, Color, DrawParams, Font, Text, Texture, Vec2};
+use tetra::graphics::{
+    self, Color, DrawParams, Font, ScalingMode, ScreenScaler, Text, Texture, Vec2,
+};
 use tetra::input::{self, Key};
 use tetra::window;
 use tetra::{Context, ContextBuilder, State};
@@ -23,7 +25,7 @@ fn main() {
     ContextBuilder::new("Tetras", 640, 480)
         .resizable(true)
         .quit_on_escape(true)
-        .run_with(|ctx| Ok(SceneManager::new(Box::new(TitleScene::new(ctx)?))));
+        .run_with(GameState::new);
 }
 
 // === Scene Management ===
@@ -47,19 +49,23 @@ enum Transition {
 // Boxing/dynamic dispatch could be avoided here by defining an enum for all
 // of your scenes, but that adds a bit of extra boilerplate - your choice!
 
-struct SceneManager {
+struct GameState {
     scenes: Vec<Box<dyn Scene>>,
+    scaler: ScreenScaler,
 }
 
-impl SceneManager {
-    fn new(initial_scene: Box<dyn Scene>) -> SceneManager {
-        SceneManager {
-            scenes: vec![initial_scene],
-        }
+impl GameState {
+    fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+        let initial_scene = TitleScene::new(ctx)?;
+
+        Ok(GameState {
+            scenes: vec![Box::new(initial_scene)],
+            scaler: ScreenScaler::new(ctx, 640, 480, ScalingMode::ShowAllPixelPerfect),
+        })
     }
 }
 
-impl State for SceneManager {
+impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         match self.scenes.last_mut() {
             Some(active_scene) => match active_scene.update(ctx)? {
@@ -78,6 +84,8 @@ impl State for SceneManager {
     }
 
     fn draw(&mut self, ctx: &mut Context, dt: f64) -> tetra::Result {
+        graphics::set_canvas(ctx, self.scaler.canvas());
+
         match self.scenes.last_mut() {
             Some(active_scene) => match active_scene.draw(ctx, dt)? {
                 Transition::None => {}
@@ -90,6 +98,9 @@ impl State for SceneManager {
             },
             None => window::quit(ctx),
         }
+
+        graphics::reset_canvas(ctx);
+        graphics::draw(ctx, &self.scaler, Vec2::new(0.0, 0.0));
 
         Ok(())
     }
