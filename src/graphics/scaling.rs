@@ -8,6 +8,7 @@ use crate::Context;
 pub struct ScreenScaler {
     canvas: Canvas,
     mode: ScalingMode,
+    letterbox_color: Color,
 }
 
 impl ScreenScaler {
@@ -15,6 +16,7 @@ impl ScreenScaler {
         ScreenScaler {
             canvas: Canvas::new(ctx, width, height),
             mode,
+            letterbox_color: Color::BLACK,
         }
     }
 
@@ -29,6 +31,14 @@ impl ScreenScaler {
     pub fn set_mode(&mut self, mode: ScalingMode) {
         self.mode = mode;
     }
+
+    pub fn letterbox_color(&self) -> Color {
+        self.letterbox_color
+    }
+
+    pub fn set_letterbox_color(&mut self, color: Color) {
+        self.letterbox_color = color;
+    }
 }
 
 impl Drawable for ScreenScaler {
@@ -37,7 +47,7 @@ impl Drawable for ScreenScaler {
         P: Into<DrawParams>,
     {
         graphics::set_texture(ctx, &self.canvas.texture);
-        graphics::clear(ctx, Color::BLACK);
+        graphics::clear(ctx, self.letterbox_color);
 
         let screen_rect = self.mode.get_screen_rect(
             self.canvas.width(),
