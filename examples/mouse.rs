@@ -14,8 +14,8 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
-            position: Vec2::new(160.0 / 2.0, 144.0 / 2.0),
-            scale: Vec2::new(1.0, 1.0),
+            position: Vec2::new(32.0, 32.0),
+            scale: Vec2::new(2.0, 2.0),
             rotation: 0.0,
         })
     }
@@ -26,10 +26,10 @@ impl State for GameState {
         self.position = glm::round(&input::get_mouse_position(ctx));
 
         if input::is_mouse_button_down(ctx, MouseButton::Left) {
-            self.scale = Vec2::new(2.0, 2.0);
+            self.scale = Vec2::new(4.0, 4.0);
             self.rotation += 0.1;
         } else {
-            self.scale = Vec2::new(1.0, 1.0);
+            self.scale = Vec2::new(2.0, 2.0);
             self.rotation = 0.0;
         }
 
@@ -54,9 +54,7 @@ impl State for GameState {
 }
 
 fn main() {
-    ContextBuilder::new("Mouse Input", 160, 144)
-        .maximized(true)
-        .resizable(true)
+    ContextBuilder::new("Mouse Input", 640, 480)
         .quit_on_escape(true)
         .run_with(GameState::new);
 }

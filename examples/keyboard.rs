@@ -11,7 +11,7 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
-            position: Vec2::new(160.0 / 2.0, 144.0 / 2.0),
+            position: Vec2::new(32.0, 32.0),
         })
     }
 }
@@ -19,19 +19,19 @@ impl GameState {
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         if input::is_key_down(ctx, Key::A) {
-            self.position.x -= 2.0;
+            self.position.x -= 4.0;
         }
 
         if input::is_key_down(ctx, Key::D) {
-            self.position.x += 2.0;
+            self.position.x += 4.0;
         }
 
         if input::is_key_down(ctx, Key::W) {
-            self.position.y -= 2.0;
+            self.position.y -= 4.0;
         }
 
         if input::is_key_down(ctx, Key::S) {
-            self.position.y += 2.0;
+            self.position.y += 4.0;
         }
 
         let mut pressed = input::get_keys_pressed(ctx).peekable();
@@ -58,7 +58,8 @@ impl State for GameState {
             &self.texture,
             DrawParams::new()
                 .position(self.position)
-                .origin(Vec2::new(8.0, 8.0)),
+                .origin(Vec2::new(8.0, 8.0))
+                .scale(Vec2::new(2.0, 2.0)),
         );
 
         Ok(())
@@ -66,9 +67,7 @@ impl State for GameState {
 }
 
 fn main() {
-    ContextBuilder::new("Keyboard Input", 160, 144)
-        .maximized(true)
-        .resizable(true)
+    ContextBuilder::new("Keyboard Input", 640, 480)
         .quit_on_escape(true)
         .run_with(GameState::new);
 }

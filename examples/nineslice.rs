@@ -11,7 +11,12 @@ impl GameState {
         let texture = Texture::new(ctx, "./examples/resources/panel.png")?;
 
         Ok(GameState {
-            panel: NineSlice::new(texture, 160.0, 144.0, Rectangle::new(4.0, 4.0, 24.0, 24.0)),
+            panel: NineSlice::new(
+                texture,
+                640.0 - 32.0,
+                480.0 - 32.0,
+                Rectangle::new(4.0, 4.0, 24.0, 24.0),
+            ),
         })
     }
 }
@@ -19,16 +24,14 @@ impl GameState {
 impl State for GameState {
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         graphics::clear(ctx, Color::BLACK);
-        graphics::draw(ctx, &self.panel, Vec2::new(0.0, 0.0));
+        graphics::draw(ctx, &self.panel, Vec2::new(16.0, 16.0));
 
         Ok(())
     }
 }
 
 fn main() {
-    ContextBuilder::new("Rendering a NineSlice", 160, 144)
-        .maximized(true)
-        .resizable(true)
+    ContextBuilder::new("Rendering a NineSlice", 640, 480)
         .quit_on_escape(true)
         .run_with(GameState::new);
 }

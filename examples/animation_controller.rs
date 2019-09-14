@@ -115,7 +115,7 @@ impl State for GameState {
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
-        graphics::clear(ctx, Color::rgb(0.769, 0.812, 0.631));
+        graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
         graphics::draw(
             ctx,
@@ -136,8 +136,6 @@ impl State for GameState {
 
 fn main() {
     ContextBuilder::new("Controlling Animations", 480, 320)
-        .maximized(false)
-        .resizable(false)
         .quit_on_escape(true)
         .run_with(GameState::new);
 }

@@ -73,8 +73,6 @@ impl State for GameState {
 
 fn main() {
     ContextBuilder::new("Custom Shaders", 1280, 720)
-        .maximized(true)
-        .resizable(true)
         .quit_on_escape(true)
         .run_with(GameState::new);
 }

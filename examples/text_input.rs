@@ -46,7 +46,6 @@ impl State for GameState {
 
 fn main() {
     ContextBuilder::new("Keyboard Input", 640, 480)
-        .resizable(true)
         .quit_on_escape(true)
         .run(GameState::new());
 }

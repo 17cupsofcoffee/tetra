@@ -57,8 +57,9 @@ impl State for GameState {
             ctx,
             &self.animation,
             DrawParams::new()
-                .position(Vec2::new(32.0, 32.0))
-                .origin(Vec2::new(8.0, 8.0)),
+                .position(Vec2::new(240.0, 160.0))
+                .origin(Vec2::new(8.0, 8.0))
+                .scale(Vec2::new(2.0, 2.0)),
         );
 
         Ok(())
@@ -66,9 +67,7 @@ impl State for GameState {
 }
 
 fn main() {
-    ContextBuilder::new("Displaying an Animation", 64, 64)
-        .maximized(true)
-        .resizable(true)
+    ContextBuilder::new("Displaying an Animation", 480, 320)
         .quit_on_escape(true)
         .run_with(GameState::new);
 }
