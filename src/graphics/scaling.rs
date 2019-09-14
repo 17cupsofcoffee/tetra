@@ -1,14 +1,73 @@
 //! Functions and types relating to screen scaling.
 
-use crate::graphics::Rectangle;
+use crate::graphics::{self, Canvas, Color, DrawParams, Drawable, Rectangle};
+use crate::window;
+use crate::Context;
+
+#[derive(Debug)]
+pub struct ScreenScaler {
+    canvas: Canvas,
+    mode: ScalingMode,
+}
+
+impl ScreenScaler {
+    pub fn new(ctx: &mut Context, width: i32, height: i32, mode: ScalingMode) -> ScreenScaler {
+        ScreenScaler {
+            canvas: Canvas::new(ctx, width, height),
+            mode,
+        }
+    }
+
+    pub fn canvas(&self) -> &Canvas {
+        &self.canvas
+    }
+
+    pub fn mode(&self) -> ScalingMode {
+        self.mode
+    }
+
+    pub fn set_mode(&mut self, mode: ScalingMode) {
+        self.mode = mode;
+    }
+}
+
+impl Drawable for ScreenScaler {
+    fn draw<P>(&self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
+        graphics::set_texture(ctx, &self.canvas.texture);
+        graphics::clear(ctx, Color::BLACK);
+
+        let screen_rect = self.mode.get_screen_rect(
+            self.canvas.width(),
+            self.canvas.height(),
+            window::get_width(ctx),
+            window::get_height(ctx),
+        );
+
+        graphics::push_quad(
+            ctx,
+            screen_rect.x,
+            screen_rect.y,
+            screen_rect.x + screen_rect.width,
+            screen_rect.y + screen_rect.height,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            &params.into(),
+        );
+    }
+}
 
 /// Defines the different ways that a game's screen can be scaled.
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum ScreenScaling {
+pub enum ScalingMode {
     /// The game will always be displayed at its native resolution, with no scaling applied.
     /// If the window is bigger than the native resolution, letterboxing will be applied.
     /// If the window is smaller than the native resolution, it will be cropped.
-    None,
+    Fixed,
 
     /// The screen will be stretched to fill the window, without trying to preserve the original
     /// aspect ratio. Distortion/stretching/squashing may occur.
@@ -27,15 +86,9 @@ pub enum ScreenScaling {
 
     /// Works the same as Crop, but will only scale by integer values.
     CropPixelPerfect,
-
-    /// The screen will resize to match the size of the window. More of the scene will be shown on
-    /// bigger windows, and less of the scene will be shown on smaller windows.
-    ///
-    /// If the scaling mode changes, the internal resolution will return to its original value.
-    Resize,
 }
 
-impl ScreenScaling {
+impl ScalingMode {
     pub(crate) fn get_screen_rect(
         self,
         internal_width: i32,
@@ -52,7 +105,7 @@ impl ScreenScaling {
         let screen_aspect_ratio = f_window_width / f_window_height;
 
         match self {
-            ScreenScaling::None => {
+            ScalingMode::Fixed => {
                 let screen_x = (window_width - internal_width) / 2;
                 let screen_y = (window_height - internal_height) / 2;
 
@@ -63,10 +116,10 @@ impl ScreenScaling {
                     internal_height as f32,
                 )
             }
-            ScreenScaling::Stretch | ScreenScaling::Resize => {
+            ScalingMode::Stretch => {
                 Rectangle::new(0.0, 0.0, window_width as f32, window_height as f32)
             }
-            ScreenScaling::ShowAll => {
+            ScalingMode::ShowAll => {
                 let scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
                     f_window_width / f_internal_width
                 } else {
@@ -80,7 +133,7 @@ impl ScreenScaling {
 
                 Rectangle::new(screen_x, screen_y, screen_width, screen_height)
             }
-            ScreenScaling::ShowAllPixelPerfect => {
+            ScalingMode::ShowAllPixelPerfect => {
                 let mut scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
                     window_width / internal_width
                 } else {
@@ -103,7 +156,7 @@ impl ScreenScaling {
                     screen_height as f32,
                 )
             }
-            ScreenScaling::Crop => {
+            ScalingMode::Crop => {
                 let scale_x = f_window_width / f_internal_width;
                 let scale_y = f_window_height / f_internal_height;
                 let scale_factor = scale_x.max(scale_y);
@@ -115,7 +168,7 @@ impl ScreenScaling {
 
                 Rectangle::new(screen_x, screen_y, screen_width, screen_height)
             }
-            ScreenScaling::CropPixelPerfect => {
+            ScalingMode::CropPixelPerfect => {
                 let mut scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
                     f_window_height / f_internal_height
                 } else {

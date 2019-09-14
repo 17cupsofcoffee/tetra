@@ -71,7 +71,6 @@ pub mod window;
 pub use crate::error::{Result, TetraError};
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
-use crate::graphics::ScreenScaling;
 use crate::input::InputContext;
 use crate::platform::Platform;
 use crate::time::TimeContext;
@@ -128,18 +127,10 @@ pub struct Context {
 
 impl Context {
     pub(crate) fn new(builder: &ContextBuilder) -> Result<Context> {
-        let (platform, gl_context, window_width, window_height) = Platform::new(builder)?;
+        let (platform, gl_context, width, height) = Platform::new(builder)?;
         let mut gl = GLDevice::new(gl_context)?;
 
-        let graphics = GraphicsContext::new(
-            &mut gl,
-            window_width,
-            window_height,
-            builder.internal_width,
-            builder.internal_height,
-            builder.scaling,
-        )?;
-
+        let graphics = GraphicsContext::new(&mut gl, width, height)?;
         let input = InputContext::new();
         let time = TimeContext::new(builder.tick_rate);
 
@@ -161,11 +152,8 @@ impl Context {
 #[derive(Debug, Clone)]
 pub struct ContextBuilder {
     title: String,
-    internal_width: i32,
-    internal_height: i32,
-    window_size: Option<(i32, i32)>,
-    window_scale: Option<i32>,
-    scaling: ScreenScaling,
+    window_width: i32,
+    window_height: i32,
     vsync: bool,
     tick_rate: f64,
     fullscreen: bool,
@@ -179,14 +167,14 @@ pub struct ContextBuilder {
 
 impl ContextBuilder {
     /// Creates a new ContextBuilder.
-    pub fn new<S>(title: S, width: i32, height: i32) -> ContextBuilder
+    pub fn new<S>(title: S, window_width: i32, window_height: i32) -> ContextBuilder
     where
         S: Into<String>,
     {
         ContextBuilder {
             title: title.into(),
-            internal_width: width,
-            internal_height: height,
+            window_width,
+            window_height,
 
             ..ContextBuilder::default()
         }
@@ -200,46 +188,6 @@ impl ContextBuilder {
         S: Into<String>,
     {
         self.title = title.into();
-        self
-    }
-
-    /// Sets the internal resolution of the screen.
-    ///
-    /// Defaults to `1280 x 720`.
-    pub fn size(&mut self, width: i32, height: i32) -> &mut ContextBuilder {
-        self.internal_width = width;
-        self.internal_height = height;
-        self
-    }
-
-    /// Sets the scaling mode for the game.
-    ///
-    /// Defaults to `ScreenScaling::ShowAllPixelPerfect`, which will maintain the screen's aspect ratio
-    /// by letterboxing.
-    pub fn scaling(&mut self, scaling: ScreenScaling) -> &mut ContextBuilder {
-        self.scaling = scaling;
-        self
-    }
-
-    /// Sets the size of the window.
-    ///
-    /// This only needs to be set if you want the internal resolution of the game
-    /// to be different from the window size.
-    ///
-    /// This will take precedence over `window_scale`.
-    pub fn window_size(&mut self, width: i32, height: i32) -> &mut ContextBuilder {
-        self.window_size = Some((width, height));
-        self
-    }
-
-    /// Sets the size of the window, as a multiplier of the internal screen size.
-    ///
-    /// This only needs to be set if you want the internal resolution of the game
-    /// to be different from the window size.
-    ///
-    /// `window_size` will take precedence over this.
-    pub fn window_scale(&mut self, scale: i32) -> &mut ContextBuilder {
-        self.window_scale = Some(scale);
         self
     }
 
@@ -345,11 +293,8 @@ impl Default for ContextBuilder {
     fn default() -> ContextBuilder {
         ContextBuilder {
             title: "Tetra".into(),
-            internal_width: 1280,
-            internal_height: 720,
-            window_size: None,
-            window_scale: None,
-            scaling: ScreenScaling::ShowAllPixelPerfect,
+            window_width: 1280,
+            window_height: 720,
             vsync: true,
             tick_rate: 1.0 / 60.0,
             fullscreen: false,

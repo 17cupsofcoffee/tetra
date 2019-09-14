@@ -83,6 +83,7 @@ impl Platform {
 
         let gl_attr = video_sys.gl_attr();
 
+        // TODO: Will need to add some more here if we start using the depth/stencil buffers
         gl_attr.set_context_profile(GLProfile::Core);
         gl_attr.set_context_version(3, 2);
         gl_attr.set_red_size(8);
@@ -90,21 +91,12 @@ impl Platform {
         gl_attr.set_blue_size(8);
         gl_attr.set_alpha_size(8);
         gl_attr.set_double_buffer(true);
-        // TODO: Will need to add some more here if we start using the depth/stencil buffers
 
-        let (mut window_width, mut window_height) = if let Some(size) = builder.window_size {
-            size
-        } else if let Some(scale) = builder.window_scale {
-            (
-                builder.internal_width * scale,
-                builder.internal_height * scale,
-            )
-        } else {
-            (builder.internal_width, builder.internal_height)
-        };
-
-        let mut window_builder =
-            video_sys.window(&builder.title, window_width as u32, window_height as u32);
+        let mut window_builder = video_sys.window(
+            &builder.title,
+            builder.window_width as u32,
+            builder.window_height as u32,
+        );
 
         window_builder.hidden().position_centered().opengl();
 
@@ -123,6 +115,9 @@ impl Platform {
         // We wait until the window has been created to fiddle with this stuff as:
         // a) we don't want to blow away the window size settings
         // b) we don't know what monitor they're on until the window is created
+
+        let mut window_width = builder.window_width;
+        let mut window_height = builder.window_height;
 
         if builder.maximized {
             window.maximize();

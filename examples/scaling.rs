@@ -1,5 +1,7 @@
 use tetra::graphics::ui::NineSlice;
-use tetra::graphics::{self, Color, Font, Rectangle, ScreenScaling, Text, Texture, Vec2};
+use tetra::graphics::{
+    self, Color, Font, Rectangle, ScalingMode, ScreenScaler, Text, Texture, Vec2,
+};
 use tetra::input::{self, Key};
 use tetra::{Context, ContextBuilder, State};
 
@@ -12,31 +14,31 @@ const PANEL_X: f32 = (SCREEN_WIDTH / 2.0) - (PANEL_WIDTH / 2.0);
 const PANEL_Y: f32 = (SCREEN_HEIGHT / 2.0) - (PANEL_HEIGHT / 2.0);
 
 struct GameState {
+    scaler: ScreenScaler,
     panel: NineSlice,
     text: Text,
 }
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
-        let texture = Texture::new(ctx, "./examples/resources/panel.png")?;
-
         Ok(GameState {
+            scaler: ScreenScaler::new(ctx, 640, 480, ScalingMode::Fixed),
             panel: NineSlice::new(
-                texture,
+                Texture::new(ctx, "./examples/resources/panel.png")?,
                 PANEL_WIDTH,
                 PANEL_HEIGHT,
                 Rectangle::new(4.0, 4.0, 24.0, 24.0),
             ),
             text: Text::new(
-                format!("{}\n{:?}", LABEL, graphics::get_scaling(ctx)),
+                format!("{}\n{:?}", LABEL, ScalingMode::Fixed),
                 Font::default(),
                 16.0,
             ),
         })
     }
 
-    fn set_scaling(&mut self, ctx: &mut Context, mode: ScreenScaling) {
-        graphics::set_scaling(ctx, mode);
+    fn set_mode(&mut self, mode: ScalingMode) {
+        self.scaler.set_mode(mode);
         self.text.set_content(format!("{}\n{:?}", LABEL, mode));
     }
 }
@@ -44,24 +46,30 @@ impl GameState {
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         if input::is_key_pressed(ctx, Key::Space) {
-            match graphics::get_scaling(ctx) {
-                ScreenScaling::None => self.set_scaling(ctx, ScreenScaling::Stretch),
-                ScreenScaling::Stretch => self.set_scaling(ctx, ScreenScaling::ShowAll),
-                ScreenScaling::ShowAll => self.set_scaling(ctx, ScreenScaling::ShowAllPixelPerfect),
-                ScreenScaling::ShowAllPixelPerfect => self.set_scaling(ctx, ScreenScaling::Crop),
-                ScreenScaling::Crop => self.set_scaling(ctx, ScreenScaling::CropPixelPerfect),
-                ScreenScaling::CropPixelPerfect => self.set_scaling(ctx, ScreenScaling::Resize),
-                ScreenScaling::Resize => self.set_scaling(ctx, ScreenScaling::None),
-            }
+            let next = match self.scaler.mode() {
+                ScalingMode::Fixed => ScalingMode::Stretch,
+                ScalingMode::Stretch => ScalingMode::ShowAll,
+                ScalingMode::ShowAll => ScalingMode::ShowAllPixelPerfect,
+                ScalingMode::ShowAllPixelPerfect => ScalingMode::Crop,
+                ScalingMode::Crop => ScalingMode::CropPixelPerfect,
+                ScalingMode::CropPixelPerfect => ScalingMode::Fixed,
+            };
+
+            self.set_mode(next);
         }
 
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
+        graphics::set_canvas(ctx, self.scaler.canvas());
+
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
         graphics::draw(ctx, &self.panel, Vec2::new(PANEL_X, PANEL_Y));
         graphics::draw(ctx, &self.text, Vec2::new(PANEL_X + 8.0, PANEL_Y + 8.0));
+
+        graphics::reset_canvas(ctx);
+        graphics::draw(ctx, &self.scaler, Vec2::new(0.0, 0.0));
 
         Ok(())
     }
