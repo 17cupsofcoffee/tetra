@@ -1,5 +1,6 @@
 //! Functions and types relating to screen scaling.
 
+use crate::error::Result;
 use crate::graphics::{self, Canvas, Color, DrawParams, Drawable, Rectangle};
 use crate::window;
 use crate::Context;
@@ -12,12 +13,17 @@ pub struct ScreenScaler {
 }
 
 impl ScreenScaler {
-    pub fn new(ctx: &mut Context, width: i32, height: i32, mode: ScalingMode) -> ScreenScaler {
-        ScreenScaler {
-            canvas: Canvas::new(ctx, width, height),
+    pub fn new(
+        ctx: &mut Context,
+        width: i32,
+        height: i32,
+        mode: ScalingMode,
+    ) -> Result<ScreenScaler> {
+        Ok(ScreenScaler {
+            canvas: Canvas::new(ctx, width, height)?,
             mode,
             letterbox_color: Color::BLACK,
-        }
+        })
     }
 
     pub fn canvas(&self) -> &Canvas {

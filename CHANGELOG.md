@@ -15,6 +15,7 @@ This project adheres to Semantic Versioning.
 * `TetraError::Sdl` is now called `TetraError::Platform`.
 * `DEFAULT_VERTEX_SHADER` and `DEFAULT_FRAGMENT_SHADER` are now const instead of static.
 * Screen scaling has been extracted from the core of the engine, and is now provided via the `ScreenScaler` struct. This allows it to be more flexibly integrated with the rest of your game's rendering.
+* Failing to create a `Canvas` now returns an error instead of panicking.
 * Updated `glow` to 0.2.3.
 * Updated `hashbrown` to 0.6.0.
 * Updated `image` to 0.22.1.

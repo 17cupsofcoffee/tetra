@@ -22,7 +22,7 @@ struct GameState {
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
-            scaler: ScreenScaler::new(ctx, 640, 480, ScalingMode::Fixed),
+            scaler: ScreenScaler::new(ctx, 640, 480, ScalingMode::Fixed)?,
             panel: NineSlice::new(
                 Texture::new(ctx, "./examples/resources/panel.png")?,
                 PANEL_WIDTH,

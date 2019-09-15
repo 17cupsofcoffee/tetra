@@ -17,7 +17,7 @@ struct GameState {
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
-            canvas: Canvas::new(ctx, 1280, 720),
+            canvas: Canvas::new(ctx, 1280, 720)?,
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
             shader: Shader::fragment(ctx, "./examples/resources/disco.frag")?,
             text: Text::new("", Font::default(), 32.0),

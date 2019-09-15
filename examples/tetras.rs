@@ -60,7 +60,7 @@ impl GameState {
 
         Ok(GameState {
             scenes: vec![Box::new(initial_scene)],
-            scaler: ScreenScaler::new(ctx, 640, 480, ScalingMode::ShowAllPixelPerfect),
+            scaler: ScreenScaler::new(ctx, 640, 480, ScalingMode::ShowAllPixelPerfect)?,
         })
     }
 }

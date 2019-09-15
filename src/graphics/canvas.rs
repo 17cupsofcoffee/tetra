@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use crate::error::Result;
 use crate::glm::Mat4;
 use crate::graphics::opengl::GLFramebuffer;
 use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
@@ -22,11 +23,8 @@ pub struct Canvas {
 
 impl Canvas {
     /// Creates a new canvas.
-    pub fn new(ctx: &mut Context, width: i32, height: i32) -> Canvas {
-        // TODO: Make this return Result in 0.3
-        ctx.gl
-            .new_canvas(width, height, true)
-            .expect("Could not create canvas")
+    pub fn new(ctx: &mut Context, width: i32, height: i32) -> Result<Canvas> {
+        ctx.gl.new_canvas(width, height, true)
     }
 
     /// Returns the width of the canvas.
