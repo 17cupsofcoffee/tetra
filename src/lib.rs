@@ -278,7 +278,7 @@ impl ContextBuilder {
     where
         S: State + 'static,
     {
-        run_impl(self, |_| Ok(state));
+        self.run_with(|_| Ok(state));
     }
 
     pub fn run_with<S, F>(&self, init: F)
@@ -286,7 +286,20 @@ impl ContextBuilder {
         S: State + 'static,
         F: FnOnce(&mut Context) -> Result<S>,
     {
-        run_impl(self, init);
+        let mut ctx = match Context::new(self) {
+            Ok(ctx) => ctx,
+            Err(e) => return S::error(e),
+        };
+
+        let state = match init(&mut ctx) {
+            Ok(state) => state,
+            Err(e) => return S::error(e),
+        };
+
+        time::reset(&mut ctx);
+
+        ctx.running = true;
+        platform::run_loop(ctx, state, run_frame);
     }
 }
 
@@ -307,27 +320,6 @@ impl Default for ContextBuilder {
             quit_on_escape: false,
         }
     }
-}
-
-fn run_impl<S, F>(builder: &ContextBuilder, init: F)
-where
-    S: State + 'static,
-    F: FnOnce(&mut Context) -> Result<S>,
-{
-    let mut ctx = match Context::new(builder) {
-        Ok(ctx) => ctx,
-        Err(e) => return S::error(e),
-    };
-
-    let state = match init(&mut ctx) {
-        Ok(state) => state,
-        Err(e) => return S::error(e),
-    };
-
-    time::reset(&mut ctx);
-
-    ctx.running = true;
-    platform::run_loop(ctx, state, run_frame);
 }
 
 fn run_frame<S>(ctx: &mut Context, state: &mut S)
