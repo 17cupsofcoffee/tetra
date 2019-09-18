@@ -1,13 +1,13 @@
 //! Functions and types relating to text rendering.
 
 use std::cell::RefCell;
-use std::fs;
 use std::path::Path;
 
 use glyph_brush::rusttype::{Rect, Scale};
 use glyph_brush::{BrushAction, BrushError, FontId, GlyphCruncher, GlyphVertex, Section};
 
 use crate::error::Result;
+use crate::fs;
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::{self, ActiveTexture, DrawParams, Drawable, Rectangle, Texture};
 use crate::Context;

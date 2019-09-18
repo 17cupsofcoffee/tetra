@@ -7,6 +7,7 @@ use std::rc::Rc;
 use image;
 
 use crate::error::Result;
+use crate::fs;
 use crate::graphics::opengl::GLTexture;
 use crate::graphics::{self, DrawParams, Drawable, FilterMode, Rectangle};
 use crate::Context;
@@ -46,7 +47,7 @@ impl Texture {
     where
         P: AsRef<Path>,
     {
-        let image = image::open(path)?.to_rgba();
+        let image = fs::read_to_image(path)?.to_rgba();
         let (width, height) = image.dimensions();
 
         Texture::from_rgba(

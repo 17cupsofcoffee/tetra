@@ -1,11 +1,11 @@
 //! Functions and types relating to audio playback.
 
-use std::fs;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
 use crate::error::Result;
+use crate::fs;
 use crate::platform;
 use crate::Context;
 

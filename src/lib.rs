@@ -61,6 +61,7 @@
 
 pub mod audio;
 pub mod error;
+mod fs;
 pub mod glm;
 pub mod graphics;
 pub mod input;

@@ -3,6 +3,7 @@
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::io;
+use std::path::PathBuf;
 use std::result;
 
 use image::ImageError;
@@ -21,8 +22,10 @@ pub type Result<T = ()> = result::Result<T, TetraError>;
 /// This is so that if a new error type is added later on, it will not break your code.
 #[derive(Debug)]
 pub enum TetraError {
-    /// An error that occurred while performing an I/O operation (e.g. while loading a file).
-    Io(io::Error),
+    FailedToLoadAsset {
+        source: io::Error,
+        path: PathBuf,
+    },
 
     /// An error that was returned by the platform.
     Platform(String),
@@ -59,7 +62,12 @@ pub enum TetraError {
 impl Display for TetraError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            TetraError::Io(e) => write!(f, "IO error: {}", e),
+            TetraError::FailedToLoadAsset { source, path } => write!(
+                f,
+                "Failed to load asset from {}: {}",
+                path.to_string_lossy(),
+                source
+            ),
             TetraError::Platform(e) => write!(f, "Platform error: {}", e),
             TetraError::OpenGl(e) => write!(f, "OpenGL error: {}", e),
             TetraError::Image(e) => write!(f, "Image processing error: {}", e),
@@ -78,7 +86,7 @@ impl Display for TetraError {
 impl Error for TetraError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
-            TetraError::Io(e) => Some(e),
+            TetraError::FailedToLoadAsset { source, .. } => Some(source),
             TetraError::Platform(_) => None,
             TetraError::OpenGl(_) => None,
             TetraError::Image(e) => Some(e),
@@ -87,12 +95,6 @@ impl Error for TetraError {
             TetraError::FailedToDecodeAudio(e) => Some(e),
             TetraError::__Nonexhaustive => unreachable!(),
         }
-    }
-}
-
-impl From<io::Error> for TetraError {
-    fn from(e: io::Error) -> TetraError {
-        TetraError::Io(e)
     }
 }
 

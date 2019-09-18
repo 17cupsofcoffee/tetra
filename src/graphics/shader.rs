@@ -1,10 +1,10 @@
 //! Functions and types relating to shader programs.
 
-use std::fs;
 use std::path::Path;
 use std::rc::Rc;
 
 use crate::error::Result;
+use crate::fs;
 use crate::graphics::opengl::GLProgram;
 use crate::platform;
 use crate::Context;
