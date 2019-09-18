@@ -130,5 +130,5 @@ impl State for GameState {
 fn main() {
     ContextBuilder::new("BunnyMark", WIDTH, HEIGHT)
         .quit_on_escape(true)
-        .run_with(GameState::new);
+        .run(GameState::new);
 }

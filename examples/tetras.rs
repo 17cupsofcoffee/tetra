@@ -25,7 +25,7 @@ fn main() {
     ContextBuilder::new("Tetras", 640, 480)
         .resizable(true)
         .quit_on_escape(true)
-        .run_with(GameState::new);
+        .run(GameState::new);
 }
 
 // === Scene Management ===

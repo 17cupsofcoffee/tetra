@@ -137,5 +137,5 @@ impl State for GameState {
 fn main() {
     ContextBuilder::new("Controlling Animations", 480, 320)
         .quit_on_escape(true)
-        .run_with(GameState::new);
+        .run(GameState::new);
 }

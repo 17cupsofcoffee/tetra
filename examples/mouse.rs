@@ -56,5 +56,5 @@ impl State for GameState {
 fn main() {
     ContextBuilder::new("Mouse Input", 640, 480)
         .quit_on_escape(true)
-        .run_with(GameState::new);
+        .run(GameState::new);
 }

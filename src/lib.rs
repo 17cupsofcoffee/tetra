@@ -264,24 +264,7 @@ impl ContextBuilder {
         self
     }
 
-    /// Builds the context.
-    ///
-    /// # Errors
-    ///
-    /// If an error is encountered during initialization of the context, this method will
-    /// return the error. This will usually be either `TetraError::Platform` or `TetraError::OpenGl`.
-    pub fn build(&self) -> Result<Context> {
-        Context::new(self)
-    }
-
-    pub fn run<S>(&self, state: S)
-    where
-        S: State + 'static,
-    {
-        self.run_with(|_| Ok(state));
-    }
-
-    pub fn run_with<S, F>(&self, init: F)
+    pub fn run<S, F>(&self, init: F)
     where
         S: State + 'static,
         F: FnOnce(&mut Context) -> Result<S>,

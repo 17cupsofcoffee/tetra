@@ -69,5 +69,5 @@ impl State for GameState {
 fn main() {
     ContextBuilder::new("Displaying an Animation", 480, 320)
         .quit_on_escape(true)
-        .run_with(GameState::new);
+        .run(GameState::new);
 }

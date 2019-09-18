@@ -103,5 +103,5 @@ fn main() {
         .maximized(true)
         .resizable(true)
         .quit_on_escape(true)
-        .run_with(GameState::new);
+        .run(GameState::new);
 }

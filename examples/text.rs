@@ -35,5 +35,5 @@ impl State for GameState {
 fn main() {
     ContextBuilder::new("Rendering Text", 1280, 720)
         .quit_on_escape(true)
-        .run_with(GameState::new);
+        .run(GameState::new);
 }

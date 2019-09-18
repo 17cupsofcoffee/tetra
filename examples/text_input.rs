@@ -47,5 +47,5 @@ impl State for GameState {
 fn main() {
     ContextBuilder::new("Keyboard Input", 640, 480)
         .quit_on_escape(true)
-        .run(GameState::new());
+        .run(|_| Ok(GameState::new()));
 }
