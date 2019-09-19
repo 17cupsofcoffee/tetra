@@ -45,7 +45,7 @@
 //! }
 //!
 //! fn main() {
-//!     ContextBuilder::new("Hello, world!", 1280, 720).run(GameState);
+//!     ContextBuilder::new("Hello, world!", 1280, 720).run(|_| Ok(GameState));
 //! }
 //! ```
 //!
