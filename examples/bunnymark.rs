@@ -6,7 +6,7 @@ use tetra::graphics::{self, Color, Texture, Vec2};
 use tetra::input::{self, MouseButton};
 use tetra::time;
 use tetra::window;
-use tetra::{Context, ContextBuilder, State};
+use tetra::{Context, Game, State};
 
 // NOTE: Using a high number here yields worse performance than adding more bunnies over
 // time - I think this is due to all of the RNG being run on the same tick...
@@ -128,7 +128,7 @@ impl State for GameState {
 }
 
 fn main() {
-    ContextBuilder::new("BunnyMark", WIDTH, HEIGHT)
+    Game::new("BunnyMark", WIDTH, HEIGHT)
         .quit_on_escape(true)
         .run(GameState::new);
 }

@@ -32,7 +32,7 @@
 //!
 //! ```no_run
 //! use tetra::graphics::{self, Color};
-//! use tetra::{Context, ContextBuilder, State};
+//! use tetra::{Context, Game, State};
 //!
 //! struct GameState;
 //!
@@ -45,7 +45,7 @@
 //! }
 //!
 //! fn main() {
-//!     ContextBuilder::new("Hello, world!", 1280, 720).run(|_| Ok(GameState));
+//!     Game::new("Hello, world!", 1280, 720).run(|_| Ok(GameState));
 //! }
 //! ```
 //!
@@ -127,7 +127,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub(crate) fn new(builder: &ContextBuilder) -> Result<Context> {
+    pub(crate) fn new(builder: &Game) -> Result<Context> {
         let (platform, gl_context, width, height) = Platform::new(builder)?;
         let mut gl = GLDevice::new(gl_context)?;
 
@@ -151,7 +151,7 @@ impl Context {
 
 /// Creates a new `Context` based on the provided options.
 #[derive(Debug, Clone)]
-pub struct ContextBuilder {
+pub struct Game {
     title: String,
     window_width: i32,
     window_height: i32,
@@ -166,25 +166,25 @@ pub struct ContextBuilder {
     quit_on_escape: bool,
 }
 
-impl ContextBuilder {
-    /// Creates a new ContextBuilder.
-    pub fn new<S>(title: S, window_width: i32, window_height: i32) -> ContextBuilder
+impl Game {
+    /// Creates a new Game.
+    pub fn new<S>(title: S, window_width: i32, window_height: i32) -> Game
     where
         S: Into<String>,
     {
-        ContextBuilder {
+        Game {
             title: title.into(),
             window_width,
             window_height,
 
-            ..ContextBuilder::default()
+            ..Game::default()
         }
     }
 
     /// Sets the title of the window.
     ///
     /// Defaults to `"Tetra"`.
-    pub fn title<S>(&mut self, title: S) -> &mut ContextBuilder
+    pub fn title<S>(&mut self, title: S) -> &mut Game
     where
         S: Into<String>,
     {
@@ -195,7 +195,7 @@ impl ContextBuilder {
     /// Enables or disables vsync.
     ///
     /// Defaults to `true`.
-    pub fn vsync(&mut self, vsync: bool) -> &mut ContextBuilder {
+    pub fn vsync(&mut self, vsync: bool) -> &mut Game {
         self.vsync = vsync;
         self
     }
@@ -203,7 +203,7 @@ impl ContextBuilder {
     /// Sets the game's update tick rate, in ticks per second.
     ///
     /// Defaults to `60.0`.
-    pub fn tick_rate(&mut self, tick_rate: f64) -> &mut ContextBuilder {
+    pub fn tick_rate(&mut self, tick_rate: f64) -> &mut Game {
         self.tick_rate = 1.0 / tick_rate;
         self
     }
@@ -211,7 +211,7 @@ impl ContextBuilder {
     /// Sets whether or not the window should start in fullscreen.
     ///
     /// Defaults to `false`.
-    pub fn fullscreen(&mut self, fullscreen: bool) -> &mut ContextBuilder {
+    pub fn fullscreen(&mut self, fullscreen: bool) -> &mut Game {
         self.fullscreen = fullscreen;
         self
     }
@@ -219,7 +219,7 @@ impl ContextBuilder {
     /// Sets whether or not the window should start maximized.
     ///
     /// Defaults to `false`.
-    pub fn maximized(&mut self, maximized: bool) -> &mut ContextBuilder {
+    pub fn maximized(&mut self, maximized: bool) -> &mut Game {
         self.maximized = maximized;
         self
     }
@@ -227,7 +227,7 @@ impl ContextBuilder {
     /// Sets whether or not the window should start minimized.
     ///
     /// Defaults to `false`.
-    pub fn minimized(&mut self, minimized: bool) -> &mut ContextBuilder {
+    pub fn minimized(&mut self, minimized: bool) -> &mut Game {
         self.minimized = minimized;
         self
     }
@@ -235,7 +235,7 @@ impl ContextBuilder {
     /// Sets whether or not the window should be resizable.
     ///
     /// Defaults to `false`.
-    pub fn resizable(&mut self, resizable: bool) -> &mut ContextBuilder {
+    pub fn resizable(&mut self, resizable: bool) -> &mut Game {
         self.resizable = resizable;
         self
     }
@@ -243,7 +243,7 @@ impl ContextBuilder {
     /// Sets whether or not the window should be borderless.
     ///
     /// Defaults to `false`.
-    pub fn borderless(&mut self, borderless: bool) -> &mut ContextBuilder {
+    pub fn borderless(&mut self, borderless: bool) -> &mut Game {
         self.borderless = borderless;
         self
     }
@@ -251,7 +251,7 @@ impl ContextBuilder {
     /// Sets whether or not the mouse cursor should be visible.
     ///
     /// Defaults to `false`.
-    pub fn show_mouse(&mut self, show_mouse: bool) -> &mut ContextBuilder {
+    pub fn show_mouse(&mut self, show_mouse: bool) -> &mut Game {
         self.show_mouse = show_mouse;
         self
     }
@@ -259,7 +259,7 @@ impl ContextBuilder {
     /// Sets whether or not the game should close when the Escape key is pressed.
     ///
     /// Defaults to `false`.
-    pub fn quit_on_escape(&mut self, quit_on_escape: bool) -> &mut ContextBuilder {
+    pub fn quit_on_escape(&mut self, quit_on_escape: bool) -> &mut Game {
         self.quit_on_escape = quit_on_escape;
         self
     }
@@ -286,9 +286,9 @@ impl ContextBuilder {
     }
 }
 
-impl Default for ContextBuilder {
-    fn default() -> ContextBuilder {
-        ContextBuilder {
+impl Default for Game {
+    fn default() -> Game {
+        Game {
             title: "Tetra".into(),
             window_width: 1280,
             window_height: 720,

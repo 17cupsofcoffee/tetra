@@ -9,7 +9,7 @@ use tetra::graphics::{
 };
 use tetra::input::{self, Key};
 use tetra::window;
-use tetra::{Context, ContextBuilder, State};
+use tetra::{Context, Game, State};
 
 const SCREEN_WIDTH: i32 = 640;
 const SCREEN_HEIGHT: i32 = 480;
@@ -22,7 +22,7 @@ const BOARD_OFFSET_Y: i32 = (SCREEN_HEIGHT - BOARD_HEIGHT) / 2;
 const SCORE_OFFSET_Y: i32 = BOARD_OFFSET_Y + BOARD_HEIGHT + 4;
 
 fn main() {
-    ContextBuilder::new("Tetras", 640, 480)
+    Game::new("Tetras", 640, 480)
         .resizable(true)
         .quit_on_escape(true)
         .run(GameState::new);

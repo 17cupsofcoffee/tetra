@@ -1,5 +1,5 @@
 use tetra::graphics::{self, Color, DrawParams, Texture, Vec2};
-use tetra::{Context, ContextBuilder, State};
+use tetra::{Context, Game, State};
 
 struct GameState {
     texture: Texture,
@@ -31,7 +31,7 @@ impl State for GameState {
 }
 
 fn main() {
-    ContextBuilder::new("Rendering a Texture", 640, 480)
+    Game::new("Rendering a Texture", 640, 480)
         .quit_on_escape(true)
         .run(GameState::new);
 }

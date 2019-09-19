@@ -9,9 +9,8 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * Tetra now requires Rust 1.36 or higher. It may work on some earlier versions, but this is not supported.
-* `run` has been removed, and `run_with` has been renamed to `run`. The former was only viable for minimal examples, so it didn't make sense for the API to be split in such a way.
-* `run` no longer returns errors back to `main`, as this API does not work well on the web where `main` cannot block. Instead, `State` now has an `error` method that can be used for logging/reporting uncaught errors.
-* `run` is now exposed on `ContextBuilder` rather than `Context`.
+* `ContextBuilder` has been replaced with `Game`, which is designed to better uphold some guarentees about how the `Context` is used. It's also shorter to type!
+* The game loop no longer returns errors back to `main`, as this API does not work well on the web where `main` cannot block. Instead, `State` now has an `error` method that can be used for logging/reporting uncaught errors.
 * `Key` and `MouseButton` are now Tetra-specific types, rather than re-exporting the SDL versions. Note that some names have been changed for consistency, and some variants have been removed to simplify the docs.
 * `TetraError::Sdl` is now called `TetraError::Platform`.
 * `DEFAULT_VERTEX_SHADER` and `DEFAULT_FRAGMENT_SHADER` are now const instead of static.

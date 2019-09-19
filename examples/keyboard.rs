@@ -1,6 +1,6 @@
 use tetra::graphics::{self, Color, DrawParams, Texture, Vec2};
 use tetra::input::{self, Key};
-use tetra::{Context, ContextBuilder, State};
+use tetra::{Context, Game, State};
 
 struct GameState {
     texture: Texture,
@@ -67,7 +67,7 @@ impl State for GameState {
 }
 
 fn main() {
-    ContextBuilder::new("Keyboard Input", 640, 480)
+    Game::new("Keyboard Input", 640, 480)
         .quit_on_escape(true)
         .run(GameState::new);
 }

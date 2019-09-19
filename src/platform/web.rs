@@ -13,7 +13,7 @@ use web_sys::KeyboardEvent;
 use crate::audio::{RemoteControls, Sound, SoundInstance};
 use crate::error::{Result, TetraError};
 use crate::input::{self, Key};
-use crate::{Context, ContextBuilder, State};
+use crate::{Context, Game, State};
 
 pub type GlContext = glow::web::Context;
 
@@ -40,7 +40,7 @@ pub struct Platform {
 }
 
 impl Platform {
-    pub fn new(builder: &ContextBuilder) -> Result<(Platform, GlContext, i32, i32)> {
+    pub fn new(builder: &Game) -> Result<(Platform, GlContext, i32, i32)> {
         // TODO: This is disgusting
         let document = web_sys::window()
             .ok_or_else(|| TetraError::Platform("Could not get 'window' from browser".into()))?

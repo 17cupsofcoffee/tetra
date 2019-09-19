@@ -3,7 +3,7 @@ use tetra::graphics::{
     self, Color, Font, Rectangle, ScalingMode, ScreenScaler, Text, Texture, Vec2,
 };
 use tetra::input::{self, Key};
-use tetra::{Context, ContextBuilder, State};
+use tetra::{Context, Game, State};
 
 const LABEL: &str = "Press Space to cycle between scaling modes";
 const SCREEN_WIDTH: f32 = 640.0;
@@ -76,7 +76,7 @@ impl State for GameState {
 }
 
 fn main() {
-    ContextBuilder::new("Screen Scaling", 640, 480)
+    Game::new("Screen Scaling", 640, 480)
         .resizable(true)
         .maximized(true)
         .quit_on_escape(true)

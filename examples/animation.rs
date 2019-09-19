@@ -3,7 +3,7 @@
 use tetra::graphics::animation::Animation;
 use tetra::graphics::{self, Color, DrawParams, Rectangle, Texture, Vec2};
 use tetra::input::{self, Key};
-use tetra::{Context, ContextBuilder, State};
+use tetra::{Context, Game, State};
 
 struct GameState {
     animation: Animation,
@@ -67,7 +67,7 @@ impl State for GameState {
 }
 
 fn main() {
-    ContextBuilder::new("Displaying an Animation", 480, 320)
+    Game::new("Displaying an Animation", 480, 320)
         .quit_on_escape(true)
         .run(GameState::new);
 }

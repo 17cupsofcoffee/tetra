@@ -25,7 +25,7 @@ use crate::error::{Result, TetraError};
 use crate::graphics::{self, Vec2};
 use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
 use crate::window;
-use crate::{Context, ContextBuilder, State};
+use crate::{Context, Game, State};
 
 pub type GlContext = glow::native::Context;
 
@@ -64,7 +64,7 @@ struct SdlController {
 }
 
 impl Platform {
-    pub fn new(builder: &ContextBuilder) -> Result<(Platform, GlContext, i32, i32)> {
+    pub fn new(builder: &Game) -> Result<(Platform, GlContext, i32, i32)> {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
         let audio_device = rodio::default_output_device();
 
