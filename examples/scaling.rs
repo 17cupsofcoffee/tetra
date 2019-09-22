@@ -68,6 +68,8 @@ impl State for GameState {
         graphics::draw(ctx, &self.text, Vec2::new(PANEL_X + 8.0, PANEL_Y + 8.0));
 
         graphics::reset_canvas(ctx);
+
+        graphics::clear(ctx, Color::BLACK);
         graphics::draw(ctx, &self.scaler, Vec2::new(0.0, 0.0));
 
         Ok(())
