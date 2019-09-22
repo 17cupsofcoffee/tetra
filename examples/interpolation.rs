@@ -22,8 +22,8 @@
 //! * https://gafferongames.com/post/fix_your_timestep/
 //! * http://gameprogrammingpatterns.com/game-loop.html
 
-use tetra::glm;
-use tetra::graphics::{self, Color, Texture, Vec2};
+use tetra::graphics::{self, Color, Texture};
+use tetra::math::{self, Vec2};
 use tetra::{Context, Game, State};
 
 struct GameState {
@@ -90,7 +90,7 @@ impl State for GameState {
         graphics::draw(
             ctx,
             &self.texture,
-            glm::lerp(&self.position_in_prev, &self.position_in_curr, dt as f32),
+            math::lerp(&self.position_in_prev, &self.position_in_curr, dt as f32),
         );
 
         Ok(())

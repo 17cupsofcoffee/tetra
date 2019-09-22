@@ -62,9 +62,9 @@
 pub mod audio;
 pub mod error;
 mod fs;
-pub mod glm;
 pub mod graphics;
 pub mod input;
+pub mod math;
 mod platform;
 pub mod time;
 pub mod window;

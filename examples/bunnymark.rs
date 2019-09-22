@@ -2,8 +2,9 @@
 /// Original BunnyMark (and sprite) by Iain Lobb
 use rand::rngs::ThreadRng;
 use rand::{self, Rng};
-use tetra::graphics::{self, Color, Texture, Vec2};
+use tetra::graphics::{self, Color, Texture};
 use tetra::input::{self, MouseButton};
+use tetra::math::Vec2;
 use tetra::time;
 use tetra::window;
 use tetra::{Context, Game, State};

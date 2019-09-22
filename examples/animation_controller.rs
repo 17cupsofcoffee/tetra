@@ -4,8 +4,9 @@
 // roll your own!
 
 use tetra::graphics::animation::Animation;
-use tetra::graphics::{self, Color, DrawParams, Drawable, Rectangle, Texture, Vec2};
+use tetra::graphics::{self, Color, DrawParams, Drawable, Rectangle, Texture};
 use tetra::input::{self, Key};
+use tetra::math::Vec2;
 use tetra::{Context, Game, State};
 
 #[derive(PartialEq)]

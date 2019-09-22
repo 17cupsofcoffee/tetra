@@ -5,8 +5,8 @@ use std::rc::Rc;
 use glow::Context as GlowContext;
 
 use crate::error::{Result, TetraError};
-use crate::glm::{self, Mat4};
 use crate::graphics::{Canvas, FilterMode, IndexBuffer, Shader, Texture, VertexBuffer};
+use crate::math::{self, Mat4};
 use crate::platform::GlContext;
 
 type BufferId = <GlContext as GlowContext>::Buffer;
@@ -409,7 +409,7 @@ impl GLDevice {
             let canvas = Canvas {
                 texture,
                 framebuffer: Rc::new(framebuffer),
-                projection: glm::ortho(0.0, width as f32, 0.0, height as f32, -1.0, 1.0),
+                projection: math::ortho(0.0, width as f32, 0.0, height as f32, -1.0, 1.0),
             };
 
             let previous_id = self.current_framebuffer;

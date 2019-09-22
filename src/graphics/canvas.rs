@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
 use crate::error::Result;
-use crate::glm::Mat4;
 use crate::graphics::opengl::GLFramebuffer;
 use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
+use crate::math::Mat4;
 use crate::Context;
 
 /// A 2D texture that can be used for off-screen rendering.

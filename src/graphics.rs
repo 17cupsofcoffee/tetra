@@ -22,15 +22,14 @@ pub use self::scaling::*;
 pub use self::shader::*;
 pub use self::text::*;
 pub use self::texture::*;
-pub use crate::glm::Vec2;
 pub(crate) use crate::graphics::buffers::{IndexBuffer, VertexBuffer};
 
 use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
 use crate::error::Result;
-use crate::glm::{self, Mat4};
 use crate::graphics::opengl::{BufferUsage, FrontFace, GLDevice};
 use crate::graphics::text::FontQuad;
+use crate::math::{self, Mat4, Vec2};
 use crate::platform;
 use crate::window;
 use crate::Context;
@@ -130,7 +129,7 @@ impl GraphicsContext {
 
             canvas: ActiveCanvas::Window,
 
-            window_projection: glm::ortho(
+            window_projection: math::ortho(
                 0.0,
                 window_width as f32,
                 window_height as f32,
@@ -626,7 +625,7 @@ pub fn set_default_filter_mode(ctx: &mut Context, filter_mode: FilterMode) {
 }
 
 pub(crate) fn set_window_projection(ctx: &mut Context, width: i32, height: i32) {
-    ctx.graphics.window_projection = glm::ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
+    ctx.graphics.window_projection = math::ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
 
     if let ActiveCanvas::Window = ctx.graphics.canvas {
         ctx.gl.viewport(0, 0, width, height);

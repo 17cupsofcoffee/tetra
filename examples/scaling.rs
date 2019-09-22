@@ -1,8 +1,7 @@
 use tetra::graphics::ui::NineSlice;
-use tetra::graphics::{
-    self, Color, Font, Rectangle, ScalingMode, ScreenScaler, Text, Texture, Vec2,
-};
+use tetra::graphics::{self, Color, Font, Rectangle, ScalingMode, ScreenScaler, Text, Texture};
 use tetra::input::{self, Key};
+use tetra::math::Vec2;
 use tetra::{Context, Game, State};
 
 const LABEL: &str = "Press Space to cycle between scaling modes";

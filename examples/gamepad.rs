@@ -1,7 +1,7 @@
 // Button prompts from https://opengameart.org/content/free-keyboard-and-controllers-prompts-pack
 
-use tetra::glm;
-use tetra::graphics::{self, Color, DrawParams, Font, Rectangle, Text, Texture, Vec2};
+use tetra::math::{self, Vec2};
+use tetra::graphics::{self, Color, DrawParams, Font, Rectangle, Text, Texture};
 use tetra::input::{self, GamepadAxis, GamepadButton, GamepadStick};
 use tetra::{Context, Game, State};
 
@@ -135,7 +135,7 @@ impl GameState {
             &self.texture,
             DrawParams::new()
                 .position(Vec2::new(x, y) + (value * 32.0))
-                .color(if glm::length(&value).abs() > 0.08 {
+                .color(if math::length(&value).abs() > 0.08 {
                     self.active_color
                 } else {
                     Color::WHITE

@@ -22,8 +22,9 @@ use sdl2::{
 
 use crate::audio::{RemoteControls, Sound, SoundInstance};
 use crate::error::{Result, TetraError};
-use crate::graphics::{self, Vec2};
+use crate::graphics::{self};
 use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
+use crate::math::Vec2;
 use crate::window;
 use crate::{Context, Game, State};
 

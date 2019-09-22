@@ -4,10 +4,9 @@
 
 use rand::{self, Rng};
 use tetra::audio::Sound;
-use tetra::graphics::{
-    self, Color, DrawParams, Font, ScalingMode, ScreenScaler, Text, Texture, Vec2,
-};
+use tetra::graphics::{self, Color, DrawParams, Font, ScalingMode, ScreenScaler, Text, Texture};
 use tetra::input::{self, Key};
+use tetra::math::Vec2;
 use tetra::window;
 use tetra::{Context, Game, State};
 

@@ -10,7 +10,7 @@
 
 use hashbrown::{HashMap, HashSet};
 
-use crate::glm::Vec2;
+use crate::math::Vec2;
 use crate::platform;
 use crate::Context;
 

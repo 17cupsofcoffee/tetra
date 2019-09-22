@@ -1,8 +1,9 @@
 // using sprites by 0x72: https://0x72.itch.io/16x16-industrial-tileset
 
 use tetra::graphics::animation::Animation;
-use tetra::graphics::{self, Color, DrawParams, Rectangle, Texture, Vec2};
+use tetra::graphics::{self, Color, DrawParams, Rectangle, Texture};
 use tetra::input::{self, Key};
+use tetra::math::Vec2;
 use tetra::{Context, Game, State};
 
 struct GameState {

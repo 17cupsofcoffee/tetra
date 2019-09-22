@@ -1,6 +1,7 @@
 use tetra::audio::{self, Sound, SoundInstance};
-use tetra::graphics::{self, Color, Font, Text, Vec2};
+use tetra::graphics::{self, Color, Font, Text};
 use tetra::input::{self, Key};
+use tetra::math::Vec2;
 use tetra::{Context, Game, State};
 
 const INSTRUCTIONS: &str = "\

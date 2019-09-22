@@ -1,6 +1,6 @@
-use tetra::glm;
-use tetra::graphics::{self, Color, DrawParams, Texture, Vec2};
+use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, MouseButton};
+use tetra::math::{self, Vec2};
 use tetra::{Context, Game, State};
 
 struct GameState {
@@ -23,7 +23,7 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        self.position = glm::round(&input::get_mouse_position(ctx));
+        self.position = math::round(&input::get_mouse_position(ctx));
 
         if input::is_mouse_button_down(ctx, MouseButton::Left) {
             self.scale = Vec2::new(4.0, 4.0);
