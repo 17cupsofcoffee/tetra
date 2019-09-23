@@ -22,6 +22,7 @@ This project adheres to Semantic Versioning.
 * Updated `glow` to 0.2.3.
 * Updated `hashbrown` to 0.6.0.
 * Updated `image` to 0.22.1.
+* Updated `glyph_brush` to 0.6.0.
 
 ### Removed
 
