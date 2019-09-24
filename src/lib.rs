@@ -109,7 +109,12 @@ pub trait State {
     }
 
     fn error(error: TetraError) {
+        // TODO: Move this into the platform module
+        #[cfg(not(target_arch = "wasm32"))]
         println!("Error: {}", error);
+
+        #[cfg(target_arch = "wasm32")]
+        web_sys::console::error_1(&format!("Error: {}", error).into());
     }
 }
 
@@ -338,16 +343,30 @@ where
 }
 
 // TODO: Switch to a proc macro?
-// TODO: This doesn't work outside of Tetra, dependencies aren't accessible
+
+#[cfg(target_arch = "wasm32")]
+#[doc(hidden)]
+pub use console_error_panic_hook;
+
+#[cfg(target_arch = "wasm32")]
+#[doc(hidden)]
+pub use wasm_bindgen;
 
 #[macro_export]
 macro_rules! wasm_main {
     ($name:ident) => {
+        // TODO: Use anonymous constant blocks? Would require bumping the MSRV to 1.37.
         #[cfg(target_arch = "wasm32")]
-        #[cfg_attr(target_arch = "wasm32", ::wasm_bindgen::prelude::wasm_bindgen(start))]
-        pub fn wasm_main() {
-            ::console_error_panic_hook::set_once();
-            $name();
+        mod __tetra_wasm_main {
+            use tetra::console_error_panic_hook;
+            use tetra::wasm_bindgen;
+            use tetra::wasm_bindgen::prelude::*;
+
+            #[wasm_bindgen(start)]
+            pub fn wasm_main() {
+                console_error_panic_hook::set_once();
+                super::$name();
+            }
         }
     };
 }
