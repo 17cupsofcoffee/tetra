@@ -341,32 +341,3 @@ where
 
     std::thread::yield_now();
 }
-
-// TODO: Switch to a proc macro?
-
-#[cfg(target_arch = "wasm32")]
-#[doc(hidden)]
-pub use console_error_panic_hook;
-
-#[cfg(target_arch = "wasm32")]
-#[doc(hidden)]
-pub use wasm_bindgen;
-
-#[macro_export]
-macro_rules! wasm_main {
-    ($name:ident) => {
-        // TODO: Use anonymous constant blocks? Would require bumping the MSRV to 1.37.
-        #[cfg(target_arch = "wasm32")]
-        mod __tetra_wasm_main {
-            use tetra::console_error_panic_hook;
-            use tetra::wasm_bindgen;
-            use tetra::wasm_bindgen::prelude::*;
-
-            #[wasm_bindgen(start)]
-            pub fn wasm_main() {
-                console_error_panic_hook::set_once();
-                super::$name();
-            }
-        }
-    };
-}
