@@ -8,7 +8,7 @@ use std::sync::{Arc, Mutex};
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::KeyboardEvent;
+use web_sys::{HtmlCanvasElement, KeyboardEvent};
 
 use crate::audio::{RemoteControls, Sound, SoundInstance};
 use crate::error::{Result, TetraError};
@@ -33,8 +33,9 @@ enum Event {
 }
 
 pub struct Platform {
-    event_queue: Rc<RefCell<VecDeque<Event>>>,
+    canvas: HtmlCanvasElement,
 
+    event_queue: Rc<RefCell<VecDeque<Event>>>,
     keydown_closure: Closure<dyn FnMut(KeyboardEvent)>,
     keyup_closure: Closure<dyn FnMut(KeyboardEvent)>,
 }
@@ -47,11 +48,16 @@ impl Platform {
             .document()
             .ok_or_else(|| TetraError::Platform("Could not get 'document' from browser".into()))?;
 
-        let context = document
+        let canvas = document
             .get_element_by_id("canvas")
             .ok_or_else(|| TetraError::Platform("Could not find canvas element on page".into()))?
             .dyn_into::<web_sys::HtmlCanvasElement>()
-            .map_err(|_| TetraError::Platform("Element was not a canvas".into()))?
+            .map_err(|_| TetraError::Platform("Element was not a canvas".into()))?;
+
+        let width = canvas.width() as i32;
+        let height = canvas.height() as i32;
+
+        let context = canvas
             .get_context("webgl2")
             .map_err(|_| TetraError::Platform("Could not get context from canvas".into()))?
             .expect("webgl2 is a valid context type")
@@ -88,14 +94,15 @@ impl Platform {
 
         Ok((
             Platform {
-                event_queue,
+                canvas,
 
+                event_queue,
                 keydown_closure,
                 keyup_closure,
             },
             GlContext::from_webgl2_context(context),
-            640,
-            480,
+            width,
+            height,
         ))
     }
 }
@@ -146,15 +153,18 @@ where
 }
 
 pub fn get_window_width(ctx: &Context) -> i32 {
-    640
+    ctx.platform.canvas.width() as i32
 }
 
 pub fn get_window_height(ctx: &Context) -> i32 {
-    480
+    ctx.platform.canvas.height() as i32
 }
 
 pub fn get_window_size(ctx: &Context) -> (i32, i32) {
-    (640, 480)
+    (
+        ctx.platform.canvas.width() as i32,
+        ctx.platform.canvas.height() as i32,
+    )
 }
 
 pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) {}
