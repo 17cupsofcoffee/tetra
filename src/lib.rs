@@ -276,12 +276,18 @@ impl Game {
     {
         let mut ctx = match Context::new(self) {
             Ok(ctx) => ctx,
-            Err(e) => return S::error(e),
+            Err(e) => {
+                S::error(e);
+                return;
+            }
         };
 
         let state = match init(&mut ctx) {
             Ok(state) => state,
-            Err(e) => return S::error(e),
+            Err(e) => {
+                S::error(e);
+                return;
+            }
         };
 
         time::reset(&mut ctx);
@@ -318,13 +324,15 @@ where
 
     if let Err(e) = platform::handle_events(ctx) {
         ctx.running = false;
-        return S::error(e);
+        S::error(e);
+        return;
     }
 
     while time::is_tick_ready(ctx) {
         if let Err(e) = state.update(ctx) {
             ctx.running = false;
-            return S::error(e);
+            S::error(e);
+            return;
         }
 
         input::cleanup_after_state_update(ctx);
@@ -334,7 +342,8 @@ where
 
     if let Err(e) = state.draw(ctx, time::get_alpha(ctx)) {
         ctx.running = false;
-        return S::error(e);
+        S::error(e);
+        return;
     }
 
     graphics::present(ctx);
