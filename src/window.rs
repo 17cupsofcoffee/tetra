@@ -103,3 +103,8 @@ pub fn hide_mouse(ctx: &mut Context) {
 pub fn is_mouse_visible(ctx: &Context) -> bool {
     platform::is_mouse_visible(ctx)
 }
+
+/// Makes the window visible 
+pub fn set_visible(ctx: &mut Context, window_visible: bool) {
+    platform::set_window_visible(ctx, window_visible)
+}

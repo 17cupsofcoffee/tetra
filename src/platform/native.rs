@@ -412,6 +412,14 @@ pub fn is_mouse_visible(ctx: &Context) -> bool {
     ctx.platform.sdl.mouse().is_cursor_showing()
 }
 
+pub fn set_window_visible(ctx: &mut Context, window_visible: bool) {
+    if window_visible {
+        ctx.platform.window.show();
+    } else {
+        ctx.platform.window.hide();
+    }
+}
+
 pub fn swap_buffers(ctx: &Context) {
     ctx.platform.window.gl_swap_window();
 }
