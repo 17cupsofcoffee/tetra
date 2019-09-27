@@ -144,6 +144,8 @@ impl Platform {
         }
 
         let gl_sys = window.gl_create_context().map_err(TetraError::OpenGl)?;
+        window.gl_make_current(&gl_sys).map_err(TetraError::OpenGl)?;
+
         let gl_ctx =
             GlContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _);
 
