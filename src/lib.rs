@@ -109,7 +109,12 @@ pub trait State {
     }
 
     fn error(error: TetraError) {
+        // TODO: Move this into the platform module
+        #[cfg(not(target_arch = "wasm32"))]
         println!("Error: {}", error);
+
+        #[cfg(target_arch = "wasm32")]
+        web_sys::console::error_1(&format!("Error: {}", error).into());
     }
 }
 
@@ -271,12 +276,18 @@ impl Game {
     {
         let mut ctx = match Context::new(self) {
             Ok(ctx) => ctx,
-            Err(e) => return S::error(e),
+            Err(e) => {
+                S::error(e);
+                return;
+            }
         };
 
         let state = match init(&mut ctx) {
             Ok(state) => state,
-            Err(e) => return S::error(e),
+            Err(e) => {
+                S::error(e);
+                return;
+            }
         };
 
         time::reset(&mut ctx);
@@ -313,13 +324,15 @@ where
 
     if let Err(e) = platform::handle_events(ctx) {
         ctx.running = false;
-        return S::error(e);
+        S::error(e);
+        return;
     }
 
     while time::is_tick_ready(ctx) {
         if let Err(e) = state.update(ctx) {
             ctx.running = false;
-            return S::error(e);
+            S::error(e);
+            return;
         }
 
         input::cleanup_after_state_update(ctx);
@@ -329,25 +342,11 @@ where
 
     if let Err(e) = state.draw(ctx, time::get_alpha(ctx)) {
         ctx.running = false;
-        return S::error(e);
+        S::error(e);
+        return;
     }
 
     graphics::present(ctx);
 
     std::thread::yield_now();
-}
-
-// TODO: Switch to a proc macro?
-// TODO: This doesn't work outside of Tetra, dependencies aren't accessible
-
-#[macro_export]
-macro_rules! wasm_main {
-    ($name:ident) => {
-        #[cfg(target_arch = "wasm32")]
-        #[cfg_attr(target_arch = "wasm32", ::wasm_bindgen::prelude::wasm_bindgen(start))]
-        pub fn wasm_main() {
-            ::console_error_panic_hook::set_once();
-            $name();
-        }
-    };
 }
