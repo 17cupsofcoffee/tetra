@@ -191,6 +191,14 @@ pub fn is_mouse_visible(ctx: &Context) -> bool {
     true
 }
 
+pub fn set_window_visible(ctx: &mut Context, window_visible: bool) {
+    if window_visible {
+        ctx.platform.canvas.set_hidden(false);
+    } else {
+        ctx.platform.canvas.set_hidden(true);
+    }
+}
+
 pub fn swap_buffers(ctx: &Context) {}
 
 pub fn get_gamepad_name(ctx: &Context, platform_id: i32) -> String {
