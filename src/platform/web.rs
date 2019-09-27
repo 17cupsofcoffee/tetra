@@ -54,8 +54,8 @@ impl Platform {
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .map_err(|_| TetraError::Platform("Element was not a canvas".into()))?;
 
-        let width = canvas.width() as i32;
-        let height = canvas.height() as i32;
+        canvas.set_width(builder.window_width as u32);
+        canvas.set_height(builder.window_height as u32);
 
         let context = canvas
             .get_context("webgl2")
@@ -101,8 +101,8 @@ impl Platform {
                 keyup_closure,
             },
             GlContext::from_webgl2_context(context),
-            width,
-            height,
+            builder.window_width,
+            builder.window_height,
         ))
     }
 }
@@ -149,7 +149,6 @@ pub fn set_window_title<S>(ctx: &mut Context, title: S)
 where
     S: AsRef<str>,
 {
-
 }
 
 pub fn get_window_width(ctx: &Context) -> i32 {
