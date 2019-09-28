@@ -8,11 +8,12 @@ use std::sync::{Arc, Mutex};
 
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{HtmlCanvasElement, KeyboardEvent};
+use web_sys::{HtmlCanvasElement, KeyboardEvent, MouseEvent};
 
 use crate::audio::{RemoteControls, Sound, SoundInstance};
 use crate::error::{Result, TetraError};
-use crate::input::{self, Key};
+use crate::input::{self, Key, MouseButton};
+use crate::math::Vec2;
 use crate::{Context, Game, State};
 
 pub type GlContext = glow::web::Context;
@@ -30,6 +31,9 @@ pub const DEFAULT_FRAGMENT_SHADER: &str = concat!(
 enum Event {
     KeyDown(Key),
     KeyUp(Key),
+    MouseDown(MouseButton),
+    MouseUp(MouseButton),
+    MouseMove(Vec2),
 }
 
 pub struct Platform {
@@ -38,6 +42,9 @@ pub struct Platform {
     event_queue: Rc<RefCell<VecDeque<Event>>>,
     keydown_closure: Closure<dyn FnMut(KeyboardEvent)>,
     keyup_closure: Closure<dyn FnMut(KeyboardEvent)>,
+    mousedown_closure: Closure<dyn FnMut(MouseEvent)>,
+    mouseup_closure: Closure<dyn FnMut(MouseEvent)>,
+    mousemove_closure: Closure<dyn FnMut(MouseEvent)>,
 }
 
 impl Platform {
@@ -92,6 +99,55 @@ impl Platform {
             .add_event_listener_with_callback("keyup", keyup_closure.as_ref().unchecked_ref())
             .unwrap();
 
+        let event_queue_handle = Rc::clone(&event_queue);
+
+        let mousedown_closure = Closure::wrap(Box::new(move |event: MouseEvent| {
+            if let Some(btn) = into_mouse_button(event) {
+                event_queue_handle
+                    .borrow_mut()
+                    .push_back(Event::MouseDown(btn));
+            }
+        }) as Box<dyn FnMut(_)>);
+
+        canvas
+            .add_event_listener_with_callback(
+                "mousedown",
+                mousedown_closure.as_ref().unchecked_ref(),
+            )
+            .unwrap();
+
+        let event_queue_handle = Rc::clone(&event_queue);
+
+        let mouseup_closure = Closure::wrap(Box::new(move |event: MouseEvent| {
+            if let Some(btn) = into_mouse_button(event) {
+                event_queue_handle
+                    .borrow_mut()
+                    .push_back(Event::MouseUp(btn));
+            }
+        }) as Box<dyn FnMut(_)>);
+
+        canvas
+            .add_event_listener_with_callback("mouseup", mouseup_closure.as_ref().unchecked_ref())
+            .unwrap();
+
+        let event_queue_handle = Rc::clone(&event_queue);
+
+        let mousemove_closure = Closure::wrap(Box::new(move |event: MouseEvent| {
+            event_queue_handle
+                .borrow_mut()
+                .push_back(Event::MouseMove(Vec2::new(
+                    event.offset_x() as f32,
+                    event.offset_y() as f32,
+                )));
+        }) as Box<dyn FnMut(_)>);
+
+        canvas
+            .add_event_listener_with_callback(
+                "mousemove",
+                mousemove_closure.as_ref().unchecked_ref(),
+            )
+            .unwrap();
+
         Ok((
             Platform {
                 canvas,
@@ -99,6 +155,9 @@ impl Platform {
                 event_queue,
                 keydown_closure,
                 keyup_closure,
+                mousedown_closure,
+                mouseup_closure,
+                mousemove_closure,
             },
             GlContext::from_webgl2_context(context),
             builder.window_width,
@@ -135,6 +194,9 @@ pub fn handle_events(ctx: &mut Context) -> Result {
         match event {
             Event::KeyDown(key) => input::set_key_down(ctx, key),
             Event::KeyUp(key) => input::set_key_up(ctx, key),
+            Event::MouseDown(btn) => input::set_mouse_button_down(ctx, btn),
+            Event::MouseUp(btn) => input::set_mouse_button_up(ctx, btn),
+            Event::MouseMove(pos) => input::set_mouse_position(ctx, pos),
         }
     }
 
@@ -373,6 +435,17 @@ fn into_key(event: KeyboardEvent) -> Option<Key> {
         ("Tab", _) => Some(Key::Tab),
         ("_", _) => Some(Key::Underscore),
 
+        _ => None,
+    }
+}
+
+fn into_mouse_button(event: MouseEvent) -> Option<MouseButton> {
+    match event.button() {
+        0 => Some(MouseButton::Left),
+        1 => Some(MouseButton::Middle),
+        2 => Some(MouseButton::Right),
+        3 => Some(MouseButton::X1),
+        4 => Some(MouseButton::X2),
         _ => None,
     }
 }
