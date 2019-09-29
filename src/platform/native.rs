@@ -328,6 +328,10 @@ pub fn handle_events(ctx: &mut Context) -> Result {
     Ok(())
 }
 
+pub fn log_error(error: TetraError) {
+    println!("Error: {}", error);
+}
+
 pub fn get_window_title(ctx: &Context) -> &str {
     ctx.platform.window.title()
 }

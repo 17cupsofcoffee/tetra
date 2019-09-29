@@ -109,12 +109,7 @@ pub trait State {
     }
 
     fn error(error: TetraError) {
-        // TODO: Move this into the platform module
-        #[cfg(not(target_arch = "wasm32"))]
-        println!("Error: {}", error);
-
-        #[cfg(target_arch = "wasm32")]
-        web_sys::console::error_1(&format!("Error: {}", error).into());
+        platform::log_error(error)
     }
 }
 

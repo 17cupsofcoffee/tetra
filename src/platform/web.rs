@@ -9,7 +9,7 @@ use std::sync::{Arc, Mutex};
 use wasm_bindgen::convert::FromWasmAbi;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{EventTarget, HtmlCanvasElement, KeyboardEvent, MouseEvent};
+use web_sys::{console, EventTarget, HtmlCanvasElement, KeyboardEvent, MouseEvent};
 
 use crate::audio::{RemoteControls, Sound, SoundInstance};
 use crate::error::{Result, TetraError};
@@ -181,6 +181,10 @@ pub fn handle_events(ctx: &mut Context) -> Result {
     }
 
     Ok(())
+}
+
+pub fn log_error(error: TetraError) {
+    console::error_1(&format!("Error: {}", error).into());
 }
 
 pub fn get_window_title(ctx: &Context) -> &str {
