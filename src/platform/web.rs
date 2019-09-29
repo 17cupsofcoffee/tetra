@@ -65,6 +65,11 @@ impl Platform {
         canvas.set_width(builder.window_width as u32);
         canvas.set_height(builder.window_height as u32);
 
+        canvas
+            .style()
+            .set_property("cursor", if builder.show_mouse { "auto" } else { "none" })
+            .expect("Failed to set cursor");
+
         let context = canvas
             .get_context("webgl2")
             .map_err(|_| TetraError::Platform("Could not get context from canvas".into()))?
@@ -224,10 +229,27 @@ pub fn is_fullscreen(ctx: &Context) -> bool {
     false
 }
 
-pub fn set_mouse_visible(ctx: &mut Context, mouse_visible: bool) {}
+pub fn set_mouse_visible(ctx: &mut Context, mouse_visible: bool) {
+    ctx.platform
+        .canvas
+        .style()
+        .set_property("cursor", if mouse_visible { "auto" } else { "none" })
+        .expect("Failed to set cursor");
+}
 
 pub fn is_mouse_visible(ctx: &Context) -> bool {
-    true
+    let value = ctx
+        .platform
+        .canvas
+        .style()
+        .get_property_value("cursor")
+        .expect("Could not get cursor state");
+
+    if value == "none" {
+        false
+    } else {
+        true
+    }
 }
 
 pub fn swap_buffers(ctx: &Context) {}

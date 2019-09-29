@@ -38,6 +38,7 @@ version = "0.3.27"
 features = [
     "Document",
     "Element",
+    "HtmlElement",
     "HtmlCanvasElement",
     "WebGlBuffer",
     "WebGlRenderingContext",
@@ -47,5 +48,6 @@ features = [
     "console",
     "KeyboardEvent",
     "MouseEvent",
-    "EventTarget"
+    "EventTarget",
+    "CssStyleDeclaration"
 ]
