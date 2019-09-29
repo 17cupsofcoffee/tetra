@@ -6,9 +6,10 @@ use std::rc::Rc;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, Mutex};
 
+use wasm_bindgen::convert::FromWasmAbi;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use web_sys::{HtmlCanvasElement, KeyboardEvent, MouseEvent};
+use web_sys::{EventTarget, HtmlCanvasElement, KeyboardEvent, MouseEvent};
 
 use crate::audio::{RemoteControls, Sound, SoundInstance};
 use crate::error::{Result, TetraError};
@@ -75,78 +76,52 @@ impl Platform {
 
         let event_queue_handle = Rc::clone(&event_queue);
 
-        let keydown_closure = Closure::wrap(Box::new(move |event: KeyboardEvent| {
+        let keydown_closure = event(&document, "keydown", move |event: KeyboardEvent| {
             if let Some(key) = into_key(event) {
                 event_queue_handle
                     .borrow_mut()
                     .push_back(Event::KeyDown(key));
             }
-        }) as Box<dyn FnMut(_)>);
-
-        document
-            .add_event_listener_with_callback("keydown", keydown_closure.as_ref().unchecked_ref())
-            .unwrap();
+        });
 
         let event_queue_handle = Rc::clone(&event_queue);
 
-        let keyup_closure = Closure::wrap(Box::new(move |event: KeyboardEvent| {
+        let keyup_closure = event(&document, "keyup", move |event: KeyboardEvent| {
             if let Some(key) = into_key(event) {
                 event_queue_handle.borrow_mut().push_back(Event::KeyUp(key));
             }
-        }) as Box<dyn FnMut(_)>);
-
-        document
-            .add_event_listener_with_callback("keyup", keyup_closure.as_ref().unchecked_ref())
-            .unwrap();
+        });
 
         let event_queue_handle = Rc::clone(&event_queue);
 
-        let mousedown_closure = Closure::wrap(Box::new(move |event: MouseEvent| {
+        let mousedown_closure = event(&canvas, "mousedown", move |event: MouseEvent| {
             if let Some(btn) = into_mouse_button(event) {
                 event_queue_handle
                     .borrow_mut()
                     .push_back(Event::MouseDown(btn));
             }
-        }) as Box<dyn FnMut(_)>);
-
-        canvas
-            .add_event_listener_with_callback(
-                "mousedown",
-                mousedown_closure.as_ref().unchecked_ref(),
-            )
-            .unwrap();
+        });
 
         let event_queue_handle = Rc::clone(&event_queue);
 
-        let mouseup_closure = Closure::wrap(Box::new(move |event: MouseEvent| {
+        let mouseup_closure = event(&canvas, "mouseup", move |event: MouseEvent| {
             if let Some(btn) = into_mouse_button(event) {
                 event_queue_handle
                     .borrow_mut()
                     .push_back(Event::MouseUp(btn));
             }
-        }) as Box<dyn FnMut(_)>);
-
-        canvas
-            .add_event_listener_with_callback("mouseup", mouseup_closure.as_ref().unchecked_ref())
-            .unwrap();
+        });
 
         let event_queue_handle = Rc::clone(&event_queue);
 
-        let mousemove_closure = Closure::wrap(Box::new(move |event: MouseEvent| {
+        let mousemove_closure = event(&canvas, "mousemouve", move |event: MouseEvent| {
             event_queue_handle
                 .borrow_mut()
                 .push_back(Event::MouseMove(Vec2::new(
                     event.offset_x() as f32,
                     event.offset_y() as f32,
                 )));
-        }) as Box<dyn FnMut(_)>);
-
-        canvas
-            .add_event_listener_with_callback(
-                "mousemove",
-                mousemove_closure.as_ref().unchecked_ref(),
-            )
-            .unwrap();
+        });
 
         Ok((
             Platform {
@@ -293,6 +268,20 @@ pub fn set_master_volume(ctx: &mut Context, volume: f32) {}
 
 pub fn get_master_volume(ctx: &mut Context) -> f32 {
     1.0
+}
+
+fn event<F, T>(target: &EventTarget, event_name: &str, callback: F) -> Closure<dyn FnMut(T)>
+where
+    F: FnMut(T) + 'static,
+    T: FromWasmAbi + 'static,
+{
+    let callback = Closure::wrap(Box::new(callback) as Box<dyn FnMut(T)>);
+
+    target
+        .add_event_listener_with_callback(event_name, callback.as_ref().unchecked_ref())
+        .expect("Failed to create event listener");
+
+    callback
 }
 
 fn into_key(event: KeyboardEvent) -> Option<Key> {
