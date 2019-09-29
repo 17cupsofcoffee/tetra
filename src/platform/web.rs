@@ -203,7 +203,10 @@ pub fn get_window_size(ctx: &Context) -> (i32, i32) {
     )
 }
 
-pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) {}
+pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) {
+    ctx.platform.canvas.set_width(width as u32);
+    ctx.platform.canvas.set_height(height as u32);
+}
 
 pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
     Ok(())
