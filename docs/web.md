@@ -98,7 +98,6 @@ To run the game in a browser, you need to create a HTML file that loads the gene
         <title>Tetra</title>
     </head>
     <body>
-        <!-- Currently, the ID must be 'canvas' for Tetra to detect it. -->
         <canvas id="canvas" width="640" height="480"></canvas>
 
         <!-- Make sure the path to the file is correct! -->

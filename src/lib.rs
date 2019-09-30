@@ -153,8 +153,10 @@ impl Context {
 #[derive(Debug, Clone)]
 pub struct Game {
     title: String,
+
     window_width: i32,
     window_height: i32,
+    canvas_id: String,
     vsync: bool,
     tick_rate: f64,
     fullscreen: bool,
@@ -189,6 +191,31 @@ impl Game {
         S: Into<String>,
     {
         self.title = title.into();
+        self
+    }
+
+    /// Sets the size of the window.
+    ///
+    /// Defaults to `1280` by `720`.
+    pub fn window_size(&mut self, width: i32, height: i32) -> &mut Game {
+        self.window_width = width;
+        self.window_height = height;
+        self
+    }
+
+    /// Specifies the ID of the `canvas` element that should be used for
+    /// rendering, when running in a browser.
+    ///
+    /// Defaults to `"canvas"`.
+    ///
+    /// # Platform-specific Behaviour
+    ///
+    /// Ignored on desktop platforms.
+    pub fn canvas_id<S>(&mut self, id: S) -> &mut Game
+    where
+        S: Into<String>,
+    {
+        self.canvas_id = id.into();
         self
     }
 
@@ -298,6 +325,7 @@ impl Default for Game {
             title: "Tetra".into(),
             window_width: 1280,
             window_height: 720,
+            canvas_id: "canvas".into(),
             vsync: true,
             tick_rate: 1.0 / 60.0,
             fullscreen: false,

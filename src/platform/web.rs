@@ -57,7 +57,7 @@ impl Platform {
             .ok_or_else(|| TetraError::Platform("Could not get 'document' from browser".into()))?;
 
         let canvas = document
-            .get_element_by_id("canvas")
+            .get_element_by_id(&builder.canvas_id)
             .ok_or_else(|| TetraError::Platform("Could not find canvas element on page".into()))?
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .map_err(|_| TetraError::Platform("Element was not a canvas".into()))?;
