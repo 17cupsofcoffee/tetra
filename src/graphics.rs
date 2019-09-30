@@ -10,7 +10,7 @@ mod buffers;
 mod canvas;
 mod color;
 pub(crate) mod opengl;
-mod scaling;
+pub mod scaling;
 mod shader;
 mod text;
 mod texture;
@@ -18,7 +18,6 @@ pub mod ui;
 
 pub use self::canvas::*;
 pub use self::color::*;
-pub use self::scaling::*;
 pub use self::shader::*;
 pub use self::text::*;
 pub use self::texture::*;

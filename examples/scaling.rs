@@ -1,5 +1,6 @@
+use tetra::graphics::scaling::{ScalingMode, ScreenScaler};
 use tetra::graphics::ui::NineSlice;
-use tetra::graphics::{self, Color, Font, Rectangle, ScalingMode, ScreenScaler, Text, Texture};
+use tetra::graphics::{self, Color, Font, Rectangle, Text, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
 use tetra::{Context, Game, State};
