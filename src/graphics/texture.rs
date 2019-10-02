@@ -74,7 +74,7 @@ impl Texture {
     /// If the image data was invalid, a `TetraError::Image` will be returned.
     pub fn from_file_data(ctx: &mut Context, data: &[u8]) -> Result<Texture> {
         let image = image::load_from_memory(data)
-            .map_err(|e| TetraError::InvalidTexture { reason: e })?
+            .map_err(TetraError::InvalidTexture)?
             .to_rgba();
 
         let (width, height) = image.dimensions();

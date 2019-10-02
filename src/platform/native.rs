@@ -70,23 +70,11 @@ impl Platform {
             rodio::play_raw(&active_device, Empty::new());
         }
 
-        let sdl = sdl2::init().map_err(|e| TetraError::PlatformError { reason: e })?;
-
-        let video_sys = sdl
-            .video()
-            .map_err(|e| TetraError::PlatformError { reason: e })?;
-
-        let joystick_sys = sdl
-            .joystick()
-            .map_err(|e| TetraError::PlatformError { reason: e })?;
-
-        let controller_sys = sdl
-            .game_controller()
-            .map_err(|e| TetraError::PlatformError { reason: e })?;
-
-        let haptic_sys = sdl
-            .haptic()
-            .map_err(|e| TetraError::PlatformError { reason: e })?;
+        let sdl = sdl2::init().map_err(TetraError::PlatformError)?;
+        let video_sys = sdl.video().map_err(TetraError::PlatformError)?;
+        let joystick_sys = sdl.joystick().map_err(TetraError::PlatformError)?;
+        let controller_sys = sdl.game_controller().map_err(TetraError::PlatformError)?;
+        let haptic_sys = sdl.haptic().map_err(TetraError::PlatformError)?;
 
         sdl2::hint::set("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
 
@@ -121,9 +109,7 @@ impl Platform {
 
         let mut window = window_builder
             .build()
-            .map_err(|e| TetraError::PlatformError {
-                reason: e.to_string(),
-            })?;
+            .map_err(|e| TetraError::PlatformError(e.to_string()))?;
 
         // We wait until the window has been created to fiddle with this stuff as:
         // a) we don't want to blow away the window size settings
@@ -152,19 +138,19 @@ impl Platform {
                     window_height = m.h;
                     window.set_fullscreen(FullscreenType::Desktop)
                 })
-                .map_err(|e| TetraError::GraphicsDeviceError { reason: e })?;
+                .map_err(TetraError::GraphicsDeviceError)?;
         }
 
         let gl_sys = window
             .gl_create_context()
-            .map_err(|e| TetraError::GraphicsDeviceError { reason: e })?;
+            .map_err(TetraError::GraphicsDeviceError)?;
 
         let gl_ctx =
             GlContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _);
 
         video_sys
             .gl_set_swap_interval(if builder.vsync { 1 } else { 0 })
-            .map_err(|e| TetraError::GraphicsDeviceError { reason: e })?;
+            .map_err(TetraError::GraphicsDeviceError)?;
 
         let platform = Platform {
             sdl,
@@ -208,9 +194,7 @@ pub fn handle_events(ctx: &mut Context) -> Result {
         .platform
         .sdl
         .event_pump()
-        .map_err(|e| TetraError::PlatformError {
-            reason: e.to_string(),
-        })?;
+        .map_err(|e| TetraError::PlatformError(e.to_string()))?;
 
     for event in events.poll_iter() {
         match event {
@@ -269,11 +253,11 @@ pub fn handle_events(ctx: &mut Context) -> Result {
             }
 
             Event::ControllerDeviceAdded { which, .. } => {
-                let controller = ctx.platform.controller_sys.open(which).map_err(|e| {
-                    TetraError::PlatformError {
-                        reason: e.to_string(),
-                    }
-                })?;
+                let controller = ctx
+                    .platform
+                    .controller_sys
+                    .open(which)
+                    .map_err(|e| TetraError::PlatformError(e.to_string()))?;
 
                 let haptic = ctx.platform.haptic_sys.open_from_joystick_id(which).ok();
 
@@ -405,7 +389,7 @@ pub fn enable_fullscreen(ctx: &mut Context) -> Result {
                 ctx.platform.window.set_fullscreen(FullscreenType::Desktop)
             })
             .map(|_| ())
-            .map_err(|e| TetraError::GraphicsDeviceError { reason: e })
+            .map_err(TetraError::GraphicsDeviceError)
     } else {
         Ok(())
     }
@@ -420,7 +404,7 @@ pub fn disable_fullscreen(ctx: &mut Context) -> Result {
                 let size = ctx.platform.window.drawable_size();
                 window::set_size(ctx, size.0 as i32, size.1 as i32);
             })
-            .map_err(|e| TetraError::GraphicsDeviceError { reason: e })
+            .map_err(TetraError::GraphicsDeviceError)
     } else {
         Ok(())
     }
@@ -495,7 +479,7 @@ pub fn play_sound(
     let master_volume = { *ctx.platform.master_volume.lock().unwrap() };
 
     let data = Decoder::new(Cursor::new(Arc::clone(&sound.data)))
-        .map_err(|e| TetraError::InvalidSound { reason: e })?
+        .map_err(TetraError::InvalidSound)?
         .buffered();
 
     let source = TetraSource {

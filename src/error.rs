@@ -22,30 +22,17 @@ pub type Result<T = ()> = result::Result<T, TetraError>;
 /// This is so that if a new error type is added later on, it will not break your code.
 #[derive(Debug)]
 pub enum TetraError {
-    PlatformError {
-        reason: String,
-    },
-
-    GraphicsDeviceError {
-        reason: String,
-    },
+    PlatformError(String),
+    GraphicsDeviceError(String),
 
     FailedToLoadAsset {
         reason: io::Error,
         path: PathBuf,
     },
 
-    InvalidTexture {
-        reason: ImageError,
-    },
-
-    InvalidShader {
-        reason: String,
-    },
-
-    InvalidSound {
-        reason: DecoderError,
-    },
+    InvalidTexture(ImageError),
+    InvalidShader(String),
+    InvalidSound(DecoderError),
 
     /// Returned when not enough data is provided to fill a buffer.
     /// This may happen if you're creating a texture from raw data and you don't provide
@@ -70,10 +57,10 @@ pub enum TetraError {
 impl Display for TetraError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            TetraError::PlatformError { reason } => {
+            TetraError::PlatformError(reason) => {
                 write!(f, "An error was thrown by the platform: {}", reason)
             }
-            TetraError::GraphicsDeviceError { reason } => {
+            TetraError::GraphicsDeviceError(reason) => {
                 write!(f, "An error was thrown by the graphics device: {}", reason)
             }
             TetraError::FailedToLoadAsset { reason, path } => write!(
@@ -82,10 +69,9 @@ impl Display for TetraError {
                 path.to_string_lossy(),
                 reason
             ),
-            TetraError::InvalidTexture { reason } => write!(f, "Invalid texture: {}", reason),
-            TetraError::InvalidShader { reason } => write!(f, "Invalid shader: {}", reason),
-            TetraError::InvalidSound { reason } => write!(f, "Invalid sound: {}", reason),
-
+            TetraError::InvalidTexture(reason) => write!(f, "Invalid texture: {}", reason),
+            TetraError::InvalidShader(reason) => write!(f, "Invalid shader: {}", reason),
+            TetraError::InvalidSound(reason) => write!(f, "Invalid sound: {}", reason),
             TetraError::NotEnoughData { expected, actual } => write!(
                 f,
                 "Not enough data was provided to fill a buffer - expected {}, found {}.",
@@ -100,12 +86,12 @@ impl Display for TetraError {
 impl Error for TetraError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
-            TetraError::PlatformError { .. } => None,
-            TetraError::GraphicsDeviceError { .. } => None,
+            TetraError::PlatformError(_) => None,
+            TetraError::GraphicsDeviceError(_) => None,
             TetraError::FailedToLoadAsset { reason, .. } => Some(reason),
-            TetraError::InvalidTexture { reason } => Some(reason),
-            TetraError::InvalidShader { .. } => None,
-            TetraError::InvalidSound { reason } => Some(reason),
+            TetraError::InvalidTexture(reason) => Some(reason),
+            TetraError::InvalidShader(_) => None,
+            TetraError::InvalidSound(reason) => Some(reason),
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,
             TetraError::__Nonexhaustive => unreachable!(),

@@ -30,7 +30,7 @@ where
             reason: inner,
             path: path_ref.to_owned(),
         },
-        _ => TetraError::InvalidTexture { reason: e },
+        _ => TetraError::InvalidTexture(e),
     })
 }
 
