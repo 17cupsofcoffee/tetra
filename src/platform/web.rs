@@ -41,11 +41,12 @@ pub struct Platform {
     canvas: HtmlCanvasElement,
 
     event_queue: Rc<RefCell<VecDeque<Event>>>,
-    keydown_closure: Closure<dyn FnMut(KeyboardEvent)>,
-    keyup_closure: Closure<dyn FnMut(KeyboardEvent)>,
-    mousedown_closure: Closure<dyn FnMut(MouseEvent)>,
-    mouseup_closure: Closure<dyn FnMut(MouseEvent)>,
-    mousemove_closure: Closure<dyn FnMut(MouseEvent)>,
+
+    _keydown_closure: Closure<dyn FnMut(KeyboardEvent)>,
+    _keyup_closure: Closure<dyn FnMut(KeyboardEvent)>,
+    _mousedown_closure: Closure<dyn FnMut(MouseEvent)>,
+    _mouseup_closure: Closure<dyn FnMut(MouseEvent)>,
+    _mousemove_closure: Closure<dyn FnMut(MouseEvent)>,
 }
 
 impl Platform {
@@ -85,7 +86,7 @@ impl Platform {
 
         let event_queue_handle = Rc::clone(&event_queue);
 
-        let keydown_closure = event(&document, "keydown", move |event: KeyboardEvent| {
+        let _keydown_closure = event(&document, "keydown", move |event: KeyboardEvent| {
             if let Some(key) = into_key(event) {
                 event_queue_handle
                     .borrow_mut()
@@ -95,7 +96,7 @@ impl Platform {
 
         let event_queue_handle = Rc::clone(&event_queue);
 
-        let keyup_closure = event(&document, "keyup", move |event: KeyboardEvent| {
+        let _keyup_closure = event(&document, "keyup", move |event: KeyboardEvent| {
             if let Some(key) = into_key(event) {
                 event_queue_handle.borrow_mut().push_back(Event::KeyUp(key));
             }
@@ -103,7 +104,7 @@ impl Platform {
 
         let event_queue_handle = Rc::clone(&event_queue);
 
-        let mousedown_closure = event(&canvas, "mousedown", move |event: MouseEvent| {
+        let _mousedown_closure = event(&canvas, "mousedown", move |event: MouseEvent| {
             if let Some(btn) = into_mouse_button(event) {
                 event_queue_handle
                     .borrow_mut()
@@ -113,7 +114,7 @@ impl Platform {
 
         let event_queue_handle = Rc::clone(&event_queue);
 
-        let mouseup_closure = event(&canvas, "mouseup", move |event: MouseEvent| {
+        let _mouseup_closure = event(&canvas, "mouseup", move |event: MouseEvent| {
             if let Some(btn) = into_mouse_button(event) {
                 event_queue_handle
                     .borrow_mut()
@@ -123,7 +124,7 @@ impl Platform {
 
         let event_queue_handle = Rc::clone(&event_queue);
 
-        let mousemove_closure = event(&canvas, "mousemove", move |event: MouseEvent| {
+        let _mousemove_closure = event(&canvas, "mousemove", move |event: MouseEvent| {
             event_queue_handle
                 .borrow_mut()
                 .push_back(Event::MouseMove(Vec2::new(
@@ -137,11 +138,12 @@ impl Platform {
                 canvas,
 
                 event_queue,
-                keydown_closure,
-                keyup_closure,
-                mousedown_closure,
-                mouseup_closure,
-                mousemove_closure,
+
+                _keydown_closure,
+                _keyup_closure,
+                _mousedown_closure,
+                _mouseup_closure,
+                _mousemove_closure,
             },
             GlContext::from_webgl2_context(context),
             builder.window_width,
@@ -150,7 +152,7 @@ impl Platform {
     }
 }
 
-pub fn run_loop<S>(mut ctx: Context, mut state: S, frame: fn(&mut Context, &mut S))
+pub fn run_loop<S>(ctx: Context, state: S, frame: fn(&mut Context, &mut S))
 where
     S: State + 'static,
 {
@@ -404,9 +406,9 @@ fn into_key(event: KeyboardEvent) -> Option<Key> {
         ("Control", KeyboardEvent::DOM_KEY_LOCATION_LEFT) => Some(Key::LeftCtrl),
         ("Shift", KeyboardEvent::DOM_KEY_LOCATION_LEFT) => Some(Key::LeftShift),
         ("Alt", KeyboardEvent::DOM_KEY_LOCATION_LEFT) => Some(Key::LeftAlt),
-        ("Control", KeyboardEvent::DOM_KEY_LOCATION_LEFT) => Some(Key::RightCtrl),
-        ("Shift", KeyboardEvent::DOM_KEY_LOCATION_LEFT) => Some(Key::RightShift),
-        ("Alt", KeyboardEvent::DOM_KEY_LOCATION_LEFT) => Some(Key::RightAlt),
+        ("Control", KeyboardEvent::DOM_KEY_LOCATION_RIGHT) => Some(Key::RightCtrl),
+        ("Shift", KeyboardEvent::DOM_KEY_LOCATION_RIGHT) => Some(Key::RightShift),
+        ("Alt", KeyboardEvent::DOM_KEY_LOCATION_RIGHT) => Some(Key::RightAlt),
 
         ("ArrowUp", _) => Some(Key::Up),
         ("ArrowDown", _) => Some(Key::Down),
