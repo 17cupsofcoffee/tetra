@@ -31,6 +31,10 @@ pub enum TetraError {
         reason: String,
     },
 
+    FailedToChangeDisplayMode {
+        reason: String,
+    },
+
     /// An error that was returned by the platform.
     Platform(String),
 
@@ -75,6 +79,9 @@ impl Display for TetraError {
             TetraError::FailedToCompileShader { reason } => {
                 write!(f, "Failed to compile shader: {}", reason)
             }
+            TetraError::FailedToChangeDisplayMode { reason } => {
+                write!(f, "Failed to change display mode: {}", reason)
+            }
             TetraError::Platform(e) => write!(f, "Platform error: {}", e),
             TetraError::OpenGl(e) => write!(f, "OpenGL error: {}", e),
             TetraError::Image(e) => write!(f, "Image processing error: {}", e),
@@ -95,6 +102,7 @@ impl Error for TetraError {
         match self {
             TetraError::FailedToLoadAsset { source, .. } => Some(source),
             TetraError::FailedToCompileShader { .. } => None,
+            TetraError::FailedToChangeDisplayMode { .. } => None,
             TetraError::Platform(_) => None,
             TetraError::OpenGl(_) => None,
             TetraError::Image(e) => Some(e),

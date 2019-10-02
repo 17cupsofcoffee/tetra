@@ -140,7 +140,7 @@ impl Platform {
                     window_height = m.h;
                     window.set_fullscreen(FullscreenType::Desktop)
                 })
-                .map_err(TetraError::Platform)?;
+                .map_err(|e| TetraError::FailedToChangeDisplayMode { reason: e })?;
         }
 
         let gl_sys = window.gl_create_context().map_err(TetraError::OpenGl)?;
@@ -149,7 +149,7 @@ impl Platform {
 
         video_sys
             .gl_set_swap_interval(if builder.vsync { 1 } else { 0 })
-            .map_err(TetraError::Platform)?;
+            .map_err(|e| TetraError::FailedToChangeDisplayMode { reason: e })?;
 
         let platform = Platform {
             sdl,
@@ -383,7 +383,7 @@ pub fn enable_fullscreen(ctx: &mut Context) -> Result {
                 ctx.platform.window.set_fullscreen(FullscreenType::Desktop)
             })
             .map(|_| ())
-            .map_err(TetraError::Platform)
+            .map_err(|e| TetraError::FailedToChangeDisplayMode { reason: e })
     } else {
         Ok(())
     }
@@ -398,7 +398,7 @@ pub fn disable_fullscreen(ctx: &mut Context) -> Result {
                 let size = ctx.platform.window.drawable_size();
                 window::set_size(ctx, size.0 as i32, size.1 as i32);
             })
-            .map_err(TetraError::Platform)
+            .map_err(|e| TetraError::FailedToChangeDisplayMode { reason: e })
     } else {
         Ok(())
     }
