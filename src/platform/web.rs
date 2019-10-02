@@ -72,14 +72,14 @@ impl Platform {
         canvas
             .style()
             .set_property("cursor", if builder.show_mouse { "auto" } else { "none" })
-            .expect("Failed to set cursor");
+            .map_err(|_| TetraError::PlatformError("Failed to set cursor styles".into()))?;
 
         let context = canvas
             .get_context("webgl2")
             .map_err(|_| TetraError::PlatformError("Could not get context from canvas".into()))?
             .expect("webgl2 is a valid context type")
             .dyn_into::<web_sys::WebGl2RenderingContext>()
-            .unwrap();
+            .expect("returned value should be a webgl2 context");
 
         let event_queue = Rc::new(RefCell::new(VecDeque::new()));
 
@@ -91,7 +91,7 @@ impl Platform {
                     .borrow_mut()
                     .push_back(Event::KeyDown(key));
             }
-        });
+        })?;
 
         let event_queue_handle = Rc::clone(&event_queue);
 
@@ -99,7 +99,7 @@ impl Platform {
             if let Some(key) = into_key(event) {
                 event_queue_handle.borrow_mut().push_back(Event::KeyUp(key));
             }
-        });
+        })?;
 
         let event_queue_handle = Rc::clone(&event_queue);
 
@@ -109,7 +109,7 @@ impl Platform {
                     .borrow_mut()
                     .push_back(Event::MouseDown(btn));
             }
-        });
+        })?;
 
         let event_queue_handle = Rc::clone(&event_queue);
 
@@ -119,18 +119,18 @@ impl Platform {
                     .borrow_mut()
                     .push_back(Event::MouseUp(btn));
             }
-        });
+        })?;
 
         let event_queue_handle = Rc::clone(&event_queue);
 
-        let mousemove_closure = event(&canvas, "mousemouve", move |event: MouseEvent| {
+        let mousemove_closure = event(&canvas, "mousemove", move |event: MouseEvent| {
             event_queue_handle
                 .borrow_mut()
                 .push_back(Event::MouseMove(Vec2::new(
                     event.offset_x() as f32,
                     event.offset_y() as f32,
                 )));
-        });
+        })?;
 
         Ok((
             Platform {
@@ -237,26 +237,26 @@ pub fn is_fullscreen(ctx: &Context) -> bool {
     false
 }
 
-pub fn set_mouse_visible(ctx: &mut Context, mouse_visible: bool) {
+pub fn set_mouse_visible(ctx: &mut Context, mouse_visible: bool) -> Result {
     ctx.platform
         .canvas
         .style()
         .set_property("cursor", if mouse_visible { "auto" } else { "none" })
-        .expect("Failed to set cursor");
+        .map_err(|_| TetraError::PlatformError("Failed to set cursor styles".into()))
 }
 
-pub fn is_mouse_visible(ctx: &Context) -> bool {
+pub fn is_mouse_visible(ctx: &Context) -> Result<bool> {
     let value = ctx
         .platform
         .canvas
         .style()
         .get_property_value("cursor")
-        .expect("Could not get cursor state");
+        .map_err(|_| TetraError::PlatformError("Failed to get cursor styles".into()))?;
 
     if value == "none" {
-        false
+        Ok(false)
     } else {
-        true
+        Ok(true)
     }
 }
 
@@ -303,7 +303,7 @@ pub fn get_master_volume(ctx: &mut Context) -> f32 {
     1.0
 }
 
-fn event<F, T>(target: &EventTarget, event_name: &str, callback: F) -> Closure<dyn FnMut(T)>
+fn event<F, T>(target: &EventTarget, event_name: &str, callback: F) -> Result<Closure<dyn FnMut(T)>>
 where
     F: FnMut(T) + 'static,
     T: FromWasmAbi + 'static,
@@ -312,9 +312,9 @@ where
 
     target
         .add_event_listener_with_callback(event_name, callback.as_ref().unchecked_ref())
-        .expect("Failed to create event listener");
+        .map_err(|_| TetraError::PlatformError("Failed to create event listener".into()))?;
 
-    callback
+    Ok(callback)
 }
 
 fn into_key(event: KeyboardEvent) -> Option<Key> {

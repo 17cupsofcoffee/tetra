@@ -90,16 +90,16 @@ pub fn is_fullscreen(ctx: &Context) -> bool {
 }
 
 /// Makes the mouse cursor visible.
-pub fn show_mouse(ctx: &mut Context) {
-    platform::set_mouse_visible(ctx, true);
+pub fn show_mouse(ctx: &mut Context) -> Result {
+    platform::set_mouse_visible(ctx, true)
 }
 
 /// Hides the mouse cursor.
-pub fn hide_mouse(ctx: &mut Context) {
-    platform::set_mouse_visible(ctx, false);
+pub fn hide_mouse(ctx: &mut Context) -> Result {
+    platform::set_mouse_visible(ctx, false)
 }
 
 /// Returns whether or not the mouse cursor is currently visible.
-pub fn is_mouse_visible(ctx: &Context) -> bool {
+pub fn is_mouse_visible(ctx: &Context) -> Result<bool> {
     platform::is_mouse_visible(ctx)
 }
