@@ -223,7 +223,9 @@ impl GLDevice {
             self.gl.attach_shader(program_id, vertex_id);
 
             if !self.gl.get_shader_compile_status(vertex_id) {
-                return Err(TetraError::OpenGl(self.gl.get_shader_info_log(vertex_id)));
+                return Err(TetraError::FailedToCompileShader {
+                    reason: self.gl.get_shader_info_log(vertex_id),
+                });
             }
 
             let fragment_id = self
@@ -236,13 +238,17 @@ impl GLDevice {
             self.gl.attach_shader(program_id, fragment_id);
 
             if !self.gl.get_shader_compile_status(vertex_id) {
-                return Err(TetraError::OpenGl(self.gl.get_shader_info_log(fragment_id)));
+                return Err(TetraError::FailedToCompileShader {
+                    reason: self.gl.get_shader_info_log(vertex_id),
+                });
             }
 
             self.gl.link_program(program_id);
 
             if !self.gl.get_program_link_status(program_id) {
-                return Err(TetraError::OpenGl(self.gl.get_program_info_log(program_id)));
+                return Err(TetraError::FailedToCompileShader {
+                    reason: self.gl.get_program_info_log(vertex_id),
+                });
             }
 
             self.gl.delete_shader(vertex_id);

@@ -27,6 +27,10 @@ pub enum TetraError {
         path: PathBuf,
     },
 
+    FailedToCompileShader {
+        reason: String,
+    },
+
     /// An error that was returned by the platform.
     Platform(String),
 
@@ -68,6 +72,9 @@ impl Display for TetraError {
                 path.to_string_lossy(),
                 source
             ),
+            TetraError::FailedToCompileShader { reason } => {
+                write!(f, "Failed to compile shader: {}", reason)
+            }
             TetraError::Platform(e) => write!(f, "Platform error: {}", e),
             TetraError::OpenGl(e) => write!(f, "OpenGL error: {}", e),
             TetraError::Image(e) => write!(f, "Image processing error: {}", e),
@@ -87,6 +94,7 @@ impl Error for TetraError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             TetraError::FailedToLoadAsset { source, .. } => Some(source),
+            TetraError::FailedToCompileShader { .. } => None,
             TetraError::Platform(_) => None,
             TetraError::OpenGl(_) => None,
             TetraError::Image(e) => Some(e),
