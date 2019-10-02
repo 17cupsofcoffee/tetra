@@ -52,15 +52,23 @@ impl Platform {
     pub fn new(builder: &Game) -> Result<(Platform, GlContext, i32, i32)> {
         // TODO: This is disgusting
         let document = web_sys::window()
-            .ok_or_else(|| TetraError::Platform("Could not get 'window' from browser".into()))?
+            .ok_or_else(|| TetraError::Fatal {
+                reason: "Could not get 'window' from browser".into(),
+            })?
             .document()
-            .ok_or_else(|| TetraError::Platform("Could not get 'document' from browser".into()))?;
+            .ok_or_else(|| TetraError::Fatal {
+                reason: "Could not get 'document' from browser".into(),
+            })?;
 
         let canvas = document
             .get_element_by_id(&builder.canvas_id)
-            .ok_or_else(|| TetraError::Platform("Could not find canvas element on page".into()))?
+            .ok_or_else(|| TetraError::Fatal {
+                reason: "Could not find canvas element on page".into(),
+            })?
             .dyn_into::<web_sys::HtmlCanvasElement>()
-            .map_err(|_| TetraError::Platform("Element was not a canvas".into()))?;
+            .map_err(|_| TetraError::Fatal {
+                reason: "Element was not a canvas".into(),
+            })?;
 
         canvas.set_width(builder.window_width as u32);
         canvas.set_height(builder.window_height as u32);
@@ -72,7 +80,7 @@ impl Platform {
 
         let context = canvas
             .get_context("webgl2")
-            .map_err(|_| TetraError::Platform("Could not get context from canvas".into()))?
+            .map_err(|_| TetraError::Fatal("Could not get context from canvas".into()))?
             .expect("webgl2 is a valid context type")
             .dyn_into::<web_sys::WebGl2RenderingContext>()
             .unwrap();

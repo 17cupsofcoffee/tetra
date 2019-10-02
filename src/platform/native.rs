@@ -14,11 +14,8 @@ use sdl2::haptic::Haptic;
 use sdl2::keyboard::Keycode as SdlKey;
 use sdl2::mouse::MouseButton as SdlMouseButton;
 use sdl2::sys::SDL_HAPTIC_INFINITY;
-use sdl2::video::{FullscreenType, GLContext as SdlGlContext, GLProfile, Window, WindowBuildError};
-use sdl2::{
-    GameControllerSubsystem, HapticSubsystem, IntegerOrSdlError, JoystickSubsystem, Sdl,
-    VideoSubsystem,
-};
+use sdl2::video::{FullscreenType, GLContext as SdlGlContext, GLProfile, Window};
+use sdl2::{GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem};
 
 use crate::audio::{RemoteControls, Sound, SoundInstance};
 use crate::error::{Result, TetraError};
@@ -73,12 +70,19 @@ impl Platform {
             rodio::play_raw(&active_device, Empty::new());
         }
 
-        let sdl = sdl2::init().map_err(TetraError::Platform)?;
+        let sdl = sdl2::init().map_err(|e| TetraError::Fatal { reason: e })?;
 
-        let video_sys = sdl.video().map_err(TetraError::Platform)?;
-        let joystick_sys = sdl.joystick().map_err(TetraError::Platform)?;
-        let controller_sys = sdl.game_controller().map_err(TetraError::Platform)?;
-        let haptic_sys = sdl.haptic().map_err(TetraError::Platform)?;
+        let video_sys = sdl.video().map_err(|e| TetraError::Fatal { reason: e })?;
+
+        let joystick_sys = sdl
+            .joystick()
+            .map_err(|e| TetraError::Fatal { reason: e })?;
+
+        let controller_sys = sdl
+            .game_controller()
+            .map_err(|e| TetraError::Fatal { reason: e })?;
+
+        let haptic_sys = sdl.haptic().map_err(|e| TetraError::Fatal { reason: e })?;
 
         sdl2::hint::set("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
 
@@ -111,7 +115,9 @@ impl Platform {
 
         sdl.mouse().show_cursor(builder.show_mouse);
 
-        let mut window = window_builder.build()?;
+        let mut window = window_builder.build().map_err(|e| TetraError::Fatal {
+            reason: e.to_string(),
+        })?;
 
         // We wait until the window has been created to fiddle with this stuff as:
         // a) we don't want to blow away the window size settings
@@ -140,16 +146,19 @@ impl Platform {
                     window_height = m.h;
                     window.set_fullscreen(FullscreenType::Desktop)
                 })
-                .map_err(|e| TetraError::FailedToChangeDisplayMode { reason: e })?;
+                .map_err(|e| TetraError::Fatal { reason: e })?;
         }
 
-        let gl_sys = window.gl_create_context().map_err(TetraError::OpenGl)?;
+        let gl_sys = window
+            .gl_create_context()
+            .map_err(|e| TetraError::Fatal { reason: e })?;
+
         let gl_ctx =
             GlContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _);
 
         video_sys
             .gl_set_swap_interval(if builder.vsync { 1 } else { 0 })
-            .map_err(|e| TetraError::FailedToChangeDisplayMode { reason: e })?;
+            .map_err(|e| TetraError::Fatal { reason: e })?;
 
         let platform = Platform {
             sdl,
@@ -193,7 +202,9 @@ pub fn handle_events(ctx: &mut Context) -> Result {
         .platform
         .sdl
         .event_pump()
-        .map_err(TetraError::Platform)?;
+        .map_err(|e| TetraError::Fatal {
+            reason: e.to_string(),
+        })?;
 
     for event in events.poll_iter() {
         match event {
@@ -252,7 +263,14 @@ pub fn handle_events(ctx: &mut Context) -> Result {
             }
 
             Event::ControllerDeviceAdded { which, .. } => {
-                let controller = ctx.platform.controller_sys.open(which)?;
+                let controller =
+                    ctx.platform
+                        .controller_sys
+                        .open(which)
+                        .map_err(|e| TetraError::Fatal {
+                            reason: e.to_string(),
+                        })?;
+
                 let haptic = ctx.platform.haptic_sys.open_from_joystick_id(which).ok();
 
                 let id = controller.instance_id();
@@ -472,7 +490,9 @@ pub fn play_sound(
 
     let master_volume = { *ctx.platform.master_volume.lock().unwrap() };
 
-    let data = Decoder::new(Cursor::new(Arc::clone(&sound.data)))?.buffered();
+    let data = Decoder::new(Cursor::new(Arc::clone(&sound.data)))
+        .map_err(|e| TetraError::InvalidSound { reason: e })?
+        .buffered();
 
     let source = TetraSource {
         repeat_source: data.clone(),
@@ -716,29 +736,8 @@ impl From<SdlGamepadAxis> for GamepadAxis {
     }
 }
 
-#[doc(hidden)]
-impl From<WindowBuildError> for TetraError {
-    fn from(e: WindowBuildError) -> TetraError {
-        TetraError::Platform(e.to_string())
-    }
-}
-
-#[doc(hidden)]
-impl From<IntegerOrSdlError> for TetraError {
-    fn from(e: IntegerOrSdlError) -> TetraError {
-        TetraError::Platform(e.to_string())
-    }
-}
-
 // TODO: Handle this in a less gross way.
 pub use rodio::decoder::DecoderError;
-
-#[doc(hidden)]
-impl From<DecoderError> for TetraError {
-    fn from(e: DecoderError) -> TetraError {
-        TetraError::FailedToDecodeAudio(e)
-    }
-}
 
 type TetraSourceData = Buffered<Decoder<Cursor<Arc<[u8]>>>>;
 

@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use image;
 
-use crate::error::Result;
+use crate::error::{Result, TetraError};
 use crate::fs;
 use crate::graphics::opengl::GLTexture;
 use crate::graphics::{self, DrawParams, Drawable, FilterMode, Rectangle};
@@ -73,7 +73,10 @@ impl Texture {
     ///
     /// If the image data was invalid, a `TetraError::Image` will be returned.
     pub fn from_file_data(ctx: &mut Context, data: &[u8]) -> Result<Texture> {
-        let image = image::load_from_memory(data)?.to_rgba();
+        let image = image::load_from_memory(data)
+            .map_err(|e| TetraError::InvalidTexture { reason: e })?
+            .to_rgba();
+
         let (width, height) = image.dimensions();
 
         Texture::from_rgba(

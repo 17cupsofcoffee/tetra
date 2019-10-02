@@ -14,7 +14,7 @@ where
     let path_ref = path.as_ref();
 
     fs::read(path_ref).map_err(|e| TetraError::FailedToLoadAsset {
-        source: e,
+        reason: e,
         path: path_ref.to_owned(),
     })
 }
@@ -27,10 +27,10 @@ where
 
     image::open(path_ref).map_err(|e| match e {
         ImageError::IoError(inner) => TetraError::FailedToLoadAsset {
-            source: inner,
+            reason: inner,
             path: path_ref.to_owned(),
         },
-        _ => TetraError::Image(e),
+        _ => TetraError::InvalidTexture { reason: e },
     })
 }
 
@@ -41,7 +41,7 @@ where
     let path_ref = path.as_ref();
 
     fs::read_to_string(path_ref).map_err(|e| TetraError::FailedToLoadAsset {
-        source: e,
+        reason: e,
         path: path_ref.to_owned(),
     })
 }

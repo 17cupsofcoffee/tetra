@@ -22,27 +22,30 @@ pub type Result<T = ()> = result::Result<T, TetraError>;
 /// This is so that if a new error type is added later on, it will not break your code.
 #[derive(Debug)]
 pub enum TetraError {
+    Fatal {
+        reason: String,
+    },
+
     FailedToLoadAsset {
-        source: io::Error,
+        reason: io::Error,
         path: PathBuf,
     },
 
-    FailedToCompileShader {
+    InvalidTexture {
+        reason: ImageError,
+    },
+
+    InvalidShader {
         reason: String,
+    },
+
+    InvalidSound {
+        reason: DecoderError,
     },
 
     FailedToChangeDisplayMode {
         reason: String,
     },
-
-    /// An error that was returned by the platform.
-    Platform(String),
-
-    /// An error that was returned by OpenGL.
-    OpenGl(String),
-
-    /// An error that occured while processing an image.
-    Image(ImageError),
 
     /// Returned when not enough data is provided to fill a buffer.
     /// This may happen if you're creating a texture from raw data and you don't provide
@@ -58,9 +61,6 @@ pub enum TetraError {
     /// Returned when trying to play back audio without an available device.
     NoAudioDevice,
 
-    /// An error that occured while decoding audio data.
-    FailedToDecodeAudio(DecoderError),
-
     /// This is here so that adding new error types will not be a breaking change.
     /// Can be removed once #[non_exhaustive] is stabilized.
     #[doc(hidden)]
@@ -70,28 +70,25 @@ pub enum TetraError {
 impl Display for TetraError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            TetraError::FailedToLoadAsset { source, path } => write!(
+            TetraError::Fatal { reason } => write!(f, "Platform error: {}", reason),
+            TetraError::FailedToLoadAsset { reason, path } => write!(
                 f,
                 "Failed to load asset from {}: {}",
                 path.to_string_lossy(),
-                source
+                reason
             ),
-            TetraError::FailedToCompileShader { reason } => {
-                write!(f, "Failed to compile shader: {}", reason)
-            }
+            TetraError::InvalidTexture { reason } => write!(f, "Invalid texture: {}", reason),
+            TetraError::InvalidShader { reason } => write!(f, "Invalid shader: {}", reason),
+            TetraError::InvalidSound { reason } => write!(f, "Invalid sound: {}", reason),
             TetraError::FailedToChangeDisplayMode { reason } => {
                 write!(f, "Failed to change display mode: {}", reason)
             }
-            TetraError::Platform(e) => write!(f, "Platform error: {}", e),
-            TetraError::OpenGl(e) => write!(f, "OpenGL error: {}", e),
-            TetraError::Image(e) => write!(f, "Image processing error: {}", e),
             TetraError::NotEnoughData { expected, actual } => write!(
                 f,
                 "Not enough data was provided to fill a buffer - expected {}, found {}.",
                 expected, actual
             ),
             TetraError::NoAudioDevice => write!(f, "No audio device was available for playback."),
-            TetraError::FailedToDecodeAudio(e) => write!(f, "Failed to decode audio: {}", e),
             TetraError::__Nonexhaustive => unreachable!(),
         }
     }
@@ -100,22 +97,15 @@ impl Display for TetraError {
 impl Error for TetraError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
-            TetraError::FailedToLoadAsset { source, .. } => Some(source),
-            TetraError::FailedToCompileShader { .. } => None,
+            TetraError::Fatal { .. } => None,
+            TetraError::FailedToLoadAsset { reason, .. } => Some(reason),
+            TetraError::InvalidTexture { reason } => Some(reason),
+            TetraError::InvalidShader { .. } => None,
+            TetraError::InvalidSound { reason } => Some(reason),
             TetraError::FailedToChangeDisplayMode { .. } => None,
-            TetraError::Platform(_) => None,
-            TetraError::OpenGl(_) => None,
-            TetraError::Image(e) => Some(e),
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,
-            TetraError::FailedToDecodeAudio(e) => Some(e),
             TetraError::__Nonexhaustive => unreachable!(),
         }
-    }
-}
-
-impl From<ImageError> for TetraError {
-    fn from(e: ImageError) -> TetraError {
-        TetraError::Image(e)
     }
 }

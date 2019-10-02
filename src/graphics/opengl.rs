@@ -47,7 +47,10 @@ impl GLDevice {
 
             // This is only needed for Core GL - if we wanted to be uber compatible, we'd
             // turn it off on older versions.
-            let current_vertex_array = gl.create_vertex_array().map_err(TetraError::OpenGl)?;
+            let current_vertex_array = gl
+                .create_vertex_array()
+                .map_err(|e| TetraError::Fatal { reason: e })?;
+
             gl.bind_vertex_array(Some(current_vertex_array));
 
             println!("OpenGL Device: {}", gl.get_parameter_string(glow::RENDERER));
@@ -92,7 +95,10 @@ impl GLDevice {
         usage: BufferUsage,
     ) -> Result<VertexBuffer> {
         unsafe {
-            let id = self.gl.create_buffer().map_err(TetraError::OpenGl)?;
+            let id = self
+                .gl
+                .create_buffer()
+                .map_err(|e| TetraError::Fatal { reason: e })?;
 
             let handle = GLVertexBuffer {
                 gl: Rc::clone(&self.gl),
@@ -162,7 +168,10 @@ impl GLDevice {
 
     pub fn new_index_buffer(&mut self, count: usize, usage: BufferUsage) -> Result<IndexBuffer> {
         unsafe {
-            let id = self.gl.create_buffer().map_err(TetraError::OpenGl)?;
+            let id = self
+                .gl
+                .create_buffer()
+                .map_err(|e| TetraError::Fatal { reason: e })?;
 
             let handle = GLIndexBuffer {
                 gl: Rc::clone(&self.gl),
@@ -206,7 +215,10 @@ impl GLDevice {
 
     pub fn new_shader(&mut self, vertex_shader: &str, fragment_shader: &str) -> Result<Shader> {
         unsafe {
-            let program_id = self.gl.create_program().map_err(TetraError::OpenGl)?;
+            let program_id = self
+                .gl
+                .create_program()
+                .map_err(|e| TetraError::Fatal { reason: e })?;
 
             // TODO: IDK if this should be applied to *all* shaders...
             self.gl.bind_attrib_location(program_id, 0, "a_position");
@@ -216,14 +228,14 @@ impl GLDevice {
             let vertex_id = self
                 .gl
                 .create_shader(glow::VERTEX_SHADER)
-                .map_err(TetraError::OpenGl)?;
+                .map_err(|e| TetraError::Fatal { reason: e })?;
 
             self.gl.shader_source(vertex_id, vertex_shader);
             self.gl.compile_shader(vertex_id);
             self.gl.attach_shader(program_id, vertex_id);
 
             if !self.gl.get_shader_compile_status(vertex_id) {
-                return Err(TetraError::FailedToCompileShader {
+                return Err(TetraError::InvalidShader {
                     reason: self.gl.get_shader_info_log(vertex_id),
                 });
             }
@@ -231,14 +243,14 @@ impl GLDevice {
             let fragment_id = self
                 .gl
                 .create_shader(glow::FRAGMENT_SHADER)
-                .map_err(TetraError::OpenGl)?;
+                .map_err(|e| TetraError::Fatal { reason: e })?;
 
             self.gl.shader_source(fragment_id, fragment_shader);
             self.gl.compile_shader(fragment_id);
             self.gl.attach_shader(program_id, fragment_id);
 
             if !self.gl.get_shader_compile_status(vertex_id) {
-                return Err(TetraError::FailedToCompileShader {
+                return Err(TetraError::InvalidShader {
                     reason: self.gl.get_shader_info_log(vertex_id),
                 });
             }
@@ -246,7 +258,7 @@ impl GLDevice {
             self.gl.link_program(program_id);
 
             if !self.gl.get_program_link_status(program_id) {
-                return Err(TetraError::FailedToCompileShader {
+                return Err(TetraError::InvalidShader {
                     reason: self.gl.get_program_info_log(vertex_id),
                 });
             }
@@ -298,7 +310,10 @@ impl GLDevice {
     pub fn new_texture_empty(&mut self, width: i32, height: i32) -> Result<Texture> {
         // TODO: I don't think we need mipmaps?
         unsafe {
-            let id = self.gl.create_texture().map_err(TetraError::OpenGl)?;
+            let id = self
+                .gl
+                .create_texture()
+                .map_err(|e| TetraError::Fatal { reason: e })?;
 
             let handle = GLTexture {
                 gl: Rc::clone(&self.gl),
@@ -403,7 +418,10 @@ impl GLDevice {
 
     pub fn new_canvas(&mut self, width: i32, height: i32, rebind_previous: bool) -> Result<Canvas> {
         unsafe {
-            let id = self.gl.create_framebuffer().map_err(TetraError::OpenGl)?;
+            let id = self
+                .gl
+                .create_framebuffer()
+                .map_err(|e| TetraError::Fatal { reason: e })?;
 
             let framebuffer = GLFramebuffer {
                 gl: Rc::clone(&self.gl),
