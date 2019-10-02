@@ -22,7 +22,11 @@ pub type Result<T = ()> = result::Result<T, TetraError>;
 /// This is so that if a new error type is added later on, it will not break your code.
 #[derive(Debug)]
 pub enum TetraError {
-    Fatal {
+    PlatformError {
+        reason: String,
+    },
+
+    GraphicsDeviceError {
         reason: String,
     },
 
@@ -41,10 +45,6 @@ pub enum TetraError {
 
     InvalidSound {
         reason: DecoderError,
-    },
-
-    FailedToChangeDisplayMode {
-        reason: String,
     },
 
     /// Returned when not enough data is provided to fill a buffer.
@@ -70,7 +70,12 @@ pub enum TetraError {
 impl Display for TetraError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            TetraError::Fatal { reason } => write!(f, "Platform error: {}", reason),
+            TetraError::PlatformError { reason } => {
+                write!(f, "An error was thrown by the platform: {}", reason)
+            }
+            TetraError::GraphicsDeviceError { reason } => {
+                write!(f, "An error was thrown by the graphics device: {}", reason)
+            }
             TetraError::FailedToLoadAsset { reason, path } => write!(
                 f,
                 "Failed to load asset from {}: {}",
@@ -80,9 +85,7 @@ impl Display for TetraError {
             TetraError::InvalidTexture { reason } => write!(f, "Invalid texture: {}", reason),
             TetraError::InvalidShader { reason } => write!(f, "Invalid shader: {}", reason),
             TetraError::InvalidSound { reason } => write!(f, "Invalid sound: {}", reason),
-            TetraError::FailedToChangeDisplayMode { reason } => {
-                write!(f, "Failed to change display mode: {}", reason)
-            }
+
             TetraError::NotEnoughData { expected, actual } => write!(
                 f,
                 "Not enough data was provided to fill a buffer - expected {}, found {}.",
@@ -97,12 +100,12 @@ impl Display for TetraError {
 impl Error for TetraError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
-            TetraError::Fatal { .. } => None,
+            TetraError::PlatformError { .. } => None,
+            TetraError::GraphicsDeviceError { .. } => None,
             TetraError::FailedToLoadAsset { reason, .. } => Some(reason),
             TetraError::InvalidTexture { reason } => Some(reason),
             TetraError::InvalidShader { .. } => None,
             TetraError::InvalidSound { reason } => Some(reason),
-            TetraError::FailedToChangeDisplayMode { .. } => None,
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,
             TetraError::__Nonexhaustive => unreachable!(),

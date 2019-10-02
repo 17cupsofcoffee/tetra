@@ -59,7 +59,7 @@ pub fn set_size(ctx: &mut Context, width: i32, height: i32) {
 /// # Errors
 ///
 /// If the application's fullscreen state could not be changed, this function
-/// will return a `TetraError::Fatal`.
+/// will return a `TetraError::PlatformError`.
 pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
     platform::toggle_fullscreen(ctx)
 }
@@ -69,7 +69,7 @@ pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
 /// # Errors
 ///
 /// If the application's fullscreen state could not be changed, this function
-/// will return a `TetraError::Fatal`.
+/// will return a `TetraError::PlatformError`.
 pub fn enable_fullscreen(ctx: &mut Context) -> Result {
     platform::enable_fullscreen(ctx)
 }
@@ -79,7 +79,7 @@ pub fn enable_fullscreen(ctx: &mut Context) -> Result {
 /// # Errors
 ///
 /// If the application's fullscreen state could not be changed, this function
-/// will return a `TetraError::Fatal`.
+/// will return a `TetraError::PlatformError`.
 pub fn disable_fullscreen(ctx: &mut Context) -> Result {
     platform::disable_fullscreen(ctx)
 }
