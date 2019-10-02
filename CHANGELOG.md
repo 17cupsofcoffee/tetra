@@ -16,7 +16,7 @@ This project adheres to Semantic Versioning.
 * `DEFAULT_VERTEX_SHADER` and `DEFAULT_FRAGMENT_SHADER` are now const instead of static.
 * Screen scaling has been extracted from the core of the engine, and is now provided via the `ScreenScaler` struct. This allows it to be more flexibly integrated with the rest of your game's rendering.
 * Failing to create a `Canvas` now returns an error instead of panicking.
-* `TetraError::Io` has been replaced with `TetraError::FailedToLoadAsset`, which reports the path of the missing file.
+* `TetraError` has been reorganized, so that the errors returned are more descriptive.
 * The `glm` module has been renamed to `math`.
 * `Vec2` is now exported from `math`, not `graphics`.
 * Updated `glow` to 0.2.3.
