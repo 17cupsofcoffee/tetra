@@ -249,9 +249,9 @@ impl GLDevice {
             self.gl.compile_shader(fragment_id);
             self.gl.attach_shader(program_id, fragment_id);
 
-            if !self.gl.get_shader_compile_status(vertex_id) {
+            if !self.gl.get_shader_compile_status(fragment_id) {
                 return Err(TetraError::InvalidShader {
-                    reason: self.gl.get_shader_info_log(vertex_id),
+                    reason: self.gl.get_shader_info_log(fragment_id),
                 });
             }
 
@@ -259,7 +259,7 @@ impl GLDevice {
 
             if !self.gl.get_program_link_status(program_id) {
                 return Err(TetraError::InvalidShader {
-                    reason: self.gl.get_program_info_log(vertex_id),
+                    reason: self.gl.get_program_info_log(program_id),
                 });
             }
 
