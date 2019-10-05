@@ -52,31 +52,14 @@ impl ScreenScaler {
         self.canvas().width()
     }
 
-    pub fn set_inner_width(&mut self, inner_width: i32) {
-        self.set_inner_size(inner_width, self.inner_height());
-    }
-
     pub fn inner_height(&self) -> i32 {
         self.canvas().height()
-    }
-
-    pub fn set_inner_height(&mut self, inner_height: i32) {
-        self.set_inner_size(self.inner_width(), inner_height);
     }
 
     pub fn inner_size(&self) -> (i32, i32) {
         (self.inner_width(), self.inner_height())
     }
-
-    pub fn set_inner_size(&mut self, inner_width: i32, inner_height: i32) {
-        self.screen_rect = self.mode.get_screen_rect(
-            inner_width,
-            inner_height,
-            self.outer_width(),
-            self.outer_height(),
-        );
-    }
-
+    
     pub fn outer_width(&self) -> i32 {
         self.screen_rect.width as i32
     }
