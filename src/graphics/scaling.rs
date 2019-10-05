@@ -9,19 +9,105 @@ use crate::Context;
 pub struct ScreenScaler {
     canvas: Canvas,
     mode: ScalingMode,
+    screen_rect: Rectangle,
 }
 
 impl ScreenScaler {
     pub fn new(
         ctx: &mut Context,
-        width: i32,
-        height: i32,
+        inner_width: i32,
+        inner_height: i32,
+        outer_width: i32,
+        outer_height: i32,
         mode: ScalingMode,
     ) -> Result<ScreenScaler> {
+        let canvas = Canvas::new(ctx, inner_width, inner_height)?;
+        let screen_rect =
+            mode.get_screen_rect(inner_width, inner_height, outer_width, outer_height);
+
         Ok(ScreenScaler {
-            canvas: Canvas::new(ctx, width, height)?,
+            canvas,
             mode,
+            screen_rect,
         })
+    }
+
+    pub fn match_window(
+        ctx: &mut Context,
+        inner_width: i32,
+        inner_height: i32,
+        mode: ScalingMode,
+    ) -> Result<ScreenScaler> {
+        ScreenScaler::new(
+            ctx,
+            inner_width,
+            inner_height,
+            window::get_width(ctx),
+            window::get_height(ctx),
+            mode,
+        )
+    }
+
+    pub fn inner_width(&self) -> i32 {
+        self.canvas().width()
+    }
+
+    pub fn set_inner_width(&mut self, inner_width: i32) {
+        self.set_inner_size(inner_width, self.inner_height());
+    }
+
+    pub fn inner_height(&self) -> i32 {
+        self.canvas().height()
+    }
+
+    pub fn set_inner_height(&mut self, inner_height: i32) {
+        self.set_inner_size(self.inner_width(), inner_height);
+    }
+
+    pub fn inner_size(&self) -> (i32, i32) {
+        (self.inner_width(), self.inner_height())
+    }
+
+    pub fn set_inner_size(&mut self, inner_width: i32, inner_height: i32) {
+        self.screen_rect = self.mode.get_screen_rect(
+            inner_width,
+            inner_height,
+            self.outer_width(),
+            self.outer_height(),
+        );
+    }
+
+    pub fn outer_width(&self) -> i32 {
+        self.screen_rect.width as i32
+    }
+
+    pub fn set_outer_width(&mut self, outer_width: i32) {
+        self.set_outer_size(outer_width, self.outer_height());
+    }
+
+    pub fn outer_height(&self) -> i32 {
+        self.screen_rect.height as i32
+    }
+
+    pub fn set_outer_height(&mut self, outer_height: i32) {
+        self.set_outer_size(self.outer_width(), outer_height);
+    }
+
+    pub fn outer_size(&self) -> (i32, i32) {
+        (self.outer_width(), self.outer_height())
+    }
+
+    pub fn set_outer_size(&mut self, outer_width: i32, outer_height: i32) {
+        self.screen_rect = self.mode.get_screen_rect(
+            self.inner_width(),
+            self.inner_height(),
+            outer_width,
+            outer_height,
+        );
+    }
+
+    pub fn sync_with_window(&mut self, ctx: &Context) {
+        self.set_outer_size(window::get_width(ctx), window::get_height(ctx));
     }
 
     pub fn canvas(&self) -> &Canvas {
@@ -34,6 +120,12 @@ impl ScreenScaler {
 
     pub fn set_mode(&mut self, mode: ScalingMode) {
         self.mode = mode;
+        self.screen_rect = self.mode.get_screen_rect(
+            self.inner_width(),
+            self.inner_height(),
+            self.outer_width(),
+            self.outer_height(),
+        );
     }
 }
 
@@ -44,19 +136,12 @@ impl Drawable for ScreenScaler {
     {
         graphics::set_texture(ctx, &self.canvas.texture);
 
-        let screen_rect = self.mode.get_screen_rect(
-            self.canvas.width(),
-            self.canvas.height(),
-            window::get_width(ctx),
-            window::get_height(ctx),
-        );
-
         graphics::push_quad(
             ctx,
-            screen_rect.x,
-            screen_rect.y,
-            screen_rect.x + screen_rect.width,
-            screen_rect.y + screen_rect.height,
+            self.screen_rect.x,
+            self.screen_rect.y,
+            self.screen_rect.x + self.screen_rect.width,
+            self.screen_rect.y + self.screen_rect.height,
             0.0,
             0.0,
             1.0,

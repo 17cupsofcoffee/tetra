@@ -60,13 +60,15 @@ impl GameState {
 
         Ok(GameState {
             scenes: vec![Box::new(initial_scene)],
-            scaler: ScreenScaler::new(ctx, 640, 480, ScalingMode::ShowAllPixelPerfect)?,
+            scaler: ScreenScaler::match_window(ctx, 640, 480, ScalingMode::ShowAllPixelPerfect)?,
         })
     }
 }
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
+        self.scaler.sync_with_window(ctx);
+
         match self.scenes.last_mut() {
             Some(active_scene) => match active_scene.update(ctx)? {
                 Transition::None => {}
@@ -100,6 +102,7 @@ impl State for GameState {
         }
 
         graphics::reset_canvas(ctx);
+        graphics::clear(ctx, Color::BLACK);
         graphics::draw(ctx, &self.scaler, Vec2::new(0.0, 0.0));
 
         Ok(())
