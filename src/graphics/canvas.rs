@@ -37,6 +37,10 @@ impl Canvas {
         self.texture.height()
     }
 
+    pub fn size(&self) -> (i32, i32) {
+        self.texture.size()
+    }
+
     /// Returns the filter mode being used by the canvas.
     pub fn filter_mode(&self) -> FilterMode {
         self.texture.filter_mode()

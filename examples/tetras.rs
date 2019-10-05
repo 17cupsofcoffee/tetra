@@ -60,14 +60,14 @@ impl GameState {
 
         Ok(GameState {
             scenes: vec![Box::new(initial_scene)],
-            scaler: ScreenScaler::match_window(ctx, 640, 480, ScalingMode::ShowAllPixelPerfect)?,
+            scaler: ScreenScaler::new(ctx, 640, 480, ScalingMode::ShowAllPixelPerfect)?,
         })
     }
 }
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        self.scaler.sync_with_window(ctx);
+        self.scaler.update(ctx);
 
         match self.scenes.last_mut() {
             Some(active_scene) => match active_scene.update(ctx)? {

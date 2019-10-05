@@ -22,7 +22,7 @@ struct GameState {
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
-            scaler: ScreenScaler::match_window(ctx, 640, 480, ScalingMode::Fixed)?,
+            scaler: ScreenScaler::new(ctx, 640, 480, ScalingMode::Fixed)?,
             panel: NineSlice::new(
                 Texture::new(ctx, "./examples/resources/panel.png")?,
                 PANEL_WIDTH,
@@ -45,7 +45,7 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        self.scaler.sync_with_window(ctx);
+        self.scaler.update(ctx);
 
         if input::is_key_pressed(ctx, Key::Space) {
             let next = match self.scaler.mode() {

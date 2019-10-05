@@ -112,6 +112,11 @@ impl Texture {
         self.handle.borrow().height()
     }
 
+    pub fn size(&self) -> (i32, i32) {
+        let handle = self.handle.borrow();
+        (handle.width(), handle.height())
+    }
+
     /// Returns the filter mode being used by the texture.
     pub fn filter_mode(&self) -> FilterMode {
         self.handle.borrow().filter_mode()
