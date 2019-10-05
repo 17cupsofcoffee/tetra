@@ -27,12 +27,6 @@ use crate::{Context, Game, State};
 
 pub type GlContext = glow::native::Context;
 
-pub const DEFAULT_VERTEX_SHADER: &str =
-    concat!("#version 150\n", include_str!("../resources/shader.vert"));
-
-pub const DEFAULT_FRAGMENT_SHADER: &str =
-    concat!("#version 150\n", include_str!("../resources/shader.frag"));
-
 pub struct Platform {
     sdl: Sdl,
     window: Window,

@@ -6,7 +6,6 @@ use std::rc::Rc;
 use crate::error::Result;
 use crate::fs;
 use crate::graphics::opengl::GLProgram;
-use crate::platform;
 use crate::Context;
 
 #[doc(inline)]
@@ -15,12 +14,12 @@ pub use crate::graphics::opengl::UniformValue;
 /// The default vertex shader.
 ///
 /// The source code for this shader is available in [`src/resources/shader.vert`](https://github.com/17cupsofcoffee/tetra/blob/master/src/resources/shader.vert).
-pub const DEFAULT_VERTEX_SHADER: &str = platform::DEFAULT_VERTEX_SHADER;
+pub const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
 
 /// The default fragment shader.
 ///
 /// The source code for this shader is available in [`src/resources/shader.vert`](https://github.com/17cupsofcoffee/tetra/blob/master/src/resources/shader.frag).
-pub const DEFAULT_FRAGMENT_SHADER: &str = platform::DEFAULT_FRAGMENT_SHADER;
+pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 
 /// A shader program, consisting of a vertex shader and a fragment shader.
 ///

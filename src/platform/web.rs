@@ -19,16 +19,6 @@ use crate::{Context, Game, State};
 
 pub type GlContext = glow::web::Context;
 
-pub const DEFAULT_VERTEX_SHADER: &str = concat!(
-    "#version 300 es\n",
-    include_str!("../resources/shader.vert")
-);
-
-pub const DEFAULT_FRAGMENT_SHADER: &str = concat!(
-    "#version 300 es\nprecision mediump float;\n",
-    include_str!("../resources/shader.frag")
-);
-
 enum Event {
     KeyDown(Key),
     KeyUp(Key),
