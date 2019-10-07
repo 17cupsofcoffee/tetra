@@ -190,6 +190,10 @@ impl Game {
     /// Sets the title of the window.
     ///
     /// Defaults to `"Tetra"`.
+    ///
+    /// # Platform-specific Behaviour
+    ///
+    /// Ignored on web platforms.
     pub fn title<S>(&mut self, title: S) -> &mut Game
     where
         S: Into<String>,
@@ -198,7 +202,7 @@ impl Game {
         self
     }
 
-    /// Sets the size of the window.
+    /// Sets the size of the window (or the canvas on web platforms)
     ///
     /// Defaults to `1280` by `720`.
     pub fn window_size(&mut self, width: i32, height: i32) -> &mut Game {
@@ -226,6 +230,10 @@ impl Game {
     /// Enables or disables vsync.
     ///
     /// Defaults to `true`.
+    ///
+    /// # Platform-specific Behaviour
+    ///
+    /// Ignored on web platforms.
     pub fn vsync(&mut self, vsync: bool) -> &mut Game {
         self.vsync = vsync;
         self
@@ -242,6 +250,10 @@ impl Game {
     /// Sets whether or not the window should start in fullscreen.
     ///
     /// Defaults to `false`.
+    ///
+    /// # Platform-specific Behaviour
+    ///
+    /// Ignored on web platforms.
     pub fn fullscreen(&mut self, fullscreen: bool) -> &mut Game {
         self.fullscreen = fullscreen;
         self
@@ -250,6 +262,10 @@ impl Game {
     /// Sets whether or not the window should start maximized.
     ///
     /// Defaults to `false`.
+    ///
+    /// # Platform-specific Behaviour
+    ///
+    /// Ignored on web platforms.
     pub fn maximized(&mut self, maximized: bool) -> &mut Game {
         self.maximized = maximized;
         self
@@ -258,6 +274,10 @@ impl Game {
     /// Sets whether or not the window should start minimized.
     ///
     /// Defaults to `false`.
+    ///
+    /// # Platform-specific Behaviour
+    ///
+    /// Ignored on web platforms.
     pub fn minimized(&mut self, minimized: bool) -> &mut Game {
         self.minimized = minimized;
         self
@@ -266,6 +286,10 @@ impl Game {
     /// Sets whether or not the window should be resizable.
     ///
     /// Defaults to `false`.
+    ///
+    /// # Platform-specific Behaviour
+    ///
+    /// Ignored on web platforms.
     pub fn resizable(&mut self, resizable: bool) -> &mut Game {
         self.resizable = resizable;
         self
@@ -274,12 +298,17 @@ impl Game {
     /// Sets whether or not the window should be borderless.
     ///
     /// Defaults to `false`.
+    ///
+    /// # Platform-specific Behaviour
+    ///
+    /// Ignored on web platforms.
     pub fn borderless(&mut self, borderless: bool) -> &mut Game {
         self.borderless = borderless;
         self
     }
 
-    /// Sets whether or not the mouse cursor should be visible.
+    /// Sets whether or not the mouse cursor should be visible when it is within the
+    /// game window.
     ///
     /// Defaults to `false`.
     pub fn show_mouse(&mut self, show_mouse: bool) -> &mut Game {
@@ -290,6 +319,10 @@ impl Game {
     /// Sets whether or not the game should close when the Escape key is pressed.
     ///
     /// Defaults to `false`.
+    ///
+    /// # Platform-specific Behaviour
+    ///
+    /// Ignored on web platforms.
     pub fn quit_on_escape(&mut self, quit_on_escape: bool) -> &mut Game {
         self.quit_on_escape = quit_on_escape;
         self
