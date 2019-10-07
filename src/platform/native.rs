@@ -132,19 +132,19 @@ impl Platform {
                     window_height = m.h;
                     window.set_fullscreen(FullscreenType::Desktop)
                 })
-                .map_err(TetraError::GraphicsDeviceError)?;
+                .map_err(TetraError::FailedToChangeDisplayMode)?;
         }
 
         let gl_sys = window
             .gl_create_context()
-            .map_err(TetraError::GraphicsDeviceError)?;
+            .map_err(TetraError::PlatformError)?;
 
         let gl_ctx =
             GlContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _);
 
         video_sys
             .gl_set_swap_interval(if builder.vsync { 1 } else { 0 })
-            .map_err(TetraError::GraphicsDeviceError)?;
+            .map_err(TetraError::FailedToChangeDisplayMode)?;
 
         let platform = Platform {
             sdl,
@@ -383,7 +383,7 @@ pub fn enable_fullscreen(ctx: &mut Context) -> Result {
                 ctx.platform.window.set_fullscreen(FullscreenType::Desktop)
             })
             .map(|_| ())
-            .map_err(TetraError::GraphicsDeviceError)
+            .map_err(TetraError::FailedToChangeDisplayMode)
     } else {
         Ok(())
     }
@@ -398,7 +398,7 @@ pub fn disable_fullscreen(ctx: &mut Context) -> Result {
                 let size = ctx.platform.window.drawable_size();
                 window::set_size(ctx, size.0 as i32, size.1 as i32);
             })
-            .map_err(TetraError::GraphicsDeviceError)
+            .map_err(TetraError::FailedToChangeDisplayMode)
     } else {
         Ok(())
     }

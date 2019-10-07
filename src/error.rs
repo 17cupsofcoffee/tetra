@@ -23,7 +23,6 @@ pub type Result<T = ()> = result::Result<T, TetraError>;
 #[derive(Debug)]
 pub enum TetraError {
     PlatformError(String),
-    GraphicsDeviceError(String),
 
     FailedToLoadAsset {
         reason: io::Error,
@@ -48,6 +47,8 @@ pub enum TetraError {
     /// Returned when trying to play back audio without an available device.
     NoAudioDevice,
 
+    FailedToChangeDisplayMode(String),
+
     /// This is here so that adding new error types will not be a breaking change.
     /// Can be removed once #[non_exhaustive] is stabilized.
     #[doc(hidden)]
@@ -59,9 +60,6 @@ impl Display for TetraError {
         match self {
             TetraError::PlatformError(reason) => {
                 write!(f, "An error was thrown by the platform: {}", reason)
-            }
-            TetraError::GraphicsDeviceError(reason) => {
-                write!(f, "An error was thrown by the graphics device: {}", reason)
             }
             TetraError::FailedToLoadAsset { reason, path } => write!(
                 f,
@@ -77,6 +75,9 @@ impl Display for TetraError {
                 "Not enough data was provided to fill a buffer - expected {}, found {}.",
                 expected, actual
             ),
+            TetraError::FailedToChangeDisplayMode(reason) => {
+                write!(f, "Failed to change display mode: {}", reason)
+            }
             TetraError::NoAudioDevice => write!(f, "No audio device was available for playback."),
             TetraError::__Nonexhaustive => unreachable!(),
         }
@@ -87,13 +88,13 @@ impl Error for TetraError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             TetraError::PlatformError(_) => None,
-            TetraError::GraphicsDeviceError(_) => None,
             TetraError::FailedToLoadAsset { reason, .. } => Some(reason),
             TetraError::InvalidTexture(reason) => Some(reason),
             TetraError::InvalidShader(_) => None,
             TetraError::InvalidSound(reason) => Some(reason),
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,
+            TetraError::FailedToChangeDisplayMode(_) => None,
             TetraError::__Nonexhaustive => unreachable!(),
         }
     }
