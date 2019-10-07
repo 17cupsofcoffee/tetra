@@ -22,15 +22,27 @@ pub type Result<T = ()> = result::Result<T, TetraError>;
 /// This is so that if a new error type is added later on, it will not break your code.
 #[derive(Debug)]
 pub enum TetraError {
+    /// Returned when the underlying platform (e.g. SDL2, the browser) returns an unexpected error.
+    /// This usually isn't something your game can reasonably be expected to recover from.
     PlatformError(String),
 
+    /// Returned when your game fails to load an asset. This is usually caused by an
+    /// incorrect file path, or some form of permission issues.
     FailedToLoadAsset {
+        /// The underlying reason for the error.
         reason: io::Error,
+
+        /// The path to the asset that failed to load.
         path: PathBuf,
     },
 
+    /// Returned when a texture's data is invalid.
     InvalidTexture(ImageError),
+
+    /// Returned when a shader fails to compile.
     InvalidShader(String),
+
+    /// Returned when a sound cannot be decoded.
     InvalidSound(DecoderError),
 
     /// Returned when not enough data is provided to fill a buffer.
@@ -47,6 +59,8 @@ pub enum TetraError {
     /// Returned when trying to play back audio without an available device.
     NoAudioDevice,
 
+    /// Returned when your game tried to change the display settings (e.g. fullscreen, vsync)
+    /// but was unable to do so.
     FailedToChangeDisplayMode(String),
 
     /// This is here so that adding new error types will not be a breaking change.

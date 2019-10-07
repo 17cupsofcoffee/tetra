@@ -42,7 +42,7 @@ impl Font {
     ///
     /// # Errors
     ///
-    /// If the file could not be read, a `TetraError::Io` will be returned.
+    /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
     pub fn new<P>(ctx: &mut Context, path: P) -> Result<Font>
     where
         P: AsRef<Path>,

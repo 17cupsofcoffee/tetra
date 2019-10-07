@@ -23,6 +23,10 @@ pub struct Canvas {
 
 impl Canvas {
     /// Creates a new canvas.
+    ///
+    /// # Errors
+    ///
+    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Result<Canvas> {
         ctx.gl.new_canvas(width, height, true)
     }
@@ -37,6 +41,7 @@ impl Canvas {
         self.texture.height()
     }
 
+    /// Returns the size of the canvas.
     pub fn size(&self) -> (i32, i32) {
         self.texture.size()
     }

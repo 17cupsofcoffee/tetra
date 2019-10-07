@@ -108,6 +108,11 @@ pub trait State {
         Ok(())
     }
 
+    /// Called when an error is returned from one of the other `State` methods.
+    ///
+    /// This method does not provide any way to recover from the error - it exists so that you can
+    /// log/report any fatal errors before exiting the game. Non-fatal errors should be handled at
+    /// the point where they were thrown.
     fn error(error: TetraError) {
         platform::log_error(error)
     }
@@ -149,7 +154,6 @@ impl Context {
     }
 }
 
-/// Creates a new `Context` based on the provided options.
 #[derive(Debug, Clone)]
 pub struct Game {
     title: String,

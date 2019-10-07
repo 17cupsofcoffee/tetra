@@ -27,7 +27,7 @@ impl Color {
         Color { r, g, b, a }
     }
 
-    /// Creates a new `Color`, with the specified RGB integer values and the alpha set to 1.0.
+    /// Creates a new `Color`, with the specified RGB integer (0-255) values and the alpha set to 255.
     pub fn rgb8(r: u8, g: u8, b: u8) -> Color {
         let r = f32::from(r) / 255.0;
         let g = f32::from(g) / 255.0;
@@ -36,7 +36,7 @@ impl Color {
         Color { r, g, b, a: 1.0 }
     }
 
-    /// Creates a new `Color`, with the specified RGBA integer values.
+    /// Creates a new `Color`, with the specified RGBA (0-255) integer values.
     pub fn rgba8(r: u8, g: u8, b: u8, a: u8) -> Color {
         let r = f32::from(r) / 255.0;
         let g = f32::from(g) / 255.0;

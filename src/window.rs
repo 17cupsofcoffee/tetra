@@ -5,7 +5,7 @@ use crate::{Context, Result};
 
 /// Quits the game, if it is currently running.
 ///
-/// Note that currently, quitting the game does not take effect until the end of the current
+/// Note that quitting the game does not take effect until the end of the current
 /// cycle of the game loop. This will probably change later.
 pub fn quit(ctx: &mut Context) {
     ctx.running = false;
@@ -58,8 +58,8 @@ pub fn set_size(ctx: &mut Context, width: i32, height: i32) {
 ///
 /// # Errors
 ///
-/// If the application's fullscreen state could not be changed, this function
-/// will return a `TetraError::PlatformError`.
+/// * `TetraError::FailedToChangeDisplayMode` will be returned if the game was unable to
+/// enter/exit fullscreen.
 pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
     platform::toggle_fullscreen(ctx)
 }
@@ -68,8 +68,8 @@ pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
 ///
 /// # Errors
 ///
-/// If the application's fullscreen state could not be changed, this function
-/// will return a `TetraError::PlatformError`.
+/// * `TetraError::FailedToChangeDisplayMode` will be returned if the game was unable to
+/// enter fullscreen.
 pub fn enable_fullscreen(ctx: &mut Context) -> Result {
     platform::enable_fullscreen(ctx)
 }
@@ -78,8 +78,8 @@ pub fn enable_fullscreen(ctx: &mut Context) -> Result {
 ///
 /// # Errors
 ///
-/// If the application's fullscreen state could not be changed, this function
-/// will return a `TetraError::PlatformError`.
+/// * `TetraError::FailedToChangeDisplayMode` will be returned if the game was unable to
+/// exit fullscreen.
 pub fn disable_fullscreen(ctx: &mut Context) -> Result {
     platform::disable_fullscreen(ctx)
 }
@@ -90,16 +90,28 @@ pub fn is_fullscreen(ctx: &Context) -> bool {
 }
 
 /// Makes the mouse cursor visible.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the cursor state was inaccessible.
 pub fn show_mouse(ctx: &mut Context) -> Result {
     platform::set_mouse_visible(ctx, true)
 }
 
 /// Hides the mouse cursor.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the cursor state was inaccessible.
 pub fn hide_mouse(ctx: &mut Context) -> Result {
     platform::set_mouse_visible(ctx, false)
 }
 
 /// Returns whether or not the mouse cursor is currently visible.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the cursor state was inaccessible.
 pub fn is_mouse_visible(ctx: &Context) -> Result<bool> {
     platform::is_mouse_visible(ctx)
 }

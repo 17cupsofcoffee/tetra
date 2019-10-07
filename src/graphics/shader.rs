@@ -26,7 +26,9 @@ pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag
 /// This type acts as a lightweight handle to the associated graphics hardware data,
 /// and so can be cloned with little overhead.
 ///
-/// # Vertex Shaders
+/// # Data Format
+///
+/// ## Vertex Shaders
 ///
 /// Vertex shaders take in data via three attributes:
 ///
@@ -34,12 +36,14 @@ pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag
 /// * `a_uv` - A `vec2` representing the texture co-ordinates that are associated with the vertex.
 /// * `a_color` - A `vec4` representing a color to multiply the output by.
 ///
-/// # Fragment Shaders
+/// Position data should be output as a `vec4` to the built-in `gl_Position` variable.
 ///
-/// Fragment shaders should have a single `vec4` output, set to the desired output color for the
-/// fragment.
+/// ## Fragment Shaders
 ///
-/// # Uniforms
+/// Color data should be output as a `vec4` to the first output of the shader. This can be the
+/// built-in `gl_FragColor` variable, if you so desire.
+///
+/// ## Uniforms
 ///
 /// By default, the shader is provided with two uniform variables:
 ///
@@ -47,6 +51,18 @@ pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag
 /// * `u_texture` - A `sampler2D` which can be used to access color data from the currently active texture.
 ///
 /// You can also set data into your own uniform variables via the `set_uniform` method.
+///
+/// # Platform-specific Behaviour
+///
+/// Support for different versions of GLSL is very varied between platforms, and what works on your machine
+/// may not work on other systems (or the web). Failing to account for this can lead to bugs that are
+/// frustrating for both you and your players!
+///
+/// Your options to deal with this are:
+///
+/// * Write shaders that target the lowest common denominator. This is the approach that is used for the
+/// shaders that are built into Tetra.
+/// * Provide different shaders for different targets, using conditional compilation/runtime checks.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shader {
     pub(crate) handle: Rc<GLProgram>,
@@ -57,9 +73,9 @@ impl Shader {
     ///
     /// # Errors
     ///
-    /// If the file could not be read, a `TetraError::Io` will be returned.
-    ///
-    /// If the shader could not be compiled, a `TetraError::OpenGl` will be returned.
+    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * `TetraError::FailedToLoadAsset` will be returned if the files could not be loaded.
+    /// * `TetraError::InvalidShader` will be returned if the shader could not be compiled.
     pub fn new<P>(ctx: &mut Context, vertex_path: P, fragment_path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
@@ -76,9 +92,9 @@ impl Shader {
     ///
     /// # Errors
     ///
-    /// If the file could not be read, a `TetraError::Io` will be returned.
-    ///
-    /// If the shader could not be compiled, a `TetraError::OpenGl` will be returned.
+    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
+    /// * `TetraError::InvalidShader` will be returned if the shader could not be compiled.
     pub fn vertex<P>(ctx: &mut Context, path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
@@ -93,9 +109,9 @@ impl Shader {
     ///
     /// # Errors
     ///
-    /// If the file could not be read, a `TetraError::Io` will be returned.
-    ///
-    /// If the shader could not be compiled, a `TetraError::OpenGl` will be returned.
+    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
+    /// * `TetraError::InvalidShader` will be returned if the shader could not be compiled.
     pub fn fragment<P>(ctx: &mut Context, path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
@@ -108,7 +124,8 @@ impl Shader {
     ///
     /// # Errors
     ///
-    /// If the shader could not be compiled, a `TetraError::OpenGl` will be returned.
+    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * `TetraError::InvalidShader` will be returned if the shader could not be compiled.
     pub fn from_string(
         ctx: &mut Context,
         vertex_shader: &str,

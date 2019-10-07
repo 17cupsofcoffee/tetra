@@ -40,9 +40,9 @@ impl Texture {
     ///
     /// # Errors
     ///
-    /// If the file could not be read, a `TetraError::Io` will be returned.
-    ///
-    /// If the image data was invalid, a `TetraError::Image` will be returned.
+    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
+    /// * `TetraError::InvalidTexture` will be returned if the texture data was invalid.
     pub fn new<P>(ctx: &mut Context, path: P) -> Result<Texture>
     where
         P: AsRef<Path>,
@@ -71,7 +71,8 @@ impl Texture {
     ///
     /// # Errors
     ///
-    /// If the image data was invalid, a `TetraError::Image` will be returned.
+    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * `TetraError::InvalidTexture` will be returned if the texture data was invalid.
     pub fn from_file_data(ctx: &mut Context, data: &[u8]) -> Result<Texture> {
         let image = image::load_from_memory(data)
             .map_err(TetraError::InvalidTexture)?
@@ -96,8 +97,8 @@ impl Texture {
     ///
     /// # Errors
     ///
-    /// If not enough data is provided to fill the texture, a `TetraError::NotEnoughData`
-    /// will be returned. This is to prevent OpenGL from reading uninitialized memory.
+    /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
+    /// the texture. This is to prevent the graphics API from trying to read uninitialized memory.
     pub fn from_rgba(ctx: &mut Context, width: i32, height: i32, data: &[u8]) -> Result<Texture> {
         ctx.gl.new_texture(width, height, data)
     }
@@ -112,6 +113,7 @@ impl Texture {
         self.handle.borrow().height()
     }
 
+    /// Returns the size of the canvas.
     pub fn size(&self) -> (i32, i32) {
         let handle = self.handle.borrow();
         (handle.width(), handle.height())
