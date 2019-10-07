@@ -20,9 +20,10 @@ This project adheres to Semantic Versioning.
 * The `glm` module has been renamed to `math`.
 * `Vec2` is now exported from `math`, not `graphics`.
 * Updated `glow` to 0.2.3.
-* Updated `hashbrown` to 0.6.0.
-* Updated `image` to 0.22.1.
+* Updated `hashbrown` to 0.6.1.
+* Updated `image` to 0.22.3.
 * Updated `glyph_brush` to 0.6.0.
+* Updated `nalgebra-glm` to 0.4.2.
 
 ### Removed
 
