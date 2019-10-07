@@ -37,21 +37,34 @@ mod wasm {
 }
 ```
 
-## Bundling Assets
+## Setting Up Assets
 
 Loading assets is much more complicated on the web than it is on the desktop - they're delivered over
 the network, and you can't block the main thread while they load. A proper solution to this will be
 added to Tetra in the future, but in the meantime, the easiest option is to bundle your assets into
 the executable itself.
 
-To do this, use the `from_file_data` constructors, in combination with the standard library's
+To do this, use the raw data constructors, in combination with the standard library's
 `include_bytes!` macro:
 
 ```rust ,noplaypen
 let texture = Texture::from_file_data(ctx, include_bytes!("texture.png"))?;
 let sound = Sound::from_file_data(include_bytes!("./sound.wav"));
 let font = Font::from_file_data(ctx, include_bytes!("font.ttf"));
+let shader = Shader::from_string(ctx, include_bytes!("shader.vert"), include_bytes!("shader.frag"))?;
 ```
+
+Some assets will need further tweaks to get them to work in the browsers:
+
+### Sounds
+
+The `Sound` API currently doesn't work in the browser. [Please help me fix that!](https://github.com/17cupsofcoffee/tetra/issues/138)
+
+### Shaders
+
+Bear in mind when using custom shaders that WebGL uses GLSL ES, not the standard desktop version of GLSL.
+This may require you to modify your shaders to be compatible with both, or to provide different shaders
+for both.
 
 ## Setting a Panic Hook (optional)
 
