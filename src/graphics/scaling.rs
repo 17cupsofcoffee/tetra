@@ -133,11 +133,11 @@ impl ScreenScaler {
 }
 
 fn project_impl(window_pos: f32, rect_pos: f32, rect_size: f32, real_size: f32) -> f32 {
-    (rect_size * (window_pos - rect_pos)) / rect_size
+    (real_size * (window_pos - rect_pos)) / rect_size
 }
 
 fn unproject_impl(screen_pos: f32, rect_pos: f32, rect_size: f32, real_size: f32) -> f32 {
-    rect_pos + ((rect_size * screen_pos) / rect_size)
+    rect_pos + ((rect_size * screen_pos) / real_size)
 }
 
 impl Drawable for ScreenScaler {
