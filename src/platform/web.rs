@@ -180,7 +180,7 @@ pub fn handle_events(ctx: &mut Context) -> Result {
 }
 
 pub fn log_info(info: &str) {
-    console::info_1(info.into());
+    console::info_1(&info.into());
 }
 
 pub fn log_error(error: TetraError) {
