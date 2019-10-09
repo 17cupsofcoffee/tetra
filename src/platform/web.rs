@@ -179,6 +179,10 @@ pub fn handle_events(ctx: &mut Context) -> Result {
     Ok(())
 }
 
+pub fn log_info(info: &str) {
+    console::info_1(info);
+}
+
 pub fn log_error(error: TetraError) {
     console::error_1(&format!("Error: {}", error).into());
 }

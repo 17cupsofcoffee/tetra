@@ -53,10 +53,6 @@ impl GLDevice {
 
             gl.bind_vertex_array(Some(current_vertex_array));
 
-            println!("OpenGL Device: {}", gl.get_parameter_string(glow::RENDERER));
-            println!("OpenGL Driver: {}", gl.get_parameter_string(glow::VERSION));
-            println!("OpenGL Vendor: {}", gl.get_parameter_string(glow::VENDOR));
-
             // TODO: Find a nice way of exposing this via the platform layer
             // println!("Swap Interval: {:?}", video.gl_get_swap_interval());
 
@@ -73,6 +69,22 @@ impl GLDevice {
                 default_filter_mode: FilterMode::Nearest,
             })
         }
+    }
+
+    pub fn get_renderer(&self) -> String {
+        unsafe { self.gl.get_parameter_string(glow::RENDERER) }
+    }
+
+    pub fn get_version(&self) -> String {
+        unsafe { self.gl.get_parameter_string(glow::VERSION) }
+    }
+
+    pub fn get_vendor(&self) -> String {
+        unsafe { self.gl.get_parameter_string(glow::VENDOR) }
+    }
+
+    pub fn get_shading_language_version(&self) -> String {
+        unsafe { self.gl.get_parameter_string(glow::SHADING_LANGUAGE_VERSION) }
     }
 
     pub fn clear(&mut self, r: f32, g: f32, b: f32, a: f32) {

@@ -136,6 +136,16 @@ impl Context {
         let (platform, gl_context, width, height) = Platform::new(builder)?;
         let mut gl = GLDevice::new(gl_context)?;
 
+        if builder.debug_info {
+            platform::log_info(&format!("OpenGL Vendor: {}", gl.get_vendor()));
+            platform::log_info(&format!("OpenGL Renderer: {}", gl.get_renderer()));
+            platform::log_info(&format!("OpenGL Version: {}", gl.get_version()));
+            platform::log_info(&format!(
+                "GLSL Version: {}",
+                gl.get_shading_language_version()
+            ));
+        }
+
         let graphics = GraphicsContext::new(&mut gl, width, height)?;
         let input = InputContext::new();
         let time = TimeContext::new(builder.tick_rate);
@@ -170,6 +180,7 @@ pub struct Game {
     borderless: bool,
     show_mouse: bool,
     quit_on_escape: bool,
+    debug_info: bool,
 }
 
 impl Game {
@@ -328,6 +339,17 @@ impl Game {
         self
     }
 
+    /// Sets whether or not the game should print out debug info at startup.
+    /// Please include this if you're submitting a bug report!
+    ///
+    /// This info currently includes:
+    ///
+    /// * The version of the graphics
+    pub fn debug_info(&mut self, debug_info: bool) -> &mut Game {
+        self.debug_info = debug_info;
+        self
+    }
+
     pub fn run<S, F>(&self, init: F)
     where
         S: State + 'static,
@@ -372,6 +394,7 @@ impl Default for Game {
             borderless: false,
             show_mouse: false,
             quit_on_escape: false,
+            debug_info: false,
         }
     }
 }

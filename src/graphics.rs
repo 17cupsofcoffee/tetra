@@ -623,6 +623,35 @@ pub fn set_default_filter_mode(ctx: &mut Context, filter_mode: FilterMode) {
     ctx.gl.set_default_filter_mode(filter_mode);
 }
 
+/// Information about the device currently being used to render graphics.
+#[derive(Debug, Clone)]
+pub struct GraphicsDeviceInfo {
+    /// The name of the company responsible for the OpenGL implementation.
+    pub vendor: String,
+
+    /// The name of the renderer. This usually corresponds to the name
+    /// of the physical device.
+    pub renderer: String,
+
+    /// The version of OpenGL that is being used.
+    pub opengl_version: String,
+
+    /// The version of GLSL that is being used.
+    pub glsl_version: String,
+}
+
+/// Retrieves information about the device currently being used to render graphics.
+///
+/// This may be useful for debugging/logging purposes.
+pub fn get_device_info(ctx: &Context) -> GraphicsDeviceInfo {
+    GraphicsDeviceInfo {
+        vendor: ctx.gl.get_vendor(),
+        renderer: ctx.gl.get_renderer(),
+        opengl_version: ctx.gl.get_version(),
+        glsl_version: ctx.gl.get_shading_language_version(),
+    }
+}
+
 pub(crate) fn set_window_projection(ctx: &mut Context, width: i32, height: i32) {
     ctx.graphics.window_projection = math::ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
 

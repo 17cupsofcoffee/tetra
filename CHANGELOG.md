@@ -19,6 +19,8 @@ This project adheres to Semantic Versioning.
 * `TetraError` has been reorganized, so that the errors returned are more descriptive.
 * The `glm` module has been renamed to `math`.
 * `Vec2` is now exported from `math`, not `graphics`.
+* The graphics device debugging info is now hidden by default. Set the `debug_info` option on `Game` to `true` to bring this back.
+* Details of the active graphics device can now be retrieved by calling `graphics::get_device_info`.
 * Updated `glow` to 0.2.3.
 * Updated `hashbrown` to 0.6.1.
 * Updated `image` to 0.22.3.
