@@ -221,7 +221,9 @@ pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
     if vsync {
         Ok(())
     } else {
-        Err(TetraError::FailedToChangeDisplayMode)
+        Err(TetraError::FailedToChangeDisplayMode(
+            "VSync cannot be disabled on web platforms.".into(),
+        ))
     }
 }
 
@@ -231,7 +233,9 @@ pub fn is_vsync_enabled(ctx: &Context) -> bool {
 
 pub fn set_fullscreen(ctx: &mut Context, fullscreen: bool) -> Result {
     if fullscreen {
-        Err(TetraError::FailedToChangeDisplayMode)
+        Err(TetraError::FailedToChangeDisplayMode(
+            "Fullscreen cannot be enabled on web platforms".into(),
+        ))
     } else {
         Ok(())
     }
