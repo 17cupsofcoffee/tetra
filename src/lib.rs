@@ -341,10 +341,6 @@ impl Game {
 
     /// Sets whether or not the game should print out debug info at startup.
     /// Please include this if you're submitting a bug report!
-    ///
-    /// This info currently includes:
-    ///
-    /// * The version of the graphics
     pub fn debug_info(&mut self, debug_info: bool) -> &mut Game {
         self.debug_info = debug_info;
         self
