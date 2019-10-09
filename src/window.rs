@@ -12,11 +12,19 @@ pub fn quit(ctx: &mut Context) {
 }
 
 /// Gets the current title of the window.
+///
+/// # Platform-specific Behaviour
+///
+/// Returns an empty string on web platforms.
 pub fn get_title(ctx: &Context) -> &str {
     platform::get_window_title(ctx)
 }
 
 /// Sets the title of the window.
+///
+/// # Platform-specific Behaviour
+///
+/// Does nothing on web platforms.
 pub fn set_title<S>(ctx: &mut Context, title: S)
 where
     S: AsRef<str>,
@@ -54,57 +62,59 @@ pub fn set_size(ctx: &mut Context, width: i32, height: i32) {
     platform::set_window_size(ctx, width, height);
 }
 
-/// Enables fullscreen if it is currently disabled, or vice-versa.
+/// Sets whether the window should be vsynced.
+///
+/// # Platform-specific Behaviour
+///
+/// Passing false will fail on web platforms, as you cannot disable vsync there.
 ///
 /// # Errors
 ///
 /// * `TetraError::FailedToChangeDisplayMode` will be returned if the game was unable to
-/// enter/exit fullscreen.
-pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
-    platform::toggle_fullscreen(ctx)
+/// change vsync mode.
+pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
+    platform::set_vsync(ctx, vsync)
 }
 
-/// Enables fullscreen.
+/// Returns whethere or not vsync is enabled.
 ///
-/// # Errors
+/// # Platform-specific Behaviour
 ///
-/// * `TetraError::FailedToChangeDisplayMode` will be returned if the game was unable to
-/// enter fullscreen.
-pub fn enable_fullscreen(ctx: &mut Context) -> Result {
-    platform::enable_fullscreen(ctx)
+/// Always returns true on web platforms.
+pub fn is_vsync_enabled(ctx: &Context) -> bool {
+    platform::is_vsync_enabled(ctx)
 }
 
-/// Disables fullscreen.
+/// Sets whether the window should be in fullscreen mode.
+///
+/// # Platform-specific Behaviour
+///
+/// Passing true currently always fails on web platforms.
 ///
 /// # Errors
 ///
 /// * `TetraError::FailedToChangeDisplayMode` will be returned if the game was unable to
-/// exit fullscreen.
-pub fn disable_fullscreen(ctx: &mut Context) -> Result {
-    platform::disable_fullscreen(ctx)
+/// enter or exit fullscreen.
+pub fn set_fullscreen(ctx: &mut Context, fullscreen: bool) -> Result {
+    platform::set_fullscreen(ctx, fullscreen)
 }
 
 /// Returns whether or not the window is currently in fullscreen mode.
+///
+/// # Platform-specific Behaviour
+///
+/// Currently always returns false on web platforms.
 pub fn is_fullscreen(ctx: &Context) -> bool {
     platform::is_fullscreen(ctx)
 }
 
-/// Makes the mouse cursor visible.
+/// Sets whether or not the mouse cursor should be visible.
 ///
 /// # Errors
 ///
 /// * `TetraError::PlatformError` will be returned if the cursor state was inaccessible.
-pub fn show_mouse(ctx: &mut Context) -> Result {
+pub fn set_mouse_visible(ctx: &mut Context) -> Result {
     platform::set_mouse_visible(ctx, true)
-}
-
-/// Hides the mouse cursor.
-///
-/// # Errors
-///
-/// * `TetraError::PlatformError` will be returned if the cursor state was inaccessible.
-pub fn hide_mouse(ctx: &mut Context) -> Result {
-    platform::set_mouse_visible(ctx, false)
 }
 
 /// Returns whether or not the mouse cursor is currently visible.

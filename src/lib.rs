@@ -213,7 +213,7 @@ impl Game {
         self
     }
 
-    /// Sets the size of the window (or the canvas on web platforms)
+    /// Sets the size of the window.
     ///
     /// Defaults to `1280` by `720`.
     pub fn window_size(&mut self, width: i32, height: i32) -> &mut Game {
@@ -244,7 +244,7 @@ impl Game {
     ///
     /// # Platform-specific Behaviour
     ///
-    /// Ignored on web platforms.
+    /// Ignored on web platforms, as vsync cannot be disabled there.
     pub fn vsync(&mut self, vsync: bool) -> &mut Game {
         self.vsync = vsync;
         self

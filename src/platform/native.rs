@@ -14,7 +14,7 @@ use sdl2::haptic::Haptic;
 use sdl2::keyboard::Keycode as SdlKey;
 use sdl2::mouse::MouseButton as SdlMouseButton;
 use sdl2::sys::SDL_HAPTIC_INFINITY;
-use sdl2::video::{FullscreenType, GLContext as SdlGlContext, GLProfile, Window};
+use sdl2::video::{FullscreenType, GLContext as SdlGlContext, GLProfile, SwapInterval, Window};
 use sdl2::{GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem};
 
 use crate::audio::{RemoteControls, Sound, SoundInstance};
@@ -31,7 +31,7 @@ pub struct Platform {
     sdl: Sdl,
     window: Window,
 
-    _video_sys: VideoSubsystem,
+    video_sys: VideoSubsystem,
     controller_sys: GameControllerSubsystem,
     _joystick_sys: JoystickSubsystem,
     haptic_sys: HapticSubsystem,
@@ -41,7 +41,6 @@ pub struct Platform {
 
     window_width: i32,
     window_height: i32,
-    fullscreen: bool,
 
     audio_device: Option<Device>,
     master_volume: Arc<Mutex<f32>>,
@@ -143,14 +142,18 @@ impl Platform {
             GlContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _);
 
         video_sys
-            .gl_set_swap_interval(if builder.vsync { 1 } else { 0 })
+            .gl_set_swap_interval(if builder.vsync {
+                SwapInterval::VSync
+            } else {
+                SwapInterval::Immediate
+            })
             .map_err(TetraError::FailedToChangeDisplayMode)?;
 
         let platform = Platform {
             sdl,
             window,
 
-            _video_sys: video_sys,
+            video_sys,
             controller_sys,
             _joystick_sys: joystick_sys,
             haptic_sys,
@@ -160,7 +163,6 @@ impl Platform {
 
             window_width,
             window_height,
-            fullscreen: builder.fullscreen,
 
             audio_device,
             master_volume: Arc::new(Mutex::new(1.0)),
@@ -369,16 +371,23 @@ pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) {
         .unwrap();
 }
 
-pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
-    if ctx.platform.fullscreen {
-        disable_fullscreen(ctx)
-    } else {
-        enable_fullscreen(ctx)
-    }
+pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
+    ctx.platform
+        .video_sys
+        .gl_set_swap_interval(if vsync {
+            SwapInterval::VSync
+        } else {
+            SwapInterval::Immediate
+        })
+        .map_err(TetraError::FailedToChangeDisplayMode)
 }
 
-pub fn enable_fullscreen(ctx: &mut Context) -> Result {
-    if !ctx.platform.fullscreen {
+pub fn is_vsync_enabled(ctx: &Context) -> bool {
+    ctx.platform.video_sys.gl_get_swap_interval() != SwapInterval::Immediate
+}
+
+pub fn set_fullscreen(ctx: &mut Context, fullscreen: bool) -> Result {
+    if fullscreen {
         ctx.platform
             .window
             .display_mode()
@@ -389,12 +398,6 @@ pub fn enable_fullscreen(ctx: &mut Context) -> Result {
             .map(|_| ())
             .map_err(TetraError::FailedToChangeDisplayMode)
     } else {
-        Ok(())
-    }
-}
-
-pub fn disable_fullscreen(ctx: &mut Context) -> Result {
-    if ctx.platform.fullscreen {
         ctx.platform
             .window
             .set_fullscreen(FullscreenType::Off)
@@ -403,13 +406,11 @@ pub fn disable_fullscreen(ctx: &mut Context) -> Result {
                 window::set_size(ctx, size.0 as i32, size.1 as i32);
             })
             .map_err(TetraError::FailedToChangeDisplayMode)
-    } else {
-        Ok(())
     }
 }
 
 pub fn is_fullscreen(ctx: &Context) -> bool {
-    ctx.platform.fullscreen
+    ctx.platform.window.fullscreen_state() != FullscreenType::Off
 }
 
 pub fn set_mouse_visible(ctx: &mut Context, mouse_visible: bool) -> Result {

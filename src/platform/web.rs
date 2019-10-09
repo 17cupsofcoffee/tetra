@@ -217,16 +217,24 @@ pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) {
     ctx.platform.canvas.set_height(height as u32);
 }
 
-pub fn toggle_fullscreen(ctx: &mut Context) -> Result {
-    Ok(())
+pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
+    if vsync {
+        Ok(())
+    } else {
+        Err(TetraError::FailedToChangeDisplayMode)
+    }
 }
 
-pub fn enable_fullscreen(ctx: &mut Context) -> Result {
-    Ok(())
+pub fn is_vsync_enabled(ctx: &Context) -> bool {
+    true
 }
 
-pub fn disable_fullscreen(ctx: &mut Context) -> Result {
-    Ok(())
+pub fn set_fullscreen(ctx: &mut Context, fullscreen: bool) -> Result {
+    if fullscreen {
+        Err(TetraError::FailedToChangeDisplayMode)
+    } else {
+        Ok(())
+    }
 }
 
 pub fn is_fullscreen(ctx: &Context) -> bool {
