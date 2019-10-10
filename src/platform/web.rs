@@ -17,6 +17,25 @@ use crate::input::{self, Key, MouseButton};
 use crate::math::Vec2;
 use crate::{Context, Game, State};
 
+const HIDE_CURSOR_CLASS: &str = "tetra-hide-cursor";
+const FULLSCREEN_CLASS: &str = "tetra-fullscreen";
+
+const STYLES: &str = r#"
+    <style>
+        .tetra-hide-cursor {
+            cursor: none;
+        }
+
+        .tetra-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+"#;
+
 pub type GlContext = glow::web::Context;
 
 enum Event {
@@ -61,9 +80,22 @@ impl Platform {
         canvas.set_height(builder.window_height as u32);
 
         canvas
-            .style()
-            .set_property("cursor", if builder.show_mouse { "auto" } else { "none" })
-            .map_err(|_| TetraError::PlatformError("Failed to set cursor styles".into()))?;
+            .insert_adjacent_html("afterend", STYLES)
+            .map_err(|_| TetraError::PlatformError("Could not inject styles".into()))?;
+
+        let class_list = canvas.class_list();
+
+        if !builder.show_mouse {
+            class_list.add_1(HIDE_CURSOR_CLASS).map_err(|_| {
+                TetraError::PlatformError("Failed to modify canvas CSS classes".into())
+            })?;
+        }
+
+        if builder.fullscreen {
+            canvas.class_list().add_1(FULLSCREEN_CLASS).map_err(|_| {
+                TetraError::PlatformError("Failed to modify canvas CSS classes".into())
+            })?;
+        }
 
         let context = canvas
             .get_context("webgl2")
@@ -232,40 +264,35 @@ pub fn is_vsync_enabled(ctx: &Context) -> bool {
 }
 
 pub fn set_fullscreen(ctx: &mut Context, fullscreen: bool) -> Result {
+    let class_list = ctx.platform.canvas.class_list();
+
     if fullscreen {
-        Err(TetraError::FailedToChangeDisplayMode(
-            "Fullscreen cannot be enabled on web platforms".into(),
-        ))
+        class_list.add_1(FULLSCREEN_CLASS)
     } else {
-        Ok(())
+        class_list.remove_1(FULLSCREEN_CLASS)
     }
+    .map_err(|_| {
+        TetraError::FailedToChangeDisplayMode("Failed to modify canvas CSS classes".into())
+    })
 }
 
 pub fn is_fullscreen(ctx: &Context) -> bool {
-    false
+    ctx.platform.canvas.class_list().contains(FULLSCREEN_CLASS)
 }
 
 pub fn set_mouse_visible(ctx: &mut Context, mouse_visible: bool) -> Result {
-    ctx.platform
-        .canvas
-        .style()
-        .set_property("cursor", if mouse_visible { "auto" } else { "none" })
-        .map_err(|_| TetraError::PlatformError("Failed to set cursor styles".into()))
+    let class_list = ctx.platform.canvas.class_list();
+
+    if mouse_visible {
+        class_list.remove_1(HIDE_CURSOR_CLASS)
+    } else {
+        class_list.add_1(HIDE_CURSOR_CLASS)
+    }
+    .map_err(|_| TetraError::PlatformError("Failed to modify canvas CSS classes".into()))
 }
 
-pub fn is_mouse_visible(ctx: &Context) -> Result<bool> {
-    let value = ctx
-        .platform
-        .canvas
-        .style()
-        .get_property_value("cursor")
-        .map_err(|_| TetraError::PlatformError("Failed to get cursor styles".into()))?;
-
-    if value == "none" {
-        Ok(false)
-    } else {
-        Ok(true)
-    }
+pub fn is_mouse_visible(ctx: &Context) -> bool {
+    !ctx.platform.canvas.class_list().contains(HIDE_CURSOR_CLASS)
 }
 
 pub fn swap_buffers(ctx: &Context) {}

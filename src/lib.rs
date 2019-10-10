@@ -261,10 +261,6 @@ impl Game {
     /// Sets whether or not the window should start in fullscreen.
     ///
     /// Defaults to `false`.
-    ///
-    /// # Platform-specific Behaviour
-    ///
-    /// Ignored on web platforms.
     pub fn fullscreen(&mut self, fullscreen: bool) -> &mut Game {
         self.fullscreen = fullscreen;
         self

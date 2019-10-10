@@ -80,16 +80,12 @@ pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
 ///
 /// # Platform-specific Behaviour
 ///
-/// Always returns true on web platforms.
+/// Always returns true on web platforms, as you cannot disable vsync there.
 pub fn is_vsync_enabled(ctx: &Context) -> bool {
     platform::is_vsync_enabled(ctx)
 }
 
 /// Sets whether the window should be in fullscreen mode.
-///
-/// # Platform-specific Behaviour
-///
-/// Passing true currently always fails on web platforms.
 ///
 /// # Errors
 ///
@@ -100,10 +96,6 @@ pub fn set_fullscreen(ctx: &mut Context, fullscreen: bool) -> Result {
 }
 
 /// Returns whether or not the window is currently in fullscreen mode.
-///
-/// # Platform-specific Behaviour
-///
-/// Currently always returns false on web platforms.
 pub fn is_fullscreen(ctx: &Context) -> bool {
     platform::is_fullscreen(ctx)
 }
@@ -118,10 +110,6 @@ pub fn set_mouse_visible(ctx: &mut Context) -> Result {
 }
 
 /// Returns whether or not the mouse cursor is currently visible.
-///
-/// # Errors
-///
-/// * `TetraError::PlatformError` will be returned if the cursor state was inaccessible.
-pub fn is_mouse_visible(ctx: &Context) -> Result<bool> {
+pub fn is_mouse_visible(ctx: &Context) -> bool {
     platform::is_mouse_visible(ctx)
 }

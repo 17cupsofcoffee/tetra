@@ -418,8 +418,8 @@ pub fn set_mouse_visible(ctx: &mut Context, mouse_visible: bool) -> Result {
     Ok(())
 }
 
-pub fn is_mouse_visible(ctx: &Context) -> Result<bool> {
-    Ok(ctx.platform.sdl.mouse().is_cursor_showing())
+pub fn is_mouse_visible(ctx: &Context) -> bool {
+    ctx.platform.sdl.mouse().is_cursor_showing()
 }
 
 pub fn swap_buffers(ctx: &Context) {
