@@ -21,7 +21,7 @@ image = "0.22.3"
 nalgebra-glm = "0.4.2"
 hashbrown = "0.6.1"
 glyph_brush = "0.6.0"
-instant = "0.1.2"
+instant = { version = "0.1.2", features = ["wasm-bindgen"] }
 
 [dev-dependencies]
 rand = { version = "0.7", features = ["wasm-bindgen"] }
