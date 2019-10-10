@@ -76,23 +76,25 @@ impl Platform {
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .map_err(|_| TetraError::PlatformError("Element was not a canvas".into()))?;
 
-        canvas.set_width(builder.window_width as u32);
-        canvas.set_height(builder.window_height as u32);
-
         canvas
             .insert_adjacent_html("afterend", STYLES)
             .map_err(|_| TetraError::PlatformError("Could not inject styles".into()))?;
 
-        let class_list = canvas.class_list();
-
-        if !builder.show_mouse {
-            class_list.add_1(HIDE_CURSOR_CLASS).map_err(|_| {
+        let (window_width, window_height) = if builder.fullscreen {
+            canvas.class_list().add_1(FULLSCREEN_CLASS).map_err(|_| {
                 TetraError::PlatformError("Failed to modify canvas CSS classes".into())
             })?;
-        }
 
-        if builder.fullscreen {
-            canvas.class_list().add_1(FULLSCREEN_CLASS).map_err(|_| {
+            (canvas.client_width(), canvas.client_height())
+        } else {
+            (builder.window_width, builder.window_height)
+        };
+
+        canvas.set_width(window_width as u32);
+        canvas.set_height(window_height as u32);
+
+        if !builder.show_mouse {
+            canvas.class_list().add_1(HIDE_CURSOR_CLASS).map_err(|_| {
                 TetraError::PlatformError("Failed to modify canvas CSS classes".into())
             })?;
         }
@@ -168,8 +170,8 @@ impl Platform {
                 _mousemove_closure,
             },
             GlContext::from_webgl2_context(context),
-            builder.window_width,
-            builder.window_height,
+            window_width,
+            window_height,
         ))
     }
 }
