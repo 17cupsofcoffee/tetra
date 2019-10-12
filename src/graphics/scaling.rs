@@ -14,15 +14,24 @@ use crate::Context;
 /// ```rust
 /// # use tetra::{Context, State};
 /// # use tetra::graphics::{self, Color};
-/// # use tetra::graphics::scaling::{ScreenScaler};
+/// # use tetra::graphics::scaling::{ScreenScaler, ScalingMode};
 /// # use tetra::math::Vec2;
 /// #
 /// struct GameState {
 ///     scaler: ScreenScaler,
 /// }
 ///
+/// impl GameState {
+///     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+///         Ok(GameState {
+///             scaler: ScreenScaler::new(ctx, 128, 128, ScalingMode::ShowAllPixelPerfect)?
+///         })
+///     }
+/// }
+///
 /// impl State for GameState {
 ///     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
+///         // Ensure your scaler is kept aware of screen size changes!
 ///         self.scaler.update(ctx);
 ///
 ///         Ok(())

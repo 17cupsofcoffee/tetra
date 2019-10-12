@@ -14,6 +14,47 @@ use crate::Context;
 /// Canvases can be useful if you want to do some rendering upfront and then cache the result
 /// (e.g. a static background), or if you want to apply transformations/shaders to multiple
 /// things simultaneously.
+///
+/// Note that creating a canvas is a relatively expensive operation! You rarely (if ever) should
+/// create them in your `draw` or `update` methods. Instead, add it as a member of your `State`
+/// struct.
+///
+/// # Examples
+///
+/// ```rust
+/// # use tetra::{Context, State};
+/// # use tetra::graphics::{self, Color, Canvas};
+/// # use tetra::math::Vec2;
+/// #
+/// struct GameState {
+///     canvas: Canvas,
+/// }
+///
+/// impl GameState {
+///     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+///         Ok(GameState {
+///             canvas: Canvas::new(ctx, 640, 480)?
+///         })
+///     }
+/// }
+///
+/// impl State for GameState {
+///     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
+///         graphics::set_canvas(ctx, &self.canvas);
+///
+///         // Draw some stuff to the canvas here, using the normal graphics API.
+///
+///         // When you're done, reset the canvas:
+///         graphics::reset_canvas(ctx);
+///
+///         // Now you can draw the canvas to the screen:
+///         graphics::clear(ctx, Color::BLACK);
+///         graphics::draw(ctx, &self.canvas, Vec2::new(0.0, 0.0));
+///
+///         Ok(())
+///     }
+/// }
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Canvas {
     pub(crate) texture: Texture,
