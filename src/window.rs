@@ -38,8 +38,13 @@ pub fn get_width(ctx: &Context) -> i32 {
 }
 
 /// Sets the width of the window.
-pub fn set_width(ctx: &mut Context, width: i32) {
-    set_size(ctx, width, platform::get_window_height(ctx));
+///
+/// # Errors
+///
+/// * `TetraError::FailedToChangeDisplayMode` will be returned if the game was unable to
+/// change the window size.
+pub fn set_width(ctx: &mut Context, width: i32) -> Result {
+    set_size(ctx, width, platform::get_window_height(ctx))
 }
 
 /// Gets the height of the window.
@@ -48,8 +53,13 @@ pub fn get_height(ctx: &Context) -> i32 {
 }
 
 /// Sets the height of the window.
-pub fn set_height(ctx: &mut Context, height: i32) {
-    set_size(ctx, platform::get_window_width(ctx), height);
+///
+/// # Errors
+///
+/// * `TetraError::FailedToChangeDisplayMode` will be returned if the game was unable to
+/// change the window size.
+pub fn set_height(ctx: &mut Context, height: i32) -> Result {
+    set_size(ctx, platform::get_window_width(ctx), height)
 }
 
 /// Gets the size of the window.
