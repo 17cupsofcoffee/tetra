@@ -13,6 +13,7 @@ use web_sys::{console, EventTarget, HtmlCanvasElement, KeyboardEvent, MouseEvent
 
 use crate::audio::{RemoteControls, Sound, SoundInstance};
 use crate::error::{Result, TetraError};
+use crate::graphics;
 use crate::input::{self, Key, MouseButton};
 use crate::math::Vec2;
 use crate::{Context, Game, State};
@@ -186,6 +187,17 @@ where
 
     *init.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         let (ctx, state) = &mut *refs.borrow_mut();
+
+        let canvas = &mut ctx.platform.canvas;
+        let client_width = canvas.client_width();
+        let client_height = canvas.client_height();
+
+        if canvas.width() != client_width as u32 || canvas.height() != client_height as u32 {
+            canvas.set_width(client_width as u32);
+            canvas.set_height(client_height as u32);
+            graphics::set_window_projection(ctx, client_width, client_height);
+        }
+
         frame(ctx, state);
 
         if ctx.running {
