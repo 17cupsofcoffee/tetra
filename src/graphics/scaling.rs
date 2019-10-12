@@ -8,6 +8,39 @@ use crate::window;
 use crate::Context;
 
 /// A wrapper for a `Canvas` that handles scaling the image to fit the screen.
+///
+/// # Examples
+///
+/// ```rust
+/// # use tetra::{Context, State};
+/// # use tetra::graphics::{self, Color};
+/// # use tetra::graphics::scaling::{ScreenScaler};
+/// # use tetra::math::Vec2;
+/// #
+/// struct GameState {
+///     scaler: ScreenScaler,
+/// }
+///
+/// impl State for GameState {
+///     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
+///         self.scaler.update(ctx);
+///
+///         Ok(())
+///     }
+///
+///     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
+///         graphics::set_canvas(ctx, self.scaler.canvas());
+///
+///         // Draw your scene here...
+///
+///         graphics::reset_canvas(ctx);
+///         graphics::clear(ctx, Color::BLACK);
+///         graphics::draw(ctx, &self.scaler, Vec2::new(0.0, 0.0));
+///
+///         Ok(())
+///     }
+/// }
+/// ```
 #[derive(Debug)]
 pub struct ScreenScaler {
     canvas: Canvas,
@@ -130,7 +163,7 @@ impl ScreenScaler {
 
     /// Returns the X co-ordinate of the mouse in scaled screen co-ordinates.
     ///
-    /// This is a shortcut for calling `.project(&input::get_mouse_position(ctx)).x`.
+    /// This is a shortcut for calling `project(&input::get_mouse_position(ctx)).x`.
     pub fn mouse_x(&self, ctx: &Context) -> f32 {
         let width = self.canvas().width();
 
@@ -144,7 +177,7 @@ impl ScreenScaler {
 
     /// Returns the Y co-ordinate of the mouse in scaled screen co-ordinates.
     ///
-    /// This is a shortcut for calling `.project(&input::get_mouse_position(ctx)).x`.
+    /// This is a shortcut for calling `project(&input::get_mouse_position(ctx)).y`.
     pub fn mouse_y(&self, ctx: &Context) -> f32 {
         let height = self.canvas().height();
 
