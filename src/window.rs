@@ -58,8 +58,13 @@ pub fn get_size(ctx: &Context) -> (i32, i32) {
 }
 
 /// Sets the size of the window.
-pub fn set_size(ctx: &mut Context, width: i32, height: i32) {
-    platform::set_window_size(ctx, width, height);
+///
+/// # Errors
+///
+/// * `TetraError::FailedToChangeDisplayMode` will be returned if the game was unable to
+/// change the window size.
+pub fn set_size(ctx: &mut Context, width: i32, height: i32) -> Result {
+    platform::set_window_size(ctx, width, height)
 }
 
 /// Sets whether the window should be vsynced.

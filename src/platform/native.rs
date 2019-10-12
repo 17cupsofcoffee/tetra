@@ -361,14 +361,14 @@ pub fn get_window_size(ctx: &Context) -> (i32, i32) {
     (ctx.platform.window_width, ctx.platform.window_height)
 }
 
-pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) {
+pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) -> Result {
     ctx.platform.window_width = width;
     ctx.platform.window_height = height;
 
     ctx.platform
         .window
         .set_size(width as u32, height as u32)
-        .unwrap();
+        .map_err(|e| TetraError::FailedToChangeDisplayMode(e.to_string()))
 }
 
 pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {

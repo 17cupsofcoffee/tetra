@@ -260,9 +260,11 @@ pub fn get_window_size(ctx: &Context) -> (i32, i32) {
     )
 }
 
-pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) {
+pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) -> Result {
     ctx.platform.canvas.set_width(width as u32);
     ctx.platform.canvas.set_height(height as u32);
+
+    Ok(())
 }
 
 pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
