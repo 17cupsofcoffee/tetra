@@ -7,6 +7,7 @@ use crate::math::Vec2;
 use crate::window;
 use crate::Context;
 
+/// A wrapper for a `Canvas` that handles scaling the image to fit the screen.
 #[derive(Debug)]
 pub struct ScreenScaler {
     canvas: Canvas,
@@ -17,6 +18,8 @@ pub struct ScreenScaler {
 }
 
 impl ScreenScaler {
+    /// Returns a new `ScreenScaler`, with the specified internal width and height. The mode will
+    /// determine how the image is scaled to fit the screen.
     pub fn new(
         ctx: &mut Context,
         width: i32,
@@ -37,26 +40,37 @@ impl ScreenScaler {
         })
     }
 
+    /// Updates the screen's size to fit the current size of the window.
+    ///
+    /// If your window never changes size, you don't need to call this.
     pub fn update(&mut self, ctx: &Context) {
-        self.window_width = window::get_width(ctx);
-        self.window_height = window::get_height(ctx);
+        let window_width = window::get_width(ctx);
+        let window_height = window::get_height(ctx);
 
-        self.screen_rect = self.mode.get_screen_rect(
-            self.canvas().width(),
-            self.canvas().height(),
-            self.window_width,
-            self.window_height,
-        );
+        if window_width != self.window_width || window_height != self.window_height {
+            self.window_width = window_width;
+            self.window_height = window_height;
+
+            self.screen_rect = self.mode.get_screen_rect(
+                self.canvas().width(),
+                self.canvas().height(),
+                window_width,
+                window_height,
+            );
+        }
     }
 
+    /// Returns a reference to the canvas that is being scaled.
     pub fn canvas(&self) -> &Canvas {
         &self.canvas
     }
 
+    /// Returns the current scaling mode.
     pub fn mode(&self) -> ScalingMode {
         self.mode
     }
 
+    /// Sets the scaling mode that should be used.
     pub fn set_mode(&mut self, mode: ScalingMode) {
         self.mode = mode;
         self.screen_rect = self.mode.get_screen_rect(
@@ -67,6 +81,7 @@ impl ScreenScaler {
         );
     }
 
+    /// Converts a point from window co-ordinates to scaled screen co-ordinates.
     pub fn project(&self, position: &Vec2) -> Vec2 {
         let (width, height) = self.canvas().size();
 
@@ -86,6 +101,7 @@ impl ScreenScaler {
         )
     }
 
+    /// Converts a point from scaled screen co-ordinates to window co-ordinates.
     pub fn unproject(&self, position: &Vec2) -> Vec2 {
         let (width, height) = self.canvas().size();
 
@@ -105,10 +121,16 @@ impl ScreenScaler {
         )
     }
 
+    /// Returns the position of the mouse in scaled screen co-ordinates.
+    ///
+    /// This is a shortcut for calling `.project(&input::get_mouse_position(ctx))`.
     pub fn mouse_position(&self, ctx: &Context) -> Vec2 {
         self.project(&input::get_mouse_position(ctx))
     }
 
+    /// Returns the X co-ordinate of the mouse in scaled screen co-ordinates.
+    ///
+    /// This is a shortcut for calling `.project(&input::get_mouse_position(ctx)).x`.
     pub fn mouse_x(&self, ctx: &Context) -> f32 {
         let width = self.canvas().width();
 
@@ -120,6 +142,9 @@ impl ScreenScaler {
         )
     }
 
+    /// Returns the Y co-ordinate of the mouse in scaled screen co-ordinates.
+    ///
+    /// This is a shortcut for calling `.project(&input::get_mouse_position(ctx)).x`.
     pub fn mouse_y(&self, ctx: &Context) -> f32 {
         let height = self.canvas().height();
 
