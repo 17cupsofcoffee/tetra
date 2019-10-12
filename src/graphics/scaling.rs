@@ -124,7 +124,7 @@ impl ScreenScaler {
     }
 
     /// Converts a point from window co-ordinates to scaled screen co-ordinates.
-    pub fn project(&self, position: &Vec2) -> Vec2 {
+    pub fn project(&self, position: Vec2) -> Vec2 {
         let (width, height) = self.canvas().size();
 
         Vec2::new(
@@ -144,7 +144,7 @@ impl ScreenScaler {
     }
 
     /// Converts a point from scaled screen co-ordinates to window co-ordinates.
-    pub fn unproject(&self, position: &Vec2) -> Vec2 {
+    pub fn unproject(&self, position: Vec2) -> Vec2 {
         let (width, height) = self.canvas().size();
 
         Vec2::new(
@@ -165,14 +165,14 @@ impl ScreenScaler {
 
     /// Returns the position of the mouse in scaled screen co-ordinates.
     ///
-    /// This is a shortcut for calling `.project(&input::get_mouse_position(ctx))`.
+    /// This is a shortcut for calling `.project(input::get_mouse_position(ctx))`.
     pub fn mouse_position(&self, ctx: &Context) -> Vec2 {
-        self.project(&input::get_mouse_position(ctx))
+        self.project(input::get_mouse_position(ctx))
     }
 
     /// Returns the X co-ordinate of the mouse in scaled screen co-ordinates.
     ///
-    /// This is a shortcut for calling `project(&input::get_mouse_position(ctx)).x`.
+    /// This is a shortcut for calling `project(input::get_mouse_position(ctx)).x`.
     pub fn mouse_x(&self, ctx: &Context) -> f32 {
         let width = self.canvas().width();
 
@@ -186,7 +186,7 @@ impl ScreenScaler {
 
     /// Returns the Y co-ordinate of the mouse in scaled screen co-ordinates.
     ///
-    /// This is a shortcut for calling `project(&input::get_mouse_position(ctx)).y`.
+    /// This is a shortcut for calling `project(input::get_mouse_position(ctx)).y`.
     pub fn mouse_y(&self, ctx: &Context) -> f32 {
         let height = self.canvas().height();
 
