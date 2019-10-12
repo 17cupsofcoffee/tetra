@@ -69,6 +69,12 @@ impl Platform {
                 TetraError::PlatformError("Could not get 'document' from browser".into())
             })?;
 
+        document
+            .body()
+            .ok_or_else(|| TetraError::PlatformError("Could not get 'body' from browser".into()))?
+            .insert_adjacent_html("beforeend", STYLES)
+            .map_err(|_| TetraError::PlatformError("Could not inject styles".into()))?;
+
         let canvas = document
             .get_element_by_id(&builder.canvas_id)
             .ok_or_else(|| {
@@ -76,10 +82,6 @@ impl Platform {
             })?
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .map_err(|_| TetraError::PlatformError("Element was not a canvas".into()))?;
-
-        canvas
-            .insert_adjacent_html("afterend", STYLES)
-            .map_err(|_| TetraError::PlatformError("Could not inject styles".into()))?;
 
         let (window_width, window_height) = if builder.fullscreen {
             canvas.class_list().add_1(FULLSCREEN_CLASS).map_err(|_| {
