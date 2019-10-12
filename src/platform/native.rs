@@ -22,7 +22,6 @@ use crate::error::{Result, TetraError};
 use crate::graphics::{self};
 use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
 use crate::math::Vec2;
-use crate::window;
 use crate::{Context, Game, State};
 
 pub type GlContext = glow::native::Context;
@@ -391,21 +390,24 @@ pub fn set_fullscreen(ctx: &mut Context, fullscreen: bool) -> Result {
         ctx.platform
             .window
             .display_mode()
-            .and_then(|m| {
-                window::set_size(ctx, m.w, m.h);
-                ctx.platform.window.set_fullscreen(FullscreenType::Desktop)
+            .map_err(TetraError::FailedToChangeDisplayMode)
+            .and_then(|m| set_window_size(ctx, m.w, m.h))
+            .and_then(|_| {
+                ctx.platform
+                    .window
+                    .set_fullscreen(FullscreenType::Desktop)
+                    .map_err(TetraError::FailedToChangeDisplayMode)
             })
             .map(|_| ())
-            .map_err(TetraError::FailedToChangeDisplayMode)
     } else {
         ctx.platform
             .window
             .set_fullscreen(FullscreenType::Off)
-            .map(|_| {
-                let size = ctx.platform.window.drawable_size();
-                window::set_size(ctx, size.0 as i32, size.1 as i32);
-            })
             .map_err(TetraError::FailedToChangeDisplayMode)
+            .and_then(|_| {
+                let size = ctx.platform.window.drawable_size();
+                set_window_size(ctx, size.0 as i32, size.1 as i32)
+            })
     }
 }
 
