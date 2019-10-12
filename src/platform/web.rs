@@ -57,6 +57,10 @@ pub struct Platform {
     _mousedown_closure: Closure<dyn FnMut(MouseEvent)>,
     _mouseup_closure: Closure<dyn FnMut(MouseEvent)>,
     _mousemove_closure: Closure<dyn FnMut(MouseEvent)>,
+
+    // Used when leaving fullscreen to revert to the previous size
+    previous_width: i32,
+    previous_height: i32,
 }
 
 impl Platform {
@@ -171,6 +175,9 @@ impl Platform {
                 _mousedown_closure,
                 _mouseup_closure,
                 _mousemove_closure,
+
+                previous_width: builder.window_width,
+                previous_height: builder.window_height,
             },
             GlContext::from_webgl2_context(context),
             window_width,
@@ -190,14 +197,15 @@ where
     *init.borrow_mut() = Some(Closure::wrap(Box::new(move || {
         let (ctx, state) = &mut *refs.borrow_mut();
 
+        // If the canvas has been resized with CSS, update the actual size to match:
+
         let canvas = &mut ctx.platform.canvas;
         let client_width = canvas.client_width();
         let client_height = canvas.client_height();
 
         if canvas.width() != client_width as u32 || canvas.height() != client_height as u32 {
-            canvas.set_width(client_width as u32);
-            canvas.set_height(client_height as u32);
-            graphics::set_window_projection(ctx, client_width, client_height);
+            set_window_size(ctx, client_width, client_height)
+                .expect("This should never fail on the web.");
         }
 
         frame(ctx, state);
@@ -263,6 +271,7 @@ pub fn get_window_size(ctx: &Context) -> (i32, i32) {
 pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) -> Result {
     ctx.platform.canvas.set_width(width as u32);
     ctx.platform.canvas.set_height(height as u32);
+    graphics::set_window_projection(ctx, width, height);
 
     Ok(())
 }
@@ -282,16 +291,38 @@ pub fn is_vsync_enabled(ctx: &Context) -> bool {
 }
 
 pub fn set_fullscreen(ctx: &mut Context, fullscreen: bool) -> Result {
-    let class_list = ctx.platform.canvas.class_list();
-
     if fullscreen {
-        class_list.add_1(FULLSCREEN_CLASS)
+        ctx.platform.previous_width = ctx.platform.canvas.width() as i32;
+        ctx.platform.previous_height = ctx.platform.canvas.height() as i32;
+        ctx.platform
+            .canvas
+            .class_list()
+            .add_1(FULLSCREEN_CLASS)
+            .map_err(|_| {
+                TetraError::FailedToChangeDisplayMode("Failed to modify canvas CSS classes".into())
+            })?;
+
+        set_window_size(
+            ctx,
+            ctx.platform.canvas.client_width(),
+            ctx.platform.canvas.client_height(),
+        )?;
     } else {
-        class_list.remove_1(FULLSCREEN_CLASS)
+        ctx.platform
+            .canvas
+            .class_list()
+            .remove_1(FULLSCREEN_CLASS)
+            .map_err(|_| {
+                TetraError::FailedToChangeDisplayMode("Failed to modify canvas CSS classes".into())
+            })?;
+        set_window_size(
+            ctx,
+            ctx.platform.previous_width,
+            ctx.platform.previous_height,
+        )?;
     }
-    .map_err(|_| {
-        TetraError::FailedToChangeDisplayMode("Failed to modify canvas CSS classes".into())
-    })
+
+    Ok(())
 }
 
 pub fn is_fullscreen(ctx: &Context) -> bool {
