@@ -59,7 +59,7 @@ impl Platform {
         let audio_device = rodio::default_output_device();
 
         if let Some(active_device) = &audio_device {
-            rodio::play_raw(&active_device, Empty::new());
+            rodio::play_raw(active_device, Empty::new());
         }
 
         let sdl = sdl2::init().map_err(TetraError::PlatformError)?;
@@ -189,7 +189,7 @@ pub fn handle_events(ctx: &mut Context) -> Result {
         .platform
         .sdl
         .event_pump()
-        .map_err(|e| TetraError::PlatformError(e.to_string()))?;
+        .map_err(TetraError::PlatformError)?;
 
     for event in events.poll_iter() {
         match event {

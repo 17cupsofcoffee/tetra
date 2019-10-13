@@ -569,12 +569,12 @@ pub fn flush(ctx: &mut Context) {
     if !ctx.graphics.vertex_data.is_empty() {
         let texture = match &ctx.graphics.texture {
             ActiveTexture::FontCache => &ctx.graphics.font_cache_texture,
-            ActiveTexture::User(t) => &t,
+            ActiveTexture::User(t) => t,
         };
 
         let shader = match &ctx.graphics.shader {
             ActiveShader::Default => &ctx.graphics.default_shader,
-            ActiveShader::User(s) => &s,
+            ActiveShader::User(s) => s,
         };
 
         let projection = match &ctx.graphics.canvas {
