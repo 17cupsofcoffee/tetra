@@ -243,11 +243,11 @@ pub fn log_error(error: TetraError) {
     console::error_1(&format!("Error: {}", error).into());
 }
 
-pub fn get_window_title(ctx: &Context) -> &str {
+pub fn get_window_title(_ctx: &Context) -> &str {
     ""
 }
 
-pub fn set_window_title<S>(ctx: &mut Context, title: S)
+pub fn set_window_title<S>(_ctx: &mut Context, _title: S)
 where
     S: AsRef<str>,
 {
@@ -276,7 +276,7 @@ pub fn set_window_size(ctx: &mut Context, width: i32, height: i32) -> Result {
     Ok(())
 }
 
-pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
+pub fn set_vsync(_ctx: &mut Context, vsync: bool) -> Result {
     if vsync {
         Ok(())
     } else {
@@ -286,7 +286,7 @@ pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
     }
 }
 
-pub fn is_vsync_enabled(ctx: &Context) -> bool {
+pub fn is_vsync_enabled(_ctx: &Context) -> bool {
     true
 }
 
@@ -344,27 +344,33 @@ pub fn is_mouse_visible(ctx: &Context) -> bool {
     !ctx.platform.canvas.class_list().contains(HIDE_CURSOR_CLASS)
 }
 
-pub fn swap_buffers(ctx: &Context) {}
+pub fn swap_buffers(_ctx: &Context) {}
 
-pub fn get_gamepad_name(ctx: &Context, platform_id: i32) -> String {
+pub fn get_gamepad_name(_ctx: &Context, _platform_id: i32) -> String {
     String::new()
 }
 
-pub fn is_gamepad_vibration_supported(ctx: &Context, platform_id: i32) -> bool {
+pub fn is_gamepad_vibration_supported(_ctx: &Context, _platform_id: i32) -> bool {
     false
 }
 
-pub fn set_gamepad_vibration(ctx: &mut Context, platform_id: i32, strength: f32) {}
+pub fn set_gamepad_vibration(_ctx: &mut Context, _platform_id: i32, _strength: f32) {}
 
-pub fn start_gamepad_vibration(ctx: &mut Context, platform_id: i32, strength: f32, duration: u32) {}
+pub fn start_gamepad_vibration(
+    _ctx: &mut Context,
+    _platform_id: i32,
+    _strength: f32,
+    _duration: u32,
+) {
+}
 
-pub fn stop_gamepad_vibration(ctx: &mut Context, platform_id: i32) {}
+pub fn stop_gamepad_vibration(_ctx: &mut Context, _platform_id: i32) {}
 
 // TODO: Find a better way of stubbing the audio stuff out.
 
 pub fn play_sound(
-    ctx: &Context,
-    sound: &Sound,
+    _ctx: &Context,
+    _sound: &Sound,
     playing: bool,
     repeating: bool,
     volume: f32,
@@ -381,9 +387,9 @@ pub fn play_sound(
     Ok(SoundInstance { controls })
 }
 
-pub fn set_master_volume(ctx: &mut Context, volume: f32) {}
+pub fn set_master_volume(_ctx: &mut Context, _volume: f32) {}
 
-pub fn get_master_volume(ctx: &mut Context) -> f32 {
+pub fn get_master_volume(_ctx: &mut Context) -> f32 {
     1.0
 }
 
@@ -402,8 +408,6 @@ where
 }
 
 fn into_key(event: KeyboardEvent) -> Option<Key> {
-    let location = event.location();
-
     match (event.key().as_ref(), event.location()) {
         ("a", _) | ("A", _) => Some(Key::A),
         ("b", _) | ("B", _) => Some(Key::B),

@@ -1,3 +1,6 @@
+// TODO: Remove this once WASM gamepad support is added
+#![cfg_attr(target_arch = "wasm32", allow(unused))]
+
 use hashbrown::{HashMap, HashSet};
 
 use crate::math::Vec2;
