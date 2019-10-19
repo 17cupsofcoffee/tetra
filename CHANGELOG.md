@@ -9,7 +9,7 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * Tetra now requires Rust 1.36 or higher. It may work on some earlier versions, but this is not supported.
-* `ContextBuilder` has been replaced with `Game`, which is designed to better uphold some guarentees about how the `Context` is used. It's also shorter to type!
+* `ContextBuilder` has been replaced with a `Settings` struct that can be passed to `tetra::run` or `Context::new`. The former has functionality to handle making the game loop run on multiple platforms with consistent error handling (see the next item!), and the latter is designed to be used in custom game loops.
 * The game loop no longer returns errors back to `main`, as this API does not work well on the web where `main` cannot block. Instead, `State` now has an `error` method that can be used for logging/reporting uncaught errors.
 * `Key` and `MouseButton` are now Tetra-specific types, rather than re-exporting the SDL versions. Note that some names have been changed for consistency, and some variants have been removed to simplify the docs.
 * `TetraError::Sdl` is now called `TetraError::Platform`.

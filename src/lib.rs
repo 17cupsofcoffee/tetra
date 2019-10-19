@@ -32,7 +32,7 @@
 //!
 //! ```no_run
 //! use tetra::graphics::{self, Color};
-//! use tetra::{Context, Game, State};
+//! use tetra::{Context, Settings, State};
 //!
 //! struct GameState;
 //!
@@ -45,7 +45,9 @@
 //! }
 //!
 //! fn main() {
-//!     Game::new("Hello, world!", 1280, 720).run(|_| Ok(GameState));
+//!     tetra::run(&Settings::new("Hello, world!", 1280, 720), |_| {
+//!         Ok(GameState)
+//!     });
 //! }
 //! ```
 //!
@@ -132,11 +134,14 @@ pub struct Context {
 }
 
 impl Context {
-    pub(crate) fn new(builder: &Game) -> Result<Context> {
-        let (platform, gl_context, width, height) = Platform::new(builder)?;
+    /// Creates a new `Context`, using the provided settings.
+    ///
+    /// Unless you're writing a custom game loop, you probably don't need to call this!
+    pub fn new(settings: &Settings) -> Result<Context> {
+        let (platform, gl_context, width, height) = Platform::new(settings)?;
         let mut gl = GLDevice::new(gl_context)?;
 
-        if builder.debug_info {
+        if settings.debug_info {
             platform::log_info(&format!("OpenGL Vendor: {}", gl.get_vendor()));
             platform::log_info(&format!("OpenGL Renderer: {}", gl.get_renderer()));
             platform::log_info(&format!("OpenGL Version: {}", gl.get_version()));
@@ -148,7 +153,7 @@ impl Context {
 
         let graphics = GraphicsContext::new(&mut gl, width, height)?;
         let input = InputContext::new();
-        let time = TimeContext::new(builder.tick_rate);
+        let time = TimeContext::new(settings.tick_rate);
 
         Ok(Context {
             platform,
@@ -159,15 +164,15 @@ impl Context {
             time,
 
             running: false,
-            quit_on_escape: builder.quit_on_escape,
+            quit_on_escape: settings.quit_on_escape,
         })
     }
 }
 
+/// Settings that can be configured when starting up a game.
 #[derive(Debug, Clone)]
-pub struct Game {
+pub struct Settings {
     title: String,
-
     window_width: i32,
     window_height: i32,
     canvas_id: String,
@@ -183,18 +188,18 @@ pub struct Game {
     debug_info: bool,
 }
 
-impl Game {
-    /// Creates a new Game.
-    pub fn new<S>(title: S, window_width: i32, window_height: i32) -> Game
+impl Settings {
+    /// Create a new `Settings` struct, with a title and window size.
+    pub fn new<S>(title: S, window_width: i32, window_height: i32) -> Settings
     where
         S: Into<String>,
     {
-        Game {
+        Settings {
             title: title.into(),
             window_width,
             window_height,
 
-            ..Game::default()
+            ..Settings::default()
         }
     }
 
@@ -205,7 +210,7 @@ impl Game {
     /// # Platform-specific Behaviour
     ///
     /// Ignored on web platforms.
-    pub fn title<S>(&mut self, title: S) -> &mut Game
+    pub fn title<S>(&mut self, title: S) -> &mut Settings
     where
         S: Into<String>,
     {
@@ -216,7 +221,7 @@ impl Game {
     /// Sets the size of the window.
     ///
     /// Defaults to `1280` by `720`.
-    pub fn window_size(&mut self, width: i32, height: i32) -> &mut Game {
+    pub fn size(&mut self, width: i32, height: i32) -> &mut Settings {
         self.window_width = width;
         self.window_height = height;
         self
@@ -230,7 +235,7 @@ impl Game {
     /// # Platform-specific Behaviour
     ///
     /// Ignored on desktop platforms.
-    pub fn canvas_id<S>(&mut self, id: S) -> &mut Game
+    pub fn canvas_id<S>(&mut self, id: S) -> &mut Settings
     where
         S: Into<String>,
     {
@@ -245,7 +250,7 @@ impl Game {
     /// # Platform-specific Behaviour
     ///
     /// Ignored on web platforms, as vsync cannot be disabled there.
-    pub fn vsync(&mut self, vsync: bool) -> &mut Game {
+    pub fn vsync(&mut self, vsync: bool) -> &mut Settings {
         self.vsync = vsync;
         self
     }
@@ -253,7 +258,7 @@ impl Game {
     /// Sets the game's update tick rate, in ticks per second.
     ///
     /// Defaults to `60.0`.
-    pub fn tick_rate(&mut self, tick_rate: f64) -> &mut Game {
+    pub fn tick_rate(&mut self, tick_rate: f64) -> &mut Settings {
         self.tick_rate = 1.0 / tick_rate;
         self
     }
@@ -261,7 +266,7 @@ impl Game {
     /// Sets whether or not the window should start in fullscreen.
     ///
     /// Defaults to `false`.
-    pub fn fullscreen(&mut self, fullscreen: bool) -> &mut Game {
+    pub fn fullscreen(&mut self, fullscreen: bool) -> &mut Settings {
         self.fullscreen = fullscreen;
         self
     }
@@ -273,7 +278,7 @@ impl Game {
     /// # Platform-specific Behaviour
     ///
     /// Ignored on web platforms.
-    pub fn maximized(&mut self, maximized: bool) -> &mut Game {
+    pub fn maximized(&mut self, maximized: bool) -> &mut Settings {
         self.maximized = maximized;
         self
     }
@@ -285,7 +290,7 @@ impl Game {
     /// # Platform-specific Behaviour
     ///
     /// Ignored on web platforms.
-    pub fn minimized(&mut self, minimized: bool) -> &mut Game {
+    pub fn minimized(&mut self, minimized: bool) -> &mut Settings {
         self.minimized = minimized;
         self
     }
@@ -297,7 +302,7 @@ impl Game {
     /// # Platform-specific Behaviour
     ///
     /// Ignored on web platforms.
-    pub fn resizable(&mut self, resizable: bool) -> &mut Game {
+    pub fn resizable(&mut self, resizable: bool) -> &mut Settings {
         self.resizable = resizable;
         self
     }
@@ -309,7 +314,7 @@ impl Game {
     /// # Platform-specific Behaviour
     ///
     /// Ignored on web platforms.
-    pub fn borderless(&mut self, borderless: bool) -> &mut Game {
+    pub fn borderless(&mut self, borderless: bool) -> &mut Settings {
         self.borderless = borderless;
         self
     }
@@ -318,7 +323,7 @@ impl Game {
     /// game window.
     ///
     /// Defaults to `false`.
-    pub fn show_mouse(&mut self, show_mouse: bool) -> &mut Game {
+    pub fn show_mouse(&mut self, show_mouse: bool) -> &mut Settings {
         self.show_mouse = show_mouse;
         self
     }
@@ -330,49 +335,22 @@ impl Game {
     /// # Platform-specific Behaviour
     ///
     /// Ignored on web platforms.
-    pub fn quit_on_escape(&mut self, quit_on_escape: bool) -> &mut Game {
+    pub fn quit_on_escape(&mut self, quit_on_escape: bool) -> &mut Settings {
         self.quit_on_escape = quit_on_escape;
         self
     }
 
     /// Sets whether or not the game should print out debug info at startup.
     /// Please include this if you're submitting a bug report!
-    pub fn debug_info(&mut self, debug_info: bool) -> &mut Game {
+    pub fn debug_info(&mut self, debug_info: bool) -> &mut Settings {
         self.debug_info = debug_info;
         self
     }
-
-    pub fn run<S, F>(&self, init: F)
-    where
-        S: State + 'static,
-        F: FnOnce(&mut Context) -> Result<S>,
-    {
-        let mut ctx = match Context::new(self) {
-            Ok(ctx) => ctx,
-            Err(e) => {
-                S::error(e);
-                return;
-            }
-        };
-
-        let state = match init(&mut ctx) {
-            Ok(state) => state,
-            Err(e) => {
-                S::error(e);
-                return;
-            }
-        };
-
-        time::reset(&mut ctx);
-
-        ctx.running = true;
-        platform::run_loop(ctx, state, run_frame);
-    }
 }
 
-impl Default for Game {
-    fn default() -> Game {
-        Game {
+impl Default for Settings {
+    fn default() -> Settings {
+        Settings {
             title: "Tetra".into(),
             window_width: 1280,
             window_height: 720,
@@ -389,6 +367,67 @@ impl Default for Game {
             debug_info: false,
         }
     }
+}
+
+/// Runs the game, using the provided settings.
+///
+/// The `init` parameter takes a function or closure that creates a `State`
+/// implementation. A common pattern is to use method references to pass in
+/// your state's constructor directly - see the example below for how this
+/// works.
+///
+/// # Examples
+///
+/// ```no_run
+/// use tetra::{Context, Settings, State};
+///
+/// struct GameState;
+///
+/// impl GameState {
+///     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+///         Ok(GameState)
+///     }
+/// }
+///
+/// impl State for GameState { }
+///
+/// fn main() {
+///     // Because the signature of GameState::new is
+///     // (&mut Context) -> tetra::Result<GameState>, you can pass it
+///     // into tetra::run directly.
+///     tetra::run(&Settings::new("Hello, world!", 1280, 720), GameState::new);
+/// }
+/// ```
+///
+/// # Platform-specific Behaviour
+///
+/// This function blocks the main thread on desktop platforms, but returns
+/// immediately on web platforms.
+pub fn run<S, F>(settings: &Settings, init: F)
+where
+    S: State + 'static,
+    F: FnOnce(&mut Context) -> Result<S>,
+{
+    let mut ctx = match Context::new(settings) {
+        Ok(ctx) => ctx,
+        Err(e) => {
+            S::error(e);
+            return;
+        }
+    };
+
+    let state = match init(&mut ctx) {
+        Ok(state) => state,
+        Err(e) => {
+            S::error(e);
+            return;
+        }
+    };
+
+    time::reset(&mut ctx);
+
+    ctx.running = true;
+    platform::run_loop(ctx, state, run_frame);
 }
 
 fn run_frame<S>(ctx: &mut Context, state: &mut S)

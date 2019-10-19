@@ -2,7 +2,7 @@ use tetra::audio::{self, Sound, SoundInstance};
 use tetra::graphics::{self, Color, Font, Text};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
-use tetra::{Context, Game, State};
+use tetra::{Context, Settings, State};
 
 const INSTRUCTIONS: &str = "\
 Press Space to 'fire and forget' a sound.
@@ -82,7 +82,8 @@ impl State for GameState {
 }
 
 fn main() {
-    Game::new("Audio Playback", 640, 480)
-        .quit_on_escape(true)
-        .run(GameState::new);
+    tetra::run(
+        &Settings::new("Audio Playback", 640, 480).quit_on_escape(true),
+        GameState::new,
+    )
 }

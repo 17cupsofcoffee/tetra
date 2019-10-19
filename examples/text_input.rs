@@ -1,7 +1,7 @@
 use tetra::graphics::{self, Color, Font, Text};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
-use tetra::{Context, Game, State};
+use tetra::{Context, Settings, State};
 
 struct GameState {
     input: String,
@@ -46,7 +46,8 @@ impl State for GameState {
 }
 
 fn main() {
-    Game::new("Keyboard Input", 640, 480)
-        .quit_on_escape(true)
-        .run(|_| Ok(GameState::new()));
+    tetra::run(
+        &Settings::new("Keyboard Input", 640, 480).quit_on_escape(true),
+        |_| Ok(GameState::new()),
+    );
 }

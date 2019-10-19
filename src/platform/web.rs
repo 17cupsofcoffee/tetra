@@ -16,7 +16,7 @@ use crate::error::{Result, TetraError};
 use crate::graphics;
 use crate::input::{self, Key, MouseButton};
 use crate::math::Vec2;
-use crate::{Context, Game, State};
+use crate::{Context, Settings, State};
 
 const HIDE_CURSOR_CLASS: &str = "tetra-hide-cursor";
 const FULLSCREEN_CLASS: &str = "tetra-fullscreen";
@@ -64,7 +64,7 @@ pub struct Platform {
 }
 
 impl Platform {
-    pub fn new(builder: &Game) -> Result<(Platform, GlContext, i32, i32)> {
+    pub fn new(settings: &Settings) -> Result<(Platform, GlContext, i32, i32)> {
         // TODO: This is disgusting
         let document = web_sys::window()
             .ok_or_else(|| TetraError::PlatformError("Could not get 'window' from browser".into()))?
@@ -80,27 +80,27 @@ impl Platform {
             .map_err(|_| TetraError::PlatformError("Could not inject styles".into()))?;
 
         let canvas = document
-            .get_element_by_id(&builder.canvas_id)
+            .get_element_by_id(&settings.canvas_id)
             .ok_or_else(|| {
                 TetraError::PlatformError("Could not find canvas element on page".into())
             })?
             .dyn_into::<web_sys::HtmlCanvasElement>()
             .map_err(|_| TetraError::PlatformError("Element was not a canvas".into()))?;
 
-        let (window_width, window_height) = if builder.fullscreen {
+        let (window_width, window_height) = if settings.fullscreen {
             canvas.class_list().add_1(FULLSCREEN_CLASS).map_err(|_| {
                 TetraError::PlatformError("Failed to modify canvas CSS classes".into())
             })?;
 
             (canvas.client_width(), canvas.client_height())
         } else {
-            (builder.window_width, builder.window_height)
+            (settings.window_width, settings.window_height)
         };
 
         canvas.set_width(window_width as u32);
         canvas.set_height(window_height as u32);
 
-        if !builder.show_mouse {
+        if !settings.show_mouse {
             canvas.class_list().add_1(HIDE_CURSOR_CLASS).map_err(|_| {
                 TetraError::PlatformError("Failed to modify canvas CSS classes".into())
             })?;
@@ -176,8 +176,8 @@ impl Platform {
                 _mouseup_closure,
                 _mousemove_closure,
 
-                previous_width: builder.window_width,
-                previous_height: builder.window_height,
+                previous_width: settings.window_width,
+                previous_height: settings.window_height,
             },
             GlContext::from_webgl2_context(context),
             window_width,

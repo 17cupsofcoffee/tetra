@@ -22,7 +22,7 @@ use crate::error::{Result, TetraError};
 use crate::graphics::{self};
 use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
 use crate::math::Vec2;
-use crate::{Context, Game, State};
+use crate::{Context, Settings, State};
 
 pub type GlContext = glow::native::Context;
 
@@ -54,7 +54,7 @@ struct SdlController {
 }
 
 impl Platform {
-    pub fn new(builder: &Game) -> Result<(Platform, GlContext, i32, i32)> {
+    pub fn new(settings: &Settings) -> Result<(Platform, GlContext, i32, i32)> {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
         let audio_device = rodio::default_output_device();
 
@@ -82,22 +82,22 @@ impl Platform {
         gl_attr.set_double_buffer(true);
 
         let mut window_builder = video_sys.window(
-            &builder.title,
-            builder.window_width as u32,
-            builder.window_height as u32,
+            &settings.title,
+            settings.window_width as u32,
+            settings.window_height as u32,
         );
 
         window_builder.hidden().position_centered().opengl();
 
-        if builder.resizable {
+        if settings.resizable {
             window_builder.resizable();
         }
 
-        if builder.borderless {
+        if settings.borderless {
             window_builder.borderless();
         }
 
-        sdl.mouse().show_cursor(builder.show_mouse);
+        sdl.mouse().show_cursor(settings.show_mouse);
 
         let mut window = window_builder
             .build()
@@ -107,22 +107,22 @@ impl Platform {
         // a) we don't want to blow away the window size settings
         // b) we don't know what monitor they're on until the window is created
 
-        let mut window_width = builder.window_width;
-        let mut window_height = builder.window_height;
+        let mut window_width = settings.window_width;
+        let mut window_height = settings.window_height;
 
-        if builder.maximized {
+        if settings.maximized {
             window.maximize();
             let size = window.drawable_size();
             window_width = size.0 as i32;
             window_height = size.1 as i32;
-        } else if builder.minimized {
+        } else if settings.minimized {
             window.minimize();
             let size = window.drawable_size();
             window_width = size.0 as i32;
             window_height = size.1 as i32;
         }
 
-        if builder.fullscreen {
+        if settings.fullscreen {
             window
                 .display_mode()
                 .and_then(|m| {
@@ -141,7 +141,7 @@ impl Platform {
             GlContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _);
 
         video_sys
-            .gl_set_swap_interval(if builder.vsync {
+            .gl_set_swap_interval(if settings.vsync {
                 SwapInterval::VSync
             } else {
                 SwapInterval::Immediate

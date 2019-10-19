@@ -1,6 +1,6 @@
 use tetra::graphics::{self, Canvas, Color, DrawParams, Font, Shader, Text, Texture};
 use tetra::math::Vec2;
-use tetra::{Context, Game, State};
+use tetra::{Context, Settings, State};
 
 struct GameState {
     canvas: Canvas,
@@ -80,7 +80,8 @@ impl State for GameState {
 }
 
 fn main() {
-    Game::new("Canvas Rendering", 1280, 720)
-        .quit_on_escape(true)
-        .run(GameState::new);
+    tetra::run(
+        &Settings::new("Canvas Rendering", 1280, 720).quit_on_escape(true),
+        GameState::new,
+    );
 }

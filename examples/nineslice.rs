@@ -1,7 +1,7 @@
 use tetra::graphics::ui::NineSlice;
 use tetra::graphics::{self, Color, Rectangle, Texture};
 use tetra::math::Vec2;
-use tetra::{Context, Game, State};
+use tetra::{Context, Settings, State};
 
 struct GameState {
     panel: NineSlice,
@@ -32,7 +32,8 @@ impl State for GameState {
 }
 
 fn main() {
-    Game::new("Rendering a NineSlice", 640, 480)
-        .quit_on_escape(true)
-        .run(GameState::new);
+    tetra::run(
+        &Settings::new("Rendering a NineSlice", 640, 480).quit_on_escape(true),
+        GameState::new,
+    );
 }

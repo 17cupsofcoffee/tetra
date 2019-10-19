@@ -3,7 +3,7 @@ use tetra::graphics::ui::NineSlice;
 use tetra::graphics::{self, Color, Font, Rectangle, Text, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
-use tetra::{Context, Game, State};
+use tetra::{Context, Settings, State};
 
 const LABEL: &str = "Press Space to cycle between scaling modes";
 const SCREEN_WIDTH: f32 = 640.0;
@@ -78,9 +78,11 @@ impl State for GameState {
 }
 
 fn main() {
-    Game::new("Screen Scaling", 640, 480)
-        .resizable(true)
-        .maximized(true)
-        .quit_on_escape(true)
-        .run(GameState::new);
+    tetra::run(
+        &Settings::new("Screen Scaling", 640, 480)
+            .resizable(true)
+            .maximized(true)
+            .quit_on_escape(true),
+        GameState::new,
+    );
 }

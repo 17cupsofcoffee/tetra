@@ -1,9 +1,9 @@
 // Button prompts from https://opengameart.org/content/free-keyboard-and-controllers-prompts-pack
 
-use tetra::math::{self, Vec2};
 use tetra::graphics::{self, Color, DrawParams, Font, Rectangle, Text, Texture};
 use tetra::input::{self, GamepadAxis, GamepadButton, GamepadStick};
-use tetra::{Context, Game, State};
+use tetra::math::{self, Vec2};
+use tetra::{Context, Settings, State};
 
 enum Sprite {
     A,
@@ -225,7 +225,8 @@ impl State for GameState {
 }
 
 fn main() {
-    Game::new("Gamepad Input", 1280, 720)
-        .quit_on_escape(true)
-        .run(GameState::new);
+    tetra::run(
+        &Settings::new("Gamepad Input", 1280, 720).quit_on_escape(true),
+        GameState::new,
+    );
 }

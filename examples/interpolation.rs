@@ -24,7 +24,7 @@
 
 use tetra::graphics::{self, Color, Texture};
 use tetra::math::{self, Vec2};
-use tetra::{Context, Game, State};
+use tetra::{Context, Settings, State};
 
 struct GameState {
     texture: Texture,
@@ -98,10 +98,12 @@ impl State for GameState {
 }
 
 fn main() {
-    Game::new("Interpolation", 640, 480)
-        .tick_rate(5.0)
-        .maximized(true)
-        .resizable(true)
-        .quit_on_escape(true)
-        .run(GameState::new);
+    tetra::run(
+        &Settings::new("Interpolation", 640, 480)
+            .tick_rate(5.0)
+            .maximized(true)
+            .resizable(true)
+            .quit_on_escape(true),
+        GameState::new,
+    );
 }
