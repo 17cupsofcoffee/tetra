@@ -1,8 +1,38 @@
+use hashbrown::{HashMap, HashSet};
+
 use crate::math::Vec2;
 use crate::platform;
 use crate::Context;
 
-use super::GamepadState;
+pub(crate) struct GamepadState {
+    pub platform_id: i32,
+    pub current_button_state: HashSet<GamepadButton>,
+    pub previous_button_state: HashSet<GamepadButton>,
+    pub current_axis_state: HashMap<GamepadAxis, f32>,
+}
+
+impl GamepadState {
+    pub(crate) fn new(platform_id: i32) -> GamepadState {
+        GamepadState {
+            platform_id,
+            current_button_state: HashSet::new(),
+            previous_button_state: HashSet::new(),
+            current_axis_state: HashMap::new(),
+        }
+    }
+
+    pub(crate) fn set_button_down(&mut self, btn: GamepadButton) {
+        self.current_button_state.insert(btn);
+    }
+
+    pub(crate) fn set_button_up(&mut self, btn: GamepadButton) {
+        self.current_button_state.remove(&btn);
+    }
+
+    pub(crate) fn set_axis_position(&mut self, axis: GamepadAxis, value: f32) {
+        self.current_axis_state.insert(axis, value);
+    }
+}
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[allow(missing_docs)]
