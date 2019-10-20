@@ -264,41 +264,41 @@ pub enum ScalingMode {
 /// the built-in `ScreenScaler` abstraction does not fit your needs.
 pub fn get_screen_rect(
     mode: ScalingMode,
-    screen_width: i32,
-    screen_height: i32,
+    original_width: i32,
+    original_height: i32,
     window_width: i32,
     window_height: i32,
 ) -> Rectangle {
-    let f_screen_width = screen_width as f32;
-    let f_screen_height = screen_height as f32;
+    let f_original_width = original_width as f32;
+    let f_original_height = original_height as f32;
     let f_window_width = window_width as f32;
     let f_window_height = window_height as f32;
 
-    let internal_aspect_ratio = f_screen_width / f_screen_height;
+    let internal_aspect_ratio = f_original_width / f_original_height;
     let screen_aspect_ratio = f_window_width / f_window_height;
 
     match mode {
         ScalingMode::Fixed => {
-            let screen_x = (window_width - screen_width) / 2;
-            let screen_y = (window_height - screen_height) / 2;
+            let screen_x = (window_width - original_width) / 2;
+            let screen_y = (window_height - original_height) / 2;
 
             Rectangle::new(
                 screen_x as f32,
                 screen_y as f32,
-                screen_width as f32,
-                screen_height as f32,
+                original_width as f32,
+                original_height as f32,
             )
         }
         ScalingMode::Stretch => Rectangle::new(0.0, 0.0, window_width as f32, window_height as f32),
         ScalingMode::ShowAll => {
             let scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
-                f_window_width / f_screen_width
+                f_window_width / f_original_width
             } else {
-                f_window_height / f_screen_height
+                f_window_height / f_original_height
             };
 
-            let screen_width = (f_screen_width * scale_factor).ceil();
-            let screen_height = (f_screen_height * scale_factor).ceil();
+            let screen_width = (f_original_width * scale_factor).ceil();
+            let screen_height = (f_original_height * scale_factor).ceil();
             let screen_x = ((f_window_width - screen_width) / 2.0).ceil();
             let screen_y = ((f_window_height - screen_height) / 2.0).ceil();
 
@@ -306,17 +306,17 @@ pub fn get_screen_rect(
         }
         ScalingMode::ShowAllPixelPerfect => {
             let mut scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
-                window_width / screen_width
+                window_width / original_width
             } else {
-                window_height / screen_height
+                window_height / original_height
             };
 
             if scale_factor == 0 {
                 scale_factor = 1;
             }
 
-            let screen_width = screen_width * scale_factor;
-            let screen_height = screen_height * scale_factor;
+            let screen_width = original_width * scale_factor;
+            let screen_height = original_height * scale_factor;
             let screen_x = (window_width - screen_width) / 2;
             let screen_y = (window_height - screen_height) / 2;
 
@@ -328,12 +328,12 @@ pub fn get_screen_rect(
             )
         }
         ScalingMode::Crop => {
-            let scale_x = f_window_width / f_screen_width;
-            let scale_y = f_window_height / f_screen_height;
+            let scale_x = f_window_width / f_original_width;
+            let scale_y = f_window_height / f_original_height;
             let scale_factor = scale_x.max(scale_y);
 
-            let screen_width = (f_screen_width * scale_factor).ceil();
-            let screen_height = (f_screen_height * scale_factor).ceil();
+            let screen_width = (f_original_width * scale_factor).ceil();
+            let screen_height = (f_original_height * scale_factor).ceil();
             let screen_x = ((f_window_width - screen_width) / 2.0).ceil();
             let screen_y = ((f_window_height - screen_height) / 2.0).ceil();
 
@@ -341,9 +341,9 @@ pub fn get_screen_rect(
         }
         ScalingMode::CropPixelPerfect => {
             let mut scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
-                f_window_height / f_screen_height
+                f_window_height / f_original_height
             } else {
-                f_window_width / f_screen_width
+                f_window_width / f_original_width
             }
             .ceil() as i32;
 
@@ -351,8 +351,8 @@ pub fn get_screen_rect(
                 scale_factor = 1;
             }
 
-            let screen_width = screen_width * scale_factor;
-            let screen_height = screen_height * scale_factor;
+            let screen_width = original_width * scale_factor;
+            let screen_height = original_height * scale_factor;
             let screen_x = (window_width - screen_width) / 2;
             let screen_y = (window_height - screen_height) / 2;
 
