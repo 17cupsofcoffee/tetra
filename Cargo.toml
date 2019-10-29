@@ -18,7 +18,7 @@ sdl2_static_link = ["sdl2/static-link"]
 [dependencies]
 glow = "0.2.3"
 image = "0.22.3"
-nalgebra-glm = "0.4.2"
+nalgebra-glm = "0.5.0"
 hashbrown = "0.6.1"
 glyph_brush = "0.6.0"
 instant = { version = "0.1.2", features = ["wasm-bindgen"] }
