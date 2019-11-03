@@ -22,10 +22,10 @@ This project adheres to Semantic Versioning.
 * The functions for setting the fullscreen/cursor visibility state have been changed to take booleans, instead of there being multiple functions.
 * Functions for getting and setting vsync have been added to `window`.
 * Updated `glow` to 0.2.3.
-* Updated `hashbrown` to 0.6.1.
+* Updated `hashbrown` to 0.6.3.
 * Updated `image` to 0.22.3.
-* Updated `glyph_brush` to 0.6.0.
-* Updated `nalgebra-glm` to 0.4.2.
+* Updated `glyph_brush` to 0.6.1.
+* Updated `nalgebra-glm` to 0.5.0.
 
 ### Removed
 
