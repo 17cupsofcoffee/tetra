@@ -6,7 +6,7 @@ use glow::Context as GlowContext;
 
 use crate::error::{Result, TetraError};
 use crate::graphics::{Canvas, FilterMode, IndexBuffer, Shader, Texture, VertexBuffer};
-use crate::math::{FrustumPlanes, Mat4};
+use crate::math::{FrustumPlanes, Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 use crate::platform::GlContext;
 
 type BufferId = <GlContext as GlowContext>::Buffer;
@@ -699,6 +699,11 @@ mod sealed {
     pub trait UniformValueTypes {}
     impl UniformValueTypes for i32 {}
     impl UniformValueTypes for f32 {}
+    impl UniformValueTypes for Vec2<f32> {}
+    impl UniformValueTypes for Vec3<f32> {}
+    impl UniformValueTypes for Vec4<f32> {}
+    impl UniformValueTypes for Mat2<f32> {}
+    impl UniformValueTypes for Mat3<f32> {}
     impl UniformValueTypes for Mat4<f32> {}
     impl<'a, T> UniformValueTypes for &'a T where T: UniformValueTypes {}
 }
@@ -724,6 +729,58 @@ impl UniformValue for f32 {
     #[doc(hidden)]
     unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
         shader.handle.gl.uniform_1_f32(location, *self);
+    }
+}
+
+impl UniformValue for Vec2<f32> {
+    #[doc(hidden)]
+    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
+        shader
+            .handle
+            .gl
+            .uniform_2_f32_slice(location, &self.into_array());
+    }
+}
+
+impl UniformValue for Vec3<f32> {
+    #[doc(hidden)]
+    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
+        shader
+            .handle
+            .gl
+            .uniform_3_f32_slice(location, &self.into_array());
+    }
+}
+
+impl UniformValue for Vec4<f32> {
+    #[doc(hidden)]
+    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
+        shader
+            .handle
+            .gl
+            .uniform_4_f32_slice(location, &self.into_array());
+    }
+}
+
+impl UniformValue for Mat2<f32> {
+    #[doc(hidden)]
+    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
+        shader.handle.gl.uniform_matrix_2_f32_slice(
+            location,
+            self.gl_should_transpose(),
+            &self.into_col_array(),
+        );
+    }
+}
+
+impl UniformValue for Mat3<f32> {
+    #[doc(hidden)]
+    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
+        shader.handle.gl.uniform_matrix_3_f32_slice(
+            location,
+            self.gl_should_transpose(),
+            &self.into_col_array(),
+        );
     }
 }
 

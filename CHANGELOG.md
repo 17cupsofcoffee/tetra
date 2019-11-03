@@ -17,6 +17,7 @@ This project adheres to Semantic Versioning.
 * `TetraError` has been reorganized, so that the errors returned are more descriptive.
 * The `glm` module has been renamed to `math`, and the `nalgebra-glm` dependency has been replaced with `vek`. 
 * `Vec2` is now exported from `math`, not `graphics`.
+* More types can now be passed into shader uniforms via the `UniformValue` trait.
 * The graphics device debugging info is now hidden by default. Set the `debug_info` option on `Game` to `true` to bring this back.
 * Details of the active graphics device can now be retrieved by calling `graphics::get_device_info`.
 * The functions for setting the fullscreen/cursor visibility state have been changed to take booleans, instead of there being multiple functions.
