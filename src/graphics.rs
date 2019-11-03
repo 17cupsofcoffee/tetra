@@ -9,19 +9,23 @@ pub mod animation;
 mod buffers;
 mod canvas;
 mod color;
+mod drawable;
 pub(crate) mod opengl;
+mod rectangle;
 pub mod scaling;
 mod shader;
 mod text;
 mod texture;
 pub mod ui;
 
-pub use self::canvas::*;
-pub use self::color::*;
-pub use self::shader::*;
-pub use self::text::*;
-pub use self::texture::*;
-pub(crate) use crate::graphics::buffers::{IndexBuffer, VertexBuffer};
+pub(crate) use buffers::*;
+pub use canvas::*;
+pub use color::*;
+pub use drawable::*;
+pub use rectangle::*;
+pub use shader::*;
+pub use text::*;
+pub use texture::*;
 
 use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
@@ -144,229 +148,6 @@ impl GraphicsContext {
             font_cache,
         })
     }
-}
-
-/// A rectangle of `f32`s.
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct Rectangle {
-    /// The X co-ordinate of the rectangle.
-    pub x: f32,
-
-    /// The Y co-ordinate of the rectangle.
-    pub y: f32,
-
-    /// The width of the rectangle.
-    pub width: f32,
-
-    /// The height of the rectangle.
-    pub height: f32,
-}
-
-impl Rectangle {
-    /// Creates a new `Rectangle`.
-    pub const fn new(x: f32, y: f32, width: f32, height: f32) -> Rectangle {
-        Rectangle {
-            x,
-            y,
-            width,
-            height,
-        }
-    }
-
-    /// Returns an infinite iterator of horizontally adjecent rectangles, starting at the specified
-    /// point and increasing along the X axis.
-    ///
-    /// This can be useful when slicing spritesheets.
-    ///
-    /// # Examples
-    /// ```
-    /// # use tetra::graphics::Rectangle;
-    /// let rects: Vec<Rectangle> = Rectangle::row(0.0, 0.0, 16.0, 16.0).take(3).collect();
-    ///
-    /// assert_eq!(Rectangle::new(0.0, 0.0, 16.0, 16.0), rects[0]);
-    /// assert_eq!(Rectangle::new(16.0, 0.0, 16.0, 16.0), rects[1]);
-    /// assert_eq!(Rectangle::new(32.0, 0.0, 16.0, 16.0), rects[2]);
-    /// ```
-    pub fn row(x: f32, y: f32, width: f32, height: f32) -> impl Iterator<Item = Rectangle> {
-        RectangleRow {
-            next_rect: Rectangle::new(x, y, width, height),
-        }
-    }
-
-    /// Returns an infinite iterator of vertically adjecent rectangles, starting at the specified
-    /// point and increasing along the Y axis.
-    ///
-    /// This can be useful when slicing spritesheets.
-    ///
-    /// # Examples
-    /// ```
-    /// # use tetra::graphics::Rectangle;
-    /// let rects: Vec<Rectangle> = Rectangle::column(0.0, 0.0, 16.0, 16.0).take(3).collect();
-    ///
-    /// assert_eq!(Rectangle::new(0.0, 0.0, 16.0, 16.0), rects[0]);
-    /// assert_eq!(Rectangle::new(0.0, 16.0, 16.0, 16.0), rects[1]);
-    /// assert_eq!(Rectangle::new(0.0, 32.0, 16.0, 16.0), rects[2]);
-    /// ```
-    pub fn column(x: f32, y: f32, width: f32, height: f32) -> impl Iterator<Item = Rectangle> {
-        RectangleColumn {
-            next_rect: Rectangle::new(x, y, width, height),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-struct RectangleRow {
-    next_rect: Rectangle,
-}
-
-impl Iterator for RectangleRow {
-    type Item = Rectangle;
-
-    fn next(&mut self) -> Option<Rectangle> {
-        let current_rect = self.next_rect;
-        self.next_rect.x += self.next_rect.width;
-        Some(current_rect)
-    }
-}
-
-#[derive(Debug, Clone)]
-struct RectangleColumn {
-    next_rect: Rectangle,
-}
-
-impl Iterator for RectangleColumn {
-    type Item = Rectangle;
-
-    fn next(&mut self) -> Option<Rectangle> {
-        let current_rect = self.next_rect;
-        self.next_rect.y += self.next_rect.height;
-        Some(current_rect)
-    }
-}
-
-/// Struct representing the parameters that can be used when drawing.
-///
-/// You can either use this as a builder by calling `DrawParams::new` and then chaining methods, or
-/// construct it manually - whichever you find more pleasant to write.
-#[derive(Debug, Clone, PartialEq)]
-pub struct DrawParams {
-    /// The position that the graphic should be drawn at. Defaults to [0.0, 0.0].
-    pub position: Vec2,
-
-    /// The scale that the graphic should be drawn at. Defaults to [1.0, 1.0].
-    ///
-    /// This can be set to a negative value to flip the graphic around the origin.
-    pub scale: Vec2,
-
-    /// The origin of the graphic. Defaults to [0.0, 0.0] (the top left).
-    ///
-    /// Positioning and scaling will be calculated relative to this point.
-    pub origin: Vec2,
-
-    /// The rotation of the graphic, in radians. Defaults to 0.0.
-    pub rotation: f32,
-
-    /// A color to multiply the graphic by. Defaults to white.
-    pub color: Color,
-
-    /// A sub-region of the graphic to draw. Defaults to `None`, which means the the full graphic will be drawn.
-    ///
-    /// This is useful if you're using spritesheets (which you should be!).
-    pub clip: Option<Rectangle>,
-}
-
-impl DrawParams {
-    /// Creates a new set of `DrawParams`.
-    pub fn new() -> DrawParams {
-        DrawParams::default()
-    }
-
-    /// Sets the position that the graphic should be drawn at.
-    pub fn position(mut self, position: Vec2) -> DrawParams {
-        self.position = position;
-        self
-    }
-
-    /// Sets the scale that the graphic should be drawn at.
-    pub fn scale(mut self, scale: Vec2) -> DrawParams {
-        self.scale = scale;
-        self
-    }
-
-    /// Sets the origin of the graphic.
-    pub fn origin(mut self, origin: Vec2) -> DrawParams {
-        self.origin = origin;
-        self
-    }
-
-    /// Sets the rotation of the graphic, in radians.
-    pub fn rotation(mut self, rotation: f32) -> DrawParams {
-        self.rotation = rotation;
-        self
-    }
-
-    /// Sets the color to multiply the graphic by.
-    pub fn color(mut self, color: Color) -> DrawParams {
-        self.color = color;
-        self
-    }
-
-    /// Sets the region of the graphic to draw.
-    pub fn clip(mut self, clip: Rectangle) -> DrawParams {
-        self.clip = Some(clip);
-        self
-    }
-}
-
-impl Default for DrawParams {
-    fn default() -> DrawParams {
-        DrawParams {
-            position: Vec2::new(0.0, 0.0),
-            scale: Vec2::new(1.0, 1.0),
-            origin: Vec2::new(0.0, 0.0),
-            rotation: 0.0,
-            color: Color::WHITE,
-            clip: None,
-        }
-    }
-}
-
-impl From<Vec2> for DrawParams {
-    fn from(position: Vec2) -> DrawParams {
-        DrawParams {
-            position,
-            ..DrawParams::default()
-        }
-    }
-}
-
-/// Represents the different filtering algorithms that can be used when scaling an image.
-///
-/// Tetra currently defaults to using `Nearest` for all newly created textures.
-#[derive(Debug, Clone, Copy)]
-pub enum FilterMode {
-    /// Nearest-neighbor interpolation. This preserves hard edges and details, but may look pixelated.
-    ///
-    /// If you're using pixel art, this is probably the scaling mode you should use.
-    Nearest,
-
-    /// Linear interpolation. This smooths images when scaling them up or down.
-    Linear,
-}
-
-/// Represents a type that can be drawn.
-///
-/// [`graphics::draw`](fn.draw.html) can be used to draw without importing this trait, which is sometimes
-/// more convienent.
-pub trait Drawable {
-    /// Draws `self` to the screen (or a canvas, if one is enabled), using the specified parameters.
-    ///
-    /// Any type that implements `Into<DrawParams>` can be passed into this method. For example, since the majority
-    /// of the time, you only care about changing the position, a `Vec2` can be passed to set the position and leave
-    /// everything else as the defaults.
-    fn draw<P>(&self, ctx: &mut Context, params: P)
-    where
-        P: Into<DrawParams>;
 }
 
 /// Clears the screen (or a canvas, if one is enabled) to the specified color.

@@ -9,7 +9,7 @@ use image;
 use crate::error::{Result, TetraError};
 use crate::fs;
 use crate::graphics::opengl::GLTexture;
-use crate::graphics::{self, DrawParams, Drawable, FilterMode, Rectangle};
+use crate::graphics::{self, DrawParams, Drawable, Rectangle};
 use crate::Context;
 
 /// A 2D texture, held in GPU memory.
@@ -156,4 +156,18 @@ impl Drawable for Texture {
         graphics::set_texture(ctx, self);
         graphics::push_quad(ctx, x1, y1, x2, y2, u1, v1, u2, v2, &params);
     }
+}
+
+/// Represents the different filtering algorithms that can be used when scaling an image.
+///
+/// Tetra currently defaults to using `Nearest` for all newly created textures.
+#[derive(Debug, Clone, Copy)]
+pub enum FilterMode {
+    /// Nearest-neighbor interpolation. This preserves hard edges and details, but may look pixelated.
+    ///
+    /// If you're using pixel art, this is probably the scaling mode you should use.
+    Nearest,
+
+    /// Linear interpolation. This smooths images when scaling them up or down.
+    Linear,
 }
