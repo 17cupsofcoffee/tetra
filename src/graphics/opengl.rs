@@ -6,7 +6,7 @@ use glow::Context as GlowContext;
 
 use crate::error::{Result, TetraError};
 use crate::graphics::{Canvas, FilterMode, IndexBuffer, Shader, Texture, VertexBuffer};
-use crate::math::{self, Mat4};
+use crate::math::{FrustumPlanes, Mat4};
 use crate::platform::GlContext;
 
 type BufferId = <GlContext as GlowContext>::Buffer;
@@ -439,7 +439,14 @@ impl GLDevice {
             let canvas = Canvas {
                 texture,
                 framebuffer: Rc::new(framebuffer),
-                projection: math::ortho(0.0, width as f32, 0.0, height as f32, -1.0, 1.0),
+                projection: Mat4::orthographic_rh_no(FrustumPlanes {
+                    left: 0.0,
+                    right: width as f32,
+                    bottom: 0.0,
+                    top: height as f32,
+                    near: -1.0,
+                    far: 1.0,
+                }),
             };
 
             let previous_id = self.current_framebuffer;
@@ -692,7 +699,7 @@ mod sealed {
     pub trait UniformValueTypes {}
     impl UniformValueTypes for i32 {}
     impl UniformValueTypes for f32 {}
-    impl UniformValueTypes for Mat4 {}
+    impl UniformValueTypes for Mat4<f32> {}
     impl<'a, T> UniformValueTypes for &'a T where T: UniformValueTypes {}
 }
 
@@ -720,21 +727,14 @@ impl UniformValue for f32 {
     }
 }
 
-impl UniformValue for Mat4 {
+impl UniformValue for Mat4<f32> {
     #[doc(hidden)]
     unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
-        let slice = self.as_slice();
-
-        // I don't think there's a scenario where this wouldn't be true,
-        // but better safe than sorry.
-        assert_eq!(slice.len(), 16);
-
-        let array_ref = slice.as_ptr() as *const [f32; 16];
-
-        shader
-            .handle
-            .gl
-            .uniform_matrix_4_f32_slice(location, false, &*array_ref);
+        shader.handle.gl.uniform_matrix_4_f32_slice(
+            location,
+            self.gl_should_transpose(),
+            &self.into_col_array(),
+        );
     }
 }
 

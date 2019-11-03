@@ -240,7 +240,7 @@ pub fn get_gamepad_stick_position(
     ctx: &Context,
     gamepad_index: usize,
     stick: GamepadStick,
-) -> Vec2 {
+) -> Vec2<f32> {
     let (x_axis, y_axis) = match stick {
         GamepadStick::LeftStick => (GamepadAxis::LeftStickX, GamepadAxis::LeftStickY),
         GamepadStick::RightStick => (GamepadAxis::RightStickX, GamepadAxis::RightStickY),

@@ -4,7 +4,7 @@ use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
     text: Text,
-    pos: Vec2,
+    pos: Vec2<f32>,
 }
 
 impl GameState {

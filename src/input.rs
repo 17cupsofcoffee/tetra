@@ -28,7 +28,7 @@ pub(crate) struct InputContext {
 
     current_mouse_state: HashSet<MouseButton>,
     previous_mouse_state: HashSet<MouseButton>,
-    mouse_position: Vec2,
+    mouse_position: Vec2<f32>,
 
     pads: Vec<Option<GamepadState>>,
 }
@@ -42,7 +42,7 @@ impl InputContext {
 
             current_mouse_state: HashSet::new(),
             previous_mouse_state: HashSet::new(),
-            mouse_position: Vec2::zeros(),
+            mouse_position: Vec2::zero(),
 
             pads: Vec::new(),
         }

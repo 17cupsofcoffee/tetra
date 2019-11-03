@@ -5,7 +5,7 @@ use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
     texture: Texture,
-    position: Vec2,
+    position: Vec2<f32>,
 }
 
 impl GameState {

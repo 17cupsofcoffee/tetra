@@ -17,8 +17,8 @@ const HEIGHT: i32 = 720;
 const GRAVITY: f32 = 0.5;
 
 struct Bunny {
-    position: Vec2,
-    velocity: Vec2,
+    position: Vec2<f32>,
+    velocity: Vec2<f32>,
 }
 
 impl Bunny {

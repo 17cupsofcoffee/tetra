@@ -51,7 +51,7 @@ pub fn get_mouse_y(ctx: &Context) -> f32 {
 /// Get the position of the mouse.
 ///
 /// If the screen is scaled, the returned value will be relative to the original size.
-pub fn get_mouse_position(ctx: &Context) -> Vec2 {
+pub fn get_mouse_position(ctx: &Context) -> Vec2<f32> {
     Vec2::new(get_mouse_x(ctx), get_mouse_y(ctx))
 }
 
@@ -63,6 +63,6 @@ pub(crate) fn set_mouse_button_up(ctx: &mut Context, btn: MouseButton) {
     ctx.input.current_mouse_state.remove(&btn);
 }
 
-pub(crate) fn set_mouse_position(ctx: &mut Context, position: Vec2) {
+pub(crate) fn set_mouse_position(ctx: &mut Context, position: Vec2<f32>) {
     ctx.input.mouse_position = position;
 }

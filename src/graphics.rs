@@ -32,7 +32,7 @@ use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 use crate::error::Result;
 use crate::graphics::opengl::{BufferUsage, FrontFace, GLDevice};
 use crate::graphics::text::FontQuad;
-use crate::math::{self, Mat4};
+use crate::math::{FrustumPlanes, Mat4};
 use crate::platform;
 use crate::window;
 use crate::Context;
@@ -74,7 +74,7 @@ pub(crate) struct GraphicsContext {
 
     canvas: ActiveCanvas,
 
-    window_projection: Mat4,
+    window_projection: Mat4<f32>,
 
     vertex_data: Vec<f32>,
     element_capacity: i32,
@@ -132,14 +132,14 @@ impl GraphicsContext {
 
             canvas: ActiveCanvas::Window,
 
-            window_projection: math::ortho(
-                0.0,
-                window_width as f32,
-                window_height as f32,
-                0.0,
-                -1.0,
-                1.0,
-            ),
+            window_projection: Mat4::orthographic_rh_no(FrustumPlanes {
+                left: 0.0,
+                right: window_width as f32,
+                bottom: window_height as f32,
+                top: 0.0,
+                near: -1.0,
+                far: 1.0,
+            }),
 
             vertex_data: Vec::with_capacity(MAX_VERTICES * VERTEX_STRIDE),
             element_capacity: MAX_INDICES as i32,
@@ -434,7 +434,14 @@ pub fn get_device_info(ctx: &Context) -> GraphicsDeviceInfo {
 }
 
 pub(crate) fn set_window_projection(ctx: &mut Context, width: i32, height: i32) {
-    ctx.graphics.window_projection = math::ortho(0.0, width as f32, height as f32, 0.0, -1.0, 1.0);
+    ctx.graphics.window_projection = Mat4::orthographic_rh_no(FrustumPlanes {
+        left: 0.0,
+        right: width as f32,
+        bottom: height as f32,
+        top: 0.0,
+        near: -1.0,
+        far: 1.0,
+    });
 
     if let ActiveCanvas::Window = ctx.graphics.canvas {
         ctx.gl.viewport(0, 0, width, height);

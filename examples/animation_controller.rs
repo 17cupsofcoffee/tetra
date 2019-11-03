@@ -78,8 +78,8 @@ impl Drawable for PlayerAnimation {
 
 struct GameState {
     animation: PlayerAnimation,
-    position: Vec2,
-    velocity: Vec2,
+    position: Vec2<f32>,
+    velocity: Vec2<f32>,
 }
 
 impl GameState {

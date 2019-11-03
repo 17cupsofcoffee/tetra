@@ -15,7 +15,7 @@ This project adheres to Semantic Versioning.
 * Screen scaling has been extracted from the core of the engine, and is now provided via the `ScreenScaler` struct. This allows it to be more flexibly integrated with the rest of your game's rendering.
 * Various functions now return errors instead of panicking.
 * `TetraError` has been reorganized, so that the errors returned are more descriptive.
-* The `glm` module has been renamed to `math`.
+* The `glm` module has been renamed to `math`, and the `nalgebra-glm` dependency has been replaced with `vek`. 
 * `Vec2` is now exported from `math`, not `graphics`.
 * The graphics device debugging info is now hidden by default. Set the `debug_info` option on `Game` to `true` to bring this back.
 * Details of the active graphics device can now be retrieved by calling `graphics::get_device_info`.
@@ -25,7 +25,6 @@ This project adheres to Semantic Versioning.
 * Updated `hashbrown` to 0.6.3.
 * Updated `image` to 0.22.3.
 * Updated `glyph_brush` to 0.6.1.
-* Updated `nalgebra-glm` to 0.5.0.
 
 ### Removed
 

@@ -75,8 +75,8 @@ struct GameState {
     start: bool,
     back: bool,
 
-    left_stick: Vec2,
-    right_stick: Vec2,
+    left_stick: Vec2<f32>,
+    right_stick: Vec2<f32>,
 
     axis_info: Text,
 }
@@ -107,8 +107,8 @@ impl GameState {
             start: false,
             back: false,
 
-            left_stick: Vec2::zeros(),
-            right_stick: Vec2::zeros(),
+            left_stick: Vec2::zero(),
+            right_stick: Vec2::zero(),
 
             axis_info: Text::new("", Font::default(), 16.0),
         })
@@ -129,13 +129,13 @@ impl GameState {
         );
     }
 
-    fn draw_stick(&self, ctx: &mut Context, x: f32, y: f32, sprite: Sprite, value: Vec2) {
+    fn draw_stick(&self, ctx: &mut Context, x: f32, y: f32, sprite: Sprite, value: Vec2<f32>) {
         graphics::draw(
             ctx,
             &self.texture,
             DrawParams::new()
                 .position(Vec2::new(x, y) + (value * 32.0))
-                .color(if math::length(&value).abs() > 0.08 {
+                .color(if value.magnitude().abs() > 0.08 {
                     self.active_color
                 } else {
                     Color::WHITE

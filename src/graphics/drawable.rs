@@ -9,17 +9,17 @@ use crate::Context;
 #[derive(Debug, Clone, PartialEq)]
 pub struct DrawParams {
     /// The position that the graphic should be drawn at. Defaults to [0.0, 0.0].
-    pub position: Vec2,
+    pub position: Vec2<f32>,
 
     /// The scale that the graphic should be drawn at. Defaults to [1.0, 1.0].
     ///
     /// This can be set to a negative value to flip the graphic around the origin.
-    pub scale: Vec2,
+    pub scale: Vec2<f32>,
 
     /// The origin of the graphic. Defaults to [0.0, 0.0] (the top left).
     ///
     /// Positioning and scaling will be calculated relative to this point.
-    pub origin: Vec2,
+    pub origin: Vec2<f32>,
 
     /// The rotation of the graphic, in radians. Defaults to 0.0.
     pub rotation: f32,
@@ -40,19 +40,19 @@ impl DrawParams {
     }
 
     /// Sets the position that the graphic should be drawn at.
-    pub fn position(mut self, position: Vec2) -> DrawParams {
+    pub fn position(mut self, position: Vec2<f32>) -> DrawParams {
         self.position = position;
         self
     }
 
     /// Sets the scale that the graphic should be drawn at.
-    pub fn scale(mut self, scale: Vec2) -> DrawParams {
+    pub fn scale(mut self, scale: Vec2<f32>) -> DrawParams {
         self.scale = scale;
         self
     }
 
     /// Sets the origin of the graphic.
-    pub fn origin(mut self, origin: Vec2) -> DrawParams {
+    pub fn origin(mut self, origin: Vec2<f32>) -> DrawParams {
         self.origin = origin;
         self
     }
@@ -89,8 +89,8 @@ impl Default for DrawParams {
     }
 }
 
-impl From<Vec2> for DrawParams {
-    fn from(position: Vec2) -> DrawParams {
+impl From<Vec2<f32>> for DrawParams {
+    fn from(position: Vec2<f32>) -> DrawParams {
         DrawParams {
             position,
             ..DrawParams::default()

@@ -28,12 +28,12 @@ use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
     texture: Texture,
-    velocity: Vec2,
+    velocity: Vec2<f32>,
 
-    position_none: Vec2,
-    position_ex: Vec2,
-    position_in_prev: Vec2,
-    position_in_curr: Vec2,
+    position_none: Vec2<f32>,
+    position_ex: Vec2<f32>,
+    position_in_prev: Vec2<f32>,
+    position_in_curr: Vec2<f32>,
 }
 
 impl GameState {
@@ -90,7 +90,7 @@ impl State for GameState {
         graphics::draw(
             ctx,
             &self.texture,
-            math::lerp(&self.position_in_prev, &self.position_in_curr, dt as f32),
+            Vec2::lerp(self.position_in_prev, self.position_in_curr, dt as f32),
         );
 
         Ok(())

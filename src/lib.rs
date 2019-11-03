@@ -66,10 +66,10 @@ pub mod error;
 mod fs;
 pub mod graphics;
 pub mod input;
-pub mod math;
 mod platform;
 pub mod time;
 pub mod window;
+pub use vek as math;
 
 use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};

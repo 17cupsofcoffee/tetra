@@ -5,8 +5,8 @@ use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
     texture: Texture,
-    position: Vec2,
-    scale: Vec2,
+    position: Vec2<f32>,
+    scale: Vec2<f32>,
     rotation: f32,
 }
 
@@ -23,7 +23,7 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        self.position = math::round(&input::get_mouse_position(ctx));
+        self.position = input::get_mouse_position(ctx).round();
 
         if input::is_mouse_button_down(ctx, MouseButton::Left) {
             self.scale = Vec2::new(4.0, 4.0);

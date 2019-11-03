@@ -59,7 +59,7 @@ use crate::Context;
 pub struct Canvas {
     pub(crate) texture: Texture,
     pub(crate) framebuffer: Rc<GLFramebuffer>,
-    pub(crate) projection: Mat4,
+    pub(crate) projection: Mat4<f32>,
 }
 
 impl Canvas {
