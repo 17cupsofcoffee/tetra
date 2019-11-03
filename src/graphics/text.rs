@@ -24,7 +24,9 @@ pub(crate) struct FontQuad {
     v2: f32,
 }
 
-/// A font that can be used to render text. TrueType fonts (.ttf) and a subset of OpenType fonts (.otf)
+/// A font that can be used to render text.
+///
+/// TrueType fonts (.ttf) and a subset of OpenType fonts (.otf)
 /// are supported.
 ///
 /// The actual data for fonts is cached in the `Context`, so there should be no overhead for copying
