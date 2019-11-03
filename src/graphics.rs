@@ -32,7 +32,7 @@ use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 use crate::error::Result;
 use crate::graphics::opengl::{BufferUsage, FrontFace, GLDevice};
 use crate::graphics::text::FontQuad;
-use crate::math::{self, Mat4, Vec2};
+use crate::math::{self, Mat4};
 use crate::platform;
 use crate::window;
 use crate::Context;
