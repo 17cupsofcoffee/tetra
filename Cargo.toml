@@ -16,39 +16,13 @@ sdl2_bundled = ["sdl2/bundled"]
 sdl2_static_link = ["sdl2/static-link"]
 
 [dependencies]
+sdl2 = "0.32.2"
+rodio = "0.9.0"
 glow = "0.2.3"
 image = "0.22.3"
 nalgebra-glm = "0.4.2"
 hashbrown = "0.6.1"
 glyph_brush = "0.6.0"
-instant = { version = "0.1.2", features = ["wasm-bindgen"] }
 
 [dev-dependencies]
-rand = { version = "0.7", features = ["wasm-bindgen"] }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-sdl2 = "0.32.2"
-rodio = "0.9.0"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2.51"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
-version = "0.3.28"
-features = [
-    "Document",
-    "DomTokenList",
-    "Element",
-    "HtmlElement",
-    "HtmlCanvasElement",
-    "WebGlBuffer",
-    "WebGlRenderingContext",
-    "WebGlProgram",
-    "WebGlShader",
-    "Window",
-    "console",
-    "KeyboardEvent",
-    "MouseEvent",
-    "EventTarget",
-    "CssStyleDeclaration"
-]
+rand = "0.7"

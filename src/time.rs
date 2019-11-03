@@ -2,7 +2,7 @@
 
 use std::collections::VecDeque;
 
-use instant::{Duration, Instant};
+use std::time::{Duration, Instant};
 
 use crate::Context;
 

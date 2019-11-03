@@ -51,18 +51,6 @@ pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag
 /// * `u_texture` - A `sampler2D` which can be used to access color data from the currently active texture.
 ///
 /// You can also set data into your own uniform variables via the `set_uniform` method.
-///
-/// # Platform-specific Behaviour
-///
-/// Support for different versions of GLSL is very varied between platforms, and what works on your machine
-/// may not work on other systems (or the web). Failing to account for this can lead to bugs that are
-/// frustrating for both you and your players!
-///
-/// Your options to deal with this are:
-///
-/// * Write shaders that target the lowest common denominator. This is the approach that is used for the
-/// shaders that are built into Tetra.
-/// * Provide different shaders for different targets, using conditional compilation/runtime checks.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shader {
     pub(crate) handle: Rc<GLProgram>,

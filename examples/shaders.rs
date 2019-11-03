@@ -1,6 +1,6 @@
 use tetra::graphics::{self, Color, DrawParams, Font, Shader, Text, Texture};
 use tetra::math::Vec2;
-use tetra::{Context, Settings, State};
+use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
     texture: Texture,
@@ -72,9 +72,9 @@ impl State for GameState {
     }
 }
 
-fn main() {
-    tetra::run(
-        &Settings::new("Custom Shaders", 1280, 720).quit_on_escape(true),
-        GameState::new,
-    );
+fn main() -> tetra::Result {
+    ContextBuilder::new("Custom Shaders", 1280, 720)
+        .quit_on_escape(true)
+        .build()?
+        .run(GameState::new)
 }

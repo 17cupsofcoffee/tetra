@@ -3,7 +3,7 @@
 use tetra::graphics::{self, Color, DrawParams, Font, Rectangle, Text, Texture};
 use tetra::input::{self, GamepadAxis, GamepadButton, GamepadStick};
 use tetra::math::{self, Vec2};
-use tetra::{Context, Settings, State};
+use tetra::{Context, ContextBuilder, State};
 
 enum Sprite {
     A,
@@ -224,9 +224,9 @@ impl State for GameState {
     }
 }
 
-fn main() {
-    tetra::run(
-        &Settings::new("Gamepad Input", 1280, 720).quit_on_escape(true),
-        GameState::new,
-    );
+fn main() -> tetra::Result {
+    ContextBuilder::new("Gamepad Input", 1280, 720)
+        .quit_on_escape(true)
+        .build()?
+        .run(GameState::new)
 }

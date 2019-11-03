@@ -1,5 +1,5 @@
 use tetra::graphics::{self, Color};
-use tetra::{Context, Settings, State};
+use tetra::{Context, ContextBuilder, State};
 
 struct GameState;
 
@@ -11,8 +11,8 @@ impl State for GameState {
     }
 }
 
-fn main() {
-    tetra::run(&Settings::new("Hello, world!", 1280, 720), |_| {
-        Ok(GameState)
-    });
+fn main() -> tetra::Result {
+    ContextBuilder::new("Hello, world!", 1280, 720)
+        .build()?
+        .run(|_| Ok(GameState))
 }

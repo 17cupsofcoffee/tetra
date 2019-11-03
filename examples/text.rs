@@ -1,6 +1,6 @@
 use tetra::graphics::{self, Color, Font, Text};
 use tetra::math::Vec2;
-use tetra::{Context, Settings, State};
+use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
     text: Text,
@@ -33,9 +33,9 @@ impl State for GameState {
     }
 }
 
-fn main() {
-    tetra::run(
-        &Settings::new("Rendering Text", 1280, 720).quit_on_escape(true),
-        GameState::new,
-    );
+fn main() -> tetra::Result {
+    ContextBuilder::new("Rendering Text", 1280, 720)
+        .quit_on_escape(true)
+        .build()?
+        .run(GameState::new)
 }

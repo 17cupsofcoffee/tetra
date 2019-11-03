@@ -8,11 +8,9 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
-* Tetra now requires Rust 1.36 or higher. It may work on some earlier versions, but this is not supported.
-* `ContextBuilder` has been replaced with a `Settings` struct that can be passed to `tetra::run` or `Context::new`. The former has functionality to handle making the game loop run on multiple platforms with consistent error handling (see the next item!), and the latter is designed to be used in custom game loops.
-* The game loop no longer returns errors back to `main`, as this API does not work well on the web where `main` cannot block. Instead, `State` now has an `error` method that can be used for logging/reporting uncaught errors.
+* Tetra now targets the latest stable Rust compiler, rather than a fixed minimum version. This will hopefully change once Cargo has better functionality for enforcing minimum supported compiler versions - currently it's impossible to make guarentees, as our dependencies can change their minimum versions at will.
 * `Key` and `MouseButton` are now Tetra-specific types, rather than re-exporting the SDL versions. Note that some names have been changed for consistency, and some variants have been removed to simplify the docs.
-* `TetraError::Sdl` is now called `TetraError::Platform`.
+* `TetraError::Sdl` and `TetraError::OpenGl` have been merged into `TetraError::PlatformError`, since they both represent the scenario where something's gone seriously wrong with the underlying platform.
 * `DEFAULT_VERTEX_SHADER` and `DEFAULT_FRAGMENT_SHADER` are now const instead of static.
 * Screen scaling has been extracted from the core of the engine, and is now provided via the `ScreenScaler` struct. This allows it to be more flexibly integrated with the rest of your game's rendering.
 * Various functions now return errors instead of panicking.

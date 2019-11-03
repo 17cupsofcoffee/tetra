@@ -7,8 +7,7 @@ use std::path::PathBuf;
 use std::result;
 
 use image::ImageError;
-
-use crate::platform::DecoderError;
+use rodio::decoder::DecoderError;
 
 /// A specialized `Result` type for Tetra.
 ///

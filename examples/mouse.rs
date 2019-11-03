@@ -1,7 +1,7 @@
 use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, MouseButton};
 use tetra::math::{self, Vec2};
-use tetra::{Context, Settings, State};
+use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
     texture: Texture,
@@ -53,9 +53,9 @@ impl State for GameState {
     }
 }
 
-fn main() {
-    tetra::run(
-        &Settings::new("Mouse Input", 640, 480).quit_on_escape(true),
-        GameState::new,
-    );
+fn main() -> tetra::Result {
+    ContextBuilder::new("Mouse Input", 640, 480)
+        .quit_on_escape(true)
+        .build()?
+        .run(GameState::new)
 }

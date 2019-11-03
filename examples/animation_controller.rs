@@ -7,7 +7,7 @@ use tetra::graphics::animation::Animation;
 use tetra::graphics::{self, Color, DrawParams, Drawable, Rectangle, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
-use tetra::{Context, Settings, State};
+use tetra::{Context, ContextBuilder, State};
 
 #[derive(PartialEq)]
 enum PlayerState {
@@ -135,9 +135,9 @@ impl State for GameState {
     }
 }
 
-fn main() {
-    tetra::run(
-        &Settings::new("Controlling Animations", 480, 320).quit_on_escape(true),
-        GameState::new,
-    );
+fn main() -> tetra::Result {
+    ContextBuilder::new("Controlling Animations", 480, 320)
+        .quit_on_escape(true)
+        .build()?
+        .run(GameState::new)
 }

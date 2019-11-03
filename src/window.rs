@@ -12,19 +12,11 @@ pub fn quit(ctx: &mut Context) {
 }
 
 /// Gets the current title of the window.
-///
-/// # Platform-specific Behaviour
-///
-/// Returns an empty string on web platforms.
 pub fn get_title(ctx: &Context) -> &str {
     platform::get_window_title(ctx)
 }
 
 /// Sets the title of the window.
-///
-/// # Platform-specific Behaviour
-///
-/// Does nothing on web platforms.
 pub fn set_title<S>(ctx: &mut Context, title: S)
 where
     S: AsRef<str>,
@@ -79,10 +71,6 @@ pub fn set_size(ctx: &mut Context, width: i32, height: i32) -> Result {
 
 /// Sets whether the window should be vsynced.
 ///
-/// # Platform-specific Behaviour
-///
-/// Passing false will fail on web platforms, as you cannot disable vsync there.
-///
 /// # Errors
 ///
 /// * `TetraError::FailedToChangeDisplayMode` will be returned if the game was unable to
@@ -92,10 +80,6 @@ pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
 }
 
 /// Returns whethere or not vsync is enabled.
-///
-/// # Platform-specific Behaviour
-///
-/// Always returns true on web platforms, as you cannot disable vsync there.
 pub fn is_vsync_enabled(ctx: &Context) -> bool {
     platform::is_vsync_enabled(ctx)
 }

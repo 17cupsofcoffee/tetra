@@ -32,7 +32,7 @@
 //!
 //! ```no_run
 //! use tetra::graphics::{self, Color};
-//! use tetra::{Context, Settings, State};
+//! use tetra::{Context, ContextBuilder, State};
 //!
 //! struct GameState;
 //!
@@ -44,10 +44,10 @@
 //!     }
 //! }
 //!
-//! fn main() {
-//!     tetra::run(&Settings::new("Hello, world!", 1280, 720), |_| {
-//!         Ok(GameState)
-//!     });
+//! fn main() -> tetra::Result {
+//!     ContextBuilder::new("Hello, world!", 1280, 720)
+//!         .build()?
+//!         .run(|_| Ok(GameState))
 //! }
 //! ```
 //!
@@ -71,6 +71,7 @@ mod platform;
 pub mod time;
 pub mod window;
 
+use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
@@ -109,15 +110,6 @@ pub trait State {
     fn draw(&mut self, ctx: &mut Context, dt: f64) -> Result {
         Ok(())
     }
-
-    /// Called when an error is returned from one of the other `State` methods.
-    ///
-    /// This method does not provide any way to recover from the error - it exists so that you can
-    /// log/report any fatal errors before exiting the game. Non-fatal errors should be handled at
-    /// the point where they were thrown.
-    fn error(error: TetraError) {
-        platform::log_error(error)
-    }
 }
 
 /// A struct containing all of the 'global' state within the framework.
@@ -125,6 +117,7 @@ pub struct Context {
     platform: Platform,
     gl: GLDevice,
 
+    audio: AudioContext,
     graphics: GraphicsContext,
     input: InputContext,
     time: TimeContext,
@@ -134,21 +127,18 @@ pub struct Context {
 }
 
 impl Context {
-    /// Creates a new `Context`, using the provided settings.
-    ///
-    /// Unless you're writing a custom game loop, you probably don't need to call this!
-    pub fn new(settings: &Settings) -> Result<Context> {
+    pub(crate) fn new(settings: &ContextBuilder) -> Result<Context> {
+        // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
+        let audio = AudioContext::new();
+
         let (platform, gl_context, width, height) = Platform::new(settings)?;
         let mut gl = GLDevice::new(gl_context)?;
 
         if settings.debug_info {
-            platform::log_info(&format!("OpenGL Vendor: {}", gl.get_vendor()));
-            platform::log_info(&format!("OpenGL Renderer: {}", gl.get_renderer()));
-            platform::log_info(&format!("OpenGL Version: {}", gl.get_version()));
-            platform::log_info(&format!(
-                "GLSL Version: {}",
-                gl.get_shading_language_version()
-            ));
+            println!("OpenGL Vendor: {}", gl.get_vendor());
+            println!("OpenGL Renderer: {}", gl.get_renderer());
+            println!("OpenGL Version: {}", gl.get_version());
+            println!("GLSL Version: {}", gl.get_shading_language_version());
         }
 
         let graphics = GraphicsContext::new(&mut gl, width, height)?;
@@ -159,6 +149,7 @@ impl Context {
             platform,
             gl,
 
+            audio,
             graphics,
             input,
             time,
@@ -167,15 +158,97 @@ impl Context {
             quit_on_escape: settings.quit_on_escape,
         })
     }
+
+    /// Runs the game.
+    ///
+    /// The `init` parameter takes a function or closure that creates a `State`
+    /// implementation. A common pattern is to use method references to pass in
+    /// your state's constructor directly - see the example below for how this
+    /// works.
+    ///
+    /// # Errors
+    ///
+    /// If the `State` returns an error from `update` or `draw`, the game will stop
+    /// running and this method will return the error.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use tetra::{Context, ContextBuilder, State};
+    ///
+    /// struct GameState;
+    ///
+    /// impl GameState {
+    ///     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+    ///         Ok(GameState)
+    ///     }
+    /// }
+    ///
+    /// impl State for GameState { }
+    ///
+    /// fn main() -> tetra::Result {
+    ///     // Because the signature of GameState::new is
+    ///     // (&mut Context) -> tetra::Result<GameState>, you can pass it
+    ///     // into run directly.
+    ///     ContextBuilder::new("Hello, world!", 1280, 720)
+    ///         .build()?
+    ///         .run(GameState::new)
+    /// }
+    /// ```
+    ///
+    pub fn run<S, F>(&mut self, init: F) -> Result
+    where
+        S: State,
+        F: FnOnce(&mut Context) -> Result<S>,
+    {
+        let state = &mut init(self)?;
+
+        self.running = true;
+
+        platform::show_window(self);
+        time::reset(self);
+
+        while self.running {
+            time::tick(self);
+
+            if let Err(e) = platform::handle_events(self) {
+                self.running = false;
+                return Err(e);
+            }
+
+            while time::is_tick_ready(self) {
+                if let Err(e) = state.update(self) {
+                    self.running = false;
+                    return Err(e);
+                }
+
+                input::cleanup_after_state_update(self);
+
+                time::consume_tick(self);
+            }
+
+            if let Err(e) = state.draw(self, time::get_alpha(self)) {
+                self.running = false;
+                return Err(e);
+            }
+
+            graphics::present(self);
+
+            std::thread::yield_now();
+        }
+
+        platform::hide_window(self);
+
+        Ok(())
+    }
 }
 
 /// Settings that can be configured when starting up a game.
 #[derive(Debug, Clone)]
-pub struct Settings {
+pub struct ContextBuilder {
     title: String,
     window_width: i32,
     window_height: i32,
-    canvas_id: String,
     vsync: bool,
     tick_rate: f64,
     fullscreen: bool,
@@ -188,29 +261,25 @@ pub struct Settings {
     debug_info: bool,
 }
 
-impl Settings {
-    /// Create a new `Settings` struct, with a title and window size.
-    pub fn new<S>(title: S, window_width: i32, window_height: i32) -> Settings
+impl ContextBuilder {
+    /// Create a new `ContextBuilder`, with a title and window size.
+    pub fn new<S>(title: S, window_width: i32, window_height: i32) -> ContextBuilder
     where
         S: Into<String>,
     {
-        Settings {
+        ContextBuilder {
             title: title.into(),
             window_width,
             window_height,
 
-            ..Settings::default()
+            ..ContextBuilder::default()
         }
     }
 
     /// Sets the title of the window.
     ///
     /// Defaults to `"Tetra"`.
-    ///
-    /// # Platform-specific Behaviour
-    ///
-    /// Ignored on web platforms.
-    pub fn title<S>(&mut self, title: S) -> &mut Settings
+    pub fn title<S>(&mut self, title: S) -> &mut ContextBuilder
     where
         S: Into<String>,
     {
@@ -221,36 +290,16 @@ impl Settings {
     /// Sets the size of the window.
     ///
     /// Defaults to `1280` by `720`.
-    pub fn size(&mut self, width: i32, height: i32) -> &mut Settings {
+    pub fn size(&mut self, width: i32, height: i32) -> &mut ContextBuilder {
         self.window_width = width;
         self.window_height = height;
-        self
-    }
-
-    /// Specifies the ID of the `canvas` element that should be used for
-    /// rendering, when running in a browser.
-    ///
-    /// Defaults to `"canvas"`.
-    ///
-    /// # Platform-specific Behaviour
-    ///
-    /// Ignored on desktop platforms.
-    pub fn canvas_id<S>(&mut self, id: S) -> &mut Settings
-    where
-        S: Into<String>,
-    {
-        self.canvas_id = id.into();
         self
     }
 
     /// Enables or disables vsync.
     ///
     /// Defaults to `true`.
-    ///
-    /// # Platform-specific Behaviour
-    ///
-    /// Ignored on web platforms, as vsync cannot be disabled there.
-    pub fn vsync(&mut self, vsync: bool) -> &mut Settings {
+    pub fn vsync(&mut self, vsync: bool) -> &mut ContextBuilder {
         self.vsync = vsync;
         self
     }
@@ -258,7 +307,7 @@ impl Settings {
     /// Sets the game's update tick rate, in ticks per second.
     ///
     /// Defaults to `60.0`.
-    pub fn tick_rate(&mut self, tick_rate: f64) -> &mut Settings {
+    pub fn tick_rate(&mut self, tick_rate: f64) -> &mut ContextBuilder {
         self.tick_rate = 1.0 / tick_rate;
         self
     }
@@ -266,7 +315,7 @@ impl Settings {
     /// Sets whether or not the window should start in fullscreen.
     ///
     /// Defaults to `false`.
-    pub fn fullscreen(&mut self, fullscreen: bool) -> &mut Settings {
+    pub fn fullscreen(&mut self, fullscreen: bool) -> &mut ContextBuilder {
         self.fullscreen = fullscreen;
         self
     }
@@ -274,11 +323,7 @@ impl Settings {
     /// Sets whether or not the window should start maximized.
     ///
     /// Defaults to `false`.
-    ///
-    /// # Platform-specific Behaviour
-    ///
-    /// Ignored on web platforms.
-    pub fn maximized(&mut self, maximized: bool) -> &mut Settings {
+    pub fn maximized(&mut self, maximized: bool) -> &mut ContextBuilder {
         self.maximized = maximized;
         self
     }
@@ -286,11 +331,7 @@ impl Settings {
     /// Sets whether or not the window should start minimized.
     ///
     /// Defaults to `false`.
-    ///
-    /// # Platform-specific Behaviour
-    ///
-    /// Ignored on web platforms.
-    pub fn minimized(&mut self, minimized: bool) -> &mut Settings {
+    pub fn minimized(&mut self, minimized: bool) -> &mut ContextBuilder {
         self.minimized = minimized;
         self
     }
@@ -298,11 +339,7 @@ impl Settings {
     /// Sets whether or not the window should be resizable.
     ///
     /// Defaults to `false`.
-    ///
-    /// # Platform-specific Behaviour
-    ///
-    /// Ignored on web platforms.
-    pub fn resizable(&mut self, resizable: bool) -> &mut Settings {
+    pub fn resizable(&mut self, resizable: bool) -> &mut ContextBuilder {
         self.resizable = resizable;
         self
     }
@@ -310,11 +347,7 @@ impl Settings {
     /// Sets whether or not the window should be borderless.
     ///
     /// Defaults to `false`.
-    ///
-    /// # Platform-specific Behaviour
-    ///
-    /// Ignored on web platforms.
-    pub fn borderless(&mut self, borderless: bool) -> &mut Settings {
+    pub fn borderless(&mut self, borderless: bool) -> &mut ContextBuilder {
         self.borderless = borderless;
         self
     }
@@ -323,7 +356,7 @@ impl Settings {
     /// game window.
     ///
     /// Defaults to `false`.
-    pub fn show_mouse(&mut self, show_mouse: bool) -> &mut Settings {
+    pub fn show_mouse(&mut self, show_mouse: bool) -> &mut ContextBuilder {
         self.show_mouse = show_mouse;
         self
     }
@@ -331,30 +364,34 @@ impl Settings {
     /// Sets whether or not the game should close when the Escape key is pressed.
     ///
     /// Defaults to `false`.
-    ///
-    /// # Platform-specific Behaviour
-    ///
-    /// Ignored on web platforms.
-    pub fn quit_on_escape(&mut self, quit_on_escape: bool) -> &mut Settings {
+    pub fn quit_on_escape(&mut self, quit_on_escape: bool) -> &mut ContextBuilder {
         self.quit_on_escape = quit_on_escape;
         self
     }
 
     /// Sets whether or not the game should print out debug info at startup.
     /// Please include this if you're submitting a bug report!
-    pub fn debug_info(&mut self, debug_info: bool) -> &mut Settings {
+    pub fn debug_info(&mut self, debug_info: bool) -> &mut ContextBuilder {
         self.debug_info = debug_info;
         self
     }
+
+    /// Builds the context.
+    ///
+    /// # Errors
+    ///
+    /// * `TetraError::PlatformError` will be returned if the context cannot be initialized.
+    pub fn build(&self) -> Result<Context> {
+        Context::new(self)
+    }
 }
 
-impl Default for Settings {
-    fn default() -> Settings {
-        Settings {
+impl Default for ContextBuilder {
+    fn default() -> ContextBuilder {
+        ContextBuilder {
             title: "Tetra".into(),
             window_width: 1280,
             window_height: 720,
-            canvas_id: "canvas".into(),
             vsync: true,
             tick_rate: 1.0 / 60.0,
             fullscreen: false,
@@ -367,100 +404,4 @@ impl Default for Settings {
             debug_info: false,
         }
     }
-}
-
-/// Runs the game, using the provided settings.
-///
-/// The `init` parameter takes a function or closure that creates a `State`
-/// implementation. A common pattern is to use method references to pass in
-/// your state's constructor directly - see the example below for how this
-/// works.
-///
-/// # Examples
-///
-/// ```no_run
-/// use tetra::{Context, Settings, State};
-///
-/// struct GameState;
-///
-/// impl GameState {
-///     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
-///         Ok(GameState)
-///     }
-/// }
-///
-/// impl State for GameState { }
-///
-/// fn main() {
-///     // Because the signature of GameState::new is
-///     // (&mut Context) -> tetra::Result<GameState>, you can pass it
-///     // into tetra::run directly.
-///     tetra::run(&Settings::new("Hello, world!", 1280, 720), GameState::new);
-/// }
-/// ```
-///
-/// # Platform-specific Behaviour
-///
-/// This function blocks the main thread on desktop platforms, but returns
-/// immediately on web platforms.
-pub fn run<S, F>(settings: &Settings, init: F)
-where
-    S: State + 'static,
-    F: FnOnce(&mut Context) -> Result<S>,
-{
-    let mut ctx = match Context::new(settings) {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            S::error(e);
-            return;
-        }
-    };
-
-    let state = match init(&mut ctx) {
-        Ok(state) => state,
-        Err(e) => {
-            S::error(e);
-            return;
-        }
-    };
-
-    time::reset(&mut ctx);
-
-    ctx.running = true;
-    platform::run_loop(ctx, state, run_frame);
-}
-
-fn run_frame<S>(ctx: &mut Context, state: &mut S)
-where
-    S: State,
-{
-    time::tick(ctx);
-
-    if let Err(e) = platform::handle_events(ctx) {
-        ctx.running = false;
-        S::error(e);
-        return;
-    }
-
-    while time::is_tick_ready(ctx) {
-        if let Err(e) = state.update(ctx) {
-            ctx.running = false;
-            S::error(e);
-            return;
-        }
-
-        input::cleanup_after_state_update(ctx);
-
-        time::consume_tick(ctx);
-    }
-
-    if let Err(e) = state.draw(ctx, time::get_alpha(ctx)) {
-        ctx.running = false;
-        S::error(e);
-        return;
-    }
-
-    graphics::present(ctx);
-
-    std::thread::yield_now();
 }

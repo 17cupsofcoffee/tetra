@@ -7,7 +7,7 @@ pr:
 strategy:
   matrix:
     stable:
-      rustup_toolchain: 1.36.0
+      rustup_toolchain: stable
     beta:
       rustup_toolchain: beta
     nightly:
@@ -24,9 +24,6 @@ steps:
 - script: |
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
     echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
-    rustup target add wasm32-unknown-unknown
   displayName: Install Rust
 - script: cargo test --all
   displayName: Run tests via Cargo
-- script: cargo build --all-targets --target wasm32-unknown-unknown
-  displayName: Run WASM build via Cargo
