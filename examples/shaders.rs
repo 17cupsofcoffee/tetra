@@ -17,7 +17,7 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
-            shader: Shader::fragment(ctx, "./examples/resources/disco.frag")?,
+            shader: Shader::from_fragment_file(ctx, "./examples/resources/disco.frag")?,
             text: Text::new("", Font::default(), 32.0),
 
             timer: 0.0,
