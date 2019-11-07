@@ -1,12 +1,11 @@
-use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
 
 use glow::Context as GlowContext;
 
 use crate::error::{Result, TetraError};
-use crate::graphics::{Canvas, FilterMode, IndexBuffer, Shader, Texture, VertexBuffer};
-use crate::math::{FrustumPlanes, Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
+use crate::graphics::FilterMode;
+use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 use crate::platform::GlContext;
 
 type BufferId = <GlContext as GlowContext>::Buffer;
@@ -105,19 +104,15 @@ impl GLDevice {
         count: usize,
         stride: usize,
         usage: BufferUsage,
-    ) -> Result<VertexBuffer> {
+    ) -> Result<GLVertexBuffer> {
         unsafe {
             let id = self.gl.create_buffer().map_err(TetraError::PlatformError)?;
 
-            let handle = GLVertexBuffer {
+            let buffer = GLVertexBuffer {
                 gl: Rc::clone(&self.gl),
                 id,
                 count,
                 stride,
-            };
-
-            let buffer = VertexBuffer {
-                handle: Rc::new(handle),
             };
 
             self.bind_vertex_buffer(Some(&buffer));
@@ -134,7 +129,7 @@ impl GLDevice {
 
     pub fn set_vertex_buffer_attribute(
         &mut self,
-        buffer: &VertexBuffer,
+        buffer: &GLVertexBuffer,
         index: u32,
         size: i32,
         offset: usize,
@@ -149,7 +144,7 @@ impl GLDevice {
                 size,
                 glow::FLOAT,
                 false,
-                (buffer.handle.stride * mem::size_of::<f32>()) as i32,
+                (buffer.stride * mem::size_of::<f32>()) as i32,
                 (offset * mem::size_of::<f32>()) as i32,
             );
 
@@ -157,7 +152,7 @@ impl GLDevice {
         }
     }
 
-    pub fn set_vertex_buffer_data(&mut self, buffer: &VertexBuffer, data: &[f32], offset: usize) {
+    pub fn set_vertex_buffer_data(&mut self, buffer: &GLVertexBuffer, data: &[f32], offset: usize) {
         unsafe {
             self.bind_vertex_buffer(Some(buffer));
 
@@ -175,18 +170,14 @@ impl GLDevice {
         }
     }
 
-    pub fn new_index_buffer(&mut self, count: usize, usage: BufferUsage) -> Result<IndexBuffer> {
+    pub fn new_index_buffer(&mut self, count: usize, usage: BufferUsage) -> Result<GLIndexBuffer> {
         unsafe {
             let id = self.gl.create_buffer().map_err(TetraError::PlatformError)?;
 
-            let handle = GLIndexBuffer {
+            let buffer = GLIndexBuffer {
                 gl: Rc::clone(&self.gl),
                 id,
                 count,
-            };
-
-            let buffer = IndexBuffer {
-                handle: Rc::new(handle),
             };
 
             self.bind_index_buffer(Some(&buffer));
@@ -201,7 +192,7 @@ impl GLDevice {
         }
     }
 
-    pub fn set_index_buffer_data(&mut self, buffer: &IndexBuffer, data: &[u32], offset: usize) {
+    pub fn set_index_buffer_data(&mut self, buffer: &GLIndexBuffer, data: &[u32], offset: usize) {
         unsafe {
             self.bind_index_buffer(Some(buffer));
 
@@ -219,7 +210,7 @@ impl GLDevice {
         }
     }
 
-    pub fn new_shader(&mut self, vertex_shader: &str, fragment_shader: &str) -> Result<Shader> {
+    pub fn new_program(&mut self, vertex_shader: &str, fragment_shader: &str) -> Result<GLProgram> {
         unsafe {
             let program_id = self
                 .gl
@@ -272,48 +263,29 @@ impl GLDevice {
             self.gl.delete_shader(vertex_id);
             self.gl.delete_shader(fragment_id);
 
-            let handle = GLProgram {
+            let program = GLProgram {
                 gl: Rc::clone(&self.gl),
                 id: program_id,
             };
 
-            let shader = Shader {
-                handle: Rc::new(handle),
-            };
+            self.set_uniform(&program, "u_texture", 0);
 
-            self.set_uniform(&shader, "u_texture", 0);
-
-            Ok(shader)
+            Ok(program)
         }
     }
 
-    pub fn set_uniform<T>(&mut self, shader: &Shader, name: &str, value: T)
+    pub fn set_uniform<T>(&mut self, program: &GLProgram, name: &str, value: T)
     where
         T: UniformValue,
     {
         unsafe {
-            self.bind_shader(Some(shader));
-            let location = self.gl.get_uniform_location(shader.handle.id, name);
-            value.set_uniform(shader, location);
+            self.bind_program(Some(program));
+            let location = self.gl.get_uniform_location(program.id, name);
+            value.set_uniform(program, location);
         }
     }
 
-    pub fn new_texture(&mut self, width: i32, height: i32, data: &[u8]) -> Result<Texture> {
-        let expected = (width * height * 4) as usize;
-        let actual = data.len();
-
-        if expected > actual {
-            return Err(TetraError::NotEnoughData { expected, actual });
-        }
-
-        let texture = self.new_texture_empty(width, height)?;
-
-        self.set_texture_data(&texture, &data, 0, 0, width, height);
-
-        Ok(texture)
-    }
-
-    pub fn new_texture_empty(&mut self, width: i32, height: i32) -> Result<Texture> {
+    pub fn new_texture(&mut self, width: i32, height: i32) -> Result<GLTexture> {
         // TODO: I don't think we need mipmaps?
         unsafe {
             let id = self
@@ -321,17 +293,13 @@ impl GLDevice {
                 .create_texture()
                 .map_err(TetraError::PlatformError)?;
 
-            let handle = GLTexture {
+            let texture = GLTexture {
                 gl: Rc::clone(&self.gl),
 
                 id,
                 width,
                 height,
                 filter_mode: self.default_filter_mode,
-            };
-
-            let texture = Texture {
-                handle: Rc::new(RefCell::new(handle)),
             };
 
             self.bind_texture(Some(&texture));
@@ -378,7 +346,7 @@ impl GLDevice {
 
     pub fn set_texture_data(
         &mut self,
-        texture: &Texture,
+        texture: &GLTexture,
         data: &[u8],
         x: i32,
         y: i32,
@@ -402,7 +370,7 @@ impl GLDevice {
         }
     }
 
-    pub fn set_texture_filter_mode(&mut self, texture: &Texture, filter_mode: FilterMode) {
+    pub fn set_texture_filter_mode(&mut self, texture: &mut GLTexture, filter_mode: FilterMode) {
         self.bind_texture(Some(texture));
 
         unsafe {
@@ -419,10 +387,14 @@ impl GLDevice {
             );
         }
 
-        texture.handle.borrow_mut().filter_mode = filter_mode;
+        texture.filter_mode = filter_mode;
     }
 
-    pub fn new_canvas(&mut self, width: i32, height: i32, rebind_previous: bool) -> Result<Canvas> {
+    pub fn new_framebuffer(
+        &mut self,
+        texture: &GLTexture,
+        rebind_previous: bool,
+    ) -> Result<GLFramebuffer> {
         unsafe {
             let id = self
                 .gl
@@ -434,30 +406,15 @@ impl GLDevice {
                 id,
             };
 
-            let texture = self.new_texture_empty(width, height)?;
-
-            let canvas = Canvas {
-                texture,
-                framebuffer: Rc::new(framebuffer),
-                projection: Mat4::orthographic_rh_no(FrustumPlanes {
-                    left: 0.0,
-                    right: width as f32,
-                    bottom: 0.0,
-                    top: height as f32,
-                    near: -1.0,
-                    far: 1.0,
-                }),
-            };
-
             let previous_id = self.current_framebuffer;
 
-            self.bind_canvas(Some(&canvas));
+            self.bind_framebuffer(Some(&framebuffer));
 
             self.gl.framebuffer_texture_2d(
                 glow::FRAMEBUFFER,
                 glow::COLOR_ATTACHMENT0,
                 glow::TEXTURE_2D,
-                Some(canvas.texture.handle.borrow().id),
+                Some(texture.id),
                 0,
             );
 
@@ -466,7 +423,7 @@ impl GLDevice {
                 self.current_framebuffer = previous_id;
             }
 
-            Ok(canvas)
+            Ok(framebuffer)
         }
     }
 
@@ -478,26 +435,26 @@ impl GLDevice {
 
     pub fn draw_elements(
         &mut self,
-        vertex_buffer: &VertexBuffer,
-        index_buffer: &IndexBuffer,
-        texture: &Texture,
-        shader: &Shader,
+        vertex_buffer: &GLVertexBuffer,
+        index_buffer: &GLIndexBuffer,
+        texture: &GLTexture,
+        program: &GLProgram,
         count: i32,
     ) {
         unsafe {
             self.bind_vertex_buffer(Some(vertex_buffer));
             self.bind_index_buffer(Some(index_buffer));
             self.bind_texture(Some(texture));
-            self.bind_shader(Some(shader));
+            self.bind_program(Some(program));
 
             self.gl
                 .draw_elements(glow::TRIANGLES, count, glow::UNSIGNED_INT, 0);
         }
     }
 
-    fn bind_vertex_buffer(&mut self, buffer: Option<&VertexBuffer>) {
+    fn bind_vertex_buffer(&mut self, buffer: Option<&GLVertexBuffer>) {
         unsafe {
-            let id = buffer.map(|x| x.handle.id);
+            let id = buffer.map(|x| x.id);
 
             if self.current_vertex_buffer != id {
                 self.gl.bind_buffer(glow::ARRAY_BUFFER, id);
@@ -506,9 +463,9 @@ impl GLDevice {
         }
     }
 
-    fn bind_index_buffer(&mut self, buffer: Option<&IndexBuffer>) {
+    fn bind_index_buffer(&mut self, buffer: Option<&GLIndexBuffer>) {
         unsafe {
-            let id = buffer.map(|x| x.handle.id);
+            let id = buffer.map(|x| x.id);
 
             if self.current_index_buffer != id {
                 self.gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, id);
@@ -517,9 +474,9 @@ impl GLDevice {
         }
     }
 
-    fn bind_shader(&mut self, shader: Option<&Shader>) {
+    fn bind_program(&mut self, program: Option<&GLProgram>) {
         unsafe {
-            let id = shader.map(|x| x.handle.id);
+            let id = program.map(|x| x.id);
 
             if self.current_program != id {
                 self.gl.use_program(id);
@@ -528,9 +485,9 @@ impl GLDevice {
         }
     }
 
-    fn bind_texture(&mut self, texture: Option<&Texture>) {
+    fn bind_texture(&mut self, texture: Option<&GLTexture>) {
         unsafe {
-            let id = texture.map(|x| x.handle.borrow().id);
+            let id = texture.map(|x| x.id);
 
             if self.current_texture != id {
                 self.gl.active_texture(glow::TEXTURE0);
@@ -540,9 +497,9 @@ impl GLDevice {
         }
     }
 
-    pub fn bind_canvas(&mut self, canvas: Option<&Canvas>) {
+    pub fn bind_framebuffer(&mut self, framebuffer: Option<&GLFramebuffer>) {
         unsafe {
-            let id = canvas.map(|x| x.framebuffer.id);
+            let id = framebuffer.map(|x| x.id);
 
             if self.current_framebuffer != id {
                 self.gl.bind_framebuffer(glow::FRAMEBUFFER, id);
@@ -715,57 +672,48 @@ mod sealed {
 /// and can't be implemented outside of Tetra. This might change in the future!
 pub trait UniformValue: sealed::UniformValueTypes {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>);
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<UniformLocation>);
 }
 
 impl UniformValue for i32 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
-        shader.handle.gl.uniform_1_i32(location, *self);
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<UniformLocation>) {
+        program.gl.uniform_1_i32(location, *self);
     }
 }
 
 impl UniformValue for f32 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
-        shader.handle.gl.uniform_1_f32(location, *self);
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<UniformLocation>) {
+        program.gl.uniform_1_f32(location, *self);
     }
 }
 
 impl UniformValue for Vec2<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
-        shader
-            .handle
-            .gl
-            .uniform_2_f32_slice(location, &self.into_array());
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<UniformLocation>) {
+        program.gl.uniform_2_f32_slice(location, &self.into_array());
     }
 }
 
 impl UniformValue for Vec3<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
-        shader
-            .handle
-            .gl
-            .uniform_3_f32_slice(location, &self.into_array());
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<UniformLocation>) {
+        program.gl.uniform_3_f32_slice(location, &self.into_array());
     }
 }
 
 impl UniformValue for Vec4<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
-        shader
-            .handle
-            .gl
-            .uniform_4_f32_slice(location, &self.into_array());
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<UniformLocation>) {
+        program.gl.uniform_4_f32_slice(location, &self.into_array());
     }
 }
 
 impl UniformValue for Mat2<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
-        shader.handle.gl.uniform_matrix_2_f32_slice(
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<UniformLocation>) {
+        program.gl.uniform_matrix_2_f32_slice(
             location,
             self.gl_should_transpose(),
             &self.into_col_array(),
@@ -775,8 +723,8 @@ impl UniformValue for Mat2<f32> {
 
 impl UniformValue for Mat3<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
-        shader.handle.gl.uniform_matrix_3_f32_slice(
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<UniformLocation>) {
+        program.gl.uniform_matrix_3_f32_slice(
             location,
             self.gl_should_transpose(),
             &self.into_col_array(),
@@ -786,8 +734,8 @@ impl UniformValue for Mat3<f32> {
 
 impl UniformValue for Mat4<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
-        shader.handle.gl.uniform_matrix_4_f32_slice(
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<UniformLocation>) {
+        program.gl.uniform_matrix_4_f32_slice(
             location,
             self.gl_should_transpose(),
             &self.into_col_array(),
@@ -800,7 +748,7 @@ where
     T: UniformValue,
 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, shader: &Shader, location: Option<UniformLocation>) {
-        (**self).set_uniform(shader, location);
+    unsafe fn set_uniform(&self, program: &GLProgram, location: Option<UniformLocation>) {
+        (**self).set_uniform(program, location);
     }
 }

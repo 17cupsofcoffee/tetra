@@ -8,7 +8,7 @@ use image;
 
 use crate::error::{Result, TetraError};
 use crate::fs;
-use crate::graphics::opengl::GLTexture;
+use crate::graphics::opengl::{GLDevice, GLTexture};
 use crate::graphics::{self, DrawParams, Drawable, Rectangle};
 use crate::Context;
 
@@ -100,7 +100,37 @@ impl Texture {
     /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
     /// the texture. This is to prevent the graphics API from trying to read uninitialized memory.
     pub fn from_rgba(ctx: &mut Context, width: i32, height: i32, data: &[u8]) -> Result<Texture> {
-        ctx.gl.new_texture(width, height, data)
+        Texture::with_device(&mut ctx.gl, width, height, data)
+    }
+
+    pub(crate) fn with_device(
+        gl: &mut GLDevice,
+        width: i32,
+        height: i32,
+        data: &[u8],
+    ) -> Result<Texture> {
+        let expected = (width * height * 4) as usize;
+        let actual = data.len();
+
+        if expected > actual {
+            return Err(TetraError::NotEnoughData { expected, actual });
+        }
+
+        let handle = gl.new_texture(width, height)?;
+
+        gl.set_texture_data(&handle, &data, 0, 0, width, height);
+
+        Ok(Texture {
+            handle: Rc::new(RefCell::new(handle)),
+        })
+    }
+
+    pub(crate) fn with_device_empty(gl: &mut GLDevice, width: i32, height: i32) -> Result<Texture> {
+        let handle = gl.new_texture(width, height)?;
+
+        Ok(Texture {
+            handle: Rc::new(RefCell::new(handle)),
+        })
     }
 
     /// Returns the width of the texture.
@@ -126,7 +156,8 @@ impl Texture {
 
     /// Sets the filter mode that should be used by the texture.
     pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
-        ctx.gl.set_texture_filter_mode(self, filter_mode);
+        ctx.gl
+            .set_texture_filter_mode(&mut *self.handle.borrow_mut(), filter_mode);
     }
 }
 

@@ -1,9 +1,9 @@
 use std::rc::Rc;
 
 use crate::error::Result;
-use crate::graphics::opengl::GLFramebuffer;
+use crate::graphics::opengl::{GLDevice, GLFramebuffer};
 use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
-use crate::math::Mat4;
+use crate::math::{FrustumPlanes, Mat4};
 use crate::Context;
 
 /// A 2D texture that can be used for off-screen rendering.
@@ -69,7 +69,25 @@ impl Canvas {
     ///
     /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Result<Canvas> {
-        ctx.gl.new_canvas(width, height, true)
+        Canvas::with_device(&mut ctx.gl, width, height)
+    }
+
+    pub(crate) fn with_device(gl: &mut GLDevice, width: i32, height: i32) -> Result<Canvas> {
+        let texture = Texture::with_device_empty(gl, width, height)?;
+        let framebuffer = gl.new_framebuffer(&*texture.handle.borrow(), true)?;
+
+        Ok(Canvas {
+            texture,
+            framebuffer: Rc::new(framebuffer),
+            projection: Mat4::orthographic_rh_no(FrustumPlanes {
+                left: 0.0,
+                right: width as f32,
+                bottom: 0.0,
+                top: height as f32,
+                near: -1.0,
+                far: 1.0,
+            }),
+        })
     }
 
     /// Returns the width of the canvas.

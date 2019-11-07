@@ -184,9 +184,9 @@ impl Text {
                 Err(BrushError::TextureTooSmall { suggested, .. }) => {
                     let (width, height) = suggested;
 
-                    *texture_ref = device_ref
-                        .new_texture_empty(width as i32, height as i32)
-                        .expect("Could not recreate font cache texture");
+                    *texture_ref =
+                        Texture::with_device_empty(device_ref, width as i32, height as i32)
+                            .expect("Could not recreate font cache texture");
 
                     ctx.graphics.font_cache.resize_texture(width, height);
                 }
@@ -230,7 +230,7 @@ fn update_texture(gl: &mut GLDevice, texture: &Texture, rect: Rect<u32>, data: &
     }
 
     gl.set_texture_data(
-        texture,
+        &*texture.handle.borrow(),
         &padded_data,
         rect.min.x as i32,
         rect.min.y as i32,

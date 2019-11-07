@@ -6,7 +6,6 @@
 //! rendering.
 
 pub mod animation;
-mod buffers;
 mod canvas;
 mod color;
 mod drawable;
@@ -18,7 +17,6 @@ mod text;
 mod texture;
 pub mod ui;
 
-pub(crate) use buffers::*;
 pub use canvas::*;
 pub use color::*;
 pub use drawable::*;
@@ -30,7 +28,7 @@ pub use texture::*;
 use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
 use crate::error::Result;
-use crate::graphics::opengl::{BufferUsage, FrontFace, GLDevice};
+use crate::graphics::opengl::{BufferUsage, FrontFace, GLDevice, GLIndexBuffer, GLVertexBuffer};
 use crate::graphics::text::FontQuad;
 use crate::math::{FrustumPlanes, Mat4};
 use crate::platform;
@@ -63,8 +61,8 @@ pub(crate) enum ActiveCanvas {
 }
 
 pub(crate) struct GraphicsContext {
-    vertex_buffer: VertexBuffer,
-    index_buffer: IndexBuffer,
+    vertex_buffer: GLVertexBuffer,
+    index_buffer: GLIndexBuffer,
 
     texture: ActiveTexture,
     font_cache_texture: Texture,
@@ -111,14 +109,15 @@ impl GraphicsContext {
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
-        let default_shader = device.new_shader(
+        let default_shader = Shader::with_device(
+            device,
             shader::DEFAULT_VERTEX_SHADER,
             shader::DEFAULT_FRAGMENT_SHADER,
         )?;
 
         let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
         let (width, height) = font_cache.texture_dimensions();
-        let font_cache_texture = device.new_texture_empty(width as i32, height as i32)?;
+        let font_cache_texture = Texture::with_device_empty(device, width as i32, height as i32)?;
 
         Ok(GraphicsContext {
             vertex_buffer,
@@ -327,13 +326,13 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 
         match &ctx.graphics.canvas {
             ActiveCanvas::Window => {
-                ctx.gl.bind_canvas(None);
+                ctx.gl.bind_framebuffer(None);
                 ctx.gl.front_face(FrontFace::CounterClockwise);
                 ctx.gl
                     .viewport(0, 0, window::get_width(ctx), window::get_height(ctx));
             }
             ActiveCanvas::User(r) => {
-                ctx.gl.bind_canvas(Some(r));
+                ctx.gl.bind_framebuffer(Some(&r.framebuffer));
                 ctx.gl.front_face(FrontFace::Clockwise);
                 ctx.gl.viewport(0, 0, r.width(), r.height());
             }
@@ -363,7 +362,8 @@ pub fn flush(ctx: &mut Context) {
             ActiveCanvas::User(r) => &r.projection,
         };
 
-        ctx.gl.set_uniform(shader, "u_projection", &projection);
+        ctx.gl
+            .set_uniform(&*shader.handle, "u_projection", &projection);
 
         ctx.gl
             .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
@@ -371,8 +371,8 @@ pub fn flush(ctx: &mut Context) {
         ctx.gl.draw_elements(
             &ctx.graphics.vertex_buffer,
             &ctx.graphics.index_buffer,
-            texture,
-            shader,
+            &*texture.handle.borrow(),
+            &*shader.handle,
             ctx.graphics.element_count,
         );
 
