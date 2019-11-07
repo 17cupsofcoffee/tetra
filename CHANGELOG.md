@@ -6,6 +6,12 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added
+
+* Functions for getting and setting vsync have been added to `window`.
+* Details of the active graphics device can now be retrieved by calling `graphics::get_device_info`.
+* `Shader::from_vertex_string` and `Shader::from_fragment_string` constructors have been added.
+
 ### Changed
 
 * Tetra now targets the latest stable Rust compiler, rather than a fixed minimum version. This will hopefully change once Cargo has better functionality for enforcing minimum supported compiler versions - currently it's impossible to make guarentees, as our dependencies can change their minimum versions at will.
@@ -19,9 +25,8 @@ This project adheres to Semantic Versioning.
 * `Vec2` is now exported from `math`, not `graphics`.
 * More types can now be passed into shader uniforms via the `UniformValue` trait.
 * The graphics device debugging info is now hidden by default. Set the `debug_info` option on `Game` to `true` to bring this back.
-* Details of the active graphics device can now be retrieved by calling `graphics::get_device_info`.
 * The functions for setting the fullscreen/cursor visibility state have been changed to take booleans, instead of there being multiple functions.
-* Functions for getting and setting vsync have been added to `window`.
+* The `Shader::vertex` and `Shader::fragment` constructors have been renamed to `Shader::from_vertex_file` and `Shader::from_fragment_file`.
 * Updated `glow` to 0.3.0-alpha3.
 * Updated `hashbrown` to 0.6.3.
 * Updated `image` to 0.22.3.

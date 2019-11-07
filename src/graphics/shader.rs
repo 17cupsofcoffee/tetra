@@ -84,7 +84,7 @@ impl Shader {
     /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
     /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
     /// * `TetraError::InvalidShader` will be returned if the shader could not be compiled.
-    pub fn vertex<P>(ctx: &mut Context, path: P) -> Result<Shader>
+    pub fn from_vertex_file<P>(ctx: &mut Context, path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
     {
@@ -104,7 +104,7 @@ impl Shader {
     /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
     /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
     /// * `TetraError::InvalidShader` will be returned if the shader could not be compiled.
-    pub fn fragment<P>(ctx: &mut Context, path: P) -> Result<Shader>
+    pub fn from_fragment_file<P>(ctx: &mut Context, path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
     {
@@ -127,6 +127,30 @@ impl Shader {
         fragment_shader: &str,
     ) -> Result<Shader> {
         Shader::with_device(&mut ctx.gl, vertex_shader, fragment_shader)
+    }
+
+    /// Creates a new shader program from the given vertex shader string.
+    ///
+    /// The default fragment shader will be used.
+    ///
+    /// # Errors
+    ///
+    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * `TetraError::InvalidShader` will be returned if the shader could not be compiled.
+    pub fn from_vertex_string<P>(ctx: &mut Context, shader: &str) -> Result<Shader> {
+        Shader::with_device(&mut ctx.gl, shader, DEFAULT_FRAGMENT_SHADER)
+    }
+
+    /// Creates a new shader program from the given fragment shader string.
+    ///
+    /// The default vertex shader will be used.
+    ///
+    /// # Errors
+    ///
+    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * `TetraError::InvalidShader` will be returned if the shader could not be compiled.
+    pub fn from_fragment_string<P>(ctx: &mut Context, shader: &str) -> Result<Shader> {
+        Shader::with_device(&mut ctx.gl, DEFAULT_VERTEX_SHADER, shader)
     }
 
     pub(crate) fn with_device(
