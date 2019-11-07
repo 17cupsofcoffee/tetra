@@ -1,6 +1,7 @@
 // TODO: This file is getting way too huge.
 use hashbrown::HashMap;
 
+use glow::Context as GlowContext;
 use sdl2::controller::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, GameController};
 use sdl2::event::{Event, WindowEvent};
 use sdl2::haptic::Haptic;
@@ -15,8 +16,6 @@ use crate::graphics::{self};
 use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
 use crate::math::Vec2;
 use crate::{Context, ContextBuilder};
-
-pub type GlContext = glow::native::Context;
 
 pub struct Platform {
     sdl: Sdl,
@@ -43,7 +42,7 @@ struct SdlController {
 }
 
 impl Platform {
-    pub fn new(settings: &ContextBuilder) -> Result<(Platform, GlContext, i32, i32)> {
+    pub fn new(settings: &ContextBuilder) -> Result<(Platform, GlowContext, i32, i32)> {
         let sdl = sdl2::init().map_err(TetraError::PlatformError)?;
         let video_sys = sdl.video().map_err(TetraError::PlatformError)?;
         let joystick_sys = sdl.joystick().map_err(TetraError::PlatformError)?;
@@ -120,7 +119,7 @@ impl Platform {
             .map_err(TetraError::PlatformError)?;
 
         let gl_ctx =
-            GlContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _);
+            GlowContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _);
 
         video_sys
             .gl_set_swap_interval(if settings.vsync {

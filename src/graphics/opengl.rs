@@ -1,22 +1,21 @@
 use std::mem;
 use std::rc::Rc;
 
-use glow::Context as GlowContext;
+use glow::{Context as GlowContext, HasContext};
 
 use crate::error::{Result, TetraError};
 use crate::graphics::FilterMode;
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
-use crate::platform::GlContext;
 
-type BufferId = <GlContext as GlowContext>::Buffer;
-type ProgramId = <GlContext as GlowContext>::Program;
-type TextureId = <GlContext as GlowContext>::Texture;
-type FramebufferId = <GlContext as GlowContext>::Framebuffer;
-type VertexArrayId = <GlContext as GlowContext>::VertexArray;
-type UniformLocation = <GlContext as GlowContext>::UniformLocation;
+type BufferId = <GlowContext as HasContext>::Buffer;
+type ProgramId = <GlowContext as HasContext>::Program;
+type TextureId = <GlowContext as HasContext>::Texture;
+type FramebufferId = <GlowContext as HasContext>::Framebuffer;
+type VertexArrayId = <GlowContext as HasContext>::VertexArray;
+type UniformLocation = <GlowContext as HasContext>::UniformLocation;
 
 pub struct GLDevice {
-    gl: Rc<GlContext>,
+    gl: Rc<GlowContext>,
 
     current_vertex_buffer: Option<BufferId>,
     current_index_buffer: Option<BufferId>,
@@ -30,7 +29,7 @@ pub struct GLDevice {
 }
 
 impl GLDevice {
-    pub fn new(gl: GlContext) -> Result<GLDevice> {
+    pub fn new(gl: GlowContext) -> Result<GLDevice> {
         unsafe {
             gl.enable(glow::CULL_FACE);
             gl.enable(glow::BLEND);
@@ -588,7 +587,7 @@ macro_rules! handle_impls {
 
 #[derive(Debug)]
 pub struct GLVertexBuffer {
-    gl: Rc<GlContext>,
+    gl: Rc<GlowContext>,
 
     id: BufferId,
     count: usize,
@@ -599,7 +598,7 @@ handle_impls!(GLVertexBuffer, delete_buffer);
 
 #[derive(Debug)]
 pub struct GLIndexBuffer {
-    gl: Rc<GlContext>,
+    gl: Rc<GlowContext>,
 
     id: BufferId,
     count: usize,
@@ -609,7 +608,7 @@ handle_impls!(GLIndexBuffer, delete_buffer);
 
 #[derive(Debug)]
 pub struct GLProgram {
-    gl: Rc<GlContext>,
+    gl: Rc<GlowContext>,
 
     id: ProgramId,
 }
@@ -618,7 +617,7 @@ handle_impls!(GLProgram, delete_program);
 
 #[derive(Debug)]
 pub struct GLTexture {
-    gl: Rc<GlContext>,
+    gl: Rc<GlowContext>,
 
     id: TextureId,
     width: i32,
@@ -644,7 +643,7 @@ impl GLTexture {
 
 #[derive(Debug)]
 pub struct GLFramebuffer {
-    gl: Rc<GlContext>,
+    gl: Rc<GlowContext>,
 
     id: FramebufferId,
 }

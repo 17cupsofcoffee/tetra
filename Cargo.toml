@@ -18,7 +18,7 @@ sdl2_static_link = ["sdl2/static-link"]
 [dependencies]
 sdl2 = "0.32.2"
 rodio = "0.9.0"
-glow = "0.2.3"
+glow = "0.3.0-alpha3"
 image = "0.22.3"
 vek = { version = "0.9.10", default-features = false }
 hashbrown = "0.6.3"
