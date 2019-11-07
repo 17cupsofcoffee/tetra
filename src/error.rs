@@ -21,7 +21,7 @@ pub type Result<T = ()> = result::Result<T, TetraError>;
 /// This is so that if a new error type is added later on, it will not break your code.
 #[derive(Debug)]
 pub enum TetraError {
-    /// Returned when the underlying platform (e.g. SDL2, the browser) returns an unexpected error.
+    /// Returned when the underlying platform returns an unexpected error.
     /// This usually isn't something your game can reasonably be expected to recover from.
     PlatformError(String),
 

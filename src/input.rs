@@ -67,8 +67,6 @@ pub fn get_text_input(ctx: &Context) -> Option<&str> {
     ctx.input.current_text_input.as_ref().map(String::as_str)
 }
 
-// TODO: Remove this once WASM text input support is added
-#[cfg_attr(target_arch = "wasm32", allow(unused))]
 pub(crate) fn set_text_input(ctx: &mut Context, text: Option<String>) {
     ctx.input.current_text_input = text;
 }
