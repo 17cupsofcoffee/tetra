@@ -2,7 +2,7 @@
 
 use tetra::graphics::{self, Color, DrawParams, Font, Rectangle, Text, Texture};
 use tetra::input::{self, GamepadAxis, GamepadButton, GamepadStick};
-use tetra::math::{self, Vec2};
+use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
 enum Sprite {

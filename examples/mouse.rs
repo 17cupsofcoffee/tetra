@@ -1,6 +1,6 @@
 use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, MouseButton};
-use tetra::math::{self, Vec2};
+use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
 struct GameState {

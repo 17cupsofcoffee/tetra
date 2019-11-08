@@ -23,7 +23,7 @@
 //! * http://gameprogrammingpatterns.com/game-loop.html
 
 use tetra::graphics::{self, Color, Texture};
-use tetra::math::{self, Vec2};
+use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
