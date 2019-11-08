@@ -11,6 +11,7 @@ This project adheres to Semantic Versioning.
 * Functions for getting and setting vsync have been added to `window`.
 * Details of the active graphics device can now be retrieved by calling `graphics::get_device_info`.
 * `Shader::from_vertex_string` and `Shader::from_fragment_string` constructors have been added.
+* `Color::RED`, `Color::GREEN` and `Color::BLUE` constants have been added.
 
 ### Changed
 
