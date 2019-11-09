@@ -1,11 +1,13 @@
-attribute vec2 a_position;
-attribute vec2 a_uv;
-attribute vec4 a_color;
+#version 150
+
+in vec2 a_position;
+in vec2 a_uv;
+in vec4 a_color;
 
 uniform mat4 u_projection;
 
-varying vec2 v_uv;
-varying vec4 v_color;
+out vec2 v_uv;
+out vec4 v_color;
 
 void main() {
     v_color = a_color;
