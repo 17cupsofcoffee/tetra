@@ -432,6 +432,10 @@ pub fn get_device_info(ctx: &Context) -> GraphicsDeviceInfo {
     }
 }
 
+pub fn get_transform_matrix(ctx: &Context) -> Mat4<f32> {
+    ctx.graphics.transform_matrix
+}
+
 pub fn set_transform_matrix(ctx: &mut Context, matrix: Mat4<f32>) {
     flush(ctx);
 
