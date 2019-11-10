@@ -82,11 +82,7 @@ pub(crate) struct GraphicsContext {
 }
 
 impl GraphicsContext {
-    pub(crate) fn new(
-        device: &mut GLDevice,
-        window_width: i32,
-        window_height: i32,
-    ) -> Result<GraphicsContext> {
+    pub(crate) fn new(device: &mut GLDevice) -> Result<GraphicsContext> {
         let indices: Vec<u32> = INDEX_ARRAY
             .iter()
             .cycle()
