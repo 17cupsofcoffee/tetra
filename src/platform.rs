@@ -164,7 +164,6 @@ pub fn handle_events(ctx: &mut Context) -> Result {
                 if let WindowEvent::SizeChanged(width, height) = win_event {
                     ctx.platform.window_width = width;
                     ctx.platform.window_height = height;
-                    graphics::set_window_projection(ctx, width, height);
                 }
             }
 

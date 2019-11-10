@@ -72,9 +72,7 @@ pub(crate) struct GraphicsContext {
 
     canvas: ActiveCanvas,
 
-    projection_matrix: Mat4<f32>,
     transform_matrix: Mat4<f32>,
-    combined_matrix: Mat4<f32>,
 
     vertex_data: Vec<f32>,
     element_capacity: i32,
@@ -121,8 +119,6 @@ impl GraphicsContext {
         let (width, height) = font_cache.texture_dimensions();
         let font_cache_texture = Texture::with_device_empty(device, width as i32, height as i32)?;
 
-        let projection_matrix = ortho(window_width as f32, window_height as f32, false);
-
         Ok(GraphicsContext {
             vertex_buffer,
             index_buffer,
@@ -135,9 +131,7 @@ impl GraphicsContext {
 
             canvas: ActiveCanvas::Window,
 
-            projection_matrix,
             transform_matrix: Mat4::identity(),
-            combined_matrix: projection_matrix,
 
             vertex_data: Vec::with_capacity(MAX_VERTICES * VERTEX_STRIDE),
             element_capacity: MAX_INDICES as i32,
@@ -330,8 +324,6 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.gl.bind_framebuffer(None);
                 ctx.gl.front_face(FrontFace::CounterClockwise);
                 ctx.gl.viewport(0, 0, width, height);
-
-                set_projection_matrix(ctx, ortho(width as f32, height as f32, false));
             }
             ActiveCanvas::User(r) => {
                 let (width, height) = r.size();
@@ -339,8 +331,6 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.gl.bind_framebuffer(Some(&r.framebuffer));
                 ctx.gl.front_face(FrontFace::Clockwise);
                 ctx.gl.viewport(0, 0, width, height);
-
-                set_projection_matrix(ctx, ortho(width as f32, height as f32, true));
             }
         }
     }
@@ -363,10 +353,19 @@ pub fn flush(ctx: &mut Context) {
             ActiveShader::User(s) => s,
         };
 
+        let projection = match &ctx.graphics.canvas {
+            ActiveCanvas::Window => ortho(
+                window::get_width(ctx) as f32,
+                window::get_height(ctx) as f32,
+                false,
+            ),
+            ActiveCanvas::User(c) => ortho(c.width() as f32, c.height() as f32, true),
+        };
+
         ctx.gl.set_uniform(
             &*shader.handle,
             "u_projection",
-            ctx.graphics.combined_matrix,
+            projection * ctx.graphics.transform_matrix,
         );
 
         ctx.gl
@@ -437,24 +436,10 @@ pub fn get_device_info(ctx: &Context) -> GraphicsDeviceInfo {
     }
 }
 
-pub(crate) fn set_projection_matrix(ctx: &mut Context, matrix: Mat4<f32>) {
-    flush(ctx);
-
-    ctx.graphics.projection_matrix = matrix;
-
-    calculate_combined_matrix(ctx);
-}
-
 pub fn set_transform_matrix(ctx: &mut Context, matrix: Mat4<f32>) {
     flush(ctx);
 
     ctx.graphics.transform_matrix = matrix;
-
-    calculate_combined_matrix(ctx);
-}
-
-pub(crate) fn calculate_combined_matrix(ctx: &mut Context) {
-    ctx.graphics.combined_matrix = ctx.graphics.projection_matrix * ctx.graphics.transform_matrix;
 }
 
 pub(crate) fn ortho(width: f32, height: f32, canvas: bool) -> Mat4<f32> {
@@ -466,11 +451,4 @@ pub(crate) fn ortho(width: f32, height: f32, canvas: bool) -> Mat4<f32> {
         near: -1.0,
         far: 1.0,
     })
-}
-
-pub(crate) fn set_window_projection(ctx: &mut Context, width: i32, height: i32) {
-    if let ActiveCanvas::Window = ctx.graphics.canvas {
-        ctx.gl.viewport(0, 0, width, height);
-        set_projection_matrix(ctx, ortho(width as f32, height as f32, false));
-    }
 }
