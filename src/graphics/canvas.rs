@@ -3,7 +3,6 @@ use std::rc::Rc;
 use crate::error::Result;
 use crate::graphics::opengl::{GLDevice, GLFramebuffer};
 use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
-use crate::math::{FrustumPlanes, Mat4};
 use crate::Context;
 
 /// A 2D texture that can be used for off-screen rendering.
@@ -59,7 +58,6 @@ use crate::Context;
 pub struct Canvas {
     pub(crate) texture: Texture,
     pub(crate) framebuffer: Rc<GLFramebuffer>,
-    pub(crate) projection: Mat4<f32>,
 }
 
 impl Canvas {
@@ -79,14 +77,6 @@ impl Canvas {
         Ok(Canvas {
             texture,
             framebuffer: Rc::new(framebuffer),
-            projection: Mat4::orthographic_rh_no(FrustumPlanes {
-                left: 0.0,
-                right: width as f32,
-                bottom: 0.0,
-                top: height as f32,
-                near: -1.0,
-                far: 1.0,
-            }),
         })
     }
 
