@@ -12,7 +12,7 @@ This project adheres to Semantic Versioning.
 * Details of the active graphics device can now be retrieved by calling `graphics::get_device_info`.
 * `Shader::from_vertex_string` and `Shader::from_fragment_string` constructors have been added.
 * `Color::RED`, `Color::GREEN` and `Color::BLUE` constants have been added.
-* `graphics::get_transform_matrix` and `graphics::set_transform_matrix` has been added, which allows you to apply a transformation to your rendering. This can be useful when implementing things like cameras.
+* `graphics::get_transform_matrix`, `graphics::set_transform_matrix` and `graphics::reset_transform_matrix` has been added, which allows you to apply a transformation to your rendering. This can be useful when implementing things like cameras.
 
 ### Changed
 

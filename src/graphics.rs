@@ -442,6 +442,10 @@ pub fn set_transform_matrix(ctx: &mut Context, matrix: Mat4<f32>) {
     ctx.graphics.transform_matrix = matrix;
 }
 
+pub fn reset_transform_matrix(ctx: &mut Context) {
+    set_transform_matrix(ctx, Mat4::identity());
+}
+
 pub(crate) fn ortho(width: f32, height: f32, canvas: bool) -> Mat4<f32> {
     Mat4::orthographic_rh_no(FrustumPlanes {
         left: 0.0,
