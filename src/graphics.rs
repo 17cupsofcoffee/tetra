@@ -432,16 +432,23 @@ pub fn get_device_info(ctx: &Context) -> GraphicsDeviceInfo {
     }
 }
 
+/// Returns the current transform matrix.
 pub fn get_transform_matrix(ctx: &Context) -> Mat4<f32> {
     ctx.graphics.transform_matrix
 }
 
+/// Sets the transform matrix.
+///
+/// This can be used to apply global transformations to subsequent draw calls.
 pub fn set_transform_matrix(ctx: &mut Context, matrix: Mat4<f32>) {
     flush(ctx);
 
     ctx.graphics.transform_matrix = matrix;
 }
 
+/// Resets the transform matrix.
+///
+/// This is a shortcut for calling `graphics::set_transform_matrix(ctx, Mat4::identity())`.
 pub fn reset_transform_matrix(ctx: &mut Context) {
     set_transform_matrix(ctx, Mat4::identity());
 }
