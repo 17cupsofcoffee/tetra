@@ -1,6 +1,6 @@
 # Tetra
 
-[![Build Status](https://dev.azure.com/seventeencups/tetra/_apis/build/status/17cupsofcoffee.tetra?branchName=master)](https://dev.azure.com/seventeencups/tetra/_build/latest?definitionId=1&branchName=master)
+[![Build Status](https://github.com/17cupsofcoffee/tetra/workflows/CI%20Build/badge.svg?branch=master)](https://github.com/17cupsofcoffee/tetra/actions?query=branch%3Amaster)
 [![Crates.io](https://img.shields.io/crates/v/tetra.svg)](https://crates.io/crates/tetra)
 [![Minimum Rust Version](https://img.shields.io/badge/minimum%20rust%20version-1.32-orange.svg)](https://www.rust-lang.org/tools/install)
 [![Documentation](https://docs.rs/tetra/badge.svg)](https://docs.rs/tetra)

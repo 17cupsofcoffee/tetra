@@ -1,0 +1,20 @@
+name: CI Build
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly]
+    steps:
+    - name: Install native dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install libsdl2-dev libasound2-dev
+    - name: Install Rust toolchains
+      run: |
+        rustup update ${{ matrix.rust }} --no-self-update
+        rustup default ${{ matrix.rust }}
+    - uses: actions/checkout@v1
+    - name: Run build and tests via Cargo
+      run: cargo test --verbose --all
