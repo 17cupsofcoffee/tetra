@@ -18,7 +18,9 @@ pub struct DrawParams {
 
     /// The origin of the graphic. Defaults to [0.0, 0.0] (the top left).
     ///
-    /// Positioning and scaling will be calculated relative to this point.
+    /// This offset is applied before scaling, rotation and positioning. For example, if you have
+    /// a 16x16 image and set the origin to [8.0, 8.0], subsequent transformations will be performed
+    /// relative to the center of the image.
     pub origin: Vec2<f32>,
 
     /// The rotation of the graphic, in radians. Defaults to 0.0.
@@ -29,7 +31,7 @@ pub struct DrawParams {
 
     /// A sub-region of the graphic to draw. Defaults to `None`, which means the the full graphic will be drawn.
     ///
-    /// This is useful if you're using spritesheets (which you should be!).
+    /// This is useful if you're using spritesheets (which you should be, if you want good performance!).
     pub clip: Option<Rectangle>,
 }
 
