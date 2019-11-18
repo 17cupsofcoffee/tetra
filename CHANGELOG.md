@@ -33,6 +33,7 @@ This project adheres to Semantic Versioning.
 * Updated `hashbrown` to 0.6.3.
 * Updated `image` to 0.22.3.
 * Updated `glyph_brush` to 0.6.1.
+* Updated `rodio` to 0.10.0.
 
 ### Removed
 
