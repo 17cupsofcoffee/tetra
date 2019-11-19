@@ -6,6 +6,7 @@
 //! rendering.
 
 pub mod animation;
+mod camera;
 mod canvas;
 mod color;
 mod drawable;
@@ -17,6 +18,7 @@ mod text;
 mod texture;
 pub mod ui;
 
+pub use camera::*;
 pub use canvas::*;
 pub use color::*;
 pub use drawable::*;
@@ -429,6 +431,27 @@ pub fn get_device_info(ctx: &Context) -> GraphicsDeviceInfo {
         renderer: ctx.gl.get_renderer(),
         opengl_version: ctx.gl.get_version(),
         glsl_version: ctx.gl.get_shading_language_version(),
+    }
+}
+
+pub fn get_viewport_width(ctx: &Context) -> i32 {
+    match &ctx.graphics.canvas {
+        ActiveCanvas::Window => window::get_width(ctx),
+        ActiveCanvas::User(c) => c.width()
+    }
+}
+
+pub fn get_viewport_height(ctx: &Context) -> i32 {
+    match &ctx.graphics.canvas {
+        ActiveCanvas::Window => window::get_height(ctx),
+        ActiveCanvas::User(c) => c.width()
+    }
+}
+
+pub fn get_viewport_size(ctx: &Context) -> (i32, i32) {
+    match &ctx.graphics.canvas {
+        ActiveCanvas::Window => window::get_size(ctx),
+        ActiveCanvas::User(c) => c.size()
     }
 }
 
