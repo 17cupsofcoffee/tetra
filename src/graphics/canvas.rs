@@ -5,7 +5,7 @@ use crate::graphics::opengl::{GLDevice, GLFramebuffer};
 use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
 use crate::Context;
 
-/// A 2D texture that can be used for off-screen rendering.
+/// A texture that can be used for off-screen rendering.
 ///
 /// This is sometimes referred to as a 'render texture' or 'render target' in other
 /// frameworks.

@@ -4,7 +4,7 @@ use crate::graphics::texture::Texture;
 use crate::graphics::{DrawParams, Drawable, Rectangle};
 use crate::Context;
 
-/// An animaton, cycling between regions of a texture at a regular interval.
+/// An animation, cycling between regions of a texture at a regular interval.
 ///
 /// As the rendering speed of the game is not fixed, use the `tick` method in your
 /// `update` handler to progress the animation.

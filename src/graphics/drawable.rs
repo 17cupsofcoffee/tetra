@@ -2,7 +2,7 @@ use crate::graphics::{Color, Rectangle};
 use crate::math::Vec2;
 use crate::Context;
 
-/// Struct representing the parameters that can be used when drawing.
+/// Parameters that can be manipulated when drawing an object.
 ///
 /// You can either use this as a builder by calling `DrawParams::new` and then chaining methods, or
 /// construct it manually - whichever you find more pleasant to write.
@@ -100,7 +100,7 @@ impl From<Vec2<f32>> for DrawParams {
     }
 }
 
-/// Represents a type that can be drawn.
+/// Implemented for types that can be drawn.
 ///
 /// [`graphics::draw`](fn.draw.html) can be used to draw without importing this trait, which is sometimes
 /// more convienent.

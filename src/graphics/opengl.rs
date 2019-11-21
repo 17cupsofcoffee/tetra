@@ -664,7 +664,7 @@ mod sealed {
     impl<'a, T> UniformValueTypes for &'a T where T: UniformValueTypes {}
 }
 
-/// Represents a type that can be passed as a uniform value to a shader.
+/// Implemented for types that can be passed as a uniform value to a shader.
 ///
 /// As the implementation of this trait currently interacts directly with the OpenGL layer,
 /// it's marked as a [sealed trait](https://rust-lang-nursery.github.io/api-guidelines/future-proofing.html#sealed-traits-protect-against-downstream-implementations-c-sealed),

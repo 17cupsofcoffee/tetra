@@ -12,7 +12,7 @@ use crate::graphics::opengl::{GLDevice, GLTexture};
 use crate::graphics::{self, DrawParams, Drawable, Rectangle};
 use crate::Context;
 
-/// A 2D texture, held in GPU memory.
+/// A texture, held in GPU memory.
 ///
 /// The following file formats are supported:
 ///
@@ -189,7 +189,7 @@ impl Drawable for Texture {
     }
 }
 
-/// Represents the different filtering algorithms that can be used when scaling an image.
+/// Filtering algorithms that can be used when scaling an image.
 ///
 /// Tetra currently defaults to using `Nearest` for all newly created textures.
 #[derive(Debug, Clone, Copy)]

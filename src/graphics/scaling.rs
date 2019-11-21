@@ -231,7 +231,7 @@ impl Drawable for ScreenScaler {
     }
 }
 
-/// Defines the different ways that a game's screen can be scaled.
+/// Algorithms that can be used to scale the game's screen.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ScalingMode {
     /// The game will always be displayed at its native resolution, with no scaling applied.

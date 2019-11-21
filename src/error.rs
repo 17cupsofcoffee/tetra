@@ -15,7 +15,7 @@ use rodio::decoder::DecoderError;
 /// In your game code, you can either use it directly, or wrap it in your own error type.
 pub type Result<T = ()> = result::Result<T, TetraError>;
 
-/// Represents the types of error that can occur in a Tetra game.
+/// The types of error that can occur in a Tetra game.
 ///
 /// Note that if you `match` on this enum, you will be forced to add a wildcard arm by the compiler.
 /// This is so that if a new error type is added later on, it will not break your code.

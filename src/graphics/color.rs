@@ -1,6 +1,6 @@
 //! Functions and types relating to color.
 
-/// Represents an RGBA color.
+/// An RGBA color.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color {
     /// The red component of the color.
