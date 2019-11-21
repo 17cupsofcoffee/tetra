@@ -476,12 +476,12 @@ pub fn reset_transform_matrix(ctx: &mut Context) {
     set_transform_matrix(ctx, Mat4::identity());
 }
 
-pub(crate) fn ortho(width: f32, height: f32, canvas: bool) -> Mat4<f32> {
+pub(crate) fn ortho(width: f32, height: f32, flipped: bool) -> Mat4<f32> {
     Mat4::orthographic_rh_no(FrustumPlanes {
         left: 0.0,
         right: width,
-        bottom: if canvas { 0.0 } else { height },
-        top: if canvas { height } else { 0.0 },
+        bottom: if flipped { 0.0 } else { height },
+        top: if flipped { height } else { 0.0 },
         near: -1.0,
         far: 1.0,
     })

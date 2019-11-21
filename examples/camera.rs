@@ -14,13 +14,12 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
-            camera: Camera::new(Vec2::zero(), 0.0, 1.0),
+            camera: Camera::default(),
         })
     }
 }
 
 impl State for GameState {
-
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         if input::is_key_down(ctx, Key::W) {
             self.camera.position.y -= CAMERA_SPEED;
@@ -72,7 +71,6 @@ impl State for GameState {
 
         Ok(())
     }
-    
 }
 
 fn main() -> tetra::Result {
