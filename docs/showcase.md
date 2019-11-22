@@ -14,3 +14,4 @@ Please feel free to [add your own](https://github.com/17cupsofcoffee/tetra/edit/
 | [rl](https://github.com/17cupsofcoffee/rl) | [17cupsofcoffee](https://github.com/17cupsofcoffee) | A tech demo, showing how a roguelike can be built with Tetra and [Specs](https://github.com/slide-rs/specs). |
 | [Tetras](https://tetra.seventeencups.net/examples) | [17cupsofcoffee](https://github.com/17cupsofcoffee) | A Tetris clone, built to demonstrate what a full Tetra game might look like. |
 | [snake](https://github.com/programmeramera/snake-in-tetra) | [johanlindfors](https://github.com/johanlindfors) | A tiny snake sample, use arrow keys to steer the snake. |
+| [flappy bird](https://github.com/programmeramera/flappy-in-rust) | [johanlindfors](https://github.com/johanlindfors) | A flappy bird sample, use mouse to interact. |
