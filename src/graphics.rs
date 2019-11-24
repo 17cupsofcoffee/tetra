@@ -418,7 +418,7 @@ pub fn flush(ctx: &mut Context) {
     }
 }
 
-/// Presents the result of drawing commands to the screen, scaling/letterboxing if necessary.
+/// Presents the result of drawing commands to the screen.
 ///
 /// If any custom shaders/canvases are set, this function will unset them -
 /// don't rely on the state of one render carrying over to the next!
