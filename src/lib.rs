@@ -209,35 +209,36 @@ impl Context {
         time::reset(self);
 
         while self.running {
-            time::tick(self);
-
-            if let Err(e) = platform::handle_events(self) {
+            if let Err(e) = self.tick(state) {
                 self.running = false;
                 return Err(e);
             }
-
-            while time::is_tick_ready(self) {
-                if let Err(e) = state.update(self) {
-                    self.running = false;
-                    return Err(e);
-                }
-
-                input::cleanup_after_state_update(self);
-
-                time::consume_tick(self);
-            }
-
-            if let Err(e) = state.draw(self, time::get_alpha(self)) {
-                self.running = false;
-                return Err(e);
-            }
-
-            graphics::present(self);
 
             std::thread::yield_now();
         }
 
         platform::hide_window(self);
+
+        Ok(())
+    }
+
+    pub(crate) fn tick<S>(&mut self, state: &mut S) -> Result
+    where
+        S: State,
+    {
+        time::tick(self);
+
+        platform::handle_events(self)?;
+
+        while time::is_tick_ready(self) {
+            state.update(self)?;
+            input::cleanup_after_state_update(self);
+            time::consume_tick(self);
+        }
+
+        state.draw(self, time::get_alpha(self))?;
+
+        graphics::present(self);
 
         Ok(())
     }
