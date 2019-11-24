@@ -437,21 +437,21 @@ pub fn get_device_info(ctx: &Context) -> GraphicsDeviceInfo {
 pub fn get_viewport_width(ctx: &Context) -> i32 {
     match &ctx.graphics.canvas {
         ActiveCanvas::Window => window::get_width(ctx),
-        ActiveCanvas::User(c) => c.width()
+        ActiveCanvas::User(c) => c.width(),
     }
 }
 
 pub fn get_viewport_height(ctx: &Context) -> i32 {
     match &ctx.graphics.canvas {
         ActiveCanvas::Window => window::get_height(ctx),
-        ActiveCanvas::User(c) => c.width()
+        ActiveCanvas::User(c) => c.height(),
     }
 }
 
 pub fn get_viewport_size(ctx: &Context) -> (i32, i32) {
     match &ctx.graphics.canvas {
         ActiveCanvas::Window => window::get_size(ctx),
-        ActiveCanvas::User(c) => c.size()
+        ActiveCanvas::User(c) => c.size(),
     }
 }
 
