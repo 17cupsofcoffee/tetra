@@ -34,8 +34,8 @@ impl Camera {
         mat.rotate_z(self.rotation);
         mat.scale_3d(Vec3::new(self.zoom, self.zoom, 1.0));
         mat.translate_2d(Vec2::new(
-            graphics::get_viewport_width(ctx) as f32 / 2.0,
-            graphics::get_viewport_height(ctx) as f32 / 2.0,
+            graphics::get_canvas_width(ctx) as f32 / 2.0,
+            graphics::get_canvas_height(ctx) as f32 / 2.0,
         ));
 
         mat
