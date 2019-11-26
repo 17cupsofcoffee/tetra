@@ -12,7 +12,7 @@ use crate::graphics::opengl::GLDevice;
 use crate::graphics::{self, ActiveTexture, DrawParams, Drawable, Rectangle, Texture};
 use crate::Context;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub(crate) struct FontQuad {
     x1: f32,
     y1: f32,
@@ -79,6 +79,7 @@ impl Default for Font {
 }
 
 /// A piece of text that can be rendered.
+#[derive(Debug, Clone)]
 pub struct Text {
     content: String,
     font: Font,
