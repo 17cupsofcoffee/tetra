@@ -45,8 +45,8 @@ impl Camera {
     /// 0 and 1.
     ///
     /// See the `vek::Lerp` trait (re-exported from `tetra::math`) for more details.
-    pub fn lerp(from: &Camera, to: &Camera, factor: f32) -> Camera {
-        Lerp::lerp(from, to, factor)
+    pub fn lerp(&self, to: &Camera, factor: f32) -> Camera {
+        Lerp::lerp(self, to, factor)
     }
 
     /// Returns the linear interpolation of two cameras, with `factor` clamped between
@@ -54,15 +54,15 @@ impl Camera {
     /// to `lerp`.
     ///
     /// See the `vek::Lerp` trait (re-exported from `tetra::math`) for more details.
-    pub fn lerp_precise(from: &Camera, to: &Camera, factor: f32) -> Camera {
-        Lerp::lerp_precise(from, to, factor)
+    pub fn lerp_precise(&self, to: &Camera, factor: f32) -> Camera {
+        Lerp::lerp_precise(self, to, factor)
     }
 
     /// Returns the linear interpolation of two cameras, with `factor` unconstrained.
     ///
     /// See the `vek::Lerp` trait (re-exported from `tetra::math`) for more details.
-    pub fn lerp_unclamped(from: &Camera, to: &Camera, factor: f32) -> Camera {
-        Lerp::lerp_unclamped(from, to, factor)
+    pub fn lerp_unclamped(&self, to: &Camera, factor: f32) -> Camera {
+        Lerp::lerp_unclamped(self, to, factor)
     }
 
     /// Returns the linear interpolation of two cameras, with `factor` unconstrained.
@@ -70,8 +70,8 @@ impl Camera {
     /// `lerp_unclamped`.
     ///
     /// See the `vek::Lerp` trait (re-exported from `tetra::math`) for more details.
-    pub fn lerp_unclamped_precise(from: &Camera, to: &Camera, factor: f32) -> Camera {
-        Lerp::lerp_unclamped_precise(from, to, factor)
+    pub fn lerp_unclamped_precise(&self, to: &Camera, factor: f32) -> Camera {
+        Lerp::lerp_unclamped_precise(self, to, factor)
     }
 }
 
