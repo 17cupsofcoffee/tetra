@@ -16,13 +16,13 @@ sdl2_bundled = ["sdl2/bundled"]
 sdl2_static_link = ["sdl2/static-link"]
 
 [dependencies]
-sdl2 = "0.32.2"
-rodio = "0.10.0"
+sdl2 = "0.32"
+rodio = "0.10"
 glow = "0.3.0-alpha3"
-image = "0.22.3"
-vek = { version = "0.9.10", default-features = false }
-hashbrown = "0.6.3"
-glyph_brush = "0.6.1"
+image = "0.22"
+vek = { version = "0.9", default-features = false }
+hashbrown = "0.6"
+glyph_brush = "0.6"
 
 [dev-dependencies]
 rand = "0.7"

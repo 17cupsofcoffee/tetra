@@ -33,10 +33,10 @@ This project adheres to Semantic Versioning.
 * The functions for setting the fullscreen/cursor visibility state have been changed to take booleans, instead of there being multiple functions.
 * The `Shader::vertex` and `Shader::fragment` constructors have been renamed to `Shader::from_vertex_file` and `Shader::from_fragment_file`.
 * Updated `glow` to 0.3.0-alpha3.
-* Updated `hashbrown` to 0.6.3.
-* Updated `image` to 0.22.3.
-* Updated `glyph_brush` to 0.6.1.
-* Updated `rodio` to 0.10.0.
+* Updated `hashbrown` to 0.6.
+* Updated `image` to 0.22.
+* Updated `glyph_brush` to 0.6.
+* Updated `rodio` to 0.10.
 
 ### Removed
 
