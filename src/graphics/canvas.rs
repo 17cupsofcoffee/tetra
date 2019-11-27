@@ -105,9 +105,14 @@ impl Canvas {
         self.texture.set_filter_mode(ctx, filter_mode);
     }
 
-    /// Returns the canvas' underlying texture.
+    /// Returns a reference to the canvas' underlying texture.
     pub fn texture(&self) -> &Texture {
         &self.texture
+    }
+
+    /// Returns a mutable reference to the canvas' underlying texture.
+    pub fn texture_mut(&mut self) -> &mut Texture {
+        &mut self.texture
     }
 }
 

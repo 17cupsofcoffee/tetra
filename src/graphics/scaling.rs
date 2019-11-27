@@ -108,6 +108,11 @@ impl ScreenScaler {
         &self.canvas
     }
 
+    /// Returns a mutable reference to the canvas that is being scaled.
+    pub fn canvas_mut(&mut self) -> &mut Canvas {
+        &mut self.canvas
+    }
+
     /// Returns the current scaling mode.
     pub fn mode(&self) -> ScalingMode {
         self.mode

@@ -28,9 +28,14 @@ impl NineSlice {
         }
     }
 
-    /// Gets the underlying texture for the panel.
+    /// Returns a reference to the underlying texture for the panel.
     pub fn texture(&self) -> &Texture {
         &self.texture
+    }
+
+    /// Returns a mutable reference to the underlying texture for the panel.
+    pub fn texture_mut(&mut self) -> &mut Texture {
+        &mut self.texture
     }
 
     /// Sets the underlying texture for the panel.
