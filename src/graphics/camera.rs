@@ -45,7 +45,7 @@ impl Camera {
     /// Creates a new transformation matrix based on the camera's data.
     ///
     /// Pass this to `graphics::set_transform_matrix` to apply the transformation.
-    pub fn to_matrix(&self, ctx: &Context) -> Mat4<f32> {
+    pub fn to_matrix(&self) -> Mat4<f32> {
         let mut mat = Mat4::translation_2d(-self.position);
 
         mat.rotate_z(self.rotation);
@@ -59,21 +59,19 @@ impl Camera {
         mat
     }
 
-    pub fn project(&self, ctx: &Context, point: Vec2<f32>) -> Vec2<f32> {
-        self.to_matrix(ctx)
+    pub fn project(&self, point: Vec2<f32>) -> Vec2<f32> {
+        self.to_matrix()
             .inverted()
             .mul_point(Vec3::from_point_2d(point))
             .xy()
     }
 
-    pub fn unproject(&self, ctx: &Context, point: Vec2<f32>) -> Vec2<f32> {
-        self.to_matrix(ctx)
-            .mul_point(Vec3::from_point_2d(point))
-            .xy()
+    pub fn unproject(&self, point: Vec2<f32>) -> Vec2<f32> {
+        self.to_matrix().mul_point(Vec3::from_point_2d(point)).xy()
     }
 
     pub fn mouse_position(&self, ctx: &Context) -> Vec2<f32> {
-        self.project(ctx, input::get_mouse_position(ctx))
+        self.project(input::get_mouse_position(ctx))
     }
 
     pub fn mouse_x(&self, ctx: &Context) -> f32 {
