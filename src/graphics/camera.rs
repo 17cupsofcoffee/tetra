@@ -63,7 +63,7 @@ impl Camera {
         self.mouse_position(ctx).x
     }
 
-    pub fn mouse_y(&self, ctx: &Context) -> Vec2<f32> {
+    pub fn mouse_y(&self, ctx: &Context) -> f32 {
         self.mouse_position(ctx).y
     }
 
