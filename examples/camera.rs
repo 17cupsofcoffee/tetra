@@ -59,7 +59,7 @@ impl State for GameState {
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(0.769, 0.812, 0.631));
 
-        graphics::set_transform_matrix(ctx, self.camera.to_matrix(ctx));
+        graphics::set_transform_matrix(ctx, self.camera.to_matrix());
 
         graphics::draw(
             ctx,
@@ -72,7 +72,7 @@ impl State for GameState {
         Ok(())
     }
 
-    fn size_changed(&mut self, ctx: &mut Context, width: i32, height: i32) -> tetra::Result {
+    fn size_changed(&mut self, _: &mut Context, width: i32, height: i32) -> tetra::Result {
         self.camera.set_viewport_size(width as f32, height as f32);
 
         Ok(())
