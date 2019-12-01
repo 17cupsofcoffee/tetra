@@ -30,13 +30,6 @@ use crate::Context;
 /// }
 ///
 /// impl State for GameState {
-///     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-///         // Ensure your scaler is kept aware of screen size changes!
-///         self.scaler.update(ctx);
-///
-///         Ok(())
-///     }
-///
 ///     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
 ///         graphics::set_canvas(ctx, self.scaler.canvas());
 ///
@@ -45,6 +38,13 @@ use crate::Context;
 ///         graphics::reset_canvas(ctx);
 ///         graphics::clear(ctx, Color::BLACK);
 ///         graphics::draw(ctx, &self.scaler, Vec2::new(0.0, 0.0));
+///
+///         Ok(())
+///     }
+///
+///     fn size_changed(&mut self, _ctx: &mut Context, width: i32, height: i32) -> tetra::Result {
+///         // Ensure your scaler is kept aware of screen size changes!
+///         self.scaler.set_window_size(width, height);
 ///
 ///         Ok(())
 ///     }

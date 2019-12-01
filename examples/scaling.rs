@@ -74,7 +74,7 @@ impl State for GameState {
         Ok(())
     }
 
-    fn size_changed(&mut self, ctx: &mut Context, width: i32, height: i32) -> tetra::Result {
+    fn size_changed(&mut self, _: &mut Context, width: i32, height: i32) -> tetra::Result {
         self.scaler.set_window_size(width, height);
 
         Ok(())
