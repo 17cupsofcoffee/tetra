@@ -14,7 +14,7 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
-            camera: Camera::default(),
+            camera: Camera::with_window_size(ctx),
         })
     }
 }
@@ -71,10 +71,17 @@ impl State for GameState {
 
         Ok(())
     }
+
+    fn size_changed(&mut self, ctx: &mut Context, width: i32, height: i32) -> tetra::Result {
+        self.camera.set_viewport_size(width as f32, height as f32);
+
+        Ok(())
+    }
 }
 
 fn main() -> tetra::Result {
     ContextBuilder::new("Cameras", 640, 480)
+        .resizable(true)
         .quit_on_escape(true)
         .build()?
         .run(GameState::new)

@@ -85,10 +85,7 @@ impl ScreenScaler {
     /// Updates the screen's size to fit the current size of the window.
     ///
     /// If your window never changes size, you don't need to call this.
-    pub fn update(&mut self, ctx: &Context) {
-        let window_width = window::get_width(ctx);
-        let window_height = window::get_height(ctx);
-
+    pub fn set_window_size(&mut self, window_width: i32, window_height: i32) {
         if window_width != self.window_width || window_height != self.window_height {
             self.window_width = window_width;
             self.window_height = window_height;

@@ -15,7 +15,7 @@ use crate::error::{Result, TetraError};
 use crate::graphics;
 use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
 use crate::math::Vec2;
-use crate::{Context, ContextBuilder};
+use crate::{Context, ContextBuilder, State};
 
 pub struct Platform {
     sdl: Sdl,
@@ -149,7 +149,10 @@ impl Platform {
     }
 }
 
-pub fn handle_events(ctx: &mut Context) -> Result {
+pub fn handle_events<S>(ctx: &mut Context, state: &mut S) -> Result
+where
+    S: State,
+{
     let mut events = ctx
         .platform
         .sdl
@@ -166,6 +169,7 @@ pub fn handle_events(ctx: &mut Context) -> Result {
                     ctx.platform.window_height = height;
 
                     graphics::update_window_projection(ctx, width, height);
+                    state.size_changed(ctx, width, height)?;
                 }
             }
 

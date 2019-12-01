@@ -45,8 +45,6 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        self.scaler.update(ctx);
-
         if input::is_key_pressed(ctx, Key::Space) {
             let next = match self.scaler.mode() {
                 ScalingMode::Fixed => ScalingMode::Stretch,
@@ -72,6 +70,12 @@ impl State for GameState {
         graphics::reset_canvas(ctx);
         graphics::clear(ctx, Color::BLACK);
         graphics::draw(ctx, &self.scaler, Vec2::new(0.0, 0.0));
+
+        Ok(())
+    }
+
+    fn size_changed(&mut self, ctx: &mut Context, width: i32, height: i32) -> tetra::Result {
+        self.scaler.set_window_size(width, height);
 
         Ok(())
     }

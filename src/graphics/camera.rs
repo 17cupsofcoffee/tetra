@@ -1,6 +1,6 @@
-use crate::graphics;
 use crate::input;
 use crate::math::{Lerp, Mat4, Vec2, Vec3};
+use crate::window;
 use crate::Context;
 
 /// A camera that can be used to transform the scene.
@@ -14,16 +14,32 @@ pub struct Camera {
 
     /// The zoom level of the camera.
     pub zoom: f32,
+
+    pub viewport_width: f32,
+
+    pub viewport_height: f32,
 }
 
 impl Camera {
     /// Create a new camera.
-    pub fn new(position: Vec2<f32>) -> Camera {
+    pub fn new(viewport_width: f32, viewport_height: f32) -> Camera {
         Camera {
-            position,
+            position: Vec2::zero(),
             rotation: 0.0,
             zoom: 1.0,
+            viewport_width,
+            viewport_height,
         }
+    }
+
+    pub fn with_window_size(ctx: &Context) -> Camera {
+        let (width, height) = window::get_size(ctx);
+        Camera::new(width as f32, height as f32)
+    }
+
+    pub fn set_viewport_size(&mut self, width: f32, height: f32) {
+        self.viewport_width = width;
+        self.viewport_height = height;
     }
 
     /// Creates a new transformation matrix based on the camera's data.
@@ -35,8 +51,9 @@ impl Camera {
         mat.rotate_z(self.rotation);
         mat.scale_3d(Vec3::new(self.zoom, self.zoom, 1.0));
         mat.translate_2d(Vec2::new(
-            graphics::get_canvas_width(ctx) as f32 / 2.0,
-            graphics::get_canvas_height(ctx) as f32 / 2.0,
+            // TODO: Snap to whole pixel?
+            self.viewport_width / 2.0,
+            self.viewport_height / 2.0,
         ));
 
         mat
@@ -101,16 +118,6 @@ impl Camera {
     }
 }
 
-impl Default for Camera {
-    fn default() -> Camera {
-        Camera {
-            position: Vec2::zero(),
-            rotation: 0.0,
-            zoom: 1.0,
-        }
-    }
-}
-
 impl Lerp<f32> for Camera {
     type Output = Camera;
 
@@ -119,6 +126,8 @@ impl Lerp<f32> for Camera {
             position: Lerp::lerp_unclamped(from.position, to.position, factor),
             rotation: Lerp::lerp_unclamped(from.rotation, to.rotation, factor),
             zoom: Lerp::lerp_unclamped(from.zoom, to.zoom, factor),
+            viewport_width: Lerp::lerp_unclamped(from.viewport_width, to.viewport_width, factor),
+            viewport_height: Lerp::lerp_unclamped(from.viewport_height, to.viewport_height, factor),
         }
     }
 
@@ -127,6 +136,16 @@ impl Lerp<f32> for Camera {
             position: Lerp::lerp_unclamped_precise(from.position, to.position, factor),
             rotation: Lerp::lerp_unclamped_precise(from.rotation, to.rotation, factor),
             zoom: Lerp::lerp_unclamped_precise(from.zoom, to.zoom, factor),
+            viewport_width: Lerp::lerp_unclamped_precise(
+                from.viewport_width,
+                to.viewport_width,
+                factor,
+            ),
+            viewport_height: Lerp::lerp_unclamped_precise(
+                from.viewport_height,
+                to.viewport_height,
+                factor,
+            ),
         }
     }
 }
@@ -139,6 +158,8 @@ impl<'a> Lerp<f32> for &'a Camera {
             position: Lerp::lerp_unclamped(from.position, to.position, factor),
             rotation: Lerp::lerp_unclamped(from.rotation, to.rotation, factor),
             zoom: Lerp::lerp_unclamped(from.zoom, to.zoom, factor),
+            viewport_width: Lerp::lerp_unclamped(from.viewport_width, to.viewport_width, factor),
+            viewport_height: Lerp::lerp_unclamped(from.viewport_height, to.viewport_height, factor),
         }
     }
 
@@ -147,6 +168,16 @@ impl<'a> Lerp<f32> for &'a Camera {
             position: Lerp::lerp_unclamped_precise(from.position, to.position, factor),
             rotation: Lerp::lerp_unclamped_precise(from.rotation, to.rotation, factor),
             zoom: Lerp::lerp_unclamped_precise(from.zoom, to.zoom, factor),
+            viewport_width: Lerp::lerp_unclamped_precise(
+                from.viewport_width,
+                to.viewport_width,
+                factor,
+            ),
+            viewport_height: Lerp::lerp_unclamped_precise(
+                from.viewport_height,
+                to.viewport_height,
+                factor,
+            ),
         }
     }
 }

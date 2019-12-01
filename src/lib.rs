@@ -110,6 +110,10 @@ pub trait State {
     fn draw(&mut self, ctx: &mut Context, dt: f64) -> Result {
         Ok(())
     }
+
+    fn size_changed(&mut self, ctx: &mut Context, width: i32, height: i32) -> Result {
+        Ok(())
+    }
 }
 
 /// A struct containing all of the 'global' state within the framework.
@@ -228,7 +232,7 @@ impl Context {
     {
         time::tick(self);
 
-        platform::handle_events(self)?;
+        platform::handle_events(self, state)?;
 
         while time::is_tick_ready(self) {
             state.update(self)?;
