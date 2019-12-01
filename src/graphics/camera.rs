@@ -1,4 +1,5 @@
 use crate::graphics;
+use crate::input;
 use crate::math::{Lerp, Mat4, Vec2, Vec3};
 use crate::Context;
 
@@ -52,6 +53,18 @@ impl Camera {
         self.to_matrix(ctx)
             .mul_point(Vec3::from_point_2d(point))
             .xy()
+    }
+
+    pub fn mouse_position(&self, ctx: &Context) -> Vec2<f32> {
+        self.project(ctx, input::get_mouse_position(ctx))
+    }
+
+    pub fn mouse_x(&self, ctx: &Context) -> f32 {
+        self.mouse_position(ctx).x
+    }
+
+    pub fn mouse_y(&self, ctx: &Context) -> Vec2<f32> {
+        self.mouse_position(ctx).y
     }
 
     /// Returns the linear interpolation of two cameras, with `factor` clamped between
