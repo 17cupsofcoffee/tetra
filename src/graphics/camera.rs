@@ -41,6 +41,19 @@ impl Camera {
         mat
     }
 
+    pub fn project(&self, ctx: &Context, point: Vec2<f32>) -> Vec2<f32> {
+        self.to_matrix(ctx)
+            .inverted()
+            .mul_point(Vec3::from_point_2d(point))
+            .xy()
+    }
+
+    pub fn unproject(&self, ctx: &Context, point: Vec2<f32>) -> Vec2<f32> {
+        self.to_matrix(ctx)
+            .mul_point(Vec3::from_point_2d(point))
+            .xy()
+    }
+
     /// Returns the linear interpolation of two cameras, with `factor` clamped between
     /// 0 and 1.
     ///
