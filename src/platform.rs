@@ -12,6 +12,7 @@ use sdl2::video::{FullscreenType, GLContext as SdlGlContext, GLProfile, SwapInte
 use sdl2::{GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem};
 
 use crate::error::{Result, TetraError};
+use crate::graphics;
 use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
 use crate::math::Vec2;
 use crate::{Context, ContextBuilder};
@@ -41,7 +42,7 @@ struct SdlController {
 }
 
 impl Platform {
-    pub fn new(settings: &ContextBuilder) -> Result<(Platform, GlowContext)> {
+    pub fn new(settings: &ContextBuilder) -> Result<(Platform, GlowContext, i32, i32)> {
         let sdl = sdl2::init().map_err(TetraError::PlatformError)?;
         let video_sys = sdl.video().map_err(TetraError::PlatformError)?;
         let joystick_sys = sdl.joystick().map_err(TetraError::PlatformError)?;
@@ -144,7 +145,7 @@ impl Platform {
             window_height,
         };
 
-        Ok((platform, gl_ctx))
+        Ok((platform, gl_ctx, window_width, window_height))
     }
 }
 
@@ -163,6 +164,8 @@ pub fn handle_events(ctx: &mut Context) -> Result {
                 if let WindowEvent::SizeChanged(width, height) = win_event {
                     ctx.platform.window_width = width;
                     ctx.platform.window_height = height;
+
+                    graphics::update_window_projection(ctx, width, height);
                 }
             }
 

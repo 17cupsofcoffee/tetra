@@ -74,6 +74,7 @@ pub(crate) struct GraphicsContext {
 
     canvas: ActiveCanvas,
 
+    projection_matrix: Mat4<f32>,
     transform_matrix: Mat4<f32>,
 
     vertex_data: Vec<f32>,
@@ -84,7 +85,11 @@ pub(crate) struct GraphicsContext {
 }
 
 impl GraphicsContext {
-    pub(crate) fn new(device: &mut GLDevice) -> Result<GraphicsContext> {
+    pub(crate) fn new(
+        device: &mut GLDevice,
+        window_width: i32,
+        window_height: i32,
+    ) -> Result<GraphicsContext> {
         let indices: Vec<u32> = INDEX_ARRAY
             .iter()
             .cycle()
@@ -114,8 +119,9 @@ impl GraphicsContext {
         )?;
 
         let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
-        let (width, height) = font_cache.texture_dimensions();
-        let font_cache_texture = Texture::with_device_empty(device, width as i32, height as i32)?;
+        let (font_cache_width, font_cache_height) = font_cache.texture_dimensions();
+        let font_cache_texture =
+            Texture::with_device_empty(device, font_cache_width as i32, font_cache_height as i32)?;
 
         Ok(GraphicsContext {
             vertex_buffer,
@@ -129,6 +135,7 @@ impl GraphicsContext {
 
             canvas: ActiveCanvas::Window,
 
+            projection_matrix: ortho(window_width as f32, window_height as f32, false),
             transform_matrix: Mat4::identity(),
 
             vertex_data: Vec::with_capacity(MAX_VERTICES * VERTEX_STRIDE),
@@ -319,12 +326,16 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
             ActiveCanvas::Window => {
                 let (width, height) = window::get_size(ctx);
 
+                ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
+
                 ctx.gl.bind_framebuffer(None);
                 ctx.gl.front_face(FrontFace::CounterClockwise);
                 ctx.gl.viewport(0, 0, width, height);
             }
             ActiveCanvas::User(r) => {
                 let (width, height) = r.size();
+
+                ctx.graphics.projection_matrix = ortho(width as f32, height as f32, true);
 
                 ctx.gl.bind_framebuffer(Some(&r.framebuffer));
                 ctx.gl.front_face(FrontFace::Clockwise);
@@ -387,19 +398,10 @@ pub fn flush(ctx: &mut Context) {
             ActiveShader::User(s) => s,
         };
 
-        let projection = match &ctx.graphics.canvas {
-            ActiveCanvas::Window => ortho(
-                window::get_width(ctx) as f32,
-                window::get_height(ctx) as f32,
-                false,
-            ),
-            ActiveCanvas::User(c) => ortho(c.width() as f32, c.height() as f32, true),
-        };
-
         ctx.gl.set_uniform(
             &*shader.handle,
             "u_projection",
-            projection * ctx.graphics.transform_matrix,
+            ctx.graphics.projection_matrix * ctx.graphics.transform_matrix,
         );
 
         ctx.gl
@@ -489,6 +491,13 @@ pub fn set_transform_matrix(ctx: &mut Context, matrix: Mat4<f32>) {
 /// This is a shortcut for calling `graphics::set_transform_matrix(ctx, Mat4::identity())`.
 pub fn reset_transform_matrix(ctx: &mut Context) {
     set_transform_matrix(ctx, Mat4::identity());
+}
+
+pub(crate) fn update_window_projection(ctx: &mut Context, width: i32, height: i32) {
+    if let ActiveCanvas::Window = ctx.graphics.canvas {
+        ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
+        ctx.gl.viewport(0, 0, width, height);
+    }
 }
 
 pub(crate) fn ortho(width: f32, height: f32, flipped: bool) -> Mat4<f32> {

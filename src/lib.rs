@@ -131,7 +131,7 @@ impl Context {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
         let audio = AudioContext::new();
 
-        let (platform, gl_context) = Platform::new(settings)?;
+        let (platform, gl_context, window_width, window_height) = Platform::new(settings)?;
         let mut gl = GLDevice::new(gl_context)?;
 
         if settings.debug_info {
@@ -141,7 +141,7 @@ impl Context {
             println!("GLSL Version: {}", gl.get_shading_language_version());
         }
 
-        let graphics = GraphicsContext::new(&mut gl)?;
+        let graphics = GraphicsContext::new(&mut gl, window_width, window_height)?;
         let input = InputContext::new();
         let time = TimeContext::new(settings.tick_rate);
 
