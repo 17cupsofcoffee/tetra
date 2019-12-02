@@ -169,7 +169,7 @@ where
                     ctx.platform.window_height = height;
 
                     graphics::update_window_projection(ctx, width, height);
-                    state.size_changed(ctx, width, height)?;
+                    state.resize(ctx, width, height)?;
                 }
             }
 
@@ -184,6 +184,7 @@ where
 
                 if let Some(k) = into_key(k) {
                     input::set_key_down(ctx, k);
+                    state.key_down(ctx, k)?;
                 }
             }
 
@@ -194,6 +195,7 @@ where
                     // TODO: This can cause some inputs to be missed at low tick rates.
                     // Could consider buffering input releases like Otter2D does?
                     input::set_key_up(ctx, k);
+                    state.key_up(ctx, k)?;
                 }
             }
 

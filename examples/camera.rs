@@ -72,7 +72,7 @@ impl State for GameState {
         Ok(())
     }
 
-    fn size_changed(&mut self, _: &mut Context, width: i32, height: i32) -> tetra::Result {
+    fn resize(&mut self, _: &mut Context, width: i32, height: i32) -> tetra::Result {
         self.camera.set_viewport_size(width as f32, height as f32);
 
         Ok(())

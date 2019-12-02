@@ -75,7 +75,7 @@ use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
-use crate::input::InputContext;
+use crate::input::{InputContext, Key};
 use crate::platform::Platform;
 use crate::time::TimeContext;
 
@@ -111,7 +111,15 @@ pub trait State {
         Ok(())
     }
 
-    fn size_changed(&mut self, ctx: &mut Context, width: i32, height: i32) -> Result {
+    fn resize(&mut self, ctx: &mut Context, width: i32, height: i32) -> Result {
+        Ok(())
+    }
+
+    fn key_down(&mut self, ctx: &mut Context, key: Key) -> Result {
+        Ok(())
+    }
+
+    fn key_up(&mut self, ctx: &mut Context, key: Key) -> Result {
         Ok(())
     }
 }

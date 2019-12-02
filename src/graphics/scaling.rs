@@ -42,7 +42,7 @@ use crate::Context;
 ///         Ok(())
 ///     }
 ///
-///     fn size_changed(&mut self, _ctx: &mut Context, width: i32, height: i32) -> tetra::Result {
+///     fn resize(&mut self, _ctx: &mut Context, width: i32, height: i32) -> tetra::Result {
 ///         // Ensure your scaler is kept aware of screen size changes!
 ///         self.scaler.set_window_size(width, height);
 ///
