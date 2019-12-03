@@ -111,15 +111,8 @@ pub trait State {
         Ok(())
     }
 
-    fn resize(&mut self, ctx: &mut Context, width: i32, height: i32) -> Result {
-        Ok(())
-    }
-
-    fn key_down(&mut self, ctx: &mut Context, key: Key) -> Result {
-        Ok(())
-    }
-
-    fn key_up(&mut self, ctx: &mut Context, key: Key) -> Result {
+    /// Called when a window or input event is fired.
+    fn event(&mut self, ctx: &mut Context, event: Event) -> Result {
         Ok(())
     }
 }
@@ -254,6 +247,26 @@ impl Context {
 
         Ok(())
     }
+}
+
+pub enum Event {
+    Resize {
+        width: i32,
+        height: i32,
+    },
+
+    KeyDown {
+        key: Key,
+    },
+
+    KeyUp {
+        key: Key,
+    },
+
+    /// This is here so that adding new error types will not be a breaking change.
+    /// Can be removed once #[non_exhaustive] is stabilized.
+    #[doc(hidden)]
+    __Nonexhaustive,
 }
 
 /// Settings that can be configured when starting up a game.

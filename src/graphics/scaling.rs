@@ -12,7 +12,7 @@ use crate::Context;
 /// # Examples
 ///
 /// ```rust
-/// # use tetra::{Context, State};
+/// # use tetra::{Context, State, Event};
 /// # use tetra::graphics::{self, Color};
 /// # use tetra::graphics::scaling::{ScreenScaler, ScalingMode};
 /// # use tetra::math::Vec2;
@@ -42,9 +42,11 @@ use crate::Context;
 ///         Ok(())
 ///     }
 ///
-///     fn resize(&mut self, _ctx: &mut Context, width: i32, height: i32) -> tetra::Result {
-///         // Ensure your scaler is kept aware of screen size changes!
-///         self.scaler.set_window_size(width, height);
+///     fn event(&mut self, _ctx: &mut Context, event: Event) -> tetra::Result {
+///         if let Event::Resize { width, height } = event {
+///             // Ensure your scaler is kept aware of screen size changes!
+///             self.scaler.set_window_size(width, height);
+///         }
 ///
 ///         Ok(())
 ///     }

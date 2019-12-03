@@ -3,7 +3,7 @@ use hashbrown::HashMap;
 
 use glow::Context as GlowContext;
 use sdl2::controller::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, GameController};
-use sdl2::event::{Event, WindowEvent};
+use sdl2::event::{Event as SdlEvent, WindowEvent};
 use sdl2::haptic::Haptic;
 use sdl2::keyboard::Keycode as SdlKey;
 use sdl2::mouse::MouseButton as SdlMouseButton;
@@ -15,7 +15,7 @@ use crate::error::{Result, TetraError};
 use crate::graphics;
 use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
 use crate::math::Vec2;
-use crate::{Context, ContextBuilder, State};
+use crate::{Context, ContextBuilder, Event, State};
 
 pub struct Platform {
     sdl: Sdl,
@@ -161,19 +161,19 @@ where
 
     for event in events.poll_iter() {
         match event {
-            Event::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
+            SdlEvent::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
 
-            Event::Window { win_event, .. } => {
+            SdlEvent::Window { win_event, .. } => {
                 if let WindowEvent::SizeChanged(width, height) = win_event {
                     ctx.platform.window_width = width;
                     ctx.platform.window_height = height;
 
                     graphics::update_window_projection(ctx, width, height);
-                    state.resize(ctx, width, height)?;
+                    state.event(ctx, Event::Resize { width, height })?;
                 }
             }
 
-            Event::KeyDown {
+            SdlEvent::KeyDown {
                 keycode: Some(k), ..
             } => {
                 if let SdlKey::Escape = k {
@@ -182,44 +182,44 @@ where
                     }
                 }
 
-                if let Some(k) = into_key(k) {
-                    input::set_key_down(ctx, k);
-                    state.key_down(ctx, k)?;
+                if let Some(key) = into_key(k) {
+                    input::set_key_down(ctx, key);
+                    state.event(ctx, Event::KeyDown { key })?;
                 }
             }
 
-            Event::KeyUp {
+            SdlEvent::KeyUp {
                 keycode: Some(k), ..
             } => {
-                if let Some(k) = into_key(k) {
+                if let Some(key) = into_key(k) {
                     // TODO: This can cause some inputs to be missed at low tick rates.
                     // Could consider buffering input releases like Otter2D does?
-                    input::set_key_up(ctx, k);
-                    state.key_up(ctx, k)?;
+                    input::set_key_up(ctx, key);
+                    state.event(ctx, Event::KeyUp { key })?;
                 }
             }
 
-            Event::MouseButtonDown { mouse_btn, .. } => {
+            SdlEvent::MouseButtonDown { mouse_btn, .. } => {
                 if let Some(b) = into_mouse_button(mouse_btn) {
                     input::set_mouse_button_down(ctx, b);
                 }
             }
 
-            Event::MouseButtonUp { mouse_btn, .. } => {
+            SdlEvent::MouseButtonUp { mouse_btn, .. } => {
                 if let Some(b) = into_mouse_button(mouse_btn) {
                     input::set_mouse_button_up(ctx, b);
                 }
             }
 
-            Event::MouseMotion { x, y, .. } => {
+            SdlEvent::MouseMotion { x, y, .. } => {
                 input::set_mouse_position(ctx, Vec2::new(x as f32, y as f32));
             }
 
-            Event::TextInput { text, .. } => {
+            SdlEvent::TextInput { text, .. } => {
                 input::set_text_input(ctx, Some(text));
             }
 
-            Event::ControllerDeviceAdded { which, .. } => {
+            SdlEvent::ControllerDeviceAdded { which, .. } => {
                 let controller = ctx
                     .platform
                     .controller_sys
@@ -241,12 +241,12 @@ where
                 );
             }
 
-            Event::ControllerDeviceRemoved { which, .. } => {
+            SdlEvent::ControllerDeviceRemoved { which, .. } => {
                 let controller = ctx.platform.controllers.remove(&which).unwrap();
                 input::remove_gamepad(ctx, controller.slot);
             }
 
-            Event::ControllerButtonDown { which, button, .. } => {
+            SdlEvent::ControllerButtonDown { which, button, .. } => {
                 if let Some(slot) = ctx.platform.controllers.get(&which).map(|c| c.slot) {
                     if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
                         pad.set_button_down(button.into());
@@ -254,7 +254,7 @@ where
                 }
             }
 
-            Event::ControllerButtonUp { which, button, .. } => {
+            SdlEvent::ControllerButtonUp { which, button, .. } => {
                 if let Some(slot) = ctx.platform.controllers.get(&which).map(|c| c.slot) {
                     if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
                         // TODO: This can cause some inputs to be missed at low tick rates.
@@ -264,7 +264,7 @@ where
                 }
             }
 
-            Event::ControllerAxisMotion {
+            SdlEvent::ControllerAxisMotion {
                 which, axis, value, ..
             } => {
                 if let Some(slot) = ctx.platform.controllers.get(&which).map(|c| c.slot) {

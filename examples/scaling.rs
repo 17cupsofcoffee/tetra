@@ -3,7 +3,7 @@ use tetra::graphics::ui::NineSlice;
 use tetra::graphics::{self, Color, Font, Rectangle, Text, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
-use tetra::{Context, ContextBuilder, State};
+use tetra::{Context, ContextBuilder, Event, State};
 
 const LABEL: &str = "Press Space to cycle between scaling modes";
 const SCREEN_WIDTH: f32 = 640.0;
@@ -74,8 +74,10 @@ impl State for GameState {
         Ok(())
     }
 
-    fn resize(&mut self, _: &mut Context, width: i32, height: i32) -> tetra::Result {
-        self.scaler.set_window_size(width, height);
+    fn event(&mut self, _: &mut Context, event: Event) -> tetra::Result {
+        if let Event::Resize { width, height } = event {
+            self.scaler.set_window_size(width, height);
+        }
 
         Ok(())
     }

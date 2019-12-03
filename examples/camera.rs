@@ -1,7 +1,7 @@
 use tetra::graphics::{self, Camera, Color, DrawParams, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
-use tetra::{Context, ContextBuilder, State};
+use tetra::{Context, ContextBuilder, Event, State};
 
 const CAMERA_SPEED: f32 = 4.0;
 
@@ -72,8 +72,10 @@ impl State for GameState {
         Ok(())
     }
 
-    fn resize(&mut self, _: &mut Context, width: i32, height: i32) -> tetra::Result {
-        self.camera.set_viewport_size(width as f32, height as f32);
+    fn event(&mut self, _: &mut Context, event: Event) -> tetra::Result {
+        if let Event::Resize { width, height } = event {
+            self.camera.set_viewport_size(width as f32, height as f32);
+        }
 
         Ok(())
     }

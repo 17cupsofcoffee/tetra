@@ -8,7 +8,7 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
-* The `State` trait now provides more methods for hooking into window/input events. These are useful in scenarios where you want to be notified of events rather than polling (for example, reacting to window size changes).
+* The `State` trait now provides an `event` method for hooking into window/input events. This is useful in scenarios where you want to be notified of events rather than polling (for example, reacting to window size changes).
 * Functions for getting and setting vsync have been added to `window`.
 * Details of the active graphics device can now be retrieved by calling `graphics::get_device_info`.
 * `Shader::from_vertex_string` and `Shader::from_fragment_string` constructors have been added.
