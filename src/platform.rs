@@ -163,15 +163,25 @@ where
         match event {
             SdlEvent::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
 
-            SdlEvent::Window { win_event, .. } => {
-                if let WindowEvent::SizeChanged(width, height) = win_event {
+            SdlEvent::Window { win_event, .. } => match win_event {
+                WindowEvent::SizeChanged(width, height) => {
                     ctx.platform.window_width = width;
                     ctx.platform.window_height = height;
 
                     graphics::update_window_projection(ctx, width, height);
                     state.event(ctx, Event::Resize { width, height })?;
                 }
-            }
+
+                WindowEvent::FocusGained => {
+                    state.event(ctx, Event::FocusGained)?;
+                }
+
+                WindowEvent::FocusLost => {
+                    state.event(ctx, Event::FocusLost)?;
+                }
+
+                _ => {}
+            },
 
             SdlEvent::KeyDown {
                 keycode: Some(k), ..

@@ -255,6 +255,10 @@ pub enum Event {
         height: i32,
     },
 
+    FocusGained,
+
+    FocusLost,
+
     KeyDown {
         key: Key,
     },
