@@ -35,22 +35,16 @@ pub fn is_mouse_button_released(ctx: &Context, button: MouseButton) -> bool {
 }
 
 /// Get the X co-ordinate of the mouse.
-///
-/// If the screen is scaled, the returned value will be relative to the original size.
 pub fn get_mouse_x(ctx: &Context) -> f32 {
     ctx.input.mouse_position.x
 }
 
 /// Get the Y co-ordinate of the mouse.
-///
-/// If the screen is scaled, the returned value will be relative to the original size.
 pub fn get_mouse_y(ctx: &Context) -> f32 {
     ctx.input.mouse_position.y
 }
 
 /// Get the position of the mouse.
-///
-/// If the screen is scaled, the returned value will be relative to the original size.
 pub fn get_mouse_position(ctx: &Context) -> Vec2<f32> {
     Vec2::new(get_mouse_x(ctx), get_mouse_y(ctx))
 }
