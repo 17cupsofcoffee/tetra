@@ -210,19 +210,23 @@ where
             }
 
             SdlEvent::MouseButtonDown { mouse_btn, .. } => {
-                if let Some(b) = into_mouse_button(mouse_btn) {
-                    input::set_mouse_button_down(ctx, b);
+                if let Some(button) = into_mouse_button(mouse_btn) {
+                    input::set_mouse_button_down(ctx, button);
+                    state.event(ctx, Event::MouseButtonDown { button })?;
                 }
             }
 
             SdlEvent::MouseButtonUp { mouse_btn, .. } => {
-                if let Some(b) = into_mouse_button(mouse_btn) {
-                    input::set_mouse_button_up(ctx, b);
+                if let Some(button) = into_mouse_button(mouse_btn) {
+                    input::set_mouse_button_up(ctx, button);
+                    state.event(ctx, Event::MouseButtonUp { button })?;
                 }
             }
 
             SdlEvent::MouseMotion { x, y, .. } => {
-                input::set_mouse_position(ctx, Vec2::new(x as f32, y as f32));
+                let position = Vec2::new(x as f32, y as f32);
+                input::set_mouse_position(ctx, position);
+                state.event(ctx, Event::MouseMoved { position })?;
             }
 
             SdlEvent::TextInput { text, .. } => {

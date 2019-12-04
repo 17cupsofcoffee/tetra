@@ -75,7 +75,8 @@ use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
-use crate::input::{InputContext, Key};
+use crate::input::{InputContext, Key, MouseButton};
+use crate::math::Vec2;
 use crate::platform::Platform;
 use crate::time::TimeContext;
 
@@ -265,6 +266,18 @@ pub enum Event {
 
     KeyUp {
         key: Key,
+    },
+
+    MouseButtonDown {
+        button: MouseButton,
+    },
+
+    MouseButtonUp {
+        button: MouseButton,
+    },
+
+    MouseMoved {
+        position: Vec2<f32>,
     },
 
     /// This is here so that adding new error types will not be a breaking change.
