@@ -230,7 +230,8 @@ where
             }
 
             SdlEvent::TextInput { text, .. } => {
-                input::set_text_input(ctx, Some(text));
+                input::set_text_input(ctx, Some(text.clone()));
+                state.event(ctx, Event::TextInput { text })?;
             }
 
             SdlEvent::ControllerDeviceAdded { which, .. } => {
@@ -253,17 +254,29 @@ where
                         slot,
                     },
                 );
+
+                state.event(ctx, Event::GamepadAdded { id: slot })?;
             }
 
             SdlEvent::ControllerDeviceRemoved { which, .. } => {
                 let controller = ctx.platform.controllers.remove(&which).unwrap();
                 input::remove_gamepad(ctx, controller.slot);
+
+                state.event(
+                    ctx,
+                    Event::GamepadRemoved {
+                        id: controller.slot,
+                    },
+                )?;
             }
 
             SdlEvent::ControllerButtonDown { which, button, .. } => {
                 if let Some(slot) = ctx.platform.controllers.get(&which).map(|c| c.slot) {
                     if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
-                        pad.set_button_down(button.into());
+                        let button = button.into();
+
+                        pad.set_button_down(button);
+                        state.event(ctx, Event::GamepadButtonDown { id: slot, button })?;
                     }
                 }
             }
@@ -271,9 +284,12 @@ where
             SdlEvent::ControllerButtonUp { which, button, .. } => {
                 if let Some(slot) = ctx.platform.controllers.get(&which).map(|c| c.slot) {
                     if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
+                        let button = button.into();
+
                         // TODO: This can cause some inputs to be missed at low tick rates.
                         // Could consider buffering input releases like Otter2D does?
-                        pad.set_button_up(button.into());
+                        pad.set_button_up(button);
+                        state.event(ctx, Event::GamepadButtonDown { id: slot, button })?;
                     }
                 }
             }

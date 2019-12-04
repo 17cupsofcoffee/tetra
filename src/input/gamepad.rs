@@ -78,13 +78,13 @@ pub enum GamepadStick {
 }
 
 /// Returns true if the specified gamepad is currently connected.
-pub fn is_gamepad_connected(ctx: &Context, gamepad_index: usize) -> bool {
-    get_gamepad(ctx, gamepad_index).is_some()
+pub fn is_gamepad_connected(ctx: &Context, gamepad_id: usize) -> bool {
+    get_gamepad(ctx, gamepad_id).is_some()
 }
 
 /// Returns the name of the specified gamepad, or `None` if it is not connected.
-pub fn get_gamepad_name(ctx: &Context, gamepad_index: usize) -> Option<String> {
-    get_gamepad(ctx, gamepad_index)
+pub fn get_gamepad_name(ctx: &Context, gamepad_id: usize) -> Option<String> {
+    get_gamepad(ctx, gamepad_id)
         .map(|g| g.platform_id)
         .map(|id| platform::get_gamepad_name(ctx, id))
 }
@@ -92,8 +92,8 @@ pub fn get_gamepad_name(ctx: &Context, gamepad_index: usize) -> Option<String> {
 /// Returns true if the specified gamepad button is currently down.
 ///
 /// If the gamepad is disconnected, this will always return `false`.
-pub fn is_gamepad_button_down(ctx: &Context, gamepad_index: usize, button: GamepadButton) -> bool {
-    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
+pub fn is_gamepad_button_down(ctx: &Context, gamepad_id: usize, button: GamepadButton) -> bool {
+    if let Some(pad) = get_gamepad(ctx, gamepad_id) {
         pad.current_button_state.contains(&button)
     } else {
         false
@@ -103,8 +103,8 @@ pub fn is_gamepad_button_down(ctx: &Context, gamepad_index: usize, button: Gamep
 /// Returns true if the specified gamepad button is currently up.
 ///
 /// If the gamepad is disconnected, this will always return `true`.
-pub fn is_gamepad_button_up(ctx: &Context, gamepad_index: usize, button: GamepadButton) -> bool {
-    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
+pub fn is_gamepad_button_up(ctx: &Context, gamepad_id: usize, button: GamepadButton) -> bool {
+    if let Some(pad) = get_gamepad(ctx, gamepad_id) {
         !pad.current_button_state.contains(&button)
     } else {
         true
@@ -114,12 +114,8 @@ pub fn is_gamepad_button_up(ctx: &Context, gamepad_index: usize, button: Gamepad
 /// Returns true if the specified gamepad button was pressed this tick.
 ///
 /// If the gamepad is disconnected, this will always return `false`.
-pub fn is_gamepad_button_pressed(
-    ctx: &Context,
-    gamepad_index: usize,
-    button: GamepadButton,
-) -> bool {
-    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
+pub fn is_gamepad_button_pressed(ctx: &Context, gamepad_id: usize, button: GamepadButton) -> bool {
+    if let Some(pad) = get_gamepad(ctx, gamepad_id) {
         !pad.previous_button_state.contains(&button) && pad.current_button_state.contains(&button)
     } else {
         false
@@ -129,12 +125,8 @@ pub fn is_gamepad_button_pressed(
 /// Returns true if the specified gamepad button was released this tick.
 ///
 /// If the gamepad is disconnected, this will always return `false`.
-pub fn is_gamepad_button_released(
-    ctx: &Context,
-    gamepad_index: usize,
-    button: GamepadButton,
-) -> bool {
-    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
+pub fn is_gamepad_button_released(ctx: &Context, gamepad_id: usize, button: GamepadButton) -> bool {
+    if let Some(pad) = get_gamepad(ctx, gamepad_id) {
         pad.previous_button_state.contains(&button) && !pad.current_button_state.contains(&button)
     } else {
         false
@@ -172,9 +164,9 @@ where
 /// If the gamepad is disconnected, an empty iterator will be returned.
 pub fn get_gamepad_buttons_down(
     ctx: &Context,
-    gamepad_index: usize,
+    gamepad_id: usize,
 ) -> impl Iterator<Item = &GamepadButton> {
-    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
+    if let Some(pad) = get_gamepad(ctx, gamepad_id) {
         GamepadIterator::Connected(pad.current_button_state.iter())
     } else {
         GamepadIterator::Disconnected
@@ -186,9 +178,9 @@ pub fn get_gamepad_buttons_down(
 /// If the gamepad is disconnected, an empty iterator will be returned.
 pub fn get_gamepad_buttons_pressed(
     ctx: &Context,
-    gamepad_index: usize,
+    gamepad_id: usize,
 ) -> impl Iterator<Item = &GamepadButton> {
-    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
+    if let Some(pad) = get_gamepad(ctx, gamepad_id) {
         GamepadIterator::Connected(
             pad.current_button_state
                 .difference(&pad.previous_button_state),
@@ -203,9 +195,9 @@ pub fn get_gamepad_buttons_pressed(
 /// If the gamepad is disconnected, an empty iterator will be returned.
 pub fn get_gamepad_buttons_released(
     ctx: &Context,
-    gamepad_index: usize,
+    gamepad_id: usize,
 ) -> impl Iterator<Item = &GamepadButton> {
-    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
+    if let Some(pad) = get_gamepad(ctx, gamepad_id) {
         GamepadIterator::Connected(
             pad.previous_button_state
                 .difference(&pad.current_button_state),
@@ -218,8 +210,8 @@ pub fn get_gamepad_buttons_released(
 /// Returns the current position of the specified gamepad axis.
 ///
 /// If the gamepad is disconnected, this will always return `0.0`.
-pub fn get_gamepad_axis_position(ctx: &Context, gamepad_index: usize, axis: GamepadAxis) -> f32 {
-    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
+pub fn get_gamepad_axis_position(ctx: &Context, gamepad_id: usize, axis: GamepadAxis) -> f32 {
+    if let Some(pad) = get_gamepad(ctx, gamepad_id) {
         if let Some(value) = pad.current_axis_state.get(&axis) {
             *value
         } else {
@@ -235,7 +227,7 @@ pub fn get_gamepad_axis_position(ctx: &Context, gamepad_index: usize, axis: Game
 /// If the gamepad is disconnected, this will always return `(0.0, 0.0)`.
 pub fn get_gamepad_stick_position(
     ctx: &Context,
-    gamepad_index: usize,
+    gamepad_id: usize,
     stick: GamepadStick,
 ) -> Vec2<f32> {
     let (x_axis, y_axis) = match stick {
@@ -244,16 +236,16 @@ pub fn get_gamepad_stick_position(
     };
 
     Vec2::new(
-        get_gamepad_axis_position(ctx, gamepad_index, x_axis),
-        get_gamepad_axis_position(ctx, gamepad_index, y_axis),
+        get_gamepad_axis_position(ctx, gamepad_id, x_axis),
+        get_gamepad_axis_position(ctx, gamepad_id, y_axis),
     )
 }
 
 /// Returns whether or not the specified gamepad supports vibration.
 ///
 /// If the gamepad is disconnected, this will always return `false`.
-pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_index: usize) -> bool {
-    if let Some(pad) = get_gamepad(ctx, gamepad_index) {
+pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_id: usize) -> bool {
+    if let Some(pad) = get_gamepad(ctx, gamepad_id) {
         platform::is_gamepad_vibration_supported(ctx, pad.platform_id)
     } else {
         false
@@ -261,28 +253,23 @@ pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_index: usize) -> bo
 }
 
 /// Sets the specified gamepad's motors to vibrate indefinitely.
-pub fn set_gamepad_vibration(ctx: &mut Context, gamepad_index: usize, strength: f32) {
-    if let Some(platform_id) = get_gamepad(ctx, gamepad_index).map(|g| g.platform_id) {
+pub fn set_gamepad_vibration(ctx: &mut Context, gamepad_id: usize, strength: f32) {
+    if let Some(platform_id) = get_gamepad(ctx, gamepad_id).map(|g| g.platform_id) {
         platform::set_gamepad_vibration(ctx, platform_id, strength);
     }
 }
 
 /// Sets the specified gamepad's motors to vibrate for a set duration, specified in milliseconds.
 /// After this time has passed, the vibration will automatically stop.
-pub fn start_gamepad_vibration(
-    ctx: &mut Context,
-    gamepad_index: usize,
-    strength: f32,
-    duration: u32,
-) {
-    if let Some(platform_id) = get_gamepad(ctx, gamepad_index).map(|g| g.platform_id) {
+pub fn start_gamepad_vibration(ctx: &mut Context, gamepad_id: usize, strength: f32, duration: u32) {
+    if let Some(platform_id) = get_gamepad(ctx, gamepad_id).map(|g| g.platform_id) {
         platform::start_gamepad_vibration(ctx, platform_id, strength, duration);
     }
 }
 
 /// Stops the specified gamepad's motors from vibrating.
-pub fn stop_gamepad_vibration(ctx: &mut Context, gamepad_index: usize) {
-    if let Some(platform_id) = get_gamepad(ctx, gamepad_index).map(|g| g.platform_id) {
+pub fn stop_gamepad_vibration(ctx: &mut Context, gamepad_id: usize) {
+    if let Some(platform_id) = get_gamepad(ctx, gamepad_id).map(|g| g.platform_id) {
         platform::stop_gamepad_vibration(ctx, platform_id);
     }
 }
@@ -301,23 +288,20 @@ pub(crate) fn add_gamepad(ctx: &mut Context, platform_id: i32) -> usize {
     i
 }
 
-pub(crate) fn remove_gamepad(ctx: &mut Context, gamepad_index: usize) {
-    ctx.input.pads[gamepad_index] = None;
+pub(crate) fn remove_gamepad(ctx: &mut Context, gamepad_id: usize) {
+    ctx.input.pads[gamepad_id] = None;
 }
 
-pub(crate) fn get_gamepad(ctx: &Context, gamepad_index: usize) -> Option<&GamepadState> {
-    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_index) {
+pub(crate) fn get_gamepad(ctx: &Context, gamepad_id: usize) -> Option<&GamepadState> {
+    if let Some(Some(pad)) = ctx.input.pads.get(gamepad_id) {
         Some(pad)
     } else {
         None
     }
 }
 
-pub(crate) fn get_gamepad_mut(
-    ctx: &mut Context,
-    gamepad_index: usize,
-) -> Option<&mut GamepadState> {
-    if let Some(Some(pad)) = ctx.input.pads.get_mut(gamepad_index) {
+pub(crate) fn get_gamepad_mut(ctx: &mut Context, gamepad_id: usize) -> Option<&mut GamepadState> {
+    if let Some(Some(pad)) = ctx.input.pads.get_mut(gamepad_id) {
         Some(pad)
     } else {
         None

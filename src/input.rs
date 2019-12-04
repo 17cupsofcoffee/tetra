@@ -2,11 +2,12 @@
 //!
 //! # Gamepads
 //!
-//! When accessing gamepad state, you specify which gamepad you're interested in via a 'gamepad index'.
-//! The first gamepad connected to the system has index 0, the second has index 1, and so on.
+//! When accessing gamepad state, you specify which gamepad you're interested in via a 'gamepad ID'.
+//! The first gamepad connected to the system has ID 0, the second has ID 1, and so on.
 //!
-//! If a controller is disconnected, the next controller to be connected will take its index - otherwise,
-//! a new one will be allocated. This behaviour might be made smarter in future versions.
+//! If a controller is disconnected, the next controller to be connected will take its ID - otherwise,
+//! a new one will be allocated. This means that if you unplug a controller and then plug it back in,
+//! it should retain its existing ID. This behaviour might be made smarter in future versions.
 
 mod gamepad;
 mod keyboard;

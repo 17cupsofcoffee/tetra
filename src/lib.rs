@@ -75,7 +75,7 @@ use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
-use crate::input::{InputContext, Key, MouseButton};
+use crate::input::{GamepadButton, InputContext, Key, MouseButton};
 use crate::math::Vec2;
 use crate::platform::Platform;
 use crate::time::TimeContext;
@@ -112,7 +112,7 @@ pub trait State {
         Ok(())
     }
 
-    /// Called when a window or input event is fired.
+    /// Called when a window or input event occurs.
     fn event(&mut self, ctx: &mut Context, event: Event) -> Result {
         Ok(())
     }
@@ -278,6 +278,28 @@ pub enum Event {
 
     MouseMoved {
         position: Vec2<f32>,
+    },
+
+    GamepadAdded {
+        id: usize,
+    },
+
+    GamepadRemoved {
+        id: usize,
+    },
+
+    GamepadButtonDown {
+        id: usize,
+        button: GamepadButton,
+    },
+
+    GamepadButtonUp {
+        id: usize,
+        button: GamepadButton,
+    },
+
+    TextInput {
+        text: String,
     },
 
     /// This is here so that adding new error types will not be a breaking change.
