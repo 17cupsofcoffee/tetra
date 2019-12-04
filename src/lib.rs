@@ -251,7 +251,7 @@ impl Context {
 }
 
 pub enum Event {
-    Resize {
+    Resized {
         width: i32,
         height: i32,
     },

@@ -73,7 +73,7 @@ impl State for GameState {
     }
 
     fn event(&mut self, _: &mut Context, event: Event) -> tetra::Result {
-        if let Event::Resize { width, height } = event {
+        if let Event::Resized { width, height } = event {
             self.camera.set_viewport_size(width as f32, height as f32);
         }
 

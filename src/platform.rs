@@ -169,7 +169,7 @@ where
                     ctx.platform.window_height = height;
 
                     graphics::update_window_projection(ctx, width, height);
-                    state.event(ctx, Event::Resize { width, height })?;
+                    state.event(ctx, Event::Resized { width, height })?;
                 }
 
                 WindowEvent::FocusGained => {

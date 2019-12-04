@@ -108,7 +108,7 @@ impl State for GameState {
     }
 
     fn event(&mut self, _: &mut Context, event: Event) -> tetra::Result {
-        if let Event::Resize { width, height } = event {
+        if let Event::Resized { width, height } = event {
             self.scaler.set_window_size(width, height);
         }
 

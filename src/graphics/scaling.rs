@@ -43,7 +43,7 @@ use crate::Context;
 ///     }
 ///
 ///     fn event(&mut self, _ctx: &mut Context, event: Event) -> tetra::Result {
-///         if let Event::Resize { width, height } = event {
+///         if let Event::Resized { width, height } = event {
 ///             // Ensure your scaler is kept aware of screen size changes!
 ///             self.scaler.set_window_size(width, height);
 ///         }
