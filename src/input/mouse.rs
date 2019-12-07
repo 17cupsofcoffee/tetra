@@ -47,20 +47,24 @@ pub fn get_mouse_position(ctx: &Context) -> Vec2<f32> {
     Vec2::new(get_mouse_x(ctx), get_mouse_y(ctx))
 }
 
-pub(crate) fn set_mouse_button_down(ctx: &mut Context, btn: MouseButton) {
+pub(crate) fn set_mouse_button_down(ctx: &mut Context, btn: MouseButton) -> bool {
     let was_up = ctx.input.mouse_buttons_down.insert(btn);
 
     if was_up {
         ctx.input.mouse_buttons_pressed.insert(btn);
     }
+
+    was_up
 }
 
-pub(crate) fn set_mouse_button_up(ctx: &mut Context, btn: MouseButton) {
+pub(crate) fn set_mouse_button_up(ctx: &mut Context, btn: MouseButton) -> bool {
     let was_down = ctx.input.mouse_buttons_down.remove(&btn);
 
     if was_down {
         ctx.input.mouse_buttons_released.insert(btn);
     }
+
+    was_down
 }
 
 pub(crate) fn set_mouse_position(ctx: &mut Context, position: Vec2<f32>) {

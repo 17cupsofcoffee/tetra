@@ -268,11 +268,27 @@ pub enum Event {
         key: Key,
     },
 
+    KeyPressed {
+        key: Key,
+    },
+
+    KeyReleased {
+        key: Key,
+    },
+
     MouseButtonDown {
         button: MouseButton,
     },
 
     MouseButtonUp {
+        button: MouseButton,
+    },
+
+    MouseButtonPressed {
+        button: MouseButton,
+    },
+
+    MouseButtonReleased {
         button: MouseButton,
     },
 
@@ -294,6 +310,16 @@ pub enum Event {
     },
 
     GamepadButtonUp {
+        id: usize,
+        button: GamepadButton,
+    },
+
+    GamepadButtonPressed {
+        id: usize,
+        button: GamepadButton,
+    },
+
+    GamepadButtonReleased {
         id: usize,
         button: GamepadButton,
     },

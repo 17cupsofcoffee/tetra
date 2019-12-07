@@ -23,20 +23,24 @@ impl GamepadState {
         }
     }
 
-    pub(crate) fn set_button_down(&mut self, btn: GamepadButton) {
+    pub(crate) fn set_button_down(&mut self, btn: GamepadButton) -> bool {
         let was_up = self.buttons_down.insert(btn);
 
         if was_up {
             self.buttons_pressed.insert(btn);
         }
+
+        was_up
     }
 
-    pub(crate) fn set_button_up(&mut self, btn: GamepadButton) {
+    pub(crate) fn set_button_up(&mut self, btn: GamepadButton) -> bool {
         let was_down = self.buttons_down.remove(&btn);
 
         if was_down {
             self.buttons_released.insert(btn);
         }
+
+        was_down
     }
 
     pub(crate) fn set_axis_position(&mut self, axis: GamepadAxis, value: f32) {

@@ -176,18 +176,22 @@ pub fn get_keys_released(ctx: &Context) -> impl Iterator<Item = &Key> {
     ctx.input.keys_released.iter()
 }
 
-pub(crate) fn set_key_down(ctx: &mut Context, key: Key) {
+pub(crate) fn set_key_down(ctx: &mut Context, key: Key) -> bool {
     let was_up = ctx.input.keys_down.insert(key);
 
     if was_up {
         ctx.input.keys_pressed.insert(key);
     }
+
+    was_up
 }
 
-pub(crate) fn set_key_up(ctx: &mut Context, key: Key) {
+pub(crate) fn set_key_up(ctx: &mut Context, key: Key) -> bool {
     let was_down = ctx.input.keys_down.remove(&key);
 
     if was_down {
         ctx.input.keys_released.insert(key);
     }
+
+    was_down
 }
