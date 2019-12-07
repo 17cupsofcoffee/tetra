@@ -209,13 +209,8 @@ where
                 if let Some(key) = into_key(k) {
                     // TODO: This can cause some inputs to be missed at low tick rates.
                     // Could consider buffering input releases like Otter2D does?
-                    let released = input::set_key_up(ctx, key);
-
-                    state.event(ctx, Event::KeyUp { key })?;
-
-                    if released {
-                        state.event(ctx, Event::KeyReleased { key })?;
-                    }
+                    input::set_key_up(ctx, key);
+                    state.event(ctx, Event::KeyReleased { key })?;
                 }
             }
 
@@ -233,13 +228,8 @@ where
 
             SdlEvent::MouseButtonUp { mouse_btn, .. } => {
                 if let Some(button) = into_mouse_button(mouse_btn) {
-                    let released = input::set_mouse_button_up(ctx, button);
-
-                    state.event(ctx, Event::MouseButtonUp { button })?;
-
-                    if released {
-                        state.event(ctx, Event::MouseButtonReleased { button })?;
-                    }
+                    input::set_mouse_button_up(ctx, button);
+                    state.event(ctx, Event::MouseButtonReleased { button })?;
                 }
             }
 
@@ -312,13 +302,8 @@ where
 
                         // TODO: This can cause some inputs to be missed at low tick rates.
                         // Could consider buffering input releases like Otter2D does?
-                        let released = pad.set_button_up(button);
-
-                        state.event(ctx, Event::GamepadButtonDown { id: slot, button })?;
-
-                        if released {
-                            state.event(ctx, Event::GamepadButtonReleased { id: slot, button })?;
-                        }
+                        pad.set_button_up(button);
+                        state.event(ctx, Event::GamepadButtonReleased { id: slot, button })?;
                     }
                 }
             }

@@ -250,81 +250,117 @@ impl Context {
     }
 }
 
+/// Events that can occur while the game is running.
+///
+/// The [`event` method on the `State` trait](trait.State.html#method.event) will recieve
+/// events as they occur.
+#[derive(Debug)]
 pub enum Event {
+    /// The game window was resized.
     Resized {
+        /// The new width of the game window.
         width: i32,
+
+        /// The new height of the game window.
         height: i32,
     },
 
+    /// The game window was focused by the user.
     FocusGained,
 
+    /// The game window was un-focused by the user.
     FocusLost,
 
+    /// A key on the keyboard is currently held down.
+    ///
+    /// This event may repeat while the key continues to be held.
     KeyDown {
+        /// The key that is held down.
         key: Key,
     },
 
-    KeyUp {
-        key: Key,
-    },
-
+    /// A key on the keyboard was pressed this tick.
     KeyPressed {
+        /// The key that was pressed.
         key: Key,
     },
 
+    /// A key on the keyboard was released this tick.
     KeyReleased {
+        /// The key that was released.
         key: Key,
     },
 
+    /// A button on the mouse is currently held down.
+    ///
+    /// This event may repeat while the button continues to be held.
     MouseButtonDown {
+        /// The button that is held down.
         button: MouseButton,
     },
 
-    MouseButtonUp {
-        button: MouseButton,
-    },
-
+    /// A button on the mouse was pressed this tick.
     MouseButtonPressed {
+        /// The button that was pressed.
         button: MouseButton,
     },
 
+    /// A button on the mouse was released this tick.
     MouseButtonReleased {
+        /// The button that was released.
         button: MouseButton,
     },
 
+    /// The mouse was moved.
     MouseMoved {
+        /// The new position of the mouse, in window co-ordinates.
         position: Vec2<f32>,
     },
 
+    /// A gamepad was connected to the system.
     GamepadAdded {
+        /// The ID that was assigned to the gamepad.
         id: usize,
     },
 
+    /// A gamepad was removed from the system.
     GamepadRemoved {
+        /// The ID of the gamepad that was removed.
         id: usize,
     },
 
+    /// A button on a gamepad is currently held down.
+    ///
+    /// This event may repeat while the button continues to be held.
     GamepadButtonDown {
+        /// The ID of the gamepad.
         id: usize,
+
+        /// The button that is held down.
         button: GamepadButton,
     },
 
-    GamepadButtonUp {
-        id: usize,
-        button: GamepadButton,
-    },
-
+    /// A button on a gamepad was pressed this tick.
     GamepadButtonPressed {
+        /// The ID of the gamepad.
         id: usize,
+
+        /// The button that was pressed.
         button: GamepadButton,
     },
 
+    /// A button on a gamepad was released this tick.
     GamepadButtonReleased {
+        /// The ID of the gamepad.
         id: usize,
+
+        /// The button that was released.
         button: GamepadButton,
     },
 
+    /// The user typed some text.
     TextInput {
+        /// The text that was typed by the user.
         text: String,
     },
 
