@@ -143,47 +143,51 @@ pub enum Key {
 
 /// Returns true if the specified key is currently down.
 pub fn is_key_down(ctx: &Context, key: Key) -> bool {
-    ctx.input.current_key_state.contains(&key)
+    ctx.input.keys_down.contains(&key)
 }
 
 /// Returns true if the specified key is currently up.
 pub fn is_key_up(ctx: &Context, key: Key) -> bool {
-    !ctx.input.current_key_state.contains(&key)
+    !ctx.input.keys_down.contains(&key)
 }
 
 /// Returns true if the specified key was pressed this tick.
 pub fn is_key_pressed(ctx: &Context, key: Key) -> bool {
-    !ctx.input.previous_key_state.contains(&key) && ctx.input.current_key_state.contains(&key)
+    ctx.input.keys_pressed.contains(&key)
 }
 
 /// Returns true if the specified key was released this tick.
 pub fn is_key_released(ctx: &Context, key: Key) -> bool {
-    ctx.input.previous_key_state.contains(&key) && !ctx.input.current_key_state.contains(&key)
+    ctx.input.keys_released.contains(&key)
 }
 
 /// Returns an iterator of the keys that are currently down.
 pub fn get_keys_down(ctx: &Context) -> impl Iterator<Item = &Key> {
-    ctx.input.current_key_state.iter()
+    ctx.input.keys_down.iter()
 }
 
 /// Returns an iterator of the keys that were pressed this tick.
 pub fn get_keys_pressed(ctx: &Context) -> impl Iterator<Item = &Key> {
-    ctx.input
-        .current_key_state
-        .difference(&ctx.input.previous_key_state)
+    ctx.input.keys_pressed.iter()
 }
 
 /// Returns an iterator of the keys that were released this tick.
 pub fn get_keys_released(ctx: &Context) -> impl Iterator<Item = &Key> {
-    ctx.input
-        .previous_key_state
-        .difference(&ctx.input.current_key_state)
+    ctx.input.keys_released.iter()
 }
 
 pub(crate) fn set_key_down(ctx: &mut Context, key: Key) {
-    ctx.input.current_key_state.insert(key);
+    let was_up = ctx.input.keys_down.insert(key);
+
+    if was_up {
+        ctx.input.keys_pressed.insert(key);
+    }
 }
 
 pub(crate) fn set_key_up(ctx: &mut Context, key: Key) {
-    ctx.input.current_key_state.remove(&key);
+    let was_down = ctx.input.keys_down.remove(&key);
+
+    if was_down {
+        ctx.input.keys_released.insert(key);
+    }
 }

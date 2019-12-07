@@ -6,8 +6,9 @@ use crate::Context;
 
 pub(crate) struct GamepadState {
     pub platform_id: i32,
-    pub current_button_state: HashSet<GamepadButton>,
-    pub previous_button_state: HashSet<GamepadButton>,
+    pub buttons_down: HashSet<GamepadButton>,
+    pub buttons_pressed: HashSet<GamepadButton>,
+    pub buttons_released: HashSet<GamepadButton>,
     pub current_axis_state: HashMap<GamepadAxis, f32>,
 }
 
@@ -15,18 +16,27 @@ impl GamepadState {
     pub(crate) fn new(platform_id: i32) -> GamepadState {
         GamepadState {
             platform_id,
-            current_button_state: HashSet::new(),
-            previous_button_state: HashSet::new(),
+            buttons_down: HashSet::new(),
+            buttons_pressed: HashSet::new(),
+            buttons_released: HashSet::new(),
             current_axis_state: HashMap::new(),
         }
     }
 
     pub(crate) fn set_button_down(&mut self, btn: GamepadButton) {
-        self.current_button_state.insert(btn);
+        let was_up = self.buttons_down.insert(btn);
+
+        if was_up {
+            self.buttons_pressed.insert(btn);
+        }
     }
 
     pub(crate) fn set_button_up(&mut self, btn: GamepadButton) {
-        self.current_button_state.remove(&btn);
+        let was_down = self.buttons_down.remove(&btn);
+
+        if was_down {
+            self.buttons_released.insert(btn);
+        }
     }
 
     pub(crate) fn set_axis_position(&mut self, axis: GamepadAxis, value: f32) {
@@ -94,7 +104,7 @@ pub fn get_gamepad_name(ctx: &Context, gamepad_id: usize) -> Option<String> {
 /// If the gamepad is disconnected, this will always return `false`.
 pub fn is_gamepad_button_down(ctx: &Context, gamepad_id: usize, button: GamepadButton) -> bool {
     if let Some(pad) = get_gamepad(ctx, gamepad_id) {
-        pad.current_button_state.contains(&button)
+        pad.buttons_down.contains(&button)
     } else {
         false
     }
@@ -105,7 +115,7 @@ pub fn is_gamepad_button_down(ctx: &Context, gamepad_id: usize, button: GamepadB
 /// If the gamepad is disconnected, this will always return `true`.
 pub fn is_gamepad_button_up(ctx: &Context, gamepad_id: usize, button: GamepadButton) -> bool {
     if let Some(pad) = get_gamepad(ctx, gamepad_id) {
-        !pad.current_button_state.contains(&button)
+        !pad.buttons_down.contains(&button)
     } else {
         true
     }
@@ -116,7 +126,7 @@ pub fn is_gamepad_button_up(ctx: &Context, gamepad_id: usize, button: GamepadBut
 /// If the gamepad is disconnected, this will always return `false`.
 pub fn is_gamepad_button_pressed(ctx: &Context, gamepad_id: usize, button: GamepadButton) -> bool {
     if let Some(pad) = get_gamepad(ctx, gamepad_id) {
-        !pad.previous_button_state.contains(&button) && pad.current_button_state.contains(&button)
+        pad.buttons_pressed.contains(&button)
     } else {
         false
     }
@@ -127,7 +137,7 @@ pub fn is_gamepad_button_pressed(ctx: &Context, gamepad_id: usize, button: Gamep
 /// If the gamepad is disconnected, this will always return `false`.
 pub fn is_gamepad_button_released(ctx: &Context, gamepad_id: usize, button: GamepadButton) -> bool {
     if let Some(pad) = get_gamepad(ctx, gamepad_id) {
-        pad.previous_button_state.contains(&button) && !pad.current_button_state.contains(&button)
+        pad.buttons_released.contains(&button)
     } else {
         false
     }
@@ -167,7 +177,7 @@ pub fn get_gamepad_buttons_down(
     gamepad_id: usize,
 ) -> impl Iterator<Item = &GamepadButton> {
     if let Some(pad) = get_gamepad(ctx, gamepad_id) {
-        GamepadIterator::Connected(pad.current_button_state.iter())
+        GamepadIterator::Connected(pad.buttons_down.iter())
     } else {
         GamepadIterator::Disconnected
     }
@@ -181,10 +191,7 @@ pub fn get_gamepad_buttons_pressed(
     gamepad_id: usize,
 ) -> impl Iterator<Item = &GamepadButton> {
     if let Some(pad) = get_gamepad(ctx, gamepad_id) {
-        GamepadIterator::Connected(
-            pad.current_button_state
-                .difference(&pad.previous_button_state),
-        )
+        GamepadIterator::Connected(pad.buttons_pressed.iter())
     } else {
         GamepadIterator::Disconnected
     }
@@ -198,10 +205,7 @@ pub fn get_gamepad_buttons_released(
     gamepad_id: usize,
 ) -> impl Iterator<Item = &GamepadButton> {
     if let Some(pad) = get_gamepad(ctx, gamepad_id) {
-        GamepadIterator::Connected(
-            pad.previous_button_state
-                .difference(&pad.current_button_state),
-        )
+        GamepadIterator::Connected(pad.buttons_released.iter())
     } else {
         GamepadIterator::Disconnected
     }

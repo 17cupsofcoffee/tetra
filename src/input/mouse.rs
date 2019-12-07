@@ -14,24 +14,22 @@ pub enum MouseButton {
 
 /// Returns true if the specified mouse button is currently down.
 pub fn is_mouse_button_down(ctx: &Context, button: MouseButton) -> bool {
-    ctx.input.current_mouse_state.contains(&button)
+    ctx.input.mouse_buttons_down.contains(&button)
 }
 
 /// Returns true if the specified mouse button is currently up.
 pub fn is_mouse_button_up(ctx: &Context, button: MouseButton) -> bool {
-    !ctx.input.current_mouse_state.contains(&button)
+    !ctx.input.mouse_buttons_down.contains(&button)
 }
 
 /// Returns true if the specified mouse button was pressed this tick.
 pub fn is_mouse_button_pressed(ctx: &Context, button: MouseButton) -> bool {
-    !ctx.input.previous_mouse_state.contains(&button)
-        && ctx.input.current_mouse_state.contains(&button)
+    ctx.input.mouse_buttons_pressed.contains(&button)
 }
 
 /// Returns true if the specified mouse button was released this tick.
 pub fn is_mouse_button_released(ctx: &Context, button: MouseButton) -> bool {
-    ctx.input.previous_mouse_state.contains(&button)
-        && !ctx.input.current_mouse_state.contains(&button)
+    ctx.input.mouse_buttons_released.contains(&button)
 }
 
 /// Get the X co-ordinate of the mouse.
@@ -50,11 +48,19 @@ pub fn get_mouse_position(ctx: &Context) -> Vec2<f32> {
 }
 
 pub(crate) fn set_mouse_button_down(ctx: &mut Context, btn: MouseButton) {
-    ctx.input.current_mouse_state.insert(btn);
+    let was_up = ctx.input.mouse_buttons_down.insert(btn);
+
+    if was_up {
+        ctx.input.mouse_buttons_pressed.insert(btn);
+    }
 }
 
 pub(crate) fn set_mouse_button_up(ctx: &mut Context, btn: MouseButton) {
-    ctx.input.current_mouse_state.remove(&btn);
+    let was_down = ctx.input.mouse_buttons_down.remove(&btn);
+
+    if was_down {
+        ctx.input.mouse_buttons_released.insert(btn);
+    }
 }
 
 pub(crate) fn set_mouse_position(ctx: &mut Context, position: Vec2<f32>) {

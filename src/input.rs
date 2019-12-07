@@ -23,13 +23,16 @@ pub use keyboard::*;
 pub use mouse::*;
 
 pub(crate) struct InputContext {
-    current_key_state: HashSet<Key>,
-    previous_key_state: HashSet<Key>,
-    current_text_input: Option<String>,
+    keys_down: HashSet<Key>,
+    keys_pressed: HashSet<Key>,
+    keys_released: HashSet<Key>,
 
-    current_mouse_state: HashSet<MouseButton>,
-    previous_mouse_state: HashSet<MouseButton>,
+    mouse_buttons_down: HashSet<MouseButton>,
+    mouse_buttons_pressed: HashSet<MouseButton>,
+    mouse_buttons_released: HashSet<MouseButton>,
     mouse_position: Vec2<f32>,
+
+    current_text_input: Option<String>,
 
     pads: Vec<Option<GamepadState>>,
 }
@@ -37,13 +40,16 @@ pub(crate) struct InputContext {
 impl InputContext {
     pub(crate) fn new() -> InputContext {
         InputContext {
-            current_key_state: HashSet::new(),
-            previous_key_state: HashSet::new(),
-            current_text_input: None,
+            keys_down: HashSet::new(),
+            keys_pressed: HashSet::new(),
+            keys_released: HashSet::new(),
 
-            current_mouse_state: HashSet::new(),
-            previous_mouse_state: HashSet::new(),
+            mouse_buttons_down: HashSet::new(),
+            mouse_buttons_pressed: HashSet::new(),
+            mouse_buttons_released: HashSet::new(),
             mouse_position: Vec2::zero(),
+
+            current_text_input: None,
 
             pads: Vec::new(),
         }
@@ -51,13 +57,17 @@ impl InputContext {
 }
 
 pub(crate) fn cleanup_after_state_update(ctx: &mut Context) {
-    ctx.input.previous_key_state = ctx.input.current_key_state.clone();
-    ctx.input.previous_mouse_state = ctx.input.current_mouse_state.clone();
+    ctx.input.keys_pressed.clear();
+    ctx.input.keys_released.clear();
+    ctx.input.mouse_buttons_pressed.clear();
+    ctx.input.mouse_buttons_released.clear();
+
     ctx.input.current_text_input = None;
 
     for slot in &mut ctx.input.pads {
         if let Some(pad) = slot {
-            pad.previous_button_state = pad.current_button_state.clone();
+            pad.buttons_pressed.clear();
+            pad.buttons_released.clear();
         }
     }
 }
