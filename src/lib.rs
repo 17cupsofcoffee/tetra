@@ -254,7 +254,7 @@ impl Context {
 ///
 /// The [`event` method on the `State` trait](trait.State.html#method.event) will recieve
 /// events as they occur.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Event {
     /// The game window was resized.
     Resized {
