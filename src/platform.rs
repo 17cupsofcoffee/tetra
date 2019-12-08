@@ -318,24 +318,34 @@ where
 
                         pad.set_axis_position(axis, mapped_value);
 
-                        match axis {
-                            GamepadAxis::LeftTrigger => {
-                                if value > 0 {
-                                    pad.set_button_down(GamepadButton::LeftTrigger);
-                                } else {
-                                    pad.set_button_up(GamepadButton::LeftTrigger);
+                        let button = match axis {
+                            GamepadAxis::LeftTrigger => Some(GamepadButton::LeftTrigger),
+                            GamepadAxis::RightTrigger => Some(GamepadButton::RightTrigger),
+                            _ => None,
+                        };
+
+                        if let Some(button) = button {
+                            if value > 0 {
+                                let pressed = pad.set_button_down(button);
+
+                                state.event(ctx, Event::GamepadButtonDown { id: slot, button })?;
+
+                                if pressed {
+                                    state.event(
+                                        ctx,
+                                        Event::GamepadButtonPressed { id: slot, button },
+                                    )?;
+                                }
+                            } else {
+                                let released = pad.set_button_up(button);
+
+                                if released {
+                                    state.event(
+                                        ctx,
+                                        Event::GamepadButtonReleased { id: slot, button },
+                                    )?;
                                 }
                             }
-
-                            GamepadAxis::RightTrigger => {
-                                if value > 0 {
-                                    pad.set_button_down(GamepadButton::RightTrigger);
-                                } else {
-                                    pad.set_button_up(GamepadButton::RightTrigger);
-                                }
-                            }
-
-                            _ => {}
                         }
 
                         state.event(
