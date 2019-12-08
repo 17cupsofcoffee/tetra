@@ -75,7 +75,7 @@ use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
-use crate::input::{GamepadButton, InputContext, Key, MouseButton};
+use crate::input::{GamepadAxis, GamepadButton, InputContext, Key, MouseButton};
 use crate::math::Vec2;
 use crate::platform::Platform;
 use crate::time::TimeContext;
