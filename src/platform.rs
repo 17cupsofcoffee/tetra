@@ -345,7 +345,7 @@ where
                                 axis,
                                 position: mapped_value,
                             },
-                        )
+                        )?;
                     }
                 }
             }
