@@ -13,7 +13,7 @@ use sdl2::{GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, Vid
 
 use crate::error::{Result, TetraError};
 use crate::graphics;
-use crate::input::{self, GamepadAxis, GamepadButton, Key, MouseButton};
+use crate::input::{self, GamepadAxis, GamepadButton, GamepadStick, Key, MouseButton};
 use crate::math::Vec2;
 use crate::{Context, ContextBuilder, Event, State};
 
@@ -356,6 +356,27 @@ where
                                 position: mapped_value,
                             },
                         )?;
+
+                        let stick = match axis {
+                            GamepadAxis::LeftStickX | GamepadAxis::LeftStickY => {
+                                Some(GamepadStick::LeftStick)
+                            }
+                            GamepadAxis::RightStickX | GamepadAxis::RightStickY => {
+                                Some(GamepadStick::RightStick)
+                            }
+                            _ => None,
+                        };
+
+                        if let Some(stick) = stick {
+                            state.event(
+                                ctx,
+                                Event::GamepadStickMoved {
+                                    id: slot,
+                                    stick,
+                                    position: input::get_gamepad_stick_position(ctx, slot, stick),
+                                },
+                            )?;
+                        }
                     }
                 }
             }

@@ -75,7 +75,7 @@ use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};
 use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
-use crate::input::{GamepadAxis, GamepadButton, InputContext, Key, MouseButton};
+use crate::input::{GamepadAxis, GamepadButton, GamepadStick, InputContext, Key, MouseButton};
 use crate::math::Vec2;
 use crate::platform::Platform;
 use crate::time::TimeContext;
@@ -368,6 +368,18 @@ pub enum Event {
 
         /// The new position of the axis.
         position: f32,
+    },
+
+    /// A control stick on a gamepad was moved.
+    GamepadStickMoved {
+        /// The ID of the gamepad.
+        id: usize,
+
+        /// The stick that was moved.
+        stick: GamepadStick,
+
+        /// The new position of the stick.
+        position: Vec2<f32>,
     },
 
     /// The user typed some text.
