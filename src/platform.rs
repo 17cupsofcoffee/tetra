@@ -319,7 +319,7 @@ where
                         pad.set_axis_position(axis, mapped_value);
 
                         match axis {
-                            SdlGamepadAxis::TriggerLeft => {
+                            GamepadAxis::LeftTrigger => {
                                 if value > 0 {
                                     pad.set_button_down(GamepadButton::LeftTrigger);
                                 } else {
@@ -327,7 +327,7 @@ where
                                 }
                             }
 
-                            SdlGamepadAxis::TriggerRight => {
+                            GamepadAxis::RightTrigger => {
                                 if value > 0 {
                                     pad.set_button_down(GamepadButton::RightTrigger);
                                 } else {
