@@ -358,6 +358,18 @@ pub enum Event {
         button: GamepadButton,
     },
 
+    /// An axis on a gamepad was moved.
+    GamepadAxisMoved {
+        /// The ID of the gamepad.
+        id: usize,
+
+        /// The axis that was moved.
+        axis: GamepadAxis,
+
+        /// The new position of the axis.
+        position: f32,
+    },
+
     /// The user typed some text.
     TextInput {
         /// The text that was typed by the user.

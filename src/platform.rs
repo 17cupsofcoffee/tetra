@@ -313,7 +313,10 @@ where
             } => {
                 if let Some(slot) = ctx.platform.controllers.get(&which).map(|c| c.slot) {
                     if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
-                        pad.set_axis_position(axis.into(), f32::from(value) / 32767.0);
+                        let axis = axis.into();
+                        let mapped_value = f32::from(value) / 32767.0;
+
+                        pad.set_axis_position(axis, mapped_value);
 
                         match axis {
                             SdlGamepadAxis::TriggerLeft => {
@@ -334,6 +337,15 @@ where
 
                             _ => {}
                         }
+
+                        state.event(
+                            ctx,
+                            Event::GamepadAxisMoved {
+                                id: slot,
+                                axis,
+                                position: mapped_value,
+                            },
+                        )
                     }
                 }
             }
