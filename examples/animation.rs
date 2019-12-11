@@ -4,7 +4,6 @@ use std::time::Duration;
 
 use tetra::graphics::animation::Animation;
 use tetra::graphics::{self, Color, DrawParams, Rectangle, Texture};
-use tetra::input::{self, Key};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
@@ -22,35 +21,9 @@ impl GameState {
             ),
         })
     }
-
-    pub fn set_animation_1(&mut self) {
-        self.animation
-            .set_frames(Rectangle::row(0.0, 272.0, 16.0, 16.0).take(8).collect());
-    }
-
-    pub fn set_animation_2(&mut self) {
-        self.animation
-            .set_frames(Rectangle::row(0.0, 256.0, 16.0, 16.0).take(8).collect());
-    }
 }
 
 impl State for GameState {
-    fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        if input::is_key_pressed(ctx, Key::Num1) {
-            self.set_animation_1();
-        }
-
-        if input::is_key_pressed(ctx, Key::Num2) {
-            self.set_animation_2();
-        }
-
-        if input::is_key_pressed(ctx, Key::Space) {
-            self.animation.restart();
-        }
-
-        Ok(())
-    }
-
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         self.animation.advance(ctx);
 
