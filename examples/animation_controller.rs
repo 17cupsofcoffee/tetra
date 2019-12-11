@@ -3,6 +3,8 @@
 // lines may be added to Tetra itself later, but for now it's not too hard to
 // roll your own!
 
+use std::time::Duration;
+
 use tetra::graphics::animation::Animation;
 use tetra::graphics::{self, Color, DrawParams, Drawable, Rectangle, Texture};
 use tetra::input::{self, Key};
@@ -31,12 +33,12 @@ impl PlayerAnimation {
                 // Remember, textures are cheap to clone, as they just point at GPU data.
                 texture.clone(),
                 Rectangle::row(0.0, 256.0, 16.0, 16.0).take(8).collect(),
-                5,
+                Duration::from_secs_f64(0.1),
             ),
             running: Animation::new(
                 texture.clone(),
                 Rectangle::row(0.0, 272.0, 16.0, 16.0).take(8).collect(),
-                5,
+                Duration::from_secs_f64(0.1),
             ),
         })
     }
@@ -55,8 +57,8 @@ impl PlayerAnimation {
         }
     }
 
-    fn tick(&mut self) {
-        self.current_mut().tick();
+    fn advance(&mut self, ctx: &Context) {
+        self.current_mut().advance(ctx);
     }
 
     fn set_state(&mut self, state: PlayerState) {
@@ -94,8 +96,6 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        self.animation.tick();
-
         if input::is_key_down(ctx, Key::A) {
             self.velocity.x = (self.velocity.x - 0.5).max(-5.0);
         } else if input::is_key_down(ctx, Key::D) {
@@ -116,6 +116,8 @@ impl State for GameState {
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
+        self.animation.advance(ctx);
+
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
         graphics::draw(

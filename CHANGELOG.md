@@ -31,6 +31,7 @@ This project adheres to Semantic Versioning.
 * The graphics device debugging info is now hidden by default. Set the `debug_info` option on `Game` to `true` to bring this back.
 * The functions for setting the fullscreen/cursor visibility state have been changed to take booleans, instead of there being multiple functions.
 * The `Shader::vertex` and `Shader::fragment` constructors have been renamed to `Shader::from_vertex_file` and `Shader::from_fragment_file`.
+* Animations now use a `Duration` to specify the frame length, and as such, they are no longer coupled to your game's tick rate. Call `advance` from your `draw` method to advance the animation's timer.
 * Updated `glow` to 0.3.0-alpha3.
 * Updated `hashbrown` to 0.6.
 * Updated `image` to 0.22.

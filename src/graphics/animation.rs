@@ -1,49 +1,58 @@
 //! Functions and types relating to animations.
 
+use std::time::Duration;
+
 use crate::graphics::texture::Texture;
 use crate::graphics::{DrawParams, Drawable, Rectangle};
+use crate::time;
 use crate::Context;
 
 /// An animation, cycling between regions of a texture at a regular interval.
 ///
-/// As the rendering speed of the game is not fixed, use the `tick` method in your
-/// `update` handler to progress the animation.
+/// Calling `advance` within your `draw` method will drive the animation, switching the texture
+/// region once the specified time has passed.
 #[derive(Debug, Clone)]
 pub struct Animation {
     texture: Texture,
     frames: Vec<Rectangle>,
-    frame_length: i32,
+    frame_length: Duration,
 
     current_frame: usize,
-    timer: i32,
+    timer: Duration,
 }
 
 impl Animation {
     /// Creates a new animation.
-    pub fn new(texture: Texture, frames: Vec<Rectangle>, frame_length: i32) -> Animation {
+    pub fn new(texture: Texture, frames: Vec<Rectangle>, frame_length: Duration) -> Animation {
         Animation {
             texture,
             frames,
             frame_length,
 
             current_frame: 0,
-            timer: 0,
+            timer: Duration::from_secs(0),
         }
     }
 
     /// Advances the animation's timer, switching the texture region if required.
-    pub fn tick(&mut self) {
-        self.timer += 1;
-        if self.timer >= self.frame_length {
+    pub fn advance(&mut self, ctx: &Context) {
+        self.advance_by(time::get_delta_time(ctx));
+    }
+
+    /// Advances the animation's timer by a specified amount, switching the texture region if required.
+    pub fn advance_by(&mut self, duration: Duration) {
+        self.timer += duration;
+
+        while self.timer >= self.frame_length {
             self.current_frame = (self.current_frame + 1) % self.frames.len();
-            self.timer = 0;
+            self.timer -= self.frame_length;
         }
     }
 
     /// Restarts the animation from the first frame.
     pub fn restart(&mut self) {
         self.current_frame = 0;
-        self.timer = 0;
+        self.timer = Duration::from_secs(0);
     }
 
     /// Returns a reference to the texture currently being used by the animation.
@@ -75,12 +84,12 @@ impl Animation {
     }
 
     /// Gets the number of ticks that each frame of the animation lasts for.
-    pub fn frame_length(&self) -> i32 {
+    pub fn frame_length(&self) -> Duration {
         self.frame_length
     }
 
     /// Sets the number of ticks that each frame of the animation lasts for.
-    pub fn set_frame_length(&mut self, new_frame_length: i32) {
+    pub fn set_frame_length(&mut self, new_frame_length: Duration) {
         self.frame_length = new_frame_length;
     }
 }

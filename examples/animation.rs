@@ -1,5 +1,7 @@
 // using sprites by 0x72: https://0x72.itch.io/16x16-industrial-tileset
 
+use std::time::Duration;
+
 use tetra::graphics::animation::Animation;
 use tetra::graphics::{self, Color, DrawParams, Rectangle, Texture};
 use tetra::input::{self, Key};
@@ -16,7 +18,7 @@ impl GameState {
             animation: Animation::new(
                 Texture::new(ctx, "./examples/resources/tiles.png")?,
                 Rectangle::row(0.0, 272.0, 16.0, 16.0).take(8).collect(),
-                5,
+                Duration::from_secs_f64(0.1),
             ),
         })
     }
@@ -34,8 +36,6 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        self.animation.tick();
-
         if input::is_key_pressed(ctx, Key::Num1) {
             self.set_animation_1();
         }
@@ -52,6 +52,8 @@ impl State for GameState {
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
+        self.animation.advance(ctx);
+
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
         graphics::draw(

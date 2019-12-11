@@ -11,6 +11,7 @@ pub(crate) struct TimeContext {
     fps_tracker: VecDeque<f64>,
 
     last_time: Instant,
+    elapsed: Duration,
     lag: Duration,
 }
 
@@ -25,6 +26,7 @@ impl TimeContext {
             tick_rate: Duration::from_secs_f64(tick_rate),
             fps_tracker,
             last_time: Instant::now(),
+            elapsed: Duration::from_secs(0),
             lag: Duration::from_secs(0),
         }
     }
@@ -37,14 +39,16 @@ pub(crate) fn reset(ctx: &mut Context) {
 
 pub(crate) fn tick(ctx: &mut Context) {
     let current_time = Instant::now();
-    let elapsed = current_time - ctx.time.last_time;
+    ctx.time.elapsed = current_time - ctx.time.last_time;
     ctx.time.last_time = current_time;
-    ctx.time.lag += elapsed;
+    ctx.time.lag += ctx.time.elapsed;
 
     // Since we fill the buffer when we create the context, we can cycle it
     // here and it shouldn't reallocate.
     ctx.time.fps_tracker.pop_front();
-    ctx.time.fps_tracker.push_back(elapsed.as_secs_f64());
+    ctx.time
+        .fps_tracker
+        .push_back(ctx.time.elapsed.as_secs_f64());
 }
 
 pub(crate) fn is_tick_ready(ctx: &Context) -> bool {
@@ -53,6 +57,10 @@ pub(crate) fn is_tick_ready(ctx: &Context) -> bool {
 
 pub(crate) fn consume_tick(ctx: &mut Context) {
     ctx.time.lag -= ctx.time.tick_rate;
+}
+
+pub(crate) fn get_delta_time(ctx: &Context) -> Duration {
+    ctx.time.elapsed
 }
 
 // TODO: What's the proper name for the interpolation amount? NAMING AGH
