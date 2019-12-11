@@ -345,42 +345,6 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
     }
 }
 
-/// Gets the width of the currently enabled canvas, or the window if there
-/// is no canvas active.
-///
-/// This is useful if you want to write code that doesn't care whether it is
-/// being rendered to a canvas or directly to the window.
-pub fn get_canvas_width(ctx: &Context) -> i32 {
-    match &ctx.graphics.canvas {
-        ActiveCanvas::Window => window::get_width(ctx),
-        ActiveCanvas::User(c) => c.width(),
-    }
-}
-
-/// Gets the height of the currently enabled canvas, or the window if there
-/// is no canvas active.
-///
-/// This is useful if you want to write code that doesn't care whether it is
-/// being rendered to a canvas or directly to the window.
-pub fn get_canvas_height(ctx: &Context) -> i32 {
-    match &ctx.graphics.canvas {
-        ActiveCanvas::Window => window::get_height(ctx),
-        ActiveCanvas::User(c) => c.height(),
-    }
-}
-
-/// Gets the size of the currently enabled canvas, or the window if there
-/// is no canvas active.
-///
-/// This is useful if you want to write code that doesn't care whether it is
-/// being rendered to a canvas or directly to the window.
-pub fn get_canvas_size(ctx: &Context) -> (i32, i32) {
-    match &ctx.graphics.canvas {
-        ActiveCanvas::Window => window::get_size(ctx),
-        ActiveCanvas::User(c) => c.size(),
-    }
-}
-
 /// Sends queued data to the graphics hardware.
 ///
 /// You usually will not have to call this manually, as [`set_texture`](fn.set_texture.html) and
