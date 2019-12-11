@@ -109,11 +109,6 @@ impl Canvas {
     pub fn texture(&self) -> &Texture {
         &self.texture
     }
-
-    /// Returns a mutable reference to the canvas' underlying texture.
-    pub fn texture_mut(&mut self) -> &mut Texture {
-        &mut self.texture
-    }
 }
 
 impl Drawable for Canvas {

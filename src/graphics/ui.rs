@@ -33,11 +33,6 @@ impl NineSlice {
         &self.texture
     }
 
-    /// Returns a mutable reference to the underlying texture for the panel.
-    pub fn texture_mut(&mut self) -> &mut Texture {
-        &mut self.texture
-    }
-
     /// Sets the underlying texture for the panel.
     ///
     /// This will not adjust the way that the texture is sliced, so you may need to also call

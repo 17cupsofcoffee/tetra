@@ -51,11 +51,6 @@ impl Animation {
         &self.texture
     }
 
-    /// Returns a mutable reference to the texture currently being used by the animation.
-    pub fn texture_mut(&mut self) -> &Texture {
-        &mut self.texture
-    }
-
     /// Sets the texture that will be used by the animation.
     ///
     /// This method will not change the frame definitions or current state of the animation,
