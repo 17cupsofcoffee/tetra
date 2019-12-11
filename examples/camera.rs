@@ -3,7 +3,9 @@ use tetra::input::{self, Key};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, Event, State};
 
-const CAMERA_SPEED: f32 = 4.0;
+const MOVEMENT_SPEED: f32 = 4.0;
+const ROTATION_SPEED: f32 = 0.1;
+const ZOOM_SPEED: f32 = 0.1;
 
 struct GameState {
     texture: Texture,
@@ -22,45 +24,45 @@ impl GameState {
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         if input::is_key_down(ctx, Key::W) {
-            self.camera.position.y -= CAMERA_SPEED;
+            self.camera.position.y -= MOVEMENT_SPEED;
         }
 
         if input::is_key_down(ctx, Key::S) {
-            self.camera.position.y += CAMERA_SPEED;
+            self.camera.position.y += MOVEMENT_SPEED;
         }
 
         if input::is_key_down(ctx, Key::A) {
-            self.camera.position.x -= CAMERA_SPEED;
+            self.camera.position.x -= MOVEMENT_SPEED;
         }
 
         if input::is_key_down(ctx, Key::D) {
-            self.camera.position.x += CAMERA_SPEED;
+            self.camera.position.x += MOVEMENT_SPEED;
         }
 
         if input::is_key_down(ctx, Key::Q) {
-            self.camera.rotation -= 0.1;
+            self.camera.rotation -= ROTATION_SPEED;
         }
 
         if input::is_key_down(ctx, Key::E) {
-            self.camera.rotation += 0.1;
+            self.camera.rotation += ROTATION_SPEED;
         }
 
         if input::is_key_down(ctx, Key::R) {
-            self.camera.zoom += 0.1;
+            self.camera.zoom += ZOOM_SPEED;
         }
 
         if input::is_key_down(ctx, Key::F) {
-            self.camera.zoom -= 0.1;
+            self.camera.zoom -= ZOOM_SPEED;
         }
+
+        self.camera.update();
 
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(0.769, 0.812, 0.631));
-
-        graphics::set_transform_matrix(ctx, self.camera.to_matrix());
-
+        graphics::set_transform_matrix(ctx, self.camera.as_matrix());
         graphics::draw(
             ctx,
             &self.texture,
@@ -75,6 +77,7 @@ impl State for GameState {
     fn event(&mut self, _: &mut Context, event: Event) -> tetra::Result {
         if let Event::Resized { width, height } = event {
             self.camera.set_viewport_size(width as f32, height as f32);
+            self.camera.update();
         }
 
         Ok(())
