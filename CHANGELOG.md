@@ -39,6 +39,7 @@ This project adheres to Semantic Versioning.
 
 ### Removed
 
+* `time::duration_to_f64` and `time::f64_to_duration` have been removed, as the standard library now provides this functionality (`Duration::from_secs_f64` and `Duration::as_secs_f64` respectively).
 * Removed deprecated sub-modules from `graphics`.
 * Removed deprecated `color::BLACK` and `color::WHITE` constants - use `Color::BLACK` and `Color::WHITE` instead.
 * Removed deprecated `from_data` constructors - use `from_file_data` instead.
