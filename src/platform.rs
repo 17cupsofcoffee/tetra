@@ -68,6 +68,8 @@ impl Platform {
             settings.window_height as u32,
         );
 
+        // The window starts hidden, so that it doesn't look weird if we
+        // maximize/minimize/fullscreen the window after it opens.
         window_builder.hidden().position_centered().opengl();
 
         if settings.resizable {
@@ -128,6 +130,9 @@ impl Platform {
                 SwapInterval::Immediate
             })
             .map_err(TetraError::FailedToChangeDisplayMode)?;
+
+        // Now the window is ready to show to the user.
+        window.show();
 
         let platform = Platform {
             sdl,
@@ -386,14 +391,6 @@ where
     }
 
     Ok(())
-}
-
-pub fn show_window(ctx: &mut Context) {
-    ctx.platform.window.show();
-}
-
-pub fn hide_window(ctx: &mut Context) {
-    ctx.platform.window.hide();
 }
 
 pub fn get_window_title(ctx: &Context) -> &str {

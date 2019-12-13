@@ -211,7 +211,6 @@ impl Context {
 
         self.running = true;
 
-        platform::show_window(self);
         time::reset(self);
 
         while self.running {
@@ -222,8 +221,6 @@ impl Context {
 
             std::thread::yield_now();
         }
-
-        platform::hide_window(self);
 
         Ok(())
     }
