@@ -253,14 +253,6 @@ pub enum Event {
     /// The game window was un-focused by the user.
     FocusLost,
 
-    /// A key on the keyboard is currently held down.
-    ///
-    /// This event may repeat while the key continues to be held.
-    KeyDown {
-        /// The key that is held down.
-        key: Key,
-    },
-
     /// A key on the keyboard was pressed.
     KeyPressed {
         /// The key that was pressed.
@@ -271,14 +263,6 @@ pub enum Event {
     KeyReleased {
         /// The key that was released.
         key: Key,
-    },
-
-    /// A button on the mouse is currently held down.
-    ///
-    /// This event may repeat while the button continues to be held.
-    MouseButtonDown {
-        /// The button that is held down.
-        button: MouseButton,
     },
 
     /// A button on the mouse was pressed.
@@ -309,17 +293,6 @@ pub enum Event {
     GamepadRemoved {
         /// The ID of the gamepad that was removed.
         id: usize,
-    },
-
-    /// A button on a gamepad is currently held down.
-    ///
-    /// This event may repeat while the button continues to be held.
-    GamepadButtonDown {
-        /// The ID of the gamepad.
-        id: usize,
-
-        /// The button that is held down.
-        button: GamepadButton,
     },
 
     /// A button on a gamepad was pressed.

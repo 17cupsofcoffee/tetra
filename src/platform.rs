@@ -189,7 +189,9 @@ where
             },
 
             SdlEvent::KeyDown {
-                keycode: Some(k), ..
+                keycode: Some(k),
+                repeat: false,
+                ..
             } => {
                 if let SdlKey::Escape = k {
                     if ctx.quit_on_escape {
@@ -198,13 +200,8 @@ where
                 }
 
                 if let Some(key) = into_key(k) {
-                    let pressed = input::set_key_down(ctx, key);
-
-                    state.event(ctx, Event::KeyDown { key })?;
-
-                    if pressed {
-                        state.event(ctx, Event::KeyPressed { key })?;
-                    }
+                    input::set_key_down(ctx, key);
+                    state.event(ctx, Event::KeyPressed { key })?;
                 }
             }
 
@@ -221,13 +218,8 @@ where
 
             SdlEvent::MouseButtonDown { mouse_btn, .. } => {
                 if let Some(button) = into_mouse_button(mouse_btn) {
-                    let pressed = input::set_mouse_button_down(ctx, button);
-
-                    state.event(ctx, Event::MouseButtonDown { button })?;
-
-                    if pressed {
-                        state.event(ctx, Event::MouseButtonPressed { button })?;
-                    }
+                    input::set_mouse_button_down(ctx, button);
+                    state.event(ctx, Event::MouseButtonPressed { button })?;
                 }
             }
 
@@ -289,13 +281,9 @@ where
                 if let Some(slot) = ctx.platform.controllers.get(&which).map(|c| c.slot) {
                     if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
                         let button = button.into();
-                        let pressed = pad.set_button_down(button);
 
-                        state.event(ctx, Event::GamepadButtonDown { id: slot, button })?;
-
-                        if pressed {
-                            state.event(ctx, Event::GamepadButtonPressed { id: slot, button })?;
-                        }
+                        pad.set_button_down(button);
+                        state.event(ctx, Event::GamepadButtonPressed { id: slot, button })?;
                     }
                 }
             }
@@ -332,8 +320,6 @@ where
                         if let Some(button) = button {
                             if value > 0 {
                                 let pressed = pad.set_button_down(button);
-
-                                state.event(ctx, Event::GamepadButtonDown { id: slot, button })?;
 
                                 if pressed {
                                     state.event(
