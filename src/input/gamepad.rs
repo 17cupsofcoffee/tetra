@@ -187,7 +187,7 @@ pub fn get_gamepad_buttons_down(
     }
 }
 
-/// Returns an iterator of the buttons that were pressed since the last update on the specified gamepad.
+/// Returns an iterator of the buttons that were pressed on the specified gamepad since the last update.
 ///
 /// If the gamepad is disconnected, an empty iterator will be returned.
 pub fn get_gamepad_buttons_pressed(
@@ -201,7 +201,7 @@ pub fn get_gamepad_buttons_pressed(
     }
 }
 
-/// Returns an iterator of the buttons that were released since the last update on the specified gamepad.
+/// Returns an iterator of the buttons that were released on the specified gamepad since the last update .
 ///
 /// If the gamepad is disconnected, an empty iterator will be returned.
 pub fn get_gamepad_buttons_released(

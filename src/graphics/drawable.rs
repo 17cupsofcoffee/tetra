@@ -8,25 +8,25 @@ use crate::Context;
 /// construct it manually - whichever you find more pleasant to write.
 #[derive(Debug, Clone, PartialEq)]
 pub struct DrawParams {
-    /// The position that the graphic should be drawn at. Defaults to [0.0, 0.0].
+    /// The position that the graphic should be drawn at. Defaults to `(0.0, 0.0)`.
     pub position: Vec2<f32>,
 
-    /// The scale that the graphic should be drawn at. Defaults to [1.0, 1.0].
+    /// The scale that the graphic should be drawn at. Defaults to `(1.0, 1.0)`.
     ///
     /// This can be set to a negative value to flip the graphic around the origin.
     pub scale: Vec2<f32>,
 
-    /// The origin of the graphic. Defaults to [0.0, 0.0] (the top left).
+    /// The origin of the graphic. Defaults to `(0.0, 0.0)` (the top left).
     ///
     /// This offset is applied before scaling, rotation and positioning. For example, if you have
     /// a 16x16 image and set the origin to [8.0, 8.0], subsequent transformations will be performed
     /// relative to the center of the image.
     pub origin: Vec2<f32>,
 
-    /// The rotation of the graphic, in radians. Defaults to 0.0.
+    /// The rotation of the graphic, in radians. Defaults to `0.0`.
     pub rotation: f32,
 
-    /// A color to multiply the graphic by. Defaults to white.
+    /// A color to multiply the graphic by. Defaults to `Color::WHITE`.
     pub color: Color,
 
     /// A sub-region of the graphic to draw. Defaults to `None`, which means the the full graphic will be drawn.
