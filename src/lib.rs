@@ -220,8 +220,8 @@ impl Context {
         platform::handle_events(self, state)?;
 
         while time::is_update_ready(self) {
-            input::cleanup_after_state_update(self);
             state.update(self)?;
+            input::cleanup_after_state_update(self);
         }
 
         state.draw(self)?;
