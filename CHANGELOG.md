@@ -408,6 +408,7 @@ This project adheres to Semantic Versioning.
 * Initial release!
 
 [Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.2.20..HEAD
+[0.3.0]: https://github.com/17cupsofcoffee/tetra/compare/0.2.20..0.3.0
 [0.2.20]: https://github.com/17cupsofcoffee/tetra/compare/0.2.19..0.2.20
 [0.2.19]: https://github.com/17cupsofcoffee/tetra/compare/0.2.18..0.2.19
 [0.2.18]: https://github.com/17cupsofcoffee/tetra/compare/0.2.17..0.2.18
