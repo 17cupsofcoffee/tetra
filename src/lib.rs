@@ -88,26 +88,12 @@ use crate::time::{TimeContext, Timestep};
 /// the `run` function that was used to start it.
 #[allow(unused_variables)]
 pub trait State {
-    /// Called when it is time for the game to update, at the interval specified by the context's
-    /// tick rate.
-    ///
-    /// The game will update at a fixed time step (defaulting to 60fps), and draw as fast as it is
-    /// allowed to (depending on CPU/vsync settings). This allows for deterministic updates even at
-    /// varying framerates, but may require you to do some interpolation in the `draw` method in
-    /// order to make things look smooth.
-    ///
-    /// See [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/) for more info.
+    /// Called when it is time for the game to update.
     fn update(&mut self, ctx: &mut Context) -> Result {
         Ok(())
     }
 
     /// Called when it is time for the game to be drawn.
-    ///
-    /// As drawing will not necessarily be in step with updating, the `dt` argument is provided -
-    /// this will be a number between 0 and 1, specifying how far through the current tick you are.
-    ///
-    /// For example, if the player is meant to move 16 pixels per frame, and the current `dt` is 0.5,
-    /// you should draw them 8 pixels along.
     fn draw(&mut self, ctx: &mut Context) -> Result {
         Ok(())
     }
