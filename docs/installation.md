@@ -96,7 +96,3 @@ tetra = "0.2"
 ```
 
 If you're on Windows, you'll need to place the SDL2 .dll in the root of your project (and alongside your .exe when distributing your game). You can download this from the ['runtime binaries' section of the SDL website](https://www.libsdl.org/download-2.0.php).
-
-## Next Steps
-
-Once those steps are complete, you're ready to [start writing your first game with Tetra](./getting-started.md)!
