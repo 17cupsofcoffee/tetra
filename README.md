@@ -26,7 +26,7 @@ Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event hand
 
 To add Tetra to your project, add the following line to your `Cargo.toml` file:
 
-```
+```toml
 tetra = "0.3"
 ```
 

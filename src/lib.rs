@@ -19,7 +19,7 @@
 //!
 //! To add Tetra to your project, add the following line to your `Cargo.toml` file:
 //!
-//! ```
+//! ```toml
 //! tetra = "0.3"
 //! ```
 //!
