@@ -24,7 +24,7 @@ use crate::Context;
 /// impl GameState {
 ///     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
 ///         Ok(GameState {
-///             scaler: ScreenScaler::new(ctx, 128, 128, ScalingMode::ShowAllPixelPerfect)?
+///             scaler: ScreenScaler::with_window_size(ctx, 128, 128, ScalingMode::ShowAllPixelPerfect)?
 ///         })
 ///     }
 /// }
@@ -45,7 +45,7 @@ use crate::Context;
 ///     fn event(&mut self, _ctx: &mut Context, event: Event) -> tetra::Result {
 ///         if let Event::Resized { width, height } = event {
 ///             // Ensure your scaler is kept aware of screen size changes!
-///             self.scaler.set_window_size(width, height);
+///             self.scaler.set_outer_size(width, height);
 ///         }
 ///
 ///         Ok(())
@@ -57,47 +57,67 @@ pub struct ScreenScaler {
     canvas: Canvas,
     mode: ScalingMode,
     screen_rect: Rectangle,
-    window_width: i32,
-    window_height: i32,
+    outer_width: i32,
+    outer_height: i32,
 }
 
 impl ScreenScaler {
-    /// Returns a new `ScreenScaler`, with the specified internal width and height. The mode will
-    /// determine how the image is scaled to fit the screen.
+    /// Returns a new `ScreenScaler`, with the specified inner and outer width and height.
+    /// The mode will determine how the image is scaled to fit the screen.
     pub fn new(
         ctx: &mut Context,
-        width: i32,
-        height: i32,
+        inner_width: i32,
+        inner_height: i32,
+        outer_width: i32,
+        outer_height: i32,
         mode: ScalingMode,
     ) -> Result<ScreenScaler> {
-        let (window_width, window_height) = window::get_size(ctx);
-
-        let canvas = Canvas::new(ctx, width, height)?;
-        let screen_rect = get_screen_rect(mode, width, height, window_width, window_height);
+        let canvas = Canvas::new(ctx, inner_width, inner_height)?;
+        let screen_rect =
+            get_screen_rect(mode, inner_width, inner_height, outer_width, outer_height);
 
         Ok(ScreenScaler {
             canvas,
             mode,
             screen_rect,
-            window_width,
-            window_height,
+            outer_width,
+            outer_height,
         })
     }
 
-    /// Updates the screen's size to fit the current size of the window.
-    ///
-    /// If your window never changes size, you don't need to call this.
-    pub fn set_window_size(&mut self, window_width: i32, window_height: i32) {
-        if window_width != self.window_width || window_height != self.window_height {
-            self.window_width = window_width;
-            self.window_height = window_height;
+    /// Returns a new `ScreenScaler`, with the specified inner width and height, and the outer
+    /// size set to the current dimensions of the window.
+    pub fn with_window_size(
+        ctx: &mut Context,
+        inner_width: i32,
+        inner_height: i32,
+        mode: ScalingMode,
+    ) -> Result<ScreenScaler> {
+        let (outer_width, outer_height) = window::get_size(ctx);
+
+        ScreenScaler::new(
+            ctx,
+            inner_width,
+            inner_height,
+            outer_width,
+            outer_height,
+            mode,
+        )
+    }
+
+    /// Updates the scaler's outer size (i.e. the size of the box that the screen will be scaled to
+    /// fit within).
+    pub fn set_outer_size(&mut self, outer_width: i32, outer_height: i32) {
+        if outer_width != self.outer_width || outer_height != self.outer_height {
+            self.outer_width = outer_width;
+            self.outer_height = outer_height;
 
             self.screen_rect = get_screen_rect(
                 self.mode,
                 self.canvas().width(),
                 self.canvas().height(),
-                window_width,
-                window_height,
+                outer_width,
+                outer_height,
             );
         }
     }
@@ -119,8 +139,8 @@ impl ScreenScaler {
             self.mode,
             self.canvas().width(),
             self.canvas().height(),
-            self.window_width,
-            self.window_height,
+            self.outer_width,
+            self.outer_height,
         );
     }
 
@@ -257,67 +277,67 @@ pub enum ScalingMode {
     CropPixelPerfect,
 }
 
-/// Converts a screen's dimensions into a rectangle that is scaled to fit in the given window size.
+/// Converts a screen's dimensions into a rectangle that is scaled to fit in the given bounds.
 ///
 /// This function may be useful if you want to use Tetra's scaling algorithms, but
 /// the built-in `ScreenScaler` abstraction does not fit your needs.
 pub fn get_screen_rect(
     mode: ScalingMode,
-    original_width: i32,
-    original_height: i32,
-    window_width: i32,
-    window_height: i32,
+    inner_width: i32,
+    inner_height: i32,
+    outer_width: i32,
+    outer_height: i32,
 ) -> Rectangle {
-    let f_original_width = original_width as f32;
-    let f_original_height = original_height as f32;
-    let f_window_width = window_width as f32;
-    let f_window_height = window_height as f32;
+    let f_inner_width = inner_width as f32;
+    let f_inner_height = inner_height as f32;
+    let f_outer_width = outer_width as f32;
+    let f_outer_height = outer_height as f32;
 
-    let internal_aspect_ratio = f_original_width / f_original_height;
-    let screen_aspect_ratio = f_window_width / f_window_height;
+    let internal_aspect_ratio = f_inner_width / f_inner_height;
+    let screen_aspect_ratio = f_outer_width / f_outer_height;
 
     match mode {
         ScalingMode::Fixed => {
-            let screen_x = (window_width - original_width) / 2;
-            let screen_y = (window_height - original_height) / 2;
+            let screen_x = (outer_width - inner_width) / 2;
+            let screen_y = (outer_height - inner_height) / 2;
 
             Rectangle::new(
                 screen_x as f32,
                 screen_y as f32,
-                original_width as f32,
-                original_height as f32,
+                inner_width as f32,
+                inner_height as f32,
             )
         }
-        ScalingMode::Stretch => Rectangle::new(0.0, 0.0, window_width as f32, window_height as f32),
+        ScalingMode::Stretch => Rectangle::new(0.0, 0.0, outer_width as f32, outer_height as f32),
         ScalingMode::ShowAll => {
             let scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
-                f_window_width / f_original_width
+                f_outer_width / f_inner_width
             } else {
-                f_window_height / f_original_height
+                f_outer_height / f_inner_height
             };
 
-            let screen_width = (f_original_width * scale_factor).ceil();
-            let screen_height = (f_original_height * scale_factor).ceil();
-            let screen_x = ((f_window_width - screen_width) / 2.0).ceil();
-            let screen_y = ((f_window_height - screen_height) / 2.0).ceil();
+            let screen_width = (f_inner_width * scale_factor).ceil();
+            let screen_height = (f_inner_height * scale_factor).ceil();
+            let screen_x = ((f_outer_width - screen_width) / 2.0).ceil();
+            let screen_y = ((f_outer_height - screen_height) / 2.0).ceil();
 
             Rectangle::new(screen_x, screen_y, screen_width, screen_height)
         }
         ScalingMode::ShowAllPixelPerfect => {
             let mut scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
-                window_width / original_width
+                outer_width / inner_width
             } else {
-                window_height / original_height
+                outer_height / inner_height
             };
 
             if scale_factor == 0 {
                 scale_factor = 1;
             }
 
-            let screen_width = original_width * scale_factor;
-            let screen_height = original_height * scale_factor;
-            let screen_x = (window_width - screen_width) / 2;
-            let screen_y = (window_height - screen_height) / 2;
+            let screen_width = inner_width * scale_factor;
+            let screen_height = inner_height * scale_factor;
+            let screen_x = (outer_width - screen_width) / 2;
+            let screen_y = (outer_height - screen_height) / 2;
 
             Rectangle::new(
                 screen_x as f32,
@@ -327,22 +347,22 @@ pub fn get_screen_rect(
             )
         }
         ScalingMode::Crop => {
-            let scale_x = f_window_width / f_original_width;
-            let scale_y = f_window_height / f_original_height;
+            let scale_x = f_outer_width / f_inner_width;
+            let scale_y = f_outer_height / f_inner_height;
             let scale_factor = scale_x.max(scale_y);
 
-            let screen_width = (f_original_width * scale_factor).ceil();
-            let screen_height = (f_original_height * scale_factor).ceil();
-            let screen_x = ((f_window_width - screen_width) / 2.0).ceil();
-            let screen_y = ((f_window_height - screen_height) / 2.0).ceil();
+            let screen_width = (f_inner_width * scale_factor).ceil();
+            let screen_height = (f_inner_height * scale_factor).ceil();
+            let screen_x = ((f_outer_width - screen_width) / 2.0).ceil();
+            let screen_y = ((f_outer_height - screen_height) / 2.0).ceil();
 
             Rectangle::new(screen_x, screen_y, screen_width, screen_height)
         }
         ScalingMode::CropPixelPerfect => {
             let mut scale_factor = if internal_aspect_ratio > screen_aspect_ratio {
-                f_window_height / f_original_height
+                f_outer_height / f_inner_height
             } else {
-                f_window_width / f_original_width
+                f_outer_width / f_inner_width
             }
             .ceil() as i32;
 
@@ -350,10 +370,10 @@ pub fn get_screen_rect(
                 scale_factor = 1;
             }
 
-            let screen_width = original_width * scale_factor;
-            let screen_height = original_height * scale_factor;
-            let screen_x = (window_width - screen_width) / 2;
-            let screen_y = (window_height - screen_height) / 2;
+            let screen_width = inner_width * scale_factor;
+            let screen_height = inner_height * scale_factor;
+            let screen_x = (outer_width - screen_width) / 2;
+            let screen_y = (outer_height - screen_height) / 2;
 
             Rectangle::new(
                 screen_x as f32,

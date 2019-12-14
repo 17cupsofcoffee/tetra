@@ -88,21 +88,21 @@ impl Camera {
 
     /// Returns the mouse's position in camera space.
     ///
-    /// This is a shortcut for calling `camera.project(input::get_mouse_position(ctx))`.
+    /// This is a shortcut for calling `project(input::get_mouse_position(ctx))`.
     pub fn mouse_position(&self, ctx: &Context) -> Vec2<f32> {
         self.project(input::get_mouse_position(ctx))
     }
 
     /// Returns the X co-ordinate of the mouse's position in camera space.
     ///
-    /// This is a shortcut for calling `camera.project(input::get_mouse_position(ctx)).x`.
+    /// This is a shortcut for calling `project(input::get_mouse_position(ctx)).x`.
     pub fn mouse_x(&self, ctx: &Context) -> f32 {
         self.mouse_position(ctx).x
     }
 
     /// Returns the Y co-ordinate of the mouse's position in camera space.
     ///
-    /// This is a shortcut for calling `camera.project(input::get_mouse_position(ctx)).y`.
+    /// This is a shortcut for calling `project(input::get_mouse_position(ctx)).y`.
     pub fn mouse_y(&self, ctx: &Context) -> f32 {
         self.mouse_position(ctx).y
     }

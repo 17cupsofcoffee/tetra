@@ -22,7 +22,7 @@ struct GameState {
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
-            scaler: ScreenScaler::new(ctx, 640, 480, ScalingMode::Fixed)?,
+            scaler: ScreenScaler::with_window_size(ctx, 640, 480, ScalingMode::Fixed)?,
             panel: NineSlice::new(
                 Texture::new(ctx, "./examples/resources/panel.png")?,
                 PANEL_WIDTH,
@@ -76,7 +76,7 @@ impl State for GameState {
 
     fn event(&mut self, _: &mut Context, event: Event) -> tetra::Result {
         if let Event::Resized { width, height } = event {
-            self.scaler.set_window_size(width, height);
+            self.scaler.set_outer_size(width, height);
         }
 
         Ok(())
