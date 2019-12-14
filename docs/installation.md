@@ -4,7 +4,7 @@
 
 To get started with Tetra, you'll need a couple of things installed:
 
-* Rust 1.32 or higher
+* The latest stable version of Rust
 * The SDL 2.0 development libraries
 * The ALSA development libraries (only required on Linux)
 
