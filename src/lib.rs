@@ -1,6 +1,6 @@
 //! Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event handling and OpenGL 3.2+ for rendering.
 //!
-//! * [Website/Tutorial](https://tetra.seventeencups.net)
+//! * [Website](https://tetra.seventeencups.net)
 //! * [API Docs](https://docs.rs/tetra)
 //! * [FAQ](https://tetra.seventeencups.net/FAQ)
 //!
@@ -8,29 +8,28 @@
 //!
 //! * XNA/MonoGame-inspired API
 //! * Efficient 2D rendering, with draw call batching by default
-//! * Simple input handling
-//! * Animations/spritesheets
-//! * TTF font rendering
-//! * Multiple screen scaling algorithms, including pixel-perfect variants (for those chunky retro pixels)
-//! * Deterministic game loop, à la [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/)
+//! * Easy input handling, via polling or events, with support for gamepads
+//! * Deterministic game loop by default, à la [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/)
+//! * Common building blocks built-in, such as:
+//!     * Font rendering
+//!     * Cameras
+//!     * Screen scaling
 //!
 //! ## Installation
 //!
 //! To add Tetra to your project, add the following line to your `Cargo.toml` file:
 //!
-//! ```toml
-//! tetra = "0.2"
+//! ```
+//! tetra = "0.3"
 //! ```
 //!
-//! Tetra currently requires Rust 1.32 or higher.
-//!
-//! You will also need to install the SDL2 native libraries, as described [here](https://github.com/Rust-SDL2/rust-sdl2#user-content-requirements). The 'bundled' and 'static linking' features described can be activated using the `sdl2_bundled` and `sdl2_static_link` Cargo features in Tetra.
+//! You will also need to install the SDL2 native libraries - full details are provided in the [documentation](https://tetra.seventeencups.net/tutorial/installation.html).
 //!
 //! ## Examples
 //!
 //! To get a simple window displayed on screen, the following code can be used:
 //!
-//! ```no_run
+//! ```rust
 //! use tetra::graphics::{self, Color};
 //! use tetra::{Context, ContextBuilder, State};
 //!
@@ -53,7 +52,7 @@
 //!
 //! You can see this example in action by running `cargo run --example hello_world`.
 //!
-//! The full list of examples is available [here](https://github.com/17cupsofcoffee/tetra/tree/master/examples).
+//! The full list of examples is available [here](https://github.com/17cupsofcoffee/tetra/tree/release/examples).
 //!
 //! ## Support/Feedback
 //!

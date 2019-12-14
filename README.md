@@ -2,37 +2,33 @@
 
 [![Build Status](https://github.com/17cupsofcoffee/tetra/workflows/CI%20Build/badge.svg?branch=master)](https://github.com/17cupsofcoffee/tetra/actions?query=branch%3Amaster)
 [![Crates.io](https://img.shields.io/crates/v/tetra.svg)](https://crates.io/crates/tetra)
-[![Minimum Rust Version](https://img.shields.io/badge/minimum%20rust%20version-1.32-orange.svg)](https://www.rust-lang.org/tools/install)
 [![Documentation](https://docs.rs/tetra/badge.svg)](https://docs.rs/tetra)
 [![License](https://img.shields.io/crates/l/tetra.svg)](LICENSE)
 
 Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event handling and OpenGL 3.2+ for rendering.
 
-* [Website/Tutorial](https://tetra.seventeencups.net)
+* [Website](https://tetra.seventeencups.net)
 * [API Docs](https://docs.rs/tetra)
 * [FAQ](https://tetra.seventeencups.net/FAQ)
-
-🔧 *Note that development of Tetra 0.3 is currently ongoing in the `master` branch of this repository - to view the code currently published on crates.io, [check the `release` branch](https://github.com/17cupsofcoffee/tetra/tree/release/).*
 
 ## Features
 
 * XNA/MonoGame-inspired API
 * Efficient 2D rendering, with draw call batching by default
-* Simple input handling
-* Animations/spritesheets
-* TTF font rendering
-* Multiple screen scaling algorithms, including pixel-perfect variants (for those chunky retro pixels)
-* Deterministic game loop, à la [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/)
+* Easy input handling, via polling or events, with support for gamepads
+* Deterministic game loop by default, à la [Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/)
+* Common building blocks built-in, such as:
+    * Font rendering
+    * Cameras
+    * Screen scaling
 
 ## Installation
 
 To add Tetra to your project, add the following line to your `Cargo.toml` file:
 
 ```
-tetra = "0.2"
+tetra = "0.3"
 ```
-
-Tetra currently requires Rust 1.32 or higher.
 
 You will also need to install the SDL2 native libraries - full details are provided in the [documentation](https://tetra.seventeencups.net/tutorial/installation.html).
 
@@ -47,7 +43,7 @@ use tetra::{Context, ContextBuilder, State};
 struct GameState;
 
 impl State for GameState {
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
+    fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         // Cornflower blue, as is tradition
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
         Ok(())
@@ -57,7 +53,7 @@ impl State for GameState {
 fn main() -> tetra::Result {
     ContextBuilder::new("Hello, world!", 1280, 720)
         .build()?
-        .run(&mut GameState)
+        .run(|_| Ok(GameState))
 }
 ```
 

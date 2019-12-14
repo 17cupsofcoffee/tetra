@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
-## [Upcoming]
+## [0.3.0] - 2019-12-14
 
 ### Added
 
