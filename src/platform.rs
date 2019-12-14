@@ -245,7 +245,7 @@ where
             }
 
             SdlEvent::TextInput { text, .. } => {
-                input::set_text_input(ctx, Some(text.clone()));
+                input::push_text_input(ctx, &text);
                 state.event(ctx, Event::TextInput { text })?;
             }
 

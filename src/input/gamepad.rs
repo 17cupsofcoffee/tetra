@@ -125,7 +125,7 @@ pub fn is_gamepad_button_up(ctx: &Context, gamepad_id: usize, button: GamepadBut
     }
 }
 
-/// Returns true if the specified gamepad button was pressed this tick.
+/// Returns true if the specified gamepad button was pressed since the last update.
 ///
 /// If the gamepad is disconnected, this will always return `false`.
 pub fn is_gamepad_button_pressed(ctx: &Context, gamepad_id: usize, button: GamepadButton) -> bool {
@@ -136,7 +136,7 @@ pub fn is_gamepad_button_pressed(ctx: &Context, gamepad_id: usize, button: Gamep
     }
 }
 
-/// Returns true if the specified gamepad button was released this tick.
+/// Returns true if the specified gamepad button was released since the last update.
 ///
 /// If the gamepad is disconnected, this will always return `false`.
 pub fn is_gamepad_button_released(ctx: &Context, gamepad_id: usize, button: GamepadButton) -> bool {
@@ -187,7 +187,7 @@ pub fn get_gamepad_buttons_down(
     }
 }
 
-/// Returns an iterator of the buttons that were pressed this tick on the specified gamepad.
+/// Returns an iterator of the buttons that were pressed since the last update on the specified gamepad.
 ///
 /// If the gamepad is disconnected, an empty iterator will be returned.
 pub fn get_gamepad_buttons_pressed(
@@ -201,7 +201,7 @@ pub fn get_gamepad_buttons_pressed(
     }
 }
 
-/// Returns an iterator of the buttons that were released this tick on the specified gamepad.
+/// Returns an iterator of the buttons that were released since the last update on the specified gamepad.
 ///
 /// If the gamepad is disconnected, an empty iterator will be returned.
 pub fn get_gamepad_buttons_released(

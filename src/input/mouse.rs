@@ -22,12 +22,12 @@ pub fn is_mouse_button_up(ctx: &Context, button: MouseButton) -> bool {
     !ctx.input.mouse_buttons_down.contains(&button)
 }
 
-/// Returns true if the specified mouse button was pressed this tick.
+/// Returns true if the specified mouse button was pressed since the last update.
 pub fn is_mouse_button_pressed(ctx: &Context, button: MouseButton) -> bool {
     ctx.input.mouse_buttons_pressed.contains(&button)
 }
 
-/// Returns true if the specified mouse button was released this tick.
+/// Returns true if the specified mouse button was released since the last update.
 pub fn is_mouse_button_released(ctx: &Context, button: MouseButton) -> bool {
     ctx.input.mouse_buttons_released.contains(&button)
 }

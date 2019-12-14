@@ -83,12 +83,12 @@ impl Animation {
         self.restart();
     }
 
-    /// Gets the number of ticks that each frame of the animation lasts for.
+    /// Gets the amount of time that each frame of the animation lasts for.
     pub fn frame_length(&self) -> Duration {
         self.frame_length
     }
 
-    /// Sets the number of ticks that each frame of the animation lasts for.
+    /// Sets the amount of time that each frame of the animation lasts for.
     pub fn set_frame_length(&mut self, new_frame_length: Duration) {
         self.frame_length = new_frame_length;
     }

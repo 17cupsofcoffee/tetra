@@ -221,7 +221,7 @@ impl Context {
 
         while time::is_update_ready(self) {
             state.update(self)?;
-            input::cleanup_after_state_update(self);
+            input::clear(self);
         }
 
         state.draw(self)?;
@@ -261,13 +261,13 @@ pub enum Event {
         key: Key,
     },
 
-    /// A key on the keyboard was pressed this tick.
+    /// A key on the keyboard was pressed.
     KeyPressed {
         /// The key that was pressed.
         key: Key,
     },
 
-    /// A key on the keyboard was released this tick.
+    /// A key on the keyboard was released.
     KeyReleased {
         /// The key that was released.
         key: Key,
@@ -281,13 +281,13 @@ pub enum Event {
         button: MouseButton,
     },
 
-    /// A button on the mouse was pressed this tick.
+    /// A button on the mouse was pressed.
     MouseButtonPressed {
         /// The button that was pressed.
         button: MouseButton,
     },
 
-    /// A button on the mouse was released this tick.
+    /// A button on the mouse was released.
     MouseButtonReleased {
         /// The button that was released.
         button: MouseButton,
@@ -322,7 +322,7 @@ pub enum Event {
         button: GamepadButton,
     },
 
-    /// A button on a gamepad was pressed this tick.
+    /// A button on a gamepad was pressed.
     GamepadButtonPressed {
         /// The ID of the gamepad.
         id: usize,
@@ -331,7 +331,7 @@ pub enum Event {
         button: GamepadButton,
     },
 
-    /// A button on a gamepad was released this tick.
+    /// A button on a gamepad was released.
     GamepadButtonReleased {
         /// The ID of the gamepad.
         id: usize,

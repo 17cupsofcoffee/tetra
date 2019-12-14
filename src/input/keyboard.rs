@@ -151,12 +151,12 @@ pub fn is_key_up(ctx: &Context, key: Key) -> bool {
     !ctx.input.keys_down.contains(&key)
 }
 
-/// Returns true if the specified key was pressed this tick.
+/// Returns true if the specified key was pressed since the last update.
 pub fn is_key_pressed(ctx: &Context, key: Key) -> bool {
     ctx.input.keys_pressed.contains(&key)
 }
 
-/// Returns true if the specified key was released this tick.
+/// Returns true if the specified key was released since the last update.
 pub fn is_key_released(ctx: &Context, key: Key) -> bool {
     ctx.input.keys_released.contains(&key)
 }
@@ -166,12 +166,12 @@ pub fn get_keys_down(ctx: &Context) -> impl Iterator<Item = &Key> {
     ctx.input.keys_down.iter()
 }
 
-/// Returns an iterator of the keys that were pressed this tick.
+/// Returns an iterator of the keys that were pressed since the last update.
 pub fn get_keys_pressed(ctx: &Context) -> impl Iterator<Item = &Key> {
     ctx.input.keys_pressed.iter()
 }
 
-/// Returns an iterator of the keys that were released this tick.
+/// Returns an iterator of the keys that were released since the last update.
 pub fn get_keys_released(ctx: &Context) -> impl Iterator<Item = &Key> {
     ctx.input.keys_released.iter()
 }

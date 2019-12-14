@@ -56,7 +56,7 @@ impl InputContext {
     }
 }
 
-pub(crate) fn cleanup_after_state_update(ctx: &mut Context) {
+pub(crate) fn clear(ctx: &mut Context) {
     ctx.input.keys_pressed.clear();
     ctx.input.keys_released.clear();
     ctx.input.mouse_buttons_pressed.clear();
@@ -72,12 +72,15 @@ pub(crate) fn cleanup_after_state_update(ctx: &mut Context) {
     }
 }
 
-/// Returns the text that the user entered this tick.
+/// Returns the text that the user entered since the last update.
 /// This will match the user's keyboard and OS settings.
 pub fn get_text_input(ctx: &Context) -> Option<&str> {
     ctx.input.current_text_input.as_ref().map(String::as_str)
 }
 
-pub(crate) fn set_text_input(ctx: &mut Context, text: Option<String>) {
-    ctx.input.current_text_input = text;
+pub(crate) fn push_text_input(ctx: &mut Context, text: &str) {
+    match &mut ctx.input.current_text_input {
+        Some(existing) => existing.push_str(text),
+        x @ None => *x = Some(text.to_string()),
+    }
 }

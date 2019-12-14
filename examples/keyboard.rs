@@ -37,13 +37,16 @@ impl State for GameState {
 
         let mut pressed = input::get_keys_pressed(ctx).peekable();
         if pressed.peek().is_some() {
-            println!("Keys pressed this tick: {:?}", pressed.collect::<Vec<_>>());
+            println!(
+                "Keys pressed this update: {:?}",
+                pressed.collect::<Vec<_>>()
+            );
         }
 
         let mut released = input::get_keys_released(ctx).peekable();
         if released.peek().is_some() {
             println!(
-                "Keys released this tick: {:?}",
+                "Keys released this update: {:?}",
                 released.collect::<Vec<_>>()
             );
         }
