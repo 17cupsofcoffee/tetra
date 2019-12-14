@@ -29,7 +29,7 @@
 //!
 //! To get a simple window displayed on screen, the following code can be used:
 //!
-//! ```rust
+//! ```no_run
 //! use tetra::graphics::{self, Color};
 //! use tetra::{Context, ContextBuilder, State};
 //!
