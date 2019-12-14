@@ -201,6 +201,9 @@ pub(crate) struct RemoteControls {
 /// The audio thread will poll this for updates every 220 samples (roughly
 /// every 5ms at a 44100hz sample rate).
 ///
+/// Cloning a `SoundInstance` will create a new handle to the same instance,
+/// rather than creating a new instance.
+///
 /// Note that dropping a `SoundInstance` does not stop playback.
 #[derive(Debug, Clone)]
 pub struct SoundInstance {
