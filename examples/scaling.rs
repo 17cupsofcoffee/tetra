@@ -61,7 +61,7 @@ impl State for GameState {
         Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
+    fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         graphics::set_canvas(ctx, self.scaler.canvas());
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
         graphics::draw(ctx, &self.panel, Vec2::new(PANEL_X, PANEL_Y));

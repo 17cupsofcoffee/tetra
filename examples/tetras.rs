@@ -38,7 +38,7 @@ fn main() -> tetra::Result {
 
 trait Scene {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition>;
-    fn draw(&mut self, ctx: &mut Context, dt: f64) -> tetra::Result<Transition>;
+    fn draw(&mut self, ctx: &mut Context) -> tetra::Result<Transition>;
 }
 
 enum Transition {
@@ -84,11 +84,11 @@ impl State for GameState {
         Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut Context, dt: f64) -> tetra::Result {
+    fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         graphics::set_canvas(ctx, self.scaler.canvas());
 
         match self.scenes.last_mut() {
-            Some(active_scene) => match active_scene.draw(ctx, dt)? {
+            Some(active_scene) => match active_scene.draw(ctx)? {
                 Transition::None => {}
                 Transition::Push(s) => {
                     self.scenes.push(s);
@@ -146,7 +146,7 @@ impl Scene for TitleScene {
         }
     }
 
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result<Transition> {
+    fn draw(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
         graphics::draw(ctx, &self.title_text, Vec2::new(16.0, 16.0));
@@ -543,7 +543,7 @@ impl Scene for GameScene {
         Ok(Transition::None)
     }
 
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result<Transition> {
+    fn draw(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
         graphics::draw(

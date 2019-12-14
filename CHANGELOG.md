@@ -9,6 +9,8 @@ This project adheres to Semantic Versioning.
 ### Added
 
 * The `State` trait now provides an `event` method for hooking into window/input events. This is useful in scenarios where you want to be notified of events rather than polling (for example, reacting to window size changes).
+* A `Context` can now be configured to have a variable update rate, if that suits your game/architecture better. This is exposed via the `time_step` method on `ContextBuilder`.
+* Several new functions have been added to the `time` module, to support both variable and fixed timesteps.
 * Functions for getting and setting vsync have been added to `window`.
 * Details of the active graphics device can now be retrieved by calling `graphics::get_device_info`.
 * `Shader::from_vertex_string` and `Shader::from_fragment_string` constructors have been added.
@@ -19,6 +21,7 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * Tetra now targets the latest stable Rust compiler, rather than a fixed minimum version. This will hopefully change once Cargo has better functionality for enforcing minimum supported compiler versions - currently it's impossible to make guarentees, as our dependencies can change their minimum versions at will.
+* `State::draw` no longer takes the blend factor as a third parameter - instead, you can call the new `time::get_blend_factor` function.
 * `Key` and `MouseButton` are now Tetra-specific types, rather than re-exporting the SDL versions. Note that some names have been changed for consistency, and some variants have been removed to simplify the docs.
 * `TetraError::Sdl` and `TetraError::OpenGl` have been merged into `TetraError::PlatformError`, since they both represent the scenario where something's gone seriously wrong with the underlying platform.
 * `DEFAULT_VERTEX_SHADER` and `DEFAULT_FRAGMENT_SHADER` are now const instead of static.
@@ -41,6 +44,7 @@ This project adheres to Semantic Versioning.
 ### Removed
 
 * `time::duration_to_f64` and `time::f64_to_duration` have been removed, as the standard library now provides this functionality (`Duration::from_secs_f64` and `Duration::as_secs_f64` respectively).
+* `ContextBuilder::tick_rate` has been removed, as `ContextBuilder::time_step` now fulfils the same purpose.
 * Removed deprecated sub-modules from `graphics`.
 * Removed deprecated `color::BLACK` and `color::WHITE` constants - use `Color::BLACK` and `Color::WHITE` instead.
 * Removed deprecated `from_data` constructors - use `from_file_data` instead.

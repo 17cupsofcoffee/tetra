@@ -37,7 +37,7 @@
 //! struct GameState;
 //!
 //! impl State for GameState {
-//!     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
+//!     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
 //!         // Cornflower blue, as is tradition
 //!         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
 //!         Ok(())
@@ -78,7 +78,7 @@ use crate::graphics::GraphicsContext;
 use crate::input::{GamepadAxis, GamepadButton, GamepadStick, InputContext, Key, MouseButton};
 use crate::math::Vec2;
 use crate::platform::Platform;
-use crate::time::TimeContext;
+use crate::time::{TimeContext, Timestep};
 
 /// A trait representing a type that contains game state and provides logic for updating it
 /// and drawing it to the screen. This is where you'll write your game logic!
@@ -108,7 +108,7 @@ pub trait State {
     ///
     /// For example, if the player is meant to move 16 pixels per frame, and the current `dt` is 0.5,
     /// you should draw them 8 pixels along.
-    fn draw(&mut self, ctx: &mut Context, dt: f64) -> Result {
+    fn draw(&mut self, ctx: &mut Context) -> Result {
         Ok(())
     }
 
@@ -149,7 +149,7 @@ impl Context {
 
         let graphics = GraphicsContext::new(&mut gl, window_width, window_height)?;
         let input = InputContext::new();
-        let time = TimeContext::new(settings.tick_rate);
+        let time = TimeContext::new(settings.timestep);
 
         Ok(Context {
             platform,
@@ -233,13 +233,12 @@ impl Context {
 
         platform::handle_events(self, state)?;
 
-        while time::is_tick_ready(self) {
-            state.update(self)?;
+        while time::is_update_ready(self) {
             input::cleanup_after_state_update(self);
-            time::consume_tick(self);
+            state.update(self)?;
         }
 
-        state.draw(self, time::get_alpha(self))?;
+        state.draw(self)?;
 
         graphics::present(self);
 
@@ -398,7 +397,7 @@ pub struct ContextBuilder {
     window_width: i32,
     window_height: i32,
     vsync: bool,
-    tick_rate: f64,
+    timestep: Timestep,
     fullscreen: bool,
     maximized: bool,
     minimized: bool,
@@ -452,11 +451,11 @@ impl ContextBuilder {
         self
     }
 
-    /// Sets the game's update tick rate, in ticks per second.
+    /// Sets the game's timestep.
     ///
-    /// Defaults to `60.0`.
-    pub fn tick_rate(&mut self, tick_rate: f64) -> &mut ContextBuilder {
-        self.tick_rate = 1.0 / tick_rate;
+    /// Defaults to `Timestep::Fixed(60.0)`.
+    pub fn timestep(&mut self, timestep: Timestep) -> &mut ContextBuilder {
+        self.timestep = timestep;
         self
     }
 
@@ -541,7 +540,7 @@ impl Default for ContextBuilder {
             window_width: 1280,
             window_height: 720,
             vsync: true,
-            tick_rate: 1.0 / 60.0,
+            timestep: Timestep::Fixed(60.0),
             fullscreen: false,
             maximized: false,
             minimized: false,

@@ -24,6 +24,7 @@
 
 use tetra::graphics::{self, Color, Texture};
 use tetra::math::Vec2;
+use tetra::time::{self, Timestep};
 use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
@@ -66,13 +67,14 @@ impl State for GameState {
         Ok(())
     }
 
-    fn draw(&mut self, ctx: &mut Context, dt: f64) -> tetra::Result {
+    fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(0.769, 0.812, 0.631));
 
-        // `dt` is a number between 0.0 and 1.0 which represents how
-        // far between ticks we currently are. For example, 0.0 would
+        // `blend_factor` is a number between 0.0 and 1.0 which represents
+        // how far between ticks we currently are. For example, 0.0 would
         // mean the update just ran, 0.99 would mean another update is
         // about to run.
+        let blend_factor = time::get_blend_factor(ctx);
 
         // No special handling - looks choppy!
         graphics::draw(ctx, &self.texture, self.position_none);
@@ -82,7 +84,7 @@ impl State for GameState {
         graphics::draw(
             ctx,
             &self.texture,
-            self.position_ex + (self.velocity * dt as f32),
+            self.position_ex + (self.velocity * blend_factor),
         );
 
         // With interpolation - we draw at a fixed point between the
@@ -90,7 +92,7 @@ impl State for GameState {
         graphics::draw(
             ctx,
             &self.texture,
-            Vec2::lerp(self.position_in_prev, self.position_in_curr, dt as f32),
+            Vec2::lerp(self.position_in_prev, self.position_in_curr, blend_factor),
         );
 
         Ok(())
@@ -99,7 +101,7 @@ impl State for GameState {
 
 fn main() -> tetra::Result {
     ContextBuilder::new("Interpolation", 640, 480)
-        .tick_rate(5.0)
+        .timestep(Timestep::Fixed(60.0))
         .quit_on_escape(true)
         .build()?
         .run(GameState::new)

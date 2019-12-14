@@ -24,7 +24,7 @@ impl GameState {
 }
 
 impl State for GameState {
-    fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
+    fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         self.animation.advance(ctx);
 
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));

@@ -38,7 +38,7 @@ use crate::Context;
 /// }
 ///
 /// impl State for GameState {
-///     fn draw(&mut self, ctx: &mut Context, _dt: f64) -> tetra::Result {
+///     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
 ///         graphics::set_canvas(ctx, &self.canvas);
 ///
 ///         // Draw some stuff to the canvas here, using the normal graphics API.
