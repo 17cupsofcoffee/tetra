@@ -2,7 +2,7 @@
 
 [Tetra](./README.md)
 
-- [Installation](./tutorial/installation.md)
+- [Installation](./installation.md)
 - [Examples](./examples.md)
 - [Showcase](./showcase.md)
 - [FAQ](./FAQ.md)
