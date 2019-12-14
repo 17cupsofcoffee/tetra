@@ -2,6 +2,10 @@
 
 /// An RGBA color.
 #[derive(Debug, Copy, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde_support",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct Color {
     /// The red component of the color.
     pub r: f32,

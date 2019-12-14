@@ -17,6 +17,15 @@ This project adheres to Semantic Versioning.
 * `Color::RED`, `Color::GREEN` and `Color::BLUE` constants have been added.
 * `graphics::get_transform_matrix`, `graphics::set_transform_matrix` and `graphics::reset_transform_matrix` has been added, which allows you to apply a transformation to your rendering.
 * The `Camera` struct has been added, which provides a simple way of creating a transform matrix.
+* Serde support has been added (via the `serde_support` Cargo feature) for the following types:
+    * `graphics::Color`
+    * `graphics::Rectangle`
+    * `input::Key`
+    * `input::MouseButton`
+    * `input::GamepadButton`
+    * `input::GamepadAxis`
+    * `input::GamepadStick`
+    * Various `math` types, as defined by the `Vek` crate.
 
 ### Changed
 

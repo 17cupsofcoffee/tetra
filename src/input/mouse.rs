@@ -2,6 +2,10 @@ use crate::math::Vec2;
 use crate::Context;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    feature = "serde_support",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 #[allow(missing_docs)]
 /// A button on a mouse.
 pub enum MouseButton {

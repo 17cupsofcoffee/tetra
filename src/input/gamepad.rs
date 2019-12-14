@@ -49,6 +49,10 @@ impl GamepadState {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    feature = "serde_support",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 #[allow(missing_docs)]
 /// A button on a gamepad.
 pub enum GamepadButton {
@@ -72,6 +76,10 @@ pub enum GamepadButton {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    feature = "serde_support",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 #[allow(missing_docs)]
 /// An axis of movement on a gamepad.
 pub enum GamepadAxis {
@@ -84,6 +92,10 @@ pub enum GamepadAxis {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    feature = "serde_support",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 #[allow(missing_docs)]
 /// A control stick on a gamepad.
 pub enum GamepadStick {

@@ -1,5 +1,9 @@
 /// A rectangle of `f32`s.
 #[derive(Debug, Copy, Clone, PartialEq)]
+#[cfg_attr(
+    feature = "serde_support",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct Rectangle {
     /// The X co-ordinate of the rectangle.
     pub x: f32,
