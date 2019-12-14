@@ -195,17 +195,15 @@ impl Context {
     {
         let state = &mut init(self)?;
 
-        self.running = true;
-
         time::reset(self);
+
+        self.running = true;
 
         while self.running {
             if let Err(e) = self.tick(state) {
                 self.running = false;
                 return Err(e);
             }
-
-            std::thread::yield_now();
         }
 
         Ok(())
@@ -227,6 +225,8 @@ impl Context {
         state.draw(self)?;
 
         graphics::present(self);
+
+        std::thread::yield_now();
 
         Ok(())
     }
