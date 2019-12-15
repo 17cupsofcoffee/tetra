@@ -95,14 +95,13 @@ pub(crate) fn tick(ctx: &mut Context) {
         .push_back(ctx.time.elapsed.as_secs_f64());
 }
 
-pub(crate) fn is_update_ready(ctx: &mut Context) -> bool {
+pub(crate) fn is_fixed_update_ready(ctx: &mut Context) -> bool {
     match &mut ctx.time.timestep {
         Some(fixed) if fixed.accumulator >= fixed.tick_rate => {
             fixed.accumulator -= fixed.tick_rate;
             true
         }
-        Some(_) => false,
-        None => true,
+        _ => false,
     }
 }
 

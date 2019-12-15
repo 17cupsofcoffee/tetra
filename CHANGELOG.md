@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## [0.3.1] - 2019-12-15
+
+### Fixed
+
+* Fixed an issue with variable timesteps causing an infinite loop.
+
 ## [0.3.0] - 2019-12-14
 
 ### Added
@@ -407,7 +413,8 @@ This project adheres to Semantic Versioning.
 
 * Initial release!
 
-[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.2.20..HEAD
+[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.3.1..HEAD
+[0.3.1]: https://github.com/17cupsofcoffee/tetra/compare/0.3.0..0.3.1
 [0.3.0]: https://github.com/17cupsofcoffee/tetra/compare/0.2.20..0.3.0
 [0.2.20]: https://github.com/17cupsofcoffee/tetra/compare/0.2.19..0.2.20
 [0.2.19]: https://github.com/17cupsofcoffee/tetra/compare/0.2.18..0.2.19

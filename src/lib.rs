@@ -216,9 +216,17 @@ impl Context {
 
         platform::handle_events(self, state)?;
 
-        while time::is_update_ready(self) {
-            state.update(self)?;
-            input::clear(self);
+        match time::get_timestep(self) {
+            Timestep::Fixed(_) => {
+                while time::is_fixed_update_ready(self) {
+                    state.update(self)?;
+                    input::clear(self);
+                }
+            }
+            Timestep::Variable => {
+                state.update(self)?;
+                input::clear(self);
+            }
         }
 
         state.draw(self)?;
