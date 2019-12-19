@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Added
+
+* `Rectangle::intersects`, `Rectangle::contains` and `Rectangle::contains_point` have been added.
+
 ## [0.3.1] - 2019-12-15
 
 ### Fixed
