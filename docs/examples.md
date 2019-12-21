@@ -15,22 +15,22 @@ don't break when rendered by mdbook.
 
 | Name | Category | Description |
 | --- | --- | --- |
-| [`hello_world`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/hello_world.rs) | Basic | Opens a window and clears it with a solid color. |
-| [`texture`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/texture.rs) | Graphics | Loads and displays a texture. |
-| [`animation`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/animation.rs) | Graphics |  Displays an animation, made up of regions from a texture. |
-| [`text`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/text.rs) | Graphics | Displays text using a TTF font. |
-| [`nineslice`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/nineslice.rs) | Graphics | Slices a texture into nine segments to display a dialog box. |
-| [`scaling`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/scaling.rs) | Graphics | Demonstrates the different screen scaling algorithms. |
-| [`shaders`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/shaders.rs) | Graphics | Uses a custom shader to render a texture. |
-| [`canvas`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/canvas.rs) | Graphics | Uses a custom render target to apply post-processing effects. |
-| [`camera`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/camera.rs) | Graphics | Demonstrates how to use a camera to transform the scene. |
-| [`interpolation`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/interpolation.rs) | Graphics | Demonstrates how to interpolate between updates. |
-| [`audio`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/audio.rs) | Audio | Plays back an audio file. |
-| [`keyboard`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/keyboard.rs) | Input | Moves a texture around based on keyboard input. |
-| [`animation_controller`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/animation_controller.rs) | Input | Moves a sprite around, with the animation changing based on keyboard input. |
-| [`mouse`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/mouse.rs) | Input | Moves a texture around based on mouse input. |
-| [`gamepad`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/gamepad.rs) | Input | Displays the input from a connected gamepad. |
-| [`text_input`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/text_input.rs) | Input | Displays text as it is typed in by the player. |
-| [`events`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/events.rs) | Input | Shows what events can be fired by the engine. |
-| [`bunnymark`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/bunnymark.rs) | Benchmark | Benchmarks rendering performance by rendering lots of bunnies. |
-| [`tetras`](https://github.com/17cupsofcoffee/tetra/blob/release/examples/tetras.rs) | Game | A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*). |
+| [`hello_world`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/hello_world.rs) | Basic | Opens a window and clears it with a solid color. |
+| [`texture`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/texture.rs) | Graphics | Loads and displays a texture. |
+| [`animation`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/animation.rs) | Graphics |  Displays an animation, made up of regions from a texture. |
+| [`text`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/text.rs) | Graphics | Displays text using a TTF font. |
+| [`nineslice`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/nineslice.rs) | Graphics | Slices a texture into nine segments to display a dialog box. |
+| [`scaling`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/scaling.rs) | Graphics | Demonstrates the different screen scaling algorithms. |
+| [`shaders`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/shaders.rs) | Graphics | Uses a custom shader to render a texture. |
+| [`canvas`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/canvas.rs) | Graphics | Uses a custom render target to apply post-processing effects. |
+| [`camera`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/camera.rs) | Graphics | Demonstrates how to use a camera to transform the scene. |
+| [`interpolation`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/interpolation.rs) | Graphics | Demonstrates how to interpolate between updates. |
+| [`audio`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/audio.rs) | Audio | Plays back an audio file. |
+| [`keyboard`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/keyboard.rs) | Input | Moves a texture around based on keyboard input. |
+| [`animation_controller`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/animation_controller.rs) | Input | Moves a sprite around, with the animation changing based on keyboard input. |
+| [`mouse`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/mouse.rs) | Input | Moves a texture around based on mouse input. |
+| [`gamepad`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/gamepad.rs) | Input | Displays the input from a connected gamepad. |
+| [`text_input`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/text_input.rs) | Input | Displays text as it is typed in by the player. |
+| [`events`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/events.rs) | Input | Shows what events can be fired by the engine. |
+| [`bunnymark`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/bunnymark.rs) | Benchmark | Benchmarks rendering performance by rendering lots of bunnies. |
+| [`tetras`](https://github.com/17cupsofcoffee/tetra/blob/master/examples/tetras.rs) | Game | A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*). |
