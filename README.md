@@ -36,7 +36,7 @@ You will also need to install the SDL2 native libraries - full details are provi
 
 To get a simple window displayed on screen, the following code can be used:
 
-```rust
+```rust ,noplaypen
 use tetra::graphics::{self, Color};
 use tetra::{Context, ContextBuilder, State};
 
