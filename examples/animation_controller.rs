@@ -36,7 +36,7 @@ impl PlayerAnimation {
                 Duration::from_secs_f64(0.1),
             ),
             running: Animation::new(
-                texture.clone(),
+                texture,
                 Rectangle::row(0.0, 272.0, 16.0, 16.0).take(8).collect(),
                 Duration::from_secs_f64(0.1),
             ),
