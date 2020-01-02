@@ -10,6 +10,10 @@ This project adheres to Semantic Versioning.
 
 * `Rectangle::intersects`, `Rectangle::contains` and `Rectangle::contains_point` have been added.
 
+### Changed
+
+* Updated `glow` to 0.4.
+
 ## [0.3.1] - 2019-12-15
 
 ### Fixed
