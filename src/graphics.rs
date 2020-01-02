@@ -152,8 +152,7 @@ pub fn clear(ctx: &mut Context, color: Color) {
     ctx.gl.clear(color.r, color.g, color.b, color.a);
 }
 
-// TODO: This function really needs cleaning up before it can be exposed publicly.
-
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn push_quad(
     ctx: &mut Context,
     x1: f32,
@@ -169,6 +168,8 @@ pub(crate) fn push_quad(
     // This function is a bit hairy, but it's more performant than doing the matrix math every
     // frame by a *lot* (at least going by the BunnyMark example). The logic is roughly based
     // on how FNA and LibGDX implement their spritebatches.
+    //
+    // TODO: This function really needs cleaning up before it can be exposed publicly.
 
     if ctx.graphics.element_count >= ctx.graphics.element_capacity {
         flush(ctx);
