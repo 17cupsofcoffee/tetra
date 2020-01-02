@@ -19,7 +19,7 @@ tetra = "0.3"
 
 With that, we're ready to start developing our game!
 
-## Context
+## Creating a `Context`
 
 In just about every Tetra game, the first thing that happens in `main` is the creation of a `Context`.
 
@@ -43,7 +43,7 @@ This creates a `Context` that is configured to display a window with the title '
 
 If you run `cargo run` in your terminal now, you'll notice that the window pops up for a split second, but then immediately closes. This is because we're not actually starting a game loop yet - `main` just returns straight away! To fix this, we'll need to create a `State`.
 
-## State
+## Defining Some `State`
 
 `State` is a trait exposed by Tetra that is implemented for the type which stores the current state of the game. It exposes various methods that will be called at different points in the game loop, and you can override these in order to define your game's behaviour.
 
