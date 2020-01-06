@@ -103,8 +103,8 @@ Our goal for this chapter was to set up our project, and we've done that! A blac
 To do this, we'll use one of the `State` trait methods. `draw` is called by Tetra whenever it is time for the engine to draw a new frame. We can call `tetra::graphics::clear` inside this method to clear the window to a plain color:
 
 ```rust ,noplaypen
-# use tetra::graphics::{self, Color};
-# use tetra::{Context, ContextBuilder, State};
+use tetra::graphics::{self, Color};
+use tetra::{Context, ContextBuilder, State};
 # 
 # struct GameState {}
 # 
