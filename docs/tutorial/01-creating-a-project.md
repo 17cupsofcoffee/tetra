@@ -52,7 +52,7 @@ If you run `cargo run` in your terminal now, you'll notice that the window pops 
 For now, we don't need to store data or override any of the default behaviour, so we can just use an empty struct and implementation:
 
 ```rust ,noplaypen
-# use tetra::{ContextBuilder, State};
+use tetra::{ContextBuilder, State};
 #
 struct GameState {}
 
