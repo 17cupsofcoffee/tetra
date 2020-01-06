@@ -7,11 +7,11 @@ cargo new --bin pong
 cd pong
 ```
 
-To add Tetra as a dependency, make sure you have the following lines 
-in the your `Cargo.toml`:
+To add Tetra as a dependency, make sure you add the following line
+in your `Cargo.toml`:
 
 ```toml
-[dependencies]
+# [dependencies]
 tetra = "0.3"
 ```
 
@@ -28,8 +28,8 @@ This is a struct that stores all of the 'global' state managed by the framework,
 To build a `Context`, we can use the descriptively named `ContextBuilder` struct:
 
 ```rust ,noplaypen
-# use tetra::ContextBuilder;
-#
+use tetra::ContextBuilder;
+
 fn main() {
     ContextBuilder::new("Pong", 640, 480)
         .quit_on_escape(true)
