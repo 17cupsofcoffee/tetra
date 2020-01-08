@@ -7,7 +7,7 @@ cargo new --bin pong
 cd pong
 ```
 
-Next, add Tetra as a dependency in your `Cargo.toml`:
+Next, add Tetra as a dependency in the newly-generated `Cargo.toml`:
 
 ```toml
 [dependencies]
