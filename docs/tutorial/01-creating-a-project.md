@@ -7,8 +7,7 @@ cargo new --bin pong
 cd pong
 ```
 
-To add Tetra as a dependency, make sure you have the following lines 
-in the your `Cargo.toml`:
+Next, add Tetra as a dependency in your `Cargo.toml`:
 
 ```toml
 [dependencies]
@@ -17,19 +16,22 @@ tetra = "0.3"
 
 > If you're developing on Windows, make sure you drop `SDL2.dll` into the `pong` folder and distribute it alongside your game. This can be obtained from the 'Runtime Binaries' section on the [SDL2 website](https://www.libsdl.org/download-2.0.php).
 
-With that, we're ready to start developing our game!
+Finally, let's add the imports we're going to use in this chapter to `main.rs`:
+
+```rust ,noplaypen
+use tetra::graphics::{self, Color};
+use tetra::{Context, ContextBuilder, State};
+```
+
+With that, we're ready to start developing our game! Let's take a closer look at one of the types you just imported.
 
 ## Creating a `Context`
 
-In just about every Tetra game, the first thing that happens in `main` is the creation of a `Context`.
+`Context` is a struct that holds all of the 'global' state managed by the framework, such as window settings and connections to the graphics/audio/input hardware. Any function in Tetra's API that requires access to this state will take a reference to a `Context` as the first parameter, so you won't get very far without one!
 
-This is a struct that stores all of the 'global' state managed by the framework, such as window settings and connections to the graphics/audio/input hardware. Any function in Tetra's API that requires access to this state will take a reference to a `Context` as the first parameter, so you won't get very far without one!
-
-To build a `Context`, we can use the descriptively named `ContextBuilder` struct:
+To build our game's `Context`, we can use the descriptively-named `ContextBuilder` struct:
 
 ```rust ,noplaypen
-# use tetra::ContextBuilder;
-#
 fn main() {
     ContextBuilder::new("Pong", 640, 480)
         .quit_on_escape(true)
@@ -52,17 +54,9 @@ If you run `cargo run` in your terminal now, you'll notice that the window pops 
 For now, we don't need to store data or override any of the default behaviour, so we can just use an empty struct and implementation:
 
 ```rust ,noplaypen
-# use tetra::{ContextBuilder, State};
-#
 struct GameState {}
 
 impl State for GameState {}
-# 
-# fn main() {
-#     ContextBuilder::new("Pong", 640, 480)
-#         .quit_on_escape(true)
-#         .build();
-# }
 ```
 
 ## Running the Game Loop
@@ -70,12 +64,6 @@ impl State for GameState {}
 Now that we have a `State`, we're ready to start the game loop! To do this, call the `run` method on `Context`, passing in a closure that constructs an instance of your `State` implementation:
 
 ```rust ,noplaypen
-# use tetra::{ContextBuilder, State};
-#
-# struct GameState {}
-# 
-# impl State for GameState {}
-# 
 fn main() -> tetra::Result {
     ContextBuilder::new("Pong", 640, 480)
         .quit_on_escape(true)
@@ -103,11 +91,6 @@ Our goal for this chapter was to set up our project, and we've done that! A blac
 To do this, we'll use one of the `State` trait methods. `draw` is called by Tetra whenever it is time for the engine to draw a new frame. We can call `tetra::graphics::clear` inside this method to clear the window to a plain color:
 
 ```rust ,noplaypen
-# use tetra::graphics::{self, Color};
-# use tetra::{Context, ContextBuilder, State};
-# 
-# struct GameState {}
-# 
 impl State for GameState {
     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         // Feel free to change the color to something of your choice!
@@ -116,13 +99,6 @@ impl State for GameState {
         Ok(())
     }
 }
-# 
-# fn main() -> tetra::Result {
-#     ContextBuilder::new("Pong", 640, 480)
-#         .quit_on_escape(true)
-#         .build()?
-#         .run(|_ctx| Ok(GameState {}))
-# }
 ```
 
 Note that `draw` (like all other methods on the `State` trait) returns a `tetra::Result`. If an error is returned from one of these methods, the game loop will stop and `Context::run` will return.
