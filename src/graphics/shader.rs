@@ -5,11 +5,11 @@ use std::rc::Rc;
 
 use crate::error::Result;
 use crate::fs;
-use crate::graphics::opengl::{GLDevice, GLProgram};
+use crate::platform::{GraphicsDevice, RawProgram};
 use crate::Context;
 
 #[doc(inline)]
-pub use crate::graphics::opengl::UniformValue;
+pub use crate::platform::UniformValue;
 
 /// The default vertex shader.
 ///
@@ -53,7 +53,7 @@ pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag
 /// You can also set data into your own uniform variables via the `set_uniform` method.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shader {
-    pub(crate) handle: Rc<GLProgram>,
+    pub(crate) handle: Rc<RawProgram>,
 }
 
 impl Shader {
@@ -69,7 +69,7 @@ impl Shader {
         P: AsRef<Path>,
     {
         Shader::with_device(
-            &mut ctx.gl,
+            &mut ctx.device,
             &fs::read_to_string(vertex_path)?,
             &fs::read_to_string(fragment_path)?,
         )
@@ -89,7 +89,7 @@ impl Shader {
         P: AsRef<Path>,
     {
         Shader::with_device(
-            &mut ctx.gl,
+            &mut ctx.device,
             &fs::read_to_string(path)?,
             DEFAULT_FRAGMENT_SHADER,
         )
@@ -109,7 +109,7 @@ impl Shader {
         P: AsRef<Path>,
     {
         Shader::with_device(
-            &mut ctx.gl,
+            &mut ctx.device,
             DEFAULT_VERTEX_SHADER,
             &fs::read_to_string(path)?,
         )
@@ -126,7 +126,7 @@ impl Shader {
         vertex_shader: &str,
         fragment_shader: &str,
     ) -> Result<Shader> {
-        Shader::with_device(&mut ctx.gl, vertex_shader, fragment_shader)
+        Shader::with_device(&mut ctx.device, vertex_shader, fragment_shader)
     }
 
     /// Creates a new shader program from the given vertex shader string.
@@ -138,7 +138,7 @@ impl Shader {
     /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
     /// * `TetraError::InvalidShader` will be returned if the shader could not be compiled.
     pub fn from_vertex_string<P>(ctx: &mut Context, shader: &str) -> Result<Shader> {
-        Shader::with_device(&mut ctx.gl, shader, DEFAULT_FRAGMENT_SHADER)
+        Shader::with_device(&mut ctx.device, shader, DEFAULT_FRAGMENT_SHADER)
     }
 
     /// Creates a new shader program from the given fragment shader string.
@@ -150,15 +150,15 @@ impl Shader {
     /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
     /// * `TetraError::InvalidShader` will be returned if the shader could not be compiled.
     pub fn from_fragment_string<P>(ctx: &mut Context, shader: &str) -> Result<Shader> {
-        Shader::with_device(&mut ctx.gl, DEFAULT_VERTEX_SHADER, shader)
+        Shader::with_device(&mut ctx.device, DEFAULT_VERTEX_SHADER, shader)
     }
 
     pub(crate) fn with_device(
-        gl: &mut GLDevice,
+        device: &mut GraphicsDevice,
         vertex_shader: &str,
         fragment_shader: &str,
     ) -> Result<Shader> {
-        let handle = gl.new_program(vertex_shader, fragment_shader)?;
+        let handle = device.new_program(vertex_shader, fragment_shader)?;
 
         Ok(Shader {
             handle: Rc::new(handle),
@@ -170,6 +170,6 @@ impl Shader {
     where
         V: UniformValue,
     {
-        ctx.gl.set_uniform(&self.handle, name, value);
+        ctx.device.set_uniform(&self.handle, name, value);
     }
 }

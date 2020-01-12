@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
 use crate::error::Result;
-use crate::graphics::opengl::{GLDevice, GLFramebuffer};
 use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
+use crate::platform::{GraphicsDevice, RawFramebuffer};
 use crate::Context;
 
 /// A texture that can be used for off-screen rendering.
@@ -57,7 +57,7 @@ use crate::Context;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Canvas {
     pub(crate) texture: Texture,
-    pub(crate) framebuffer: Rc<GLFramebuffer>,
+    pub(crate) framebuffer: Rc<RawFramebuffer>,
 }
 
 impl Canvas {
@@ -67,12 +67,16 @@ impl Canvas {
     ///
     /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Result<Canvas> {
-        Canvas::with_device(&mut ctx.gl, width, height)
+        Canvas::with_device(&mut ctx.device, width, height)
     }
 
-    pub(crate) fn with_device(gl: &mut GLDevice, width: i32, height: i32) -> Result<Canvas> {
-        let texture = Texture::with_device_empty(gl, width, height)?;
-        let framebuffer = gl.new_framebuffer(&*texture.handle.borrow(), true)?;
+    pub(crate) fn with_device(
+        device: &mut GraphicsDevice,
+        width: i32,
+        height: i32,
+    ) -> Result<Canvas> {
+        let texture = Texture::with_device_empty(device, width, height)?;
+        let framebuffer = device.new_framebuffer(&*texture.handle.borrow(), true)?;
 
         Ok(Canvas {
             texture,

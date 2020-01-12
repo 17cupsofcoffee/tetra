@@ -72,11 +72,10 @@ pub use vek as math;
 
 use crate::audio::AudioContext;
 pub use crate::error::{Result, TetraError};
-use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
 use crate::input::{GamepadAxis, GamepadButton, GamepadStick, InputContext, Key, MouseButton};
 use crate::math::Vec2;
-use crate::platform::Window;
+use crate::platform::{GraphicsDevice, Window};
 use crate::time::{TimeContext, Timestep};
 
 /// A trait representing a type that contains game state and provides logic for updating it
@@ -106,7 +105,7 @@ pub trait State {
 /// A struct containing all of the 'global' state within the framework.
 pub struct Context {
     window: Window,
-    gl: GLDevice,
+    device: GraphicsDevice,
 
     audio: AudioContext,
     graphics: GraphicsContext,
@@ -123,22 +122,22 @@ impl Context {
         let audio = AudioContext::new();
 
         let (window, gl_context, window_width, window_height) = Window::new(settings)?;
-        let mut gl = GLDevice::new(gl_context)?;
+        let mut device = GraphicsDevice::new(gl_context)?;
 
         if settings.debug_info {
-            println!("OpenGL Vendor: {}", gl.get_vendor());
-            println!("OpenGL Renderer: {}", gl.get_renderer());
-            println!("OpenGL Version: {}", gl.get_version());
-            println!("GLSL Version: {}", gl.get_shading_language_version());
+            println!("OpenGL Vendor: {}", device.get_vendor());
+            println!("OpenGL Renderer: {}", device.get_renderer());
+            println!("OpenGL Version: {}", device.get_version());
+            println!("GLSL Version: {}", device.get_shading_language_version());
         }
 
-        let graphics = GraphicsContext::new(&mut gl, window_width, window_height)?;
+        let graphics = GraphicsContext::new(&mut device, window_width, window_height)?;
         let input = InputContext::new();
         let time = TimeContext::new(settings.timestep);
 
         Ok(Context {
             window,
-            gl,
+            device,
 
             audio,
             graphics,

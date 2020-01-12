@@ -10,7 +10,6 @@ mod camera;
 mod canvas;
 mod color;
 mod drawable;
-pub(crate) mod opengl;
 mod rectangle;
 pub mod scaling;
 mod shader;
@@ -30,9 +29,9 @@ pub use texture::*;
 use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
 
 use crate::error::Result;
-use crate::graphics::opengl::{BufferUsage, FrontFace, GLDevice, GLIndexBuffer, GLVertexBuffer};
 use crate::graphics::text::FontQuad;
 use crate::math::{FrustumPlanes, Mat4};
+use crate::platform::{BufferUsage, FrontFace, GraphicsDevice, RawIndexBuffer, RawVertexBuffer};
 use crate::window;
 use crate::Context;
 
@@ -62,8 +61,8 @@ pub(crate) enum ActiveCanvas {
 }
 
 pub(crate) struct GraphicsContext {
-    vertex_buffer: GLVertexBuffer,
-    index_buffer: GLIndexBuffer,
+    vertex_buffer: RawVertexBuffer,
+    index_buffer: RawIndexBuffer,
 
     texture: ActiveTexture,
     font_cache_texture: Texture,
@@ -85,7 +84,7 @@ pub(crate) struct GraphicsContext {
 
 impl GraphicsContext {
     pub(crate) fn new(
-        device: &mut GLDevice,
+        device: &mut GraphicsDevice,
         window_width: i32,
         window_height: i32,
     ) -> Result<GraphicsContext> {
@@ -148,7 +147,7 @@ impl GraphicsContext {
 
 /// Clears the screen (or a canvas, if one is enabled) to the specified color.
 pub fn clear(ctx: &mut Context, color: Color) {
-    ctx.gl.clear(color.r, color.g, color.b, color.a);
+    ctx.device.clear(color.r, color.g, color.b, color.a);
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -328,18 +327,18 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
 
-                ctx.gl.bind_framebuffer(None);
-                ctx.gl.front_face(FrontFace::CounterClockwise);
-                ctx.gl.viewport(0, 0, width, height);
+                ctx.device.bind_framebuffer(None);
+                ctx.device.front_face(FrontFace::CounterClockwise);
+                ctx.device.viewport(0, 0, width, height);
             }
             ActiveCanvas::User(r) => {
                 let (width, height) = r.size();
 
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, true);
 
-                ctx.gl.bind_framebuffer(Some(&r.framebuffer));
-                ctx.gl.front_face(FrontFace::Clockwise);
-                ctx.gl.viewport(0, 0, width, height);
+                ctx.device.bind_framebuffer(Some(&r.framebuffer));
+                ctx.device.front_face(FrontFace::Clockwise);
+                ctx.device.viewport(0, 0, width, height);
             }
         }
     }
@@ -362,16 +361,19 @@ pub fn flush(ctx: &mut Context) {
             ActiveShader::User(s) => s,
         };
 
-        ctx.gl.set_uniform(
+        ctx.device.set_uniform(
             &*shader.handle,
             "u_projection",
             ctx.graphics.projection_matrix * ctx.graphics.transform_matrix,
         );
 
-        ctx.gl
-            .set_vertex_buffer_data(&ctx.graphics.vertex_buffer, &ctx.graphics.vertex_data, 0);
+        ctx.device.set_vertex_buffer_data(
+            &ctx.graphics.vertex_buffer,
+            &ctx.graphics.vertex_data,
+            0,
+        );
 
-        ctx.gl.draw_elements(
+        ctx.device.draw_elements(
             &ctx.graphics.vertex_buffer,
             &ctx.graphics.index_buffer,
             &*texture.handle.borrow(),
@@ -399,12 +401,12 @@ pub fn present(ctx: &mut Context) {
 
 /// Returns the filter mode that will be used by newly created textures and canvases.
 pub fn get_default_filter_mode(ctx: &Context) -> FilterMode {
-    ctx.gl.get_default_filter_mode()
+    ctx.device.get_default_filter_mode()
 }
 
 /// Sets the filter mode that will be used by newly created textures and canvases.
 pub fn set_default_filter_mode(ctx: &mut Context, filter_mode: FilterMode) {
-    ctx.gl.set_default_filter_mode(filter_mode);
+    ctx.device.set_default_filter_mode(filter_mode);
 }
 
 /// Information about the device currently being used to render graphics.
@@ -429,10 +431,10 @@ pub struct GraphicsDeviceInfo {
 /// This may be useful for debugging/logging purposes.
 pub fn get_device_info(ctx: &Context) -> GraphicsDeviceInfo {
     GraphicsDeviceInfo {
-        vendor: ctx.gl.get_vendor(),
-        renderer: ctx.gl.get_renderer(),
-        opengl_version: ctx.gl.get_version(),
-        glsl_version: ctx.gl.get_shading_language_version(),
+        vendor: ctx.device.get_vendor(),
+        renderer: ctx.device.get_renderer(),
+        opengl_version: ctx.device.get_version(),
+        glsl_version: ctx.device.get_shading_language_version(),
     }
 }
 
@@ -460,7 +462,7 @@ pub fn reset_transform_matrix(ctx: &mut Context) {
 pub(crate) fn update_window_projection(ctx: &mut Context, width: i32, height: i32) {
     if let ActiveCanvas::Window = ctx.graphics.canvas {
         ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
-        ctx.gl.viewport(0, 0, width, height);
+        ctx.device.viewport(0, 0, width, height);
     }
 }
 

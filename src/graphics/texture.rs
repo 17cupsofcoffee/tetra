@@ -8,8 +8,8 @@ use image;
 
 use crate::error::{Result, TetraError};
 use crate::fs;
-use crate::graphics::opengl::{GLDevice, GLTexture};
 use crate::graphics::{self, DrawParams, Drawable, Rectangle};
+use crate::platform::{GraphicsDevice, RawTexture};
 use crate::Context;
 
 /// A texture, held in GPU memory.
@@ -30,7 +30,7 @@ use crate::Context;
 /// and so can be cloned with little overhead.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Texture {
-    pub(crate) handle: Rc<RefCell<GLTexture>>,
+    pub(crate) handle: Rc<RefCell<RawTexture>>,
 }
 
 impl Texture {
@@ -100,11 +100,11 @@ impl Texture {
     /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
     /// the texture. This is to prevent the graphics API from trying to read uninitialized memory.
     pub fn from_rgba(ctx: &mut Context, width: i32, height: i32, data: &[u8]) -> Result<Texture> {
-        Texture::with_device(&mut ctx.gl, width, height, data)
+        Texture::with_device(&mut ctx.device, width, height, data)
     }
 
     pub(crate) fn with_device(
-        gl: &mut GLDevice,
+        device: &mut GraphicsDevice,
         width: i32,
         height: i32,
         data: &[u8],
@@ -116,17 +116,21 @@ impl Texture {
             return Err(TetraError::NotEnoughData { expected, actual });
         }
 
-        let handle = gl.new_texture(width, height)?;
+        let handle = device.new_texture(width, height)?;
 
-        gl.set_texture_data(&handle, &data, 0, 0, width, height);
+        device.set_texture_data(&handle, &data, 0, 0, width, height);
 
         Ok(Texture {
             handle: Rc::new(RefCell::new(handle)),
         })
     }
 
-    pub(crate) fn with_device_empty(gl: &mut GLDevice, width: i32, height: i32) -> Result<Texture> {
-        let handle = gl.new_texture(width, height)?;
+    pub(crate) fn with_device_empty(
+        device: &mut GraphicsDevice,
+        width: i32,
+        height: i32,
+    ) -> Result<Texture> {
+        let handle = device.new_texture(width, height)?;
 
         Ok(Texture {
             handle: Rc::new(RefCell::new(handle)),
@@ -156,7 +160,7 @@ impl Texture {
 
     /// Sets the filter mode that should be used by the texture.
     pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
-        ctx.gl
+        ctx.device
             .set_texture_filter_mode(&mut *self.handle.borrow_mut(), filter_mode);
     }
 }
