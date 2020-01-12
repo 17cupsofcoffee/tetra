@@ -33,7 +33,6 @@ use crate::error::Result;
 use crate::graphics::opengl::{BufferUsage, FrontFace, GLDevice, GLIndexBuffer, GLVertexBuffer};
 use crate::graphics::text::FontQuad;
 use crate::math::{FrustumPlanes, Mat4};
-use crate::platform;
 use crate::window;
 use crate::Context;
 
@@ -395,7 +394,7 @@ pub fn flush(ctx: &mut Context) {
 pub fn present(ctx: &mut Context) {
     flush(ctx);
 
-    platform::swap_buffers(ctx);
+    ctx.window.swap_buffers();
 }
 
 /// Returns the filter mode that will be used by newly created textures and canvases.

@@ -76,7 +76,7 @@ use crate::graphics::opengl::GLDevice;
 use crate::graphics::GraphicsContext;
 use crate::input::{GamepadAxis, GamepadButton, GamepadStick, InputContext, Key, MouseButton};
 use crate::math::Vec2;
-use crate::platform::Platform;
+use crate::platform::Window;
 use crate::time::{TimeContext, Timestep};
 
 /// A trait representing a type that contains game state and provides logic for updating it
@@ -105,7 +105,7 @@ pub trait State {
 
 /// A struct containing all of the 'global' state within the framework.
 pub struct Context {
-    platform: Platform,
+    window: Window,
     gl: GLDevice,
 
     audio: AudioContext,
@@ -122,7 +122,7 @@ impl Context {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
         let audio = AudioContext::new();
 
-        let (platform, gl_context, window_width, window_height) = Platform::new(settings)?;
+        let (window, gl_context, window_width, window_height) = Window::new(settings)?;
         let mut gl = GLDevice::new(gl_context)?;
 
         if settings.debug_info {
@@ -137,7 +137,7 @@ impl Context {
         let time = TimeContext::new(settings.timestep);
 
         Ok(Context {
-            platform,
+            window,
             gl,
 
             audio,

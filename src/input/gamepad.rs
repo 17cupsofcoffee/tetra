@@ -1,7 +1,6 @@
 use hashbrown::{HashMap, HashSet};
 
 use crate::math::Vec2;
-use crate::platform;
 use crate::Context;
 
 pub(crate) struct GamepadState {
@@ -112,7 +111,7 @@ pub fn is_gamepad_connected(ctx: &Context, gamepad_id: usize) -> bool {
 pub fn get_gamepad_name(ctx: &Context, gamepad_id: usize) -> Option<String> {
     get_gamepad(ctx, gamepad_id)
         .map(|g| g.platform_id)
-        .map(|id| platform::get_gamepad_name(ctx, id))
+        .map(|id| ctx.window.get_gamepad_name(id))
 }
 
 /// Returns true if the specified gamepad button is currently down.
@@ -266,7 +265,7 @@ pub fn get_gamepad_stick_position(
 /// If the gamepad is disconnected, this will always return `false`.
 pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_id: usize) -> bool {
     if let Some(pad) = get_gamepad(ctx, gamepad_id) {
-        platform::is_gamepad_vibration_supported(ctx, pad.platform_id)
+        ctx.window.is_gamepad_vibration_supported(pad.platform_id)
     } else {
         false
     }
@@ -275,7 +274,7 @@ pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_id: usize) -> bool 
 /// Sets the specified gamepad's motors to vibrate indefinitely.
 pub fn set_gamepad_vibration(ctx: &mut Context, gamepad_id: usize, strength: f32) {
     if let Some(platform_id) = get_gamepad(ctx, gamepad_id).map(|g| g.platform_id) {
-        platform::set_gamepad_vibration(ctx, platform_id, strength);
+        ctx.window.set_gamepad_vibration(platform_id, strength);
     }
 }
 
@@ -283,14 +282,15 @@ pub fn set_gamepad_vibration(ctx: &mut Context, gamepad_id: usize, strength: f32
 /// After this time has passed, the vibration will automatically stop.
 pub fn start_gamepad_vibration(ctx: &mut Context, gamepad_id: usize, strength: f32, duration: u32) {
     if let Some(platform_id) = get_gamepad(ctx, gamepad_id).map(|g| g.platform_id) {
-        platform::start_gamepad_vibration(ctx, platform_id, strength, duration);
+        ctx.window
+            .start_gamepad_vibration(platform_id, strength, duration);
     }
 }
 
 /// Stops the specified gamepad's motors from vibrating.
 pub fn stop_gamepad_vibration(ctx: &mut Context, gamepad_id: usize) {
     if let Some(platform_id) = get_gamepad(ctx, gamepad_id).map(|g| g.platform_id) {
-        platform::stop_gamepad_vibration(ctx, platform_id);
+        ctx.window.stop_gamepad_vibration(platform_id);
     }
 }
 

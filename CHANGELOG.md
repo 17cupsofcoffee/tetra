@@ -12,6 +12,7 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
+* Restructured the platform layer to better facilitate new backends in the future.
 * Updated `glow` to 0.4.
 
 ## [0.3.1] - 2019-12-15
