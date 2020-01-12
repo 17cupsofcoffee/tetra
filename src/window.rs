@@ -103,9 +103,8 @@ pub fn is_fullscreen(ctx: &Context) -> bool {
 /// # Errors
 ///
 /// * `TetraError::PlatformError` will be returned if the cursor state was inaccessible.
-pub fn set_mouse_visible(ctx: &mut Context) -> Result {
-    // TODO: WHOOPS THIS IS WRONG
-    ctx.window.set_mouse_visible(true)
+pub fn set_mouse_visible(ctx: &mut Context, visible: bool) -> Result {
+    ctx.window.set_mouse_visible(visible)
 }
 
 /// Returns whether or not the mouse cursor is currently visible.
