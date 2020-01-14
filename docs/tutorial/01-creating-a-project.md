@@ -27,9 +27,9 @@ With that, we're ready to start developing our game! Let's take a closer look at
 
 ## Creating a `Context`
 
-`Context` is a struct that holds all of the 'global' state managed by the framework, such as window settings and connections to the graphics/audio/input hardware. Any function in Tetra's API that requires access to this state will take a reference to a `Context` as the first parameter, so you won't get very far without one!
+[`Context`](https://docs.rs/tetra/0.3/tetra/struct.Context.html) is a struct that holds all of the 'global' state managed by the framework, such as window settings and connections to the graphics/audio/input hardware. Any function in Tetra's API that requires access to this state will take a reference to a `Context` as the first parameter, so you won't get very far without one!
 
-To build our game's `Context`, we can use the descriptively-named `ContextBuilder` struct:
+To build our game's `Context`, we can use the descriptively-named [`ContextBuilder`](https://docs.rs/tetra/0.3/tetra/struct.ContextBuilder.html) struct:
 
 ```rust ,noplaypen
 fn main() {
@@ -47,7 +47,7 @@ If you run `cargo run` in your terminal now, you'll notice that the window pops 
 
 ## Defining Some `State`
 
-`State` is a trait exposed by Tetra that is implemented for the type which stores the current state of the game. It exposes various methods that will be called at different points in the game loop, and you can override these in order to define your game's behaviour.
+[`State`](https://docs.rs/tetra/0.3/tetra/trait.State.html) is a trait exposed by Tetra that is implemented for the type which stores the current state of the game. It exposes various methods that will be called at different points in the game loop, and you can override these in order to define your game's behaviour.
 
 > This trait fulfils a similar purpose to the `Game` base class in XNA, or the `ApplicationListener` interface in LibGDX.
 
@@ -61,7 +61,7 @@ impl State for GameState {}
 
 ## Running the Game Loop
 
-Now that we have a `State`, we're ready to start the game loop! To do this, call the `run` method on `Context`, passing in a closure that constructs an instance of your `State` implementation:
+Now that we have a `State`, we're ready to start the game loop! To do this, call the [`run`](https://docs.rs/tetra/0.3/tetra/struct.Context.html#method.run) method on `Context`, passing in a closure that constructs an instance of your `State` implementation:
 
 ```rust ,noplaypen
 fn main() -> tetra::Result {
@@ -74,7 +74,7 @@ fn main() -> tetra::Result {
 
 There's a few things you should pay attention to here:
 
-* The return type of `main` has been changed to `tetra::Result`.
+* The return type of `main` has been changed to [`tetra::Result`](https://docs.rs/tetra/0.3/tetra/error/type.Result.html).
 * A [`?` operator](https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html#a-shortcut-for-propagating-errors-the--operator) has been added to the end of `build`.
 * There is no semi-colon after `run`, so its output will be returned from `main`.
 
@@ -88,7 +88,7 @@ If you run `cargo run` from your terminal now, you should see a black window app
 
 Our goal for this chapter was to set up our project, and we've done that! A black window isn't very interesting, though, so let's finish by changing the background color to something a bit more inspiring.
 
-To do this, we'll use one of the `State` trait methods. `draw` is called by Tetra whenever it is time for the engine to draw a new frame. We can call `tetra::graphics::clear` inside this method to clear the window to a plain color:
+To do this, we'll use one of the `State` trait methods. [`draw`](https://docs.rs/tetra/0.3/tetra/trait.State.html#method.draw) is called by Tetra whenever it is time for the engine to draw a new frame. We can call [`tetra::graphics::clear`](https://docs.rs/tetra/0.3/tetra/graphics/fn.clear.html) inside this method to clear the window to a plain color:
 
 ```rust ,noplaypen
 impl State for GameState {
@@ -115,6 +115,13 @@ Here's the code from this chapter in full:
 use tetra::graphics::{self, Color};
 use tetra::{Context, ContextBuilder, State};
 
+fn main() -> tetra::Result {
+    ContextBuilder::new("Pong", 640, 480)
+        .quit_on_escape(true)
+        .build()?
+        .run(|_ctx| Ok(GameState {}))
+}
+
 struct GameState {}
 
 impl State for GameState {
@@ -123,12 +130,5 @@ impl State for GameState {
 
         Ok(())
     }
-}
-
-fn main() -> tetra::Result {
-    ContextBuilder::new("Pong", 640, 480)
-        .quit_on_escape(true)
-        .build()?
-        .run(|_ctx| Ok(GameState {}))
 }
 ```
