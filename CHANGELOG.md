@@ -15,6 +15,7 @@ This project adheres to Semantic Versioning.
 * Added a missing function parameter to `window::set_mouse_visible`, so that you can actually set the value.
     * This is technically a breaking change, but given that the functionality is completely broken, this will be included in a patch release rather than 0.4.
 * Restructured the platform layer to better facilitate new backends in the future.
+* Improved docs for the `math` module to make it clearer why a re-export is used.
 * Updated `glow` to 0.4.
 
 ## [0.3.1] - 2019-12-15
