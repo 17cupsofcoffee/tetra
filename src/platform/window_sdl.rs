@@ -11,7 +11,9 @@ use sdl2::sys::SDL_HAPTIC_INFINITY;
 use sdl2::video::{
     FullscreenType, GLContext as SdlGlContext, GLProfile, SwapInterval, Window as SdlWindow,
 };
-use sdl2::{GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem};
+use sdl2::{
+    EventPump, GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem,
+};
 
 use crate::error::{Result, TetraError};
 use crate::graphics;
@@ -31,6 +33,7 @@ pub struct Window {
     sdl: Sdl,
     sdl_window: SdlWindow,
 
+    event_pump: EventPump,
     video_sys: VideoSubsystem,
     controller_sys: GameControllerSubsystem,
     _joystick_sys: JoystickSubsystem,
@@ -46,6 +49,7 @@ pub struct Window {
 impl Window {
     pub fn new(settings: &ContextBuilder) -> Result<(Window, GlowContext, i32, i32)> {
         let sdl = sdl2::init().map_err(TetraError::PlatformError)?;
+        let event_pump = sdl.event_pump().map_err(TetraError::PlatformError)?;
         let video_sys = sdl.video().map_err(TetraError::PlatformError)?;
         let joystick_sys = sdl.joystick().map_err(TetraError::PlatformError)?;
         let controller_sys = sdl.game_controller().map_err(TetraError::PlatformError)?;
@@ -140,6 +144,7 @@ impl Window {
             sdl,
             sdl_window,
 
+            event_pump,
             video_sys,
             controller_sys,
             _joystick_sys: joystick_sys,
@@ -278,13 +283,7 @@ pub fn handle_events<S>(ctx: &mut Context, state: &mut S) -> Result
 where
     S: State,
 {
-    let mut events = ctx
-        .window
-        .sdl
-        .event_pump()
-        .map_err(TetraError::PlatformError)?;
-
-    for event in events.poll_iter() {
+    while let Some(event) = ctx.window.event_pump.poll_event() {
         match event {
             SdlEvent::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
 
