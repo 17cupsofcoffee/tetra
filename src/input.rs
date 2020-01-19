@@ -13,7 +13,7 @@ mod gamepad;
 mod keyboard;
 mod mouse;
 
-use hashbrown::HashSet;
+use hashbrown::{HashMap, HashSet};
 
 use crate::math::Vec2;
 use crate::Context;
@@ -35,6 +35,7 @@ pub(crate) struct InputContext {
     current_text_input: Option<String>,
 
     pads: Vec<Option<GamepadState>>,
+    platform_id_mappings: HashMap<i32, usize>,
 }
 
 impl InputContext {
@@ -52,6 +53,7 @@ impl InputContext {
             current_text_input: None,
 
             pads: Vec::new(),
+            platform_id_mappings: HashMap::new(),
         }
     }
 }
