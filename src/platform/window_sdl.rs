@@ -26,6 +26,7 @@ struct SdlController {
     // I've ordered the fields accordingly.
     haptic: Option<Haptic>,
     controller: GameController,
+    slot: usize,
 }
 
 pub struct Window {
@@ -368,44 +369,53 @@ where
 
                 let haptic = ctx.window.haptic_sys.open_from_joystick_id(which).ok();
 
-                let platform_id = controller.instance_id();
+                let id = controller.instance_id();
+                let slot = input::add_gamepad(ctx, id);
 
-                ctx.window
-                    .controllers
-                    .insert(platform_id, SdlController { controller, haptic });
+                ctx.window.controllers.insert(
+                    id,
+                    SdlController {
+                        controller,
+                        haptic,
+                        slot,
+                    },
+                );
 
-                let id = input::add_gamepad(ctx, platform_id);
-
-                state.event(ctx, Event::GamepadAdded { id })?;
+                state.event(ctx, Event::GamepadAdded { id: slot })?;
             }
 
             SdlEvent::ControllerDeviceRemoved { which, .. } => {
-                ctx.window.controllers.remove(&which).unwrap();
-                let id = input::remove_gamepad(ctx, which);
+                let controller = ctx.window.controllers.remove(&which).unwrap();
+                input::remove_gamepad(ctx, controller.slot);
 
-                state.event(ctx, Event::GamepadRemoved { id })?;
+                state.event(
+                    ctx,
+                    Event::GamepadRemoved {
+                        id: controller.slot,
+                    },
+                )?;
             }
 
             SdlEvent::ControllerButtonDown { which, button, .. } => {
-                if let Some(id) = input::map_gamepad_id(ctx, which) {
-                    if let Some(pad) = input::get_gamepad_mut(ctx, id) {
+                if let Some(slot) = ctx.window.controllers.get(&which).map(|c| c.slot) {
+                    if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
                         let button = button.into();
 
                         pad.set_button_down(button);
-                        state.event(ctx, Event::GamepadButtonPressed { id, button })?;
+                        state.event(ctx, Event::GamepadButtonPressed { id: slot, button })?;
                     }
                 }
             }
 
             SdlEvent::ControllerButtonUp { which, button, .. } => {
-                if let Some(id) = input::map_gamepad_id(ctx, which) {
-                    if let Some(pad) = input::get_gamepad_mut(ctx, id) {
+                if let Some(slot) = ctx.window.controllers.get(&which).map(|c| c.slot) {
+                    if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
                         let button = button.into();
 
                         // TODO: This can cause some inputs to be missed at low tick rates.
                         // Could consider buffering input releases like Otter2D does?
                         pad.set_button_up(button);
-                        state.event(ctx, Event::GamepadButtonReleased { id, button })?;
+                        state.event(ctx, Event::GamepadButtonReleased { id: slot, button })?;
                     }
                 }
             }
@@ -413,8 +423,8 @@ where
             SdlEvent::ControllerAxisMotion {
                 which, axis, value, ..
             } => {
-                if let Some(id) = input::map_gamepad_id(ctx, which) {
-                    if let Some(pad) = input::get_gamepad_mut(ctx, id) {
+                if let Some(slot) = ctx.window.controllers.get(&which).map(|c| c.slot) {
+                    if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
                         let axis = axis.into();
                         let mapped_value = f32::from(value) / 32767.0;
 
@@ -431,14 +441,19 @@ where
                                 let pressed = pad.set_button_down(button);
 
                                 if pressed {
-                                    state.event(ctx, Event::GamepadButtonPressed { id, button })?;
+                                    state.event(
+                                        ctx,
+                                        Event::GamepadButtonPressed { id: slot, button },
+                                    )?;
                                 }
                             } else {
                                 let released = pad.set_button_up(button);
 
                                 if released {
-                                    state
-                                        .event(ctx, Event::GamepadButtonReleased { id, button })?;
+                                    state.event(
+                                        ctx,
+                                        Event::GamepadButtonReleased { id: slot, button },
+                                    )?;
                                 }
                             }
                         }
@@ -446,7 +461,7 @@ where
                         state.event(
                             ctx,
                             Event::GamepadAxisMoved {
-                                id,
+                                id: slot,
                                 axis,
                                 position: mapped_value,
                             },
@@ -466,9 +481,9 @@ where
                             state.event(
                                 ctx,
                                 Event::GamepadStickMoved {
-                                    id,
+                                    id: slot,
                                     stick,
-                                    position: input::get_gamepad_stick_position(ctx, id, stick),
+                                    position: input::get_gamepad_stick_position(ctx, slot, stick),
                                 },
                             )?;
                         }

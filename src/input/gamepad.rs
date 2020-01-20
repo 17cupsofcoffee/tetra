@@ -298,32 +298,18 @@ pub(crate) fn add_gamepad(ctx: &mut Context, platform_id: i32) -> usize {
     for (i, slot) in ctx.input.pads.iter_mut().enumerate() {
         if slot.is_none() {
             *slot = Some(GamepadState::new(platform_id));
-
-            ctx.input.platform_id_mappings.insert(platform_id, i);
-
             return i;
         }
     }
 
     // There wasn't an existing free slot...
     let i = ctx.input.pads.len();
-
     ctx.input.pads.push(Some(GamepadState::new(platform_id)));
-    ctx.input.platform_id_mappings.insert(platform_id, i);
-
     i
 }
 
-pub(crate) fn remove_gamepad(ctx: &mut Context, platform_id: i32) -> usize {
-    let id = ctx
-        .input
-        .platform_id_mappings
-        .remove(&platform_id)
-        .expect("Tried to remove non-existant gamepad");
-
-    ctx.input.pads[id] = None;
-
-    id
+pub(crate) fn remove_gamepad(ctx: &mut Context, gamepad_id: usize) {
+    ctx.input.pads[gamepad_id] = None;
 }
 
 pub(crate) fn get_gamepad(ctx: &Context, gamepad_id: usize) -> Option<&GamepadState> {
@@ -340,8 +326,4 @@ pub(crate) fn get_gamepad_mut(ctx: &mut Context, gamepad_id: usize) -> Option<&m
     } else {
         None
     }
-}
-
-pub(crate) fn map_gamepad_id(ctx: &Context, platform_id: i32) -> Option<usize> {
-    ctx.input.platform_id_mappings.get(&platform_id).cloned()
 }
