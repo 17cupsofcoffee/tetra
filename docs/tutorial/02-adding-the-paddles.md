@@ -143,13 +143,29 @@ impl GameState {
 }
 ```
 
-We'll also add another constant for our paddle's movement speed:
+We can then plug this field into our existing rendering code, so that the texture will be drawn at the stored position:
+
+```rust ,noplaypen
+// Inside `impl State for GameState`:
+
+fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
+    graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
+
+    graphics::draw(ctx, &self.paddle_texture, &self.paddle_position);
+
+    Ok(())
+}
+```
+
+We'll also need to add another constant for our paddle's movement speed:
 
 ```rust ,noplaypen
 const PADDLE_SPEED: f32 = 8.0;
 ```
 
-Now we're ready to write some game logic. While we *could* do this in our `draw` method, this is a bad idea for several reasons:
+Now we're ready to write some game logic!
+
+While we *could* do this in our `draw` method, this is a bad idea for several reasons:
 
 * Mixing up our game logic and our rendering logic isn't great seperation of concerns.
 * The `draw` method does not get called at a consistent rate - the timing can fluctuate depending on the speed of the system the game is being run on, leading to subtle differences in behaviour. This is fine for drawing, but definitely not for physics!
@@ -322,7 +338,7 @@ impl GameState {
         let player2_texture = Texture::new(ctx, "./resources/player2.png")?;
         let player2_position = Vec2::new(
             WINDOW_WIDTH - player2_texture.width() as f32 - 16.0,
-            (WINDOW_HEIGHT - player1_texture.height() as f32) / 2.0,
+            (WINDOW_HEIGHT - player2_texture.height() as f32) / 2.0,
         );
 
         Ok(GameState {
