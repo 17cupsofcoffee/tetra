@@ -244,7 +244,7 @@ impl GameState {
         let player2_texture = Texture::new(ctx, "./resources/player2.png")?;
         let player2_position = Vec2::new(
             WINDOW_WIDTH - player2_texture.width() as f32 - 16.0,
-            (WINDOW_HEIGHT - player1_texture.height() as f32) / 2.0,
+            (WINDOW_HEIGHT - player2_texture.height() as f32) / 2.0,
         );
 
         Ok(GameState {
