@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**Summary**
+**Summary:**
 <!-- A clear and consise description of the feature you'd like to be added, or the change you'd like to be made. -->
 
 **Why is this needed?**

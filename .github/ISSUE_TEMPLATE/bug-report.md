@@ -16,5 +16,5 @@ assignees: ''
 **Expected behavior:**
 <!-- What was the behaviour you expected when carrying out the above steps? -->
 
-**Additional info**
+**Additional info:**
 <!-- Add any other context about the problem here, such as screenshots or system specs. -->
