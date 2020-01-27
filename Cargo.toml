@@ -17,7 +17,7 @@ sdl2_static_link = ["sdl2/static-link"]
 serde_support = ["serde", "vek/serde"]
 
 [dependencies]
-sdl2 = "0.32"
+sdl2 = "0.33"
 rodio = "0.10"
 glow = "0.4"
 image = "0.22"
