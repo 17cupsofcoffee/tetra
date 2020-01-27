@@ -40,7 +40,7 @@ pub struct Window {
     haptic_sys: HapticSubsystem,
     _gl_sys: SdlGlContext,
 
-    controllers: HashMap<i32, SdlController>,
+    controllers: HashMap<u32, SdlController>,
 
     window_width: i32,
     window_height: i32,
@@ -246,19 +246,19 @@ impl Window {
         self.sdl_window.gl_swap_window();
     }
 
-    pub fn get_gamepad_name(&self, platform_id: i32) -> String {
+    pub fn get_gamepad_name(&self, platform_id: u32) -> String {
         self.controllers[&platform_id].controller.name()
     }
 
-    pub fn is_gamepad_vibration_supported(&self, platform_id: i32) -> bool {
+    pub fn is_gamepad_vibration_supported(&self, platform_id: u32) -> bool {
         self.controllers[&platform_id].haptic.is_some()
     }
 
-    pub fn set_gamepad_vibration(&mut self, platform_id: i32, strength: f32) {
+    pub fn set_gamepad_vibration(&mut self, platform_id: u32, strength: f32) {
         self.start_gamepad_vibration(platform_id, strength, SDL_HAPTIC_INFINITY);
     }
 
-    pub fn start_gamepad_vibration(&mut self, platform_id: i32, strength: f32, duration: u32) {
+    pub fn start_gamepad_vibration(&mut self, platform_id: u32, strength: f32, duration: u32) {
         if let Some(haptic) = self
             .controllers
             .get_mut(&platform_id)
@@ -268,7 +268,7 @@ impl Window {
         }
     }
 
-    pub fn stop_gamepad_vibration(&mut self, platform_id: i32) {
+    pub fn stop_gamepad_vibration(&mut self, platform_id: u32) {
         if let Some(haptic) = self
             .controllers
             .get_mut(&platform_id)
@@ -369,7 +369,8 @@ where
 
                 let haptic = ctx.window.haptic_sys.open_from_joystick_id(which).ok();
 
-                let id = controller.instance_id();
+                // Cast is needed due to https://github.com/Rust-SDL2/rust-sdl2/issues/963
+                let id = controller.instance_id() as u32;
                 let slot = input::add_gamepad(ctx, id);
 
                 ctx.window.controllers.insert(

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Changed
+
+* Updated `sdl2` to 0.33.
+
 ## [0.3.2] - 2019-01-15
 
 ### Added

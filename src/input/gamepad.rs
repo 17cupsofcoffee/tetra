@@ -4,7 +4,7 @@ use crate::math::Vec2;
 use crate::Context;
 
 pub(crate) struct GamepadState {
-    pub platform_id: i32,
+    pub platform_id: u32,
     pub buttons_down: HashSet<GamepadButton>,
     pub buttons_pressed: HashSet<GamepadButton>,
     pub buttons_released: HashSet<GamepadButton>,
@@ -12,7 +12,7 @@ pub(crate) struct GamepadState {
 }
 
 impl GamepadState {
-    pub(crate) fn new(platform_id: i32) -> GamepadState {
+    pub(crate) fn new(platform_id: u32) -> GamepadState {
         GamepadState {
             platform_id,
             buttons_down: HashSet::new(),
@@ -294,7 +294,7 @@ pub fn stop_gamepad_vibration(ctx: &mut Context, gamepad_id: usize) {
     }
 }
 
-pub(crate) fn add_gamepad(ctx: &mut Context, platform_id: i32) -> usize {
+pub(crate) fn add_gamepad(ctx: &mut Context, platform_id: u32) -> usize {
     for (i, slot) in ctx.input.pads.iter_mut().enumerate() {
         if slot.is_none() {
             *slot = Some(GamepadState::new(platform_id));
