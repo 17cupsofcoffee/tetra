@@ -48,18 +48,33 @@ If your OpenGL version is higher than 3.0 and you're still getting a black scree
 
 ### Why is my game running slow?
 
-Rust's performance isn't great in debug mode by default, so if you haven't tweaked your optimization settings, Tetra can get CPU-bound quite quickly. [Other Rust game engines run into this issue too](https://github.com/ggez/ggez/blob/master/docs/FAQ.md#imagesound-loading-and-font-rendering-is-slow).
+Cargo builds projects in debug mode by default. This can lead to your game running slowly, as the compiler does not fully optimize your code.
 
-If your framerate is starting to drop, either run the game in release mode (`cargo run --release`) or set the debug `opt-level` to something higher than zero in your `Cargo.toml`:
+Optimizations can be enabled by passing `--release` when building/running your project, but this increases build times quite significantly and removes debug info from the binary, meaning you cannot easily debug or profile your code.
+
+To work around this, add one of the following snippets to your `Cargo.toml`:
 
 ```toml
+# To enable optimizations in debug mode for Tetra only (requires Rust 1.41):
+[profile.dev.package.tetra]
+opt-level = 3
+
+# To enable optimizations in debug mode for all dependencies (requires Rust 1.41):
+[profile.dev.package."*"]
+opt-level = 3
+
+# To enable optimizations in debug mode for the entire project (works with all Rust versions):
 [profile.dev]
-opt-level = 1
+opt-level = 3
 ```
+
+Choosing one of the first two options is preferred, as they will not slow down rebuilds of your game's code.
+
+You should also make sure to build with `--release` when distributing your game, so that the final binary is as fast as possible.
 
 #### Benchmarks
 
-The impact of this can be observed by running the `bunnymark` example both with and without the `--release` flag. This example adds 100 new sprites to the screen every time the user clicks, until rendering conistently drops below 60fps.
+The impact of compiler optimizations can be observed by running the `bunnymark` example both with and without the `--release` flag. This example adds 100 new sprites to the screen every time the user clicks, until rendering conistently drops below 60fps.
 
 These were the results when I ran it against Tetra 0.2.9 on my local machine:
 
