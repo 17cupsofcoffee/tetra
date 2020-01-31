@@ -9,6 +9,7 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * Updated `sdl2` to 0.33.
+* Updated `hashbrown` to 0.7.
 
 ## [0.3.2] - 2019-01-15
 
