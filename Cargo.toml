@@ -22,7 +22,7 @@ rodio = "0.10"
 glow = "0.4"
 image = "0.22"
 vek = { version = "0.9", default-features = false }
-hashbrown = "0.6"
+hashbrown = "0.7"
 glyph_brush = "0.6"
 serde = { version = "1.0", optional = true } 
 
