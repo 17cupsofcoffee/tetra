@@ -59,7 +59,7 @@ fn main() -> tetra::Result {
 
 You can see this example in action by running `cargo run --example hello_world`.
 
-The full list of examples is available [here](https://github.com/17cupsofcoffee/tetra/tree/master/examples).
+The full list of examples is available [here](https://tetra.seventeencups.net/examples).
 
 ## Support/Feedback
 
