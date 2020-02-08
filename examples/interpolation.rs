@@ -9,6 +9,7 @@
 //!   * Store both the previous state and the current state, and render somewhere in between the two
 //!   * Pros: Accurate, no guesswork
 //!   * Cons: Complex, introduces a tiny bit of input lag as you're updating one frame ahead of rendering
+//!
 //! * Extrapolation
 //!   * Store only the current state, and guess what the next state will look like
 //!   * Pros: Simple to implement, doesn't cause lag
@@ -21,6 +22,10 @@
 //!
 //! * https://gafferongames.com/post/fix_your_timestep/
 //! * http://gameprogrammingpatterns.com/game-loop.html
+//!
+//! If you don't care about any of this, and just want to use an old-school 'lockstep' gameloop, set the
+//! `timestep` of your `Context` to `Timestep::Variable`. You will then need to use `time::get_delta_time`
+//! in your update and render methods.
 
 use tetra::graphics::{self, Color, Texture};
 use tetra::math::Vec2;
@@ -101,7 +106,7 @@ impl State for GameState {
 
 fn main() -> tetra::Result {
     ContextBuilder::new("Interpolation", 640, 480)
-        .timestep(Timestep::Fixed(60.0))
+        .timestep(Timestep::Fixed(5.0))
         .quit_on_escape(true)
         .build()?
         .run(GameState::new)
