@@ -20,7 +20,7 @@ serde_support = ["serde", "vek/serde"]
 sdl2 = "0.33"
 rodio = "0.10"
 glow = "0.4"
-image = "0.22"
+image = "0.23"
 vek = { version = "0.9", default-features = false }
 hashbrown = "0.7"
 glyph_brush = "0.6"
