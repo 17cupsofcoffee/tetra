@@ -53,7 +53,7 @@ impl State for GameState {
 fn main() -> tetra::Result {
     ContextBuilder::new("Hello, world!", 1280, 720)
         .build()?
-        .run(|_| Ok(GameState))
+        .run(|_| Ok(GameState{}))
 }
 ```
 
