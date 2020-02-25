@@ -1,7 +1,6 @@
-use crate::audio::AudioContext;
 use crate::graphics::{self, GraphicsContext};
 use crate::input::{self, InputContext};
-use crate::platform::{self, GraphicsDevice, Window};
+use crate::platform::{self, AudioDevice, GraphicsDevice, Window};
 use crate::time::{self, TimeContext, Timestep};
 use crate::{Result, State};
 
@@ -9,8 +8,7 @@ use crate::{Result, State};
 pub struct Context {
     pub(crate) window: Window,
     pub(crate) device: GraphicsDevice,
-
-    pub(crate) audio: AudioContext,
+    pub(crate) audio: AudioDevice,
     pub(crate) graphics: GraphicsContext,
     pub(crate) input: InputContext,
     pub(crate) time: TimeContext,
@@ -22,7 +20,7 @@ pub struct Context {
 impl Context {
     pub(crate) fn new(settings: &ContextBuilder) -> Result<Context> {
         // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
-        let audio = AudioContext::new();
+        let audio = AudioDevice::new();
 
         let (window, gl_context, window_width, window_height) = Window::new(settings)?;
         let mut device = GraphicsDevice::new(gl_context)?;
