@@ -202,7 +202,7 @@ if let Some(paddle) = paddle_hit {
         -(self.ball.velocity.x + (BALL_ACC * self.ball.velocity.x.signum()));
 
     // Calculate the offset between the paddle and the ball, as a number between
-    // 0.0 and 1.0.
+    // -1.0 and 1.0.
     let offset = (paddle.centre().y - self.ball.centre().y) / paddle.height();
 
     // Apply the spin to the ball.
@@ -393,7 +393,7 @@ impl State for GameState {
                 -(self.ball.velocity.x + (BALL_ACC * self.ball.velocity.x.signum()));
 
             // Calculate the offset between the paddle and the ball, as a number between
-            // 0.0 and 1.0.
+            // -1.0 and 1.0.
             let offset = (paddle.centre().y - self.ball.centre().y) / paddle.height();
 
             // Apply the spin to the ball.
