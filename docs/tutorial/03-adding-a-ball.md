@@ -2,6 +2,16 @@
 
 In the [previous chapter](./02-adding-the-paddles.md), we added paddles to the game - but they've got nothing to hit! Let's finish things off.
 
+As with the other chapters, we'll start by updating our imports:
+
+```rust ,noplaypen
+use tetra::graphics::{self, Color, Rectangle, Texture};
+use tetra::input::{self, Key};
+use tetra::math::Vec2;
+use tetra::window;
+use tetra::{Context, ContextBuilder, State};
+```
+
 ## Creating the Entity
 
 First, you'll need to download the sprite for the ball - as with the paddles, this was [created by Kenney](https://www.kenney.nl/assets/puzzle-pack), and is available in the public domain.
