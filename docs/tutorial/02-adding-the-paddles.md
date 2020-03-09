@@ -1,6 +1,6 @@
 # Adding the Paddles
 
-In the previous chapter, we created a window and gave it a background color. Next, let's draw some paddles and make them move!
+In the [previous chapter](./01-creating-the-project.md), we created a window and gave it a background color. Next, let's draw some paddles and make them move!
 
 First up, let's update our imports with the new types/modules that we'll be using:
 
