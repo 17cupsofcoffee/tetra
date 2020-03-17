@@ -11,6 +11,7 @@ This project adheres to Semantic Versioning.
 * Updated `sdl2` to 0.33.
 * Updated `hashbrown` to 0.7.
 * Updated `image` to 0.23.
+* Updated `rodio` to 0.11.
 
 ## [0.3.2] - 2019-01-15
 

@@ -17,14 +17,14 @@ sdl2_static_link = ["sdl2/static-link"]
 serde_support = ["serde", "vek/serde"]
 
 [dependencies]
-sdl2 = "0.33"
-rodio = "0.10"
-glow = "0.4"
-image = "0.23"
-vek = { version = "0.9", default-features = false }
-hashbrown = "0.7"
-glyph_brush = "0.6"
-serde = { version = "1.0", optional = true } 
+sdl2 = "0.33.0"
+rodio = "0.11.0"
+glow = "0.4.0"
+image = "0.23.1"
+vek = { version = "0.9.12", default-features = false }
+hashbrown = "0.7.1"
+glyph_brush = "0.6.3"
+serde = { version = "1.0.104", optional = true } 
 
 [dev-dependencies]
-rand = "0.7"
+rand = "0.7.3"
