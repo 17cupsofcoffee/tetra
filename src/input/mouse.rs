@@ -48,7 +48,27 @@ pub fn get_mouse_y(ctx: &Context) -> f32 {
 
 /// Get the position of the mouse.
 pub fn get_mouse_position(ctx: &Context) -> Vec2<f32> {
-    Vec2::new(get_mouse_x(ctx), get_mouse_y(ctx))
+    ctx.input.mouse_position
+}
+
+/// Get the change in mouse wheel value of the mouse since the last update.
+pub fn get_mouse_wheel_delta_y(ctx: &Context) -> i32 {
+    ctx.input.mouse_wheel_delta.y
+}
+
+/// Get the change in mouse wheel value of the mouse since the last update.
+pub fn get_mouse_wheel_delta_x(ctx: &Context) -> i32 {
+    ctx.input.mouse_wheel_delta.x
+}
+
+/// Check if the user scrolled up in this frame.
+pub fn is_mouse_scroll_up(ctx: &Context) -> bool {
+    get_mouse_wheel_delta_y(ctx) < 0
+}
+
+/// Check if the user scrolled up in this frame.
+pub fn is_mouse_scroll_down(ctx: &Context) -> bool {
+    get_mouse_wheel_delta_y(ctx) > 0
 }
 
 pub(crate) fn set_mouse_button_down(ctx: &mut Context, btn: MouseButton) -> bool {
@@ -73,4 +93,8 @@ pub(crate) fn set_mouse_button_up(ctx: &mut Context, btn: MouseButton) -> bool {
 
 pub(crate) fn set_mouse_position(ctx: &mut Context, position: Vec2<f32>) {
     ctx.input.mouse_position = position;
+}
+
+pub(crate) fn set_mouse_wheel_delta(ctx: &mut Context, wheel_delta: Vec2<i32>) {
+    ctx.input.mouse_wheel_delta = wheel_delta;
 }

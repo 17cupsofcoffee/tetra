@@ -6,7 +6,7 @@ use sdl2::controller::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, GameC
 use sdl2::event::{Event as SdlEvent, WindowEvent};
 use sdl2::haptic::Haptic;
 use sdl2::keyboard::Keycode as SdlKey;
-use sdl2::mouse::MouseButton as SdlMouseButton;
+use sdl2::mouse::{MouseButton as SdlMouseButton, MouseWheelDirection};
 use sdl2::sys::SDL_HAPTIC_INFINITY;
 use sdl2::video::{
     FullscreenType, GLContext as SdlGlContext, GLProfile, SwapInterval, Window as SdlWindow,
@@ -353,6 +353,19 @@ where
                 let position = Vec2::new(x as f32, y as f32);
                 input::set_mouse_position(ctx, position);
                 state.event(ctx, Event::MouseMoved { position })?;
+            }
+
+            SdlEvent::MouseWheel {
+                x, y, direction, ..
+            } => {
+                let is_flipped = direction == MouseWheelDirection::Flipped;
+                let delta = if is_flipped {
+                    Vec2::new(x, y)
+                } else {
+                    Vec2::new(-x, -y)
+                };
+                input::set_mouse_wheel_delta(ctx, delta);
+                state.event(ctx, Event::MouseWheelDelta { delta })?
             }
 
             SdlEvent::TextInput { text, .. } => {

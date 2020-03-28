@@ -4,8 +4,6 @@ use std::cell::RefCell;
 use std::path::Path;
 use std::rc::Rc;
 
-use image;
-
 use crate::error::{Result, TetraError};
 use crate::fs;
 use crate::graphics::{self, DrawParams, Drawable, Rectangle};
