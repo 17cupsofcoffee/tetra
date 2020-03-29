@@ -358,14 +358,13 @@ where
             SdlEvent::MouseWheel {
                 x, y, direction, ..
             } => {
-                let is_flipped = direction == MouseWheelDirection::Flipped;
-                let delta = if is_flipped {
-                    Vec2::new(x, y)
-                } else {
-                    Vec2::new(-x, -y)
+                let amount = match direction {
+                    MouseWheelDirection::Flipped => Vec2::new(-x, -y),
+                    _ => Vec2::new(x, y),
                 };
-                input::set_mouse_wheel_delta(ctx, delta);
-                state.event(ctx, Event::MouseWheelDelta { delta })?
+
+                input::apply_mouse_wheel_movement(ctx, amount);
+                state.event(ctx, Event::MouseWheelMoved { amount })?
             }
 
             SdlEvent::TextInput { text, .. } => {

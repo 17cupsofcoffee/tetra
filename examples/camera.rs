@@ -47,19 +47,11 @@ impl State for GameState {
             self.camera.rotation += ROTATION_SPEED;
         }
 
-        if input::is_key_down(ctx, Key::R) {
+        if input::is_key_down(ctx, Key::R) || input::is_mouse_scrolled_up(ctx) {
             self.camera.zoom += ZOOM_SPEED;
         }
 
-        if input::is_mouse_scroll_up(ctx) {
-            self.camera.zoom += ZOOM_SPEED;
-        }
-
-        if input::is_key_down(ctx, Key::F) {
-            self.camera.zoom -= ZOOM_SPEED;
-        }
-
-        if input::is_mouse_scroll_down(ctx) {
+        if input::is_key_down(ctx, Key::F) || input::is_mouse_scrolled_down(ctx) {
             self.camera.zoom -= ZOOM_SPEED;
         }
 

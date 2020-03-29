@@ -77,10 +77,16 @@ pub enum Event {
         position: Vec2<f32>,
     },
 
-    /// The mouse wheel value was changed.
-    MouseWheelDelta {
-        /// The difference in the wheel position. Usually you want to check for the `y` value, as this is a "normal" scroll action.
-        delta: Vec2<i32>,
+    /// The mouse wheel was moved.
+    MouseWheelMoved {
+        /// The amount that the wheel was moved.
+        ///
+        /// Most 'normal' mice can only scroll vertically, but some devices can also scroll horizontally.
+        /// Use the Y component of the returned vector if you don't care about horizontal scroll.
+        ///
+        /// Positive values correspond to scrolling up/right, negative values correspond to scrolling
+        /// down/left.
+        amount: Vec2<i32>,
     },
 
     /// A gamepad was connected to the system.

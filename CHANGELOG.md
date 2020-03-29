@@ -6,6 +6,10 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added
+
+* The mouse wheel state can now be queried. ([@VictorKoenders](https://github.com/VictorKoenders) in [#164](https://github.com/17cupsofcoffee/tetra/pull/164))
+
 ### Changed
 
 * Updated `sdl2` to 0.33.

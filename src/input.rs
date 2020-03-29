@@ -31,7 +31,7 @@ pub(crate) struct InputContext {
     mouse_buttons_pressed: HashSet<MouseButton>,
     mouse_buttons_released: HashSet<MouseButton>,
     mouse_position: Vec2<f32>,
-    mouse_wheel_delta: Vec2<i32>,
+    mouse_wheel_movement: Vec2<i32>,
 
     current_text_input: Option<String>,
 
@@ -49,7 +49,7 @@ impl InputContext {
             mouse_buttons_pressed: HashSet::new(),
             mouse_buttons_released: HashSet::new(),
             mouse_position: Vec2::zero(),
-            mouse_wheel_delta: Vec2::zero(),
+            mouse_wheel_movement: Vec2::zero(),
 
             current_text_input: None,
 
@@ -63,7 +63,7 @@ pub(crate) fn clear(ctx: &mut Context) {
     ctx.input.keys_released.clear();
     ctx.input.mouse_buttons_pressed.clear();
     ctx.input.mouse_buttons_released.clear();
-    ctx.input.mouse_wheel_delta = Vec2::zero();
+    ctx.input.mouse_wheel_movement = Vec2::zero();
 
     ctx.input.current_text_input = None;
 

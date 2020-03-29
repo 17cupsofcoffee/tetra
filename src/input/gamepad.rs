@@ -260,7 +260,7 @@ pub fn get_gamepad_stick_position(
     )
 }
 
-/// Returns whether or not the specified gamepad supports vibration.
+/// Returns true if the specified gamepad supports vibration.
 ///
 /// If the gamepad is disconnected, this will always return `false`.
 pub fn is_gamepad_vibration_supported(ctx: &Context, gamepad_id: usize) -> bool {

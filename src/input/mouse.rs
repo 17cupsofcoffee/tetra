@@ -36,6 +36,16 @@ pub fn is_mouse_button_released(ctx: &Context, button: MouseButton) -> bool {
     ctx.input.mouse_buttons_released.contains(&button)
 }
 
+/// Returns true if the user scrolled up since the last update.
+pub fn is_mouse_scrolled_up(ctx: &Context) -> bool {
+    get_mouse_wheel_movement(ctx).y > 0
+}
+
+/// Returns true if the user scrolled down since the last update.
+pub fn is_mouse_scrolled_down(ctx: &Context) -> bool {
+    get_mouse_wheel_movement(ctx).y < 0
+}
+
 /// Get the X co-ordinate of the mouse.
 pub fn get_mouse_x(ctx: &Context) -> f32 {
     ctx.input.mouse_position.x
@@ -51,24 +61,15 @@ pub fn get_mouse_position(ctx: &Context) -> Vec2<f32> {
     ctx.input.mouse_position
 }
 
-/// Get the change in mouse wheel value of the mouse since the last update.
-pub fn get_mouse_wheel_delta_y(ctx: &Context) -> i32 {
-    ctx.input.mouse_wheel_delta.y
-}
-
-/// Get the change in mouse wheel value of the mouse since the last update.
-pub fn get_mouse_wheel_delta_x(ctx: &Context) -> i32 {
-    ctx.input.mouse_wheel_delta.x
-}
-
-/// Check if the user scrolled up in this frame.
-pub fn is_mouse_scroll_up(ctx: &Context) -> bool {
-    get_mouse_wheel_delta_y(ctx) < 0
-}
-
-/// Check if the user scrolled up in this frame.
-pub fn is_mouse_scroll_down(ctx: &Context) -> bool {
-    get_mouse_wheel_delta_y(ctx) > 0
+/// Get the amount that the mouse wheel moved since the last update.
+///
+/// Most 'normal' mice can only scroll vertically, but some devices can also scroll horizontally.
+/// Use the Y component of the returned vector if you don't care about horizontal scroll.
+///
+/// Positive values correspond to scrolling up/right, negative values correspond to scrolling
+/// down/left.
+pub fn get_mouse_wheel_movement(ctx: &Context) -> Vec2<i32> {
+    ctx.input.mouse_wheel_movement
 }
 
 pub(crate) fn set_mouse_button_down(ctx: &mut Context, btn: MouseButton) -> bool {
@@ -95,6 +96,6 @@ pub(crate) fn set_mouse_position(ctx: &mut Context, position: Vec2<f32>) {
     ctx.input.mouse_position = position;
 }
 
-pub(crate) fn set_mouse_wheel_delta(ctx: &mut Context, wheel_delta: Vec2<i32>) {
-    ctx.input.mouse_wheel_delta = wheel_delta;
+pub(crate) fn apply_mouse_wheel_movement(ctx: &mut Context, wheel_movement: Vec2<i32>) {
+    ctx.input.mouse_wheel_movement += wheel_movement;
 }
