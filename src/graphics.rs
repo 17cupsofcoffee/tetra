@@ -66,6 +66,7 @@ pub(crate) struct GraphicsContext {
 
     texture: ActiveTexture,
     font_cache_texture: Texture,
+    default_filter_mode: FilterMode,
 
     shader: ActiveShader,
     default_shader: Shader,
@@ -110,6 +111,8 @@ impl GraphicsContext {
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
+        let default_filter_mode = FilterMode::Nearest;
+
         let default_shader = Shader::with_device(
             device,
             shader::DEFAULT_VERTEX_SHADER,
@@ -118,8 +121,12 @@ impl GraphicsContext {
 
         let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
         let (font_cache_width, font_cache_height) = font_cache.texture_dimensions();
-        let font_cache_texture =
-            Texture::with_device_empty(device, font_cache_width as i32, font_cache_height as i32)?;
+        let font_cache_texture = Texture::with_device_empty(
+            device,
+            font_cache_width as i32,
+            font_cache_height as i32,
+            default_filter_mode,
+        )?;
 
         Ok(GraphicsContext {
             vertex_buffer,
@@ -127,6 +134,7 @@ impl GraphicsContext {
 
             texture: ActiveTexture::FontCache,
             font_cache_texture,
+            default_filter_mode,
 
             shader: ActiveShader::Default,
             default_shader,
@@ -362,7 +370,7 @@ pub fn flush(ctx: &mut Context) {
         };
 
         ctx.device.set_uniform(
-            &*shader.handle,
+            &shader.handle,
             "u_projection",
             ctx.graphics.projection_matrix * ctx.graphics.transform_matrix,
         );
@@ -376,8 +384,8 @@ pub fn flush(ctx: &mut Context) {
         ctx.device.draw_elements(
             &ctx.graphics.vertex_buffer,
             &ctx.graphics.index_buffer,
-            &*texture.handle.borrow(),
-            &*shader.handle,
+            &texture.data.handle,
+            &shader.handle,
             ctx.graphics.element_count,
         );
 
@@ -401,12 +409,12 @@ pub fn present(ctx: &mut Context) {
 
 /// Returns the filter mode that will be used by newly created textures and canvases.
 pub fn get_default_filter_mode(ctx: &Context) -> FilterMode {
-    ctx.device.get_default_filter_mode()
+    ctx.graphics.default_filter_mode
 }
 
 /// Sets the filter mode that will be used by newly created textures and canvases.
 pub fn set_default_filter_mode(ctx: &mut Context, filter_mode: FilterMode) {
-    ctx.device.set_default_filter_mode(filter_mode);
+    ctx.graphics.default_filter_mode = filter_mode;
 }
 
 /// Information about the device currently being used to render graphics.

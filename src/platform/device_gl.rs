@@ -23,9 +23,6 @@ pub struct GraphicsDevice {
     current_texture: Option<TextureId>,
     current_framebuffer: Option<FramebufferId>,
     current_vertex_array: Option<VertexArrayId>,
-
-    // TODO: I kinda don't like this being here, should probably be on the graphics context.
-    default_filter_mode: FilterMode,
 }
 
 impl GraphicsDevice {
@@ -63,8 +60,6 @@ impl GraphicsDevice {
                 current_texture: None,
                 current_framebuffer: None,
                 current_vertex_array: Some(current_vertex_array),
-
-                default_filter_mode: FilterMode::Nearest,
             })
         }
     }
@@ -307,7 +302,6 @@ impl GraphicsDevice {
                 id,
                 width,
                 height,
-                filter_mode: self.default_filter_mode,
             };
 
             self.bind_texture(Some(&texture));
@@ -317,18 +311,6 @@ impl GraphicsDevice {
 
             self.gl
                 .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_WRAP_T, glow::REPEAT as i32);
-
-            self.gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
-                glow::TEXTURE_MIN_FILTER,
-                self.default_filter_mode.into(),
-            );
-
-            self.gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
-                glow::TEXTURE_MAG_FILTER,
-                self.default_filter_mode.into(),
-            );
 
             self.gl
                 .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_BASE_LEVEL, 0);
@@ -378,7 +360,7 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn set_texture_filter_mode(&mut self, texture: &mut RawTexture, filter_mode: FilterMode) {
+    pub fn set_texture_filter_mode(&mut self, texture: &RawTexture, filter_mode: FilterMode) {
         self.bind_texture(Some(texture));
 
         unsafe {
@@ -394,8 +376,6 @@ impl GraphicsDevice {
                 filter_mode.into(),
             );
         }
-
-        texture.filter_mode = filter_mode;
     }
 
     pub fn new_framebuffer(
@@ -515,14 +495,6 @@ impl GraphicsDevice {
             }
         }
     }
-
-    pub fn get_default_filter_mode(&self) -> FilterMode {
-        self.default_filter_mode
-    }
-
-    pub fn set_default_filter_mode(&mut self, filter_mode: FilterMode) {
-        self.default_filter_mode = filter_mode;
-    }
 }
 
 impl Drop for GraphicsDevice {
@@ -631,7 +603,6 @@ pub struct RawTexture {
     id: TextureId,
     width: i32,
     height: i32,
-    filter_mode: FilterMode,
 }
 
 handle_impls!(RawTexture, delete_texture);
@@ -643,10 +614,6 @@ impl RawTexture {
 
     pub fn height(&self) -> i32 {
         self.height
-    }
-
-    pub fn filter_mode(&self) -> FilterMode {
-        self.filter_mode
     }
 }
 

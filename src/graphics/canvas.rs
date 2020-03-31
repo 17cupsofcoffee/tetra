@@ -67,16 +67,22 @@ impl Canvas {
     ///
     /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Result<Canvas> {
-        Canvas::with_device(&mut ctx.device, width, height)
+        Canvas::with_device(
+            &mut ctx.device,
+            width,
+            height,
+            ctx.graphics.default_filter_mode,
+        )
     }
 
     pub(crate) fn with_device(
         device: &mut GraphicsDevice,
         width: i32,
         height: i32,
+        filter_mode: FilterMode,
     ) -> Result<Canvas> {
-        let texture = Texture::with_device_empty(device, width, height)?;
-        let framebuffer = device.new_framebuffer(&*texture.handle.borrow(), true)?;
+        let texture = Texture::with_device_empty(device, width, height, filter_mode)?;
+        let framebuffer = device.new_framebuffer(&texture.data.handle, true)?;
 
         Ok(Canvas {
             texture,

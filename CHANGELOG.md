@@ -12,6 +12,7 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
+* The internal representation of `Texture` objects has been changed to improve performance.
 * Updated `sdl2` to 0.33.
 * Updated `hashbrown` to 0.7.
 * Updated `image` to 0.23.
