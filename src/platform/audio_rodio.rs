@@ -8,6 +8,8 @@ use rodio::{Decoder, Device as RodioDevice, Sample, Source};
 
 use crate::error::{Result, TetraError};
 
+pub use rodio::decoder::DecoderError;
+
 pub struct AudioControls {
     playing: AtomicBool,
     repeating: AtomicBool,
