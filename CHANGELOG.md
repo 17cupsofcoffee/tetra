@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Added
+
+* `Animation` now exposes methods for getting and setting the current frame index, and the amount of time that the current frame has been displayed
+for. This can be useful when implementing more complex animation behaviors. ([@VictorKoenders](https://github.com/VictorKoenders) in [#169](https://github.com/17cupsofcoffee/tetra/pull/169))
+
 ## [0.3.3] - 2020-04-04
 
 ### Added
