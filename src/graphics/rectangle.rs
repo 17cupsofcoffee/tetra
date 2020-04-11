@@ -94,6 +94,57 @@ impl Rectangle {
             && self.y <= point.y
             && point.y < self.y + self.height
     }
+
+    /// Returns the X co-ordinate of the left side of the rectangle.
+    ///
+    /// You can also obtain this via the `x` field - this method is provided for
+    /// symmetry with the `right` method.
+    pub fn left(&self) -> f32 {
+        self.x
+    }
+
+    /// Returns the X co-ordinate of the right side of the rectangle.
+    pub fn right(&self) -> f32 {
+        self.x + self.width
+    }
+
+    /// Returns the Y co-ordinate of the top of the rectangle.
+    ///
+    /// You can also obtain this via the `y` field - this method is provided for
+    /// symmetry with the `bottom` method.
+    pub fn top(&self) -> f32 {
+        self.y
+    }
+
+    /// Returns the Y co-ordinate of the bottom of the rectangle.
+    pub fn bottom(&self) -> f32 {
+        self.y + self.height
+    }
+
+    /// Returns the co-ordinates of the center point of the rectangle.
+    pub fn center(&self) -> Vec2<f32> {
+        Vec2::new(self.x + (self.width / 2.0), self.y + (self.height / 2.0))
+    }
+
+    /// Returns the co-ordinates of the top-left point of the rectangle.
+    pub fn top_left(&self) -> Vec2<f32> {
+        Vec2::new(self.x, self.y)
+    }
+
+    /// Returns the co-ordinates of the top-right point of the rectangle.
+    pub fn top_right(&self) -> Vec2<f32> {
+        Vec2::new(self.right(), self.y)
+    }
+
+    /// Returns the co-ordinates of the bottom-left point of the rectangle.
+    pub fn bottom_left(&self) -> Vec2<f32> {
+        Vec2::new(self.x, self.bottom())
+    }
+
+    /// Returns the co-ordinates of the bottom-right point of the rectangle.
+    pub fn bottom_right(&self) -> Vec2<f32> {
+        Vec2::new(self.right(), self.bottom())
+    }
 }
 
 #[derive(Debug, Clone)]
