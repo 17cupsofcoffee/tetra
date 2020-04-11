@@ -103,9 +103,14 @@ impl Text {
         }
     }
 
-    /// Gets the content of the text.
+    /// Returns a reference to the content of the text.
     pub fn content(&self) -> &str {
         &self.content
+    }
+
+    /// Returns a mutable reference to the content of the text.
+    pub fn content_mut(&mut self) -> &mut String {
+        &mut self.content
     }
 
     /// Sets the content of the text.

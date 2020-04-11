@@ -19,19 +19,18 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
+        let content = self.text.content_mut();
+
         if input::is_key_pressed(ctx, Key::Enter) {
-            self.input += "\n";
-            self.text.set_content(self.input.as_str());
+            content.push_str("\n");
         }
 
         if input::is_key_pressed(ctx, Key::Backspace) {
-            self.input.pop();
-            self.text.set_content(self.input.as_str());
+            content.pop();
         }
 
         if let Some(new_input) = input::get_text_input(ctx) {
-            self.input += new_input;
-            self.text.set_content(self.input.as_str());
+            content.push_str(new_input);
         }
 
         Ok(())

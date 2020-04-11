@@ -11,6 +11,7 @@ This project adheres to Semantic Versioning.
 * `Animation` now exposes methods for getting and setting the current frame index, and the amount of time that the current frame has been displayed
 for. This can be useful when implementing more complex animation behaviors. ([@VictorKoenders](https://github.com/VictorKoenders) in [#169](https://github.com/17cupsofcoffee/tetra/pull/169))
 * Some utility methods have been added to `Rectangle` for getting the co-ordinates of the sides, center and corners.
+* A `content_mut` getter has been added to `Text`, allowing the content to be mutated using the standard `String` API (e.g. `push_str`, `clear`, etc.).
 
 ## [0.3.3] - 2020-04-04
 
