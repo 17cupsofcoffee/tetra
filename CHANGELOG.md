@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
-## [Upcoming]
+## [0.3.4] - 2020-04-12
 
 ### Added
 
@@ -450,7 +450,8 @@ for. This can be useful when implementing more complex animation behaviors. ([@V
 
 * Initial release!
 
-[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.3.3..HEAD
+[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.3.4..HEAD
+[0.3.4]: https://github.com/17cupsofcoffee/tetra/compare/0.3.3..0.3.4
 [0.3.3]: https://github.com/17cupsofcoffee/tetra/compare/0.3.2..0.3.3
 [0.3.2]: https://github.com/17cupsofcoffee/tetra/compare/0.3.1..0.3.2
 [0.3.1]: https://github.com/17cupsofcoffee/tetra/compare/0.3.0..0.3.1
