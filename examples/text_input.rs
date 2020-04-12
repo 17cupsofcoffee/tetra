@@ -4,14 +4,12 @@ use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
 struct GameState {
-    input: String,
     text: Text,
 }
 
 impl GameState {
     fn new() -> GameState {
         GameState {
-            input: String::new(),
             text: Text::new("", Font::default(), 32.0),
         }
     }
