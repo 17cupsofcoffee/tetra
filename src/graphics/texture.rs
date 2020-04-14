@@ -204,19 +204,21 @@ impl Drawable for Texture {
 
         let texture_width = self.width() as f32;
         let texture_height = self.height() as f32;
-        let clip = params
-            .clip
-            .unwrap_or_else(|| Rectangle::new(0.0, 0.0, texture_width, texture_height));
+
+        let (u, v, clip_width, clip_height) = match params.clip {
+            Some(clip) => (clip.x, clip.y, clip.width, clip.height),
+            None => (0.0, 0.0, texture_width, texture_height),
+        };
 
         let x1 = 0.0;
         let y1 = 0.0;
-        let x2 = clip.width;
-        let y2 = clip.height;
+        let x2 = clip_width;
+        let y2 = clip_height;
 
-        let u1 = clip.x / texture_width;
-        let v1 = clip.y / texture_height;
-        let u2 = (clip.x + clip.width) / texture_width;
-        let v2 = (clip.y + clip.height) / texture_height;
+        let u1 = u / texture_width;
+        let v1 = v / texture_height;
+        let u2 = (u + clip_width) / texture_width;
+        let v2 = (v + clip_height) / texture_height;
 
         graphics::set_texture(ctx, self);
         graphics::push_quad(ctx, x1, y1, x2, y2, u1, v1, u2, v2, &params);
