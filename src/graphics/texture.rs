@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use crate::error::{Result, TetraError};
 use crate::fs;
-use crate::graphics::{self, DrawParams, Drawable, Rectangle};
+use crate::graphics::{self, DrawParams, Drawable};
 use crate::platform::{GraphicsDevice, RawTexture};
 use crate::Context;
 
