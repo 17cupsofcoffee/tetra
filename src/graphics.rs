@@ -10,6 +10,7 @@ mod camera;
 mod canvas;
 mod color;
 mod drawable;
+mod mesh;
 mod rectangle;
 pub mod scaling;
 mod shader;
@@ -21,13 +22,14 @@ pub use camera::*;
 pub use canvas::*;
 pub use color::*;
 pub use drawable::*;
+pub use mesh::*;
 pub use rectangle::*;
 pub use shader::*;
 pub use texture::*;
 
 use crate::error::Result;
 use crate::math::{FrustumPlanes, Mat4};
-use crate::platform::{BufferUsage, FrontFace, GraphicsDevice, RawIndexBuffer, RawVertexBuffer};
+use crate::platform::{FrontFace, GraphicsDevice, RawIndexBuffer, RawVertexBuffer};
 use crate::window;
 use crate::Context;
 
@@ -60,6 +62,7 @@ pub(crate) struct GraphicsContext {
     index_buffer: RawIndexBuffer,
 
     texture: ActiveTexture,
+    default_texture: Texture,
     default_filter_mode: FilterMode,
 
     shader: ActiveShader,
@@ -71,8 +74,8 @@ pub(crate) struct GraphicsContext {
     transform_matrix: Mat4<f32>,
 
     vertex_data: Vec<f32>,
-    element_capacity: i32,
-    element_count: i32,
+    element_capacity: usize,
+    element_count: usize,
 }
 
 impl GraphicsContext {
@@ -89,15 +92,15 @@ impl GraphicsContext {
             .map(|(i, vertex)| vertex + i as u32 / 6 * 4)
             .collect();
 
-        let vertex_buffer = device.new_vertex_buffer(
-            MAX_VERTICES * VERTEX_STRIDE,
-            VERTEX_STRIDE,
-            BufferUsage::DynamicDraw,
-        )?;
+        let vertex_buffer =
+            device.new_vertex_buffer(MAX_VERTICES, VERTEX_STRIDE, BufferUsage::Dynamic)?;
 
-        let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::StaticDraw)?;
+        let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::Static)?;
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
+
+        let default_texture =
+            Texture::with_device(device, 1, 1, &[255, 255, 255, 255], FilterMode::Nearest)?;
 
         let default_filter_mode = FilterMode::Nearest;
 
@@ -112,6 +115,7 @@ impl GraphicsContext {
             index_buffer,
 
             texture: ActiveTexture::Default,
+            default_texture,
             default_filter_mode,
 
             shader: ActiveShader::Default,
@@ -123,7 +127,7 @@ impl GraphicsContext {
             transform_matrix: Mat4::identity(),
 
             vertex_data: Vec::with_capacity(MAX_VERTICES * VERTEX_STRIDE),
-            element_capacity: MAX_INDICES as i32,
+            element_capacity: MAX_INDICES,
             element_count: 0,
         })
     }
@@ -370,6 +374,7 @@ pub fn flush(ctx: &mut Context) {
             &ctx.graphics.index_buffer,
             &texture.data.handle,
             &shader.data.handle,
+            0,
             ctx.graphics.element_count,
         );
 

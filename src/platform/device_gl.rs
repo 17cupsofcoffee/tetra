@@ -5,7 +5,7 @@ use std::rc::Rc;
 use glow::{Context as GlowContext, HasContext, PixelUnpackData};
 
 use crate::error::{Result, TetraError};
-use crate::graphics::FilterMode;
+use crate::graphics::{BufferUsage, FilterMode};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
 /// Utility function for calculating offsets/sizes.
@@ -40,7 +40,9 @@ pub struct GraphicsDevice {
 impl GraphicsDevice {
     pub fn new(gl: GlowContext) -> Result<GraphicsDevice> {
         unsafe {
-            gl.enable(glow::CULL_FACE);
+            // This needs replacing with a user-facing API.
+            // gl.enable(glow::CULL_FACE);
+
             gl.enable(glow::BLEND);
 
             // This default might want to change if we introduce
@@ -138,9 +140,11 @@ impl GraphicsDevice {
 
             self.bind_vertex_buffer(Some(&buffer));
 
-            self.state
-                .gl
-                .buffer_data_size(glow::ARRAY_BUFFER, size::<f32>(count), usage.into());
+            self.state.gl.buffer_data_size(
+                glow::ARRAY_BUFFER,
+                size::<f32>(buffer.size()),
+                usage.into(),
+            );
 
             Ok(buffer)
         }
@@ -152,9 +156,11 @@ impl GraphicsDevice {
         data: &[f32],
         offset: usize,
     ) {
-        unsafe {
-            self.bind_vertex_buffer(Some(buffer));
+        self.bind_vertex_buffer(Some(buffer));
 
+        assert!(data.len() + offset <= buffer.size());
+
+        unsafe {
             // TODO: What if we want to discard what's already there?
 
             self.state.gl.buffer_sub_data_u8_slice(
@@ -192,9 +198,11 @@ impl GraphicsDevice {
     }
 
     pub fn set_index_buffer_data(&mut self, buffer: &RawIndexBuffer, data: &[u32], offset: usize) {
-        unsafe {
-            self.bind_index_buffer(Some(buffer));
+        self.bind_index_buffer(Some(buffer));
 
+        assert!(data.len() + offset <= buffer.count());
+
+        unsafe {
             // TODO: What if we want to discard what's already there?
 
             self.state.gl.buffer_sub_data_u8_slice(
@@ -567,23 +575,56 @@ impl GraphicsDevice {
         }
     }
 
+    pub fn draw_arrays(
+        &mut self,
+        vertex_buffer: &RawVertexBuffer,
+        texture: &RawTexture,
+        program: &RawProgram,
+        offset: usize,
+        count: usize,
+    ) {
+        self.bind_vertex_buffer(Some(vertex_buffer));
+        self.bind_default_texture(Some(texture));
+        self.bind_program(Some(program));
+
+        let max_count = vertex_buffer.size() / vertex_buffer.stride();
+
+        let offset = usize::min(offset, max_count.saturating_sub(1));
+        let count = usize::min(count, max_count.saturating_sub(offset));
+
+        unsafe {
+            self.state
+                .gl
+                .draw_arrays(glow::TRIANGLES, offset as i32, count as i32);
+        }
+    }
+
     pub fn draw_elements(
         &mut self,
         vertex_buffer: &RawVertexBuffer,
         index_buffer: &RawIndexBuffer,
         texture: &RawTexture,
         program: &RawProgram,
-        count: i32,
+        offset: usize,
+        count: usize,
     ) {
-        unsafe {
-            self.bind_vertex_buffer(Some(vertex_buffer));
-            self.bind_index_buffer(Some(index_buffer));
-            self.bind_default_texture(Some(texture));
-            self.bind_program(Some(program));
+        self.bind_vertex_buffer(Some(vertex_buffer));
+        self.bind_index_buffer(Some(index_buffer));
+        self.bind_default_texture(Some(texture));
+        self.bind_program(Some(program));
 
-            self.state
-                .gl
-                .draw_elements(glow::TRIANGLES, count, glow::UNSIGNED_INT, 0);
+        let max_count = index_buffer.count();
+
+        let offset = usize::min(offset, max_count.saturating_sub(1));
+        let count = usize::min(count, max_count.saturating_sub(offset));
+
+        unsafe {
+            self.state.gl.draw_elements(
+                glow::TRIANGLES,
+                count as i32,
+                glow::UNSIGNED_INT,
+                size::<u32>(offset),
+            );
         }
     }
 
@@ -712,17 +753,13 @@ impl Drop for GraphicsDevice {
     }
 }
 
-#[derive(Clone, Copy)]
-pub enum BufferUsage {
-    StaticDraw,
-    DynamicDraw,
-}
-
+#[doc(hidden)]
 impl From<BufferUsage> for u32 {
     fn from(buffer_usage: BufferUsage) -> u32 {
         match buffer_usage {
-            BufferUsage::StaticDraw => glow::STATIC_DRAW,
-            BufferUsage::DynamicDraw => glow::DYNAMIC_DRAW,
+            BufferUsage::Static => glow::STATIC_DRAW,
+            BufferUsage::Dynamic => glow::DYNAMIC_DRAW,
+            BufferUsage::Stream => glow::STREAM_DRAW,
         }
     }
 }
@@ -770,6 +807,20 @@ pub struct RawVertexBuffer {
     stride: usize,
 }
 
+impl RawVertexBuffer {
+    pub fn count(&self) -> usize {
+        self.count
+    }
+
+    pub fn stride(&self) -> usize {
+        self.stride
+    }
+
+    pub fn size(&self) -> usize {
+        self.count * self.stride
+    }
+}
+
 impl Drop for RawVertexBuffer {
     fn drop(&mut self) {
         unsafe {
@@ -790,6 +841,12 @@ pub struct RawIndexBuffer {
     id: BufferId,
 
     count: usize,
+}
+
+impl RawIndexBuffer {
+    pub fn count(&self) -> usize {
+        self.count
+    }
 }
 
 impl Drop for RawIndexBuffer {

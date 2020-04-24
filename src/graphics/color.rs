@@ -19,6 +19,7 @@ use crate::math::Vec4;
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
 /// can be enabled via the `serde_support` feature.
+#[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[cfg_attr(
     feature = "serde_support",

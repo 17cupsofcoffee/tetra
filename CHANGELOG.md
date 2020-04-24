@@ -10,7 +10,13 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
+* Added initial support for custom 2D meshes.
 * Added experimental support for high-DPI rendering, on platforms that support it. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#212](https://github.com/17cupsofcoffee/tetra/pull/212))
+
+### Changed
+
+* Backface culling has been disabled by default, to better support integration with other libraries that output clockwise vertex data (e.g. imGUI).
+    * This will be brought back as an opt-in setting soon.
 
 ## [0.5.3] - 2020-11-21
 
