@@ -19,10 +19,11 @@ pub struct Animation {
 
     current_frame: usize,
     timer: Duration,
+    repeating: bool,
 }
 
 impl Animation {
-    /// Creates a new animation.
+    /// Creates a new looping animation.
     pub fn new(texture: Texture, frames: Vec<Rectangle>, frame_length: Duration) -> Animation {
         Animation {
             texture,
@@ -31,6 +32,20 @@ impl Animation {
 
             current_frame: 0,
             timer: Duration::from_secs(0),
+            repeating: true,
+        }
+    }
+
+    /// Creates a new animation that does not repeat once all of the frames have been displayed.
+    pub fn once(texture: Texture, frames: Vec<Rectangle>, frame_length: Duration) -> Animation {
+        Animation {
+            texture,
+            frames,
+            frame_length,
+
+            current_frame: 0,
+            timer: Duration::from_secs(0),
+            repeating: false,
         }
     }
 
@@ -43,9 +58,15 @@ impl Animation {
     pub fn advance_by(&mut self, duration: Duration) {
         self.timer += duration;
 
-        while self.timer >= self.frame_length {
-            self.current_frame = (self.current_frame + 1) % self.frames.len();
-            self.timer -= self.frame_length;
+        let frames_remaining = self.current_frame < self.frames.len() - 1;
+
+        if frames_remaining || self.repeating {
+            while self.timer >= self.frame_length {
+                self.current_frame = (self.current_frame + 1) % self.frames.len();
+                self.timer -= self.frame_length;
+            }
+        } else if self.timer > self.frame_length {
+            self.timer = self.frame_length;
         }
     }
 
@@ -91,6 +112,17 @@ impl Animation {
     /// Sets the amount of time that each frame of the animation lasts for.
     pub fn set_frame_length(&mut self, new_frame_length: Duration) {
         self.frame_length = new_frame_length;
+    }
+
+    /// Gets whether or not the animation is currently set to repeat when it reaches the end
+    /// of the frames.
+    pub fn repeating(&self) -> bool {
+        self.repeating
+    }
+
+    /// Sets whether or not the animation should repeat when it reaches the end of the frames.
+    pub fn set_repeating(&mut self, repeating: bool) {
+        self.repeating = repeating;
     }
 
     /// Gets the index of the frame that is currently being displayed.
