@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::input::{GamepadAxis, GamepadButton, GamepadStick, Key, MouseButton};
 use crate::math::Vec2;
 use crate::{Context, Result};
@@ -147,6 +149,19 @@ pub enum Event {
     TextInput {
         /// The text that was typed by the user.
         text: String,
+    },
+
+    /// The user dropped a file into the window.
+    ///
+    /// This event will be fired multiple times if the user dropped multiple files at the
+    /// same time.
+    ///
+    /// Note that on MacOS, you must [edit your `info.plist` file to set which document types
+    /// you want your application to support](https://help.apple.com/xcode/mac/current/#/devddd273fdd),
+    /// otherwise no `FileDropped` events will be fired.
+    FileDropped {
+        /// The path of the file that was dropped.
+        path: PathBuf,
     },
 
     /// This is here so that adding new error types will not be a breaking change.

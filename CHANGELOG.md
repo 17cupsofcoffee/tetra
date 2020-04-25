@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming 
+
+### Added
+
+* File drag and drop events can now be detected via `Event::FileDropped`.
+
 ## [0.3.4] - 2020-04-12
 
 ### Added

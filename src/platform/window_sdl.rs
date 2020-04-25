@@ -1,4 +1,6 @@
 // TODO: This file is getting way too huge.
+use std::path::PathBuf;
+
 use hashbrown::HashMap;
 
 use glow::Context as GlowContext;
@@ -370,6 +372,15 @@ where
             SdlEvent::TextInput { text, .. } => {
                 input::push_text_input(ctx, &text);
                 state.event(ctx, Event::TextInput { text })?;
+            }
+
+            SdlEvent::DropFile { filename, .. } => {
+                state.event(
+                    ctx,
+                    Event::FileDropped {
+                        path: PathBuf::from(filename),
+                    },
+                )?;
             }
 
             SdlEvent::ControllerDeviceAdded { which, .. } => {
