@@ -16,7 +16,7 @@ mod mouse;
 use hashbrown::HashSet;
 
 use crate::math::Vec2;
-use crate::Context;
+use crate::{Context, Result};
 
 pub use gamepad::*;
 pub use keyboard::*;
@@ -79,6 +79,26 @@ pub(crate) fn clear(ctx: &mut Context) {
 /// This will match the user's keyboard and OS settings.
 pub fn get_text_input(ctx: &Context) -> Option<&str> {
     ctx.input.current_text_input.as_deref()
+}
+
+/// Gets the text currently stored in the system's clipboard.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the text could not be
+/// retrieved from the clipboard.
+pub fn get_clipboard_text(ctx: &Context) -> Result<String> {
+    ctx.window.get_clipboard_text()
+}
+
+/// Sets the contents of the system's clipboard.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the clipboard could not
+/// be modified.
+pub fn set_clipboard_text(ctx: &Context, text: &str) -> Result {
+    ctx.window.set_clipboard_text(text)
 }
 
 pub(crate) fn push_text_input(ctx: &mut Context, text: &str) {

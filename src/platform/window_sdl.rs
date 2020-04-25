@@ -244,6 +244,20 @@ impl Window {
         self.sdl.mouse().is_cursor_showing()
     }
 
+    pub fn get_clipboard_text(&self) -> Result<String> {
+        self.video_sys
+            .clipboard()
+            .clipboard_text()
+            .map_err(TetraError::PlatformError)
+    }
+
+    pub fn set_clipboard_text(&self, text: &str) -> Result {
+        self.video_sys
+            .clipboard()
+            .set_clipboard_text(text)
+            .map_err(TetraError::PlatformError)
+    }
+
     pub fn swap_buffers(&self) {
         self.sdl_window.gl_swap_window();
     }

@@ -9,6 +9,7 @@ This project adheres to Semantic Versioning.
 ### Added
 
 * File drag and drop events can now be detected via `Event::FileDropped`.
+* The clipboard can now be manipulated via `input::get_clipboard_text` and `input::set_clipboard_text`.
 
 ## [0.3.4] - 2020-04-12
 

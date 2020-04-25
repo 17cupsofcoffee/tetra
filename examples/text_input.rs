@@ -31,6 +31,16 @@ impl State for GameState {
             content.push_str(new_input);
         }
 
+        if input::is_key_down(ctx, Key::LeftCtrl) {
+            if input::is_key_pressed(ctx, Key::C) {
+                input::set_clipboard_text(ctx, content)?;
+            }
+
+            if input::is_key_pressed(ctx, Key::V) {
+                content.push_str(&input::get_clipboard_text(ctx)?);
+            }
+        }
+
         Ok(())
     }
 
