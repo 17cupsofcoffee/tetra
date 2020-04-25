@@ -1,5 +1,7 @@
 //! Functions and types relating to color.
 
+use crate::error::{Result, TetraError};
+
 /// An RGBA color.
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[cfg_attr(
@@ -50,6 +52,58 @@ impl Color {
         Color { r, g, b, a }
     }
 
+    /// Creates a new `Color` using a hexidecimal color code, panicking if the input is
+    /// invalid.
+    ///
+    /// Six and eight digit codes can be used - the former will be interpreted as RGB, and
+    /// the latter as RGBA. The `#` prefix (commonly used on the web) will be stripped if present.
+    pub fn hex(hex: &str) -> Color {
+        let hex = hex.trim_start_matches('#');
+
+        assert!(hex.len() == 6 || hex.len() == 8);
+
+        let r = u8::from_str_radix(&hex[0..2], 16).unwrap();
+        let g = u8::from_str_radix(&hex[2..4], 16).unwrap();
+        let b = u8::from_str_radix(&hex[4..6], 16).unwrap();
+
+        let a = if hex.len() == 8 {
+            u8::from_str_radix(&hex[6..8], 16).unwrap()
+        } else {
+            255
+        };
+
+        Color::rgba8(r, g, b, a)
+    }
+
+    /// Creates a new `Color` using a hexidecimal color code, returning an error if the
+    /// input is invalid.
+    ///
+    /// Six and eight digit codes can be used - the former will be interpreted as RGB, and
+    /// the latter as RGBA. The `#` prefix (commonly used on the web) will be stripped if present.
+    ///
+    /// # Errors
+    ///
+    /// * `TetraError::InvalidColor` will be returned if the specified color is invalid.
+    pub fn try_hex(hex: &str) -> Result<Color> {
+        let hex = hex.trim_start_matches('#');
+
+        if hex.len() != 6 && hex.len() != 8 {
+            return Err(TetraError::InvalidColor);
+        }
+
+        let r = u8::from_str_radix(&hex[0..2], 16).map_err(|_| TetraError::InvalidColor)?;
+        let g = u8::from_str_radix(&hex[2..4], 16).map_err(|_| TetraError::InvalidColor)?;
+        let b = u8::from_str_radix(&hex[4..6], 16).map_err(|_| TetraError::InvalidColor)?;
+
+        let a = if hex.len() == 8 {
+            u8::from_str_radix(&hex[6..8], 16).map_err(|_| TetraError::InvalidColor)?
+        } else {
+            255
+        };
+
+        Ok(Color::rgba8(r, g, b, a))
+    }
+
     // These constants should remain at the bottom of the impl block to keep
     // the docs readable - don't want to have to scroll through a load of colors
     // to get to the methods!
@@ -82,5 +136,39 @@ mod tests {
         assert!((c1.r - c2.r).abs() < 0.01);
         assert!((c1.g - c2.g).abs() < 0.01);
         assert!((c1.b - c2.b).abs() < 0.01);
+    }
+
+    #[test]
+    fn hex_creation() {
+        let hex_no_prefix_no_alpha = Color::hex("333333");
+        let hex_prefix_no_alpha = Color::hex("#333333");
+        let hex_no_prefix_alpha = Color::hex("333333FF");
+        let hex_prefix_alpha = Color::hex("#333333FF");
+
+        assert_eq!(hex_no_prefix_no_alpha, hex_prefix_no_alpha);
+        assert_eq!(hex_no_prefix_no_alpha, hex_no_prefix_alpha);
+        assert_eq!(hex_no_prefix_no_alpha, hex_prefix_alpha);
+        assert_eq!(hex_no_prefix_no_alpha.r, 0.2);
+        assert_eq!(hex_no_prefix_no_alpha.g, 0.2);
+        assert_eq!(hex_no_prefix_no_alpha.b, 0.2);
+        assert_eq!(hex_no_prefix_no_alpha.a, 1.0);
+    }
+
+    #[test]
+    fn try_hex_creation() {
+        let hex_no_prefix_no_alpha = Color::try_hex("333333").unwrap();
+        let hex_prefix_no_alpha = Color::try_hex("#333333").unwrap();
+        let hex_no_prefix_alpha = Color::try_hex("333333FF").unwrap();
+        let hex_prefix_alpha = Color::try_hex("#333333FF").unwrap();
+
+        assert_eq!(hex_no_prefix_no_alpha, hex_prefix_no_alpha);
+        assert_eq!(hex_no_prefix_no_alpha, hex_no_prefix_alpha);
+        assert_eq!(hex_no_prefix_no_alpha, hex_prefix_alpha);
+        assert_eq!(hex_no_prefix_no_alpha.r, 0.2);
+        assert_eq!(hex_no_prefix_no_alpha.g, 0.2);
+        assert_eq!(hex_no_prefix_no_alpha.b, 0.2);
+        assert_eq!(hex_no_prefix_no_alpha.a, 1.0);
+
+        assert!(Color::try_hex("ZZZZZZ").is_err());
     }
 }

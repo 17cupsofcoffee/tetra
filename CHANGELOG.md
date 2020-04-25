@@ -12,6 +12,7 @@ This project adheres to Semantic Versioning.
 * The clipboard can now be manipulated via `input::get_clipboard_text` and `input::set_clipboard_text`.
 * `input::get_key_modifier_down` and `input::get_key_modifier_up` have been added, allowing for code handling the control, alt and shift keys to be made more compact.
 * An `Animation` can now be set to stop playing after all the frames have been displayed, instead of looping. This can either be controlled by the `set_repeating` method, or you can create a non-looping animation directly by calling `Animation::once`.
+* `hex` and `try_hex` constructors have been added to `Color`.
 
 ## [0.3.4] - 2020-04-12
 

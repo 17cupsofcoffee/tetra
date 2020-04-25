@@ -36,6 +36,9 @@ pub enum TetraError {
         path: PathBuf,
     },
 
+    /// Returned when a color is invalid.
+    InvalidColor,
+
     /// Returned when a texture's data is invalid.
     InvalidTexture(ImageError),
 
@@ -81,6 +84,7 @@ impl Display for TetraError {
                 path.to_string_lossy(),
                 reason
             ),
+            TetraError::InvalidColor => write!(f, "Invalid color"),
             TetraError::InvalidTexture(reason) => write!(f, "Invalid texture: {}", reason),
             TetraError::InvalidShader(reason) => write!(f, "Invalid shader: {}", reason),
             TetraError::InvalidSound(reason) => write!(f, "Invalid sound: {}", reason),
@@ -103,6 +107,7 @@ impl Error for TetraError {
         match self {
             TetraError::PlatformError(_) => None,
             TetraError::FailedToLoadAsset { reason, .. } => Some(reason),
+            TetraError::InvalidColor => None,
             TetraError::InvalidTexture(reason) => Some(reason),
             TetraError::InvalidShader(_) => None,
             TetraError::InvalidSound(reason) => Some(reason),
