@@ -14,6 +14,10 @@ This project adheres to Semantic Versioning.
 * An `Animation` can now be set to stop playing after all the frames have been displayed, instead of looping. This can either be controlled by the `set_repeating` method, or you can create a non-looping animation directly by calling `Animation::once`.
 * `hex` and `try_hex` constructors have been added to `Color`.
 
+### Changed
+
+* Updated `sdl2` to 0.34.
+
 ## [0.3.4] - 2020-04-12
 
 ### Added

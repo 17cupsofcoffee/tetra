@@ -405,9 +405,7 @@ where
                     .map_err(|e| TetraError::PlatformError(e.to_string()))?;
 
                 let haptic = ctx.window.haptic_sys.open_from_joystick_id(which).ok();
-
-                // Cast is needed due to https://github.com/Rust-SDL2/rust-sdl2/issues/963
-                let id = controller.instance_id() as u32;
+                let id = controller.instance_id();
                 let slot = input::add_gamepad(ctx, id);
 
                 ctx.window.controllers.insert(
