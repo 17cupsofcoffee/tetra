@@ -1,5 +1,5 @@
 use tetra::graphics::{self, Color, Font, Text};
-use tetra::input::{self, Key};
+use tetra::input::{self, Key, KeyModifier};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
@@ -31,7 +31,7 @@ impl State for GameState {
             content.push_str(new_input);
         }
 
-        if input::is_key_down(ctx, Key::LeftCtrl) {
+        if input::is_key_modifier_down(ctx, KeyModifier::Ctrl) {
             if input::is_key_pressed(ctx, Key::C) {
                 input::set_clipboard_text(ctx, content)?;
             }

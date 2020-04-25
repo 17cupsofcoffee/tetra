@@ -145,6 +145,22 @@ pub enum Key {
     Underscore,
 }
 
+/// A key modifier on the keyboard.
+///
+/// These mainly consist of keys that have duplicates in multiple places on the keyboard, such as
+/// Control and Shift.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    feature = "serde_support",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+#[allow(missing_docs)]
+pub enum KeyModifier {
+    Ctrl,
+    Alt,
+    Shift,
+}
+
 /// Returns true if the specified key is currently down.
 pub fn is_key_down(ctx: &Context, key: Key) -> bool {
     ctx.input.keys_down.contains(&key)
@@ -163,6 +179,20 @@ pub fn is_key_pressed(ctx: &Context, key: Key) -> bool {
 /// Returns true if the specified key was released since the last update.
 pub fn is_key_released(ctx: &Context, key: Key) -> bool {
     ctx.input.keys_released.contains(&key)
+}
+
+/// Returns true if the specified key modifier is currently down.
+pub fn is_key_modifier_down(ctx: &Context, key_modifier: KeyModifier) -> bool {
+    let (a, b) = get_modifier_keys(key_modifier);
+
+    is_key_down(ctx, a) || is_key_down(ctx, b)
+}
+
+/// Returns true if the specified key modifier is currently up.
+pub fn is_key_modifier_up(ctx: &Context, key_modifier: KeyModifier) -> bool {
+    let (a, b) = get_modifier_keys(key_modifier);
+
+    is_key_up(ctx, a) && is_key_up(ctx, b)
 }
 
 /// Returns an iterator of the keys that are currently down.
@@ -198,4 +228,12 @@ pub(crate) fn set_key_up(ctx: &mut Context, key: Key) -> bool {
     }
 
     was_down
+}
+
+pub(crate) fn get_modifier_keys(key_modifier: KeyModifier) -> (Key, Key) {
+    match key_modifier {
+        KeyModifier::Ctrl => (Key::LeftCtrl, Key::RightCtrl),
+        KeyModifier::Alt => (Key::LeftAlt, Key::RightAlt),
+        KeyModifier::Shift => (Key::LeftShift, Key::RightShift),
+    }
 }
