@@ -130,45 +130,38 @@ mod tests {
 
     #[test]
     fn rgb8_creation() {
-        let c1 = Color::rgb8(100, 149, 236);
-        let c2 = Color::rgb(0.39, 0.58, 0.92);
-
-        assert!((c1.r - c2.r).abs() < 0.01);
-        assert!((c1.g - c2.g).abs() < 0.01);
-        assert!((c1.b - c2.b).abs() < 0.01);
+        assert!(same_color(
+            Color::rgba(0.2, 0.4, 0.6, 1.0),
+            Color::rgb8(51, 102, 153)
+        ));
     }
 
     #[test]
     fn hex_creation() {
-        let hex_no_prefix_no_alpha = Color::hex("333333");
-        let hex_prefix_no_alpha = Color::hex("#333333");
-        let hex_no_prefix_alpha = Color::hex("333333FF");
-        let hex_prefix_alpha = Color::hex("#333333FF");
+        let expected = Color::rgba(0.2, 0.4, 0.6, 1.0);
 
-        assert_eq!(hex_no_prefix_no_alpha, hex_prefix_no_alpha);
-        assert_eq!(hex_no_prefix_no_alpha, hex_no_prefix_alpha);
-        assert_eq!(hex_no_prefix_no_alpha, hex_prefix_alpha);
-        assert_eq!(hex_no_prefix_no_alpha.r, 0.2);
-        assert_eq!(hex_no_prefix_no_alpha.g, 0.2);
-        assert_eq!(hex_no_prefix_no_alpha.b, 0.2);
-        assert_eq!(hex_no_prefix_no_alpha.a, 1.0);
+        assert!(same_color(expected, Color::hex("336699")));
+        assert!(same_color(expected, Color::hex("#336699")));
+        assert!(same_color(expected, Color::hex("336699FF")));
+        assert!(same_color(expected, Color::hex("#336699FF")));
     }
 
     #[test]
     fn try_hex_creation() {
-        let hex_no_prefix_no_alpha = Color::try_hex("333333").unwrap();
-        let hex_prefix_no_alpha = Color::try_hex("#333333").unwrap();
-        let hex_no_prefix_alpha = Color::try_hex("333333FF").unwrap();
-        let hex_prefix_alpha = Color::try_hex("#333333FF").unwrap();
+        let expected = Color::rgba(0.2, 0.4, 0.6, 1.0);
 
-        assert_eq!(hex_no_prefix_no_alpha, hex_prefix_no_alpha);
-        assert_eq!(hex_no_prefix_no_alpha, hex_no_prefix_alpha);
-        assert_eq!(hex_no_prefix_no_alpha, hex_prefix_alpha);
-        assert_eq!(hex_no_prefix_no_alpha.r, 0.2);
-        assert_eq!(hex_no_prefix_no_alpha.g, 0.2);
-        assert_eq!(hex_no_prefix_no_alpha.b, 0.2);
-        assert_eq!(hex_no_prefix_no_alpha.a, 1.0);
+        assert!(same_color(expected, Color::try_hex("336699").unwrap()));
+        assert!(same_color(expected, Color::try_hex("#336699").unwrap()));
+        assert!(same_color(expected, Color::try_hex("336699FF").unwrap()));
+        assert!(same_color(expected, Color::try_hex("#336699FF").unwrap()));
 
         assert!(Color::try_hex("ZZZZZZ").is_err());
+    }
+
+    fn same_color(a: Color, b: Color) -> bool {
+        (a.r - b.r).abs() < std::f32::EPSILON
+            && (a.g - b.g).abs() < std::f32::EPSILON
+            && (a.b - b.b).abs() < std::f32::EPSILON
+            && (a.a - b.a).abs() < std::f32::EPSILON
     }
 }
