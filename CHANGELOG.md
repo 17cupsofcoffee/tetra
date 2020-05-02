@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file, following the format defined at keepachangelog.com. Where a change was contributed via a third-party pull request, the author will be credited.
 
+From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it easier to assess the impact of upgrading.
+
 This project adheres to Semantic Versioning.
+
+## [Upcoming] (Major Release)
+
+### Removed
+
+* **Breaking:** `Font` no longer implements `Default`, and the Deja Vu Sans Mono font is no longer bundled with Tetra. It was previously a little murky whether or not the default font's license needed to be included even when you're not using it, due to the bytes being included in the binary.
 
 ## [0.3.6] - 2020-05-15
 

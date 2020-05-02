@@ -31,9 +31,6 @@ pub(crate) struct FontQuad {
 ///
 /// The actual data for fonts is cached in the `Context`, so there should be no overhead for copying
 /// this type - as such, it implements `Copy` and `Clone`.
-///
-/// Deja Vu Sans Mono is provided as a default font, and can be used by calling `Font::default()`.
-/// If you use it, you must distribute the license with your game - it can be found in `src/resources`.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Font {
     id: FontId,
@@ -67,14 +64,6 @@ impl Font {
         let id = ctx.graphics.font_cache.add_font_bytes(data);
 
         Font { id }
-    }
-}
-
-impl Default for Font {
-    fn default() -> Font {
-        Font {
-            id: FontId::default(),
-        }
     }
 }
 

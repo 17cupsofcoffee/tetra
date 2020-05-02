@@ -40,7 +40,6 @@ const MAX_VERTICES: usize = MAX_SPRITES * 4; // Cannot be greater than 32767!
 const MAX_INDICES: usize = MAX_SPRITES * 6;
 const VERTEX_STRIDE: usize = 8;
 const INDEX_ARRAY: [u32; 6] = [0, 1, 2, 2, 3, 0];
-const DEFAULT_FONT: &[u8] = include_bytes!("./resources/DejaVuSansMono.ttf");
 
 #[derive(PartialEq)]
 pub(crate) enum ActiveTexture {
@@ -115,7 +114,7 @@ impl GraphicsContext {
             shader::DEFAULT_FRAGMENT_SHADER,
         )?;
 
-        let font_cache = GlyphBrushBuilder::using_font_bytes(DEFAULT_FONT).build();
+        let font_cache = GlyphBrushBuilder::without_fonts().build();
         let (font_cache_width, font_cache_height) = font_cache.texture_dimensions();
         let font_cache_texture = Texture::with_device_empty(
             device,
