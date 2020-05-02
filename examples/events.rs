@@ -7,10 +7,10 @@ struct GameState {
 }
 
 impl GameState {
-    fn new(_ctx: &mut Context) -> tetra::Result<GameState> {
+    fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         let text = Text::new(
             "Look at your console to see what events are being fired!",
-            Font::default(),
+            Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
             16.0,
         );
 

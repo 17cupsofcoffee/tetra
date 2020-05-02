@@ -34,7 +34,11 @@ impl GameState {
         let channel3 = sound.spawn(ctx)?;
 
         Ok(GameState {
-            text: Text::new(INSTRUCTIONS, Font::default(), 16.0),
+            text: Text::new(
+                INSTRUCTIONS,
+                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+                16.0,
+            ),
             sound,
             channel1,
             channel2,

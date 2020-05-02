@@ -110,7 +110,11 @@ impl GameState {
             left_stick: Vec2::zero(),
             right_stick: Vec2::zero(),
 
-            axis_info: Text::new("", Font::default(), 16.0),
+            axis_info: Text::new(
+                "",
+                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+                16.0,
+            ),
         })
     }
 

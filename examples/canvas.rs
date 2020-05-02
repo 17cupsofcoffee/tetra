@@ -21,7 +21,11 @@ impl GameState {
             canvas: Canvas::new(ctx, 1280, 720)?,
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
             shader: Shader::from_fragment_file(ctx, "./examples/resources/disco.frag")?,
-            text: Text::new("", Font::default(), 32.0),
+            text: Text::new(
+                "",
+                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+                32.0,
+            ),
 
             timer: 0.0,
             red: 0.0,

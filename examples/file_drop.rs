@@ -9,11 +9,11 @@ struct GameState {
 }
 
 impl GameState {
-    fn new(_: &mut Context) -> tetra::Result<GameState> {
+    fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
             file: Text::new(
                 "Drop a file onto this window to view the contents.",
-                Font::default(),
+                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
                 16.0,
             ),
         })

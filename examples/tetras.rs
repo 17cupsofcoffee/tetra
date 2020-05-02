@@ -135,9 +135,11 @@ impl TitleScene {
         // In our case though, we want it to repeat forever, so it's fine!
         Sound::new("./examples/resources/bgm.wav")?.repeat(ctx)?;
 
+        let font = Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?;
+
         Ok(TitleScene {
-            title_text: Text::new("Tetras", Font::default(), 36.0),
-            help_text: Text::new("An extremely legally distinct puzzle game\n\nControls:\nA and D to move\nQ and E to rotate\nS to drop one row\nSpace to hard drop\n\nPress Space to start.", Font::default(), 16.0),
+            title_text: Text::new("Tetras", font, 36.0),
+            help_text: Text::new("An extremely legally distinct puzzle game\n\nControls:\nA and D to move\nQ and E to rotate\nS to drop one row\nSpace to hard drop\n\nPress Space to start.", font, 16.0),
         })
     }
 }
@@ -333,7 +335,11 @@ impl GameScene {
             move_queue: Vec::new(),
             board: [[None; 10]; 22],
             score: 0,
-            score_text: Text::new("Score: 0", Font::default(), 16.0),
+            score_text: Text::new(
+                "Score: 0",
+                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+                16.0,
+            ),
         })
     }
 

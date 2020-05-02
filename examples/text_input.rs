@@ -8,10 +8,14 @@ struct GameState {
 }
 
 impl GameState {
-    fn new() -> GameState {
-        GameState {
-            text: Text::new("", Font::default(), 32.0),
-        }
+    fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+        Ok(GameState {
+            text: Text::new(
+                "",
+                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+                32.0,
+            ),
+        })
     }
 }
 
@@ -56,5 +60,5 @@ fn main() -> tetra::Result {
     ContextBuilder::new("Keyboard Input", 640, 480)
         .quit_on_escape(true)
         .build()?
-        .run(|_| Ok(GameState::new()))
+        .run(GameState::new)
 }
