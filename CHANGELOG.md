@@ -8,6 +8,10 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming] (Major Release)
 
+### Changed
+
+* **Breaking:** Updated `vek` to 0.11. As Vek is exposed via Tetra's API in the form of the `tetra::math` module, this is potentially a breaking change.
+
 ### Removed
 
 * **Breaking:** `Font` no longer implements `Default`, and the Deja Vu Sans Mono font is no longer bundled with Tetra. It was previously a little murky whether or not the default font's license needed to be included even when you're not using it, due to the bytes being included in the binary.
