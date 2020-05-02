@@ -22,11 +22,47 @@ const BOARD_OFFSET_Y: i32 = (SCREEN_HEIGHT - BOARD_HEIGHT) / 2;
 const SCORE_OFFSET_Y: i32 = BOARD_OFFSET_Y + BOARD_HEIGHT + 4;
 
 fn main() -> tetra::Result {
-    ContextBuilder::new("Tetras", 640, 480)
+    ContextBuilder::new("Tetras", SCREEN_WIDTH, SCREEN_HEIGHT)
         .resizable(true)
         .quit_on_escape(true)
         .build()?
         .run(GameState::new)
+}
+
+// === Asset Management ===
+
+// Some assets are used in multiple scenes, so we'll put them in a struct and
+// pass them around. This also means we can load everything up front instead
+// of there being a jarring pause when the second scene loads.
+
+struct Assets {
+    bgm: Sound,
+    soft_drop_fx: Sound,
+    hard_drop_fx: Sound,
+    line_clear_fx: Sound,
+    game_over_fx: Sound,
+
+    font: Font,
+
+    backdrop: Texture,
+    block: Texture,
+}
+
+impl Assets {
+    fn load(ctx: &mut Context) -> tetra::Result<Assets> {
+        Ok(Assets {
+            bgm: Sound::new("./examples/resources/bgm.wav")?,
+            soft_drop_fx: Sound::new("./examples/resources/softdrop.wav")?,
+            hard_drop_fx: Sound::new("./examples/resources/harddrop.wav")?,
+            line_clear_fx: Sound::new("./examples/resources/lineclear.wav")?,
+            game_over_fx: Sound::new("./examples/resources/gameover.wav")?,
+
+            font: Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+
+            backdrop: Texture::new(ctx, "./examples/resources/backdrop.png")?,
+            block: Texture::new(ctx, "./examples/resources/block.png")?,
+        })
+    }
 }
 
 // === Scene Management ===
@@ -37,8 +73,8 @@ fn main() -> tetra::Result {
 // do this without defining your own trait!
 
 trait Scene {
-    fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition>;
-    fn draw(&mut self, ctx: &mut Context) -> tetra::Result<Transition>;
+    fn update(&mut self, ctx: &mut Context, assets: &Assets) -> tetra::Result<Transition>;
+    fn draw(&mut self, ctx: &mut Context, assets: &Assets) -> tetra::Result<Transition>;
 }
 
 enum Transition {
@@ -53,11 +89,13 @@ enum Transition {
 struct GameState {
     scenes: Vec<Box<dyn Scene>>,
     scaler: ScreenScaler,
+    assets: Assets,
 }
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
-        let initial_scene = TitleScene::new(ctx)?;
+        let assets = Assets::load(ctx)?;
+        let initial_scene = TitleScene::new(ctx, &assets)?;
 
         Ok(GameState {
             scenes: vec![Box::new(initial_scene)],
@@ -67,6 +105,7 @@ impl GameState {
                 480,
                 ScalingMode::ShowAllPixelPerfect,
             )?,
+            assets,
         })
     }
 }
@@ -74,7 +113,7 @@ impl GameState {
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         match self.scenes.last_mut() {
-            Some(active_scene) => match active_scene.update(ctx)? {
+            Some(active_scene) => match active_scene.update(ctx, &self.assets)? {
                 Transition::None => {}
                 Transition::Push(s) => {
                     self.scenes.push(s);
@@ -93,7 +132,7 @@ impl State for GameState {
         graphics::set_canvas(ctx, self.scaler.canvas());
 
         match self.scenes.last_mut() {
-            Some(active_scene) => match active_scene.draw(ctx)? {
+            Some(active_scene) => match active_scene.draw(ctx, &self.assets)? {
                 Transition::None => {}
                 Transition::Push(s) => {
                     self.scenes.push(s);
@@ -129,31 +168,29 @@ struct TitleScene {
 }
 
 impl TitleScene {
-    fn new(ctx: &mut Context) -> tetra::Result<TitleScene> {
+    fn new(ctx: &mut Context, assets: &Assets) -> tetra::Result<TitleScene> {
         // Setting a Sound to repeat without holding on to the SoundInstance
         // is usually a bad practice, as it means you can never stop playback.
         // In our case though, we want it to repeat forever, so it's fine!
-        Sound::new("./examples/resources/bgm.wav")?.repeat(ctx)?;
-
-        let font = Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?;
+        assets.bgm.repeat(ctx)?;
 
         Ok(TitleScene {
-            title_text: Text::new("Tetras", font, 36.0),
-            help_text: Text::new("An extremely legally distinct puzzle game\n\nControls:\nA and D to move\nQ and E to rotate\nS to drop one row\nSpace to hard drop\n\nPress Space to start.", font, 16.0),
+            title_text: Text::new("Tetras", assets.font, 36.0),
+            help_text: Text::new("An extremely legally distinct puzzle game\n\nControls:\nA and D to move\nQ and E to rotate\nS to drop one row\nSpace to hard drop\n\nPress Space to start.", assets.font, 16.0),
         })
     }
 }
 
 impl Scene for TitleScene {
-    fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
+    fn update(&mut self, ctx: &mut Context, assets: &Assets) -> tetra::Result<Transition> {
         if input::is_key_pressed(ctx, Key::Space) {
-            Ok(Transition::Push(Box::new(GameScene::new(ctx)?)))
+            Ok(Transition::Push(Box::new(GameScene::new(ctx, assets)?)))
         } else {
             Ok(Transition::None)
         }
     }
 
-    fn draw(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
+    fn draw(&mut self, ctx: &mut Context, _: &Assets) -> tetra::Result<Transition> {
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
         graphics::draw(ctx, &self.title_text, Vec2::new(16.0, 16.0));
@@ -301,14 +338,6 @@ enum Move {
 }
 
 struct GameScene {
-    backdrop_texture: Texture,
-    block_texture: Texture,
-
-    soft_drop_sound: Sound,
-    hard_drop_sound: Sound,
-    line_clear_sound: Sound,
-    game_over_sound: Sound,
-
     block: Block,
     drop_timer: i32,
     move_timer: i32,
@@ -319,27 +348,15 @@ struct GameScene {
 }
 
 impl GameScene {
-    fn new(ctx: &mut Context) -> tetra::Result<GameScene> {
+    fn new(_: &mut Context, assets: &Assets) -> tetra::Result<GameScene> {
         Ok(GameScene {
-            backdrop_texture: Texture::new(ctx, "./examples/resources/backdrop.png")?,
-            block_texture: Texture::new(ctx, "./examples/resources/block.png")?,
-
-            soft_drop_sound: Sound::new("./examples/resources/softdrop.wav")?,
-            hard_drop_sound: Sound::new("./examples/resources/harddrop.wav")?,
-            line_clear_sound: Sound::new("./examples/resources/lineclear.wav")?,
-            game_over_sound: Sound::new("./examples/resources/gameover.wav")?,
-
             block: Block::new(),
             drop_timer: 0,
             move_timer: 0,
             move_queue: Vec::new(),
             board: [[None; 10]; 22],
             score: 0,
-            score_text: Text::new(
-                "Score: 0",
-                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
-                16.0,
-            ),
+            score_text: Text::new("Score: 0", assets.font, 16.0),
         })
     }
 
@@ -417,7 +434,7 @@ impl GameScene {
 }
 
 impl Scene for GameScene {
-    fn update(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
+    fn update(&mut self, ctx: &mut Context, assets: &Assets) -> tetra::Result<Transition> {
         self.drop_timer += 1;
         self.move_timer += 1;
 
@@ -512,15 +529,15 @@ impl Scene for GameScene {
             }
             Some(Move::Drop) => {
                 if self.collides(0, 1) {
-                    self.soft_drop_sound.play_with(ctx, 0.5, 1.0)?;
+                    assets.soft_drop_fx.play_with(ctx, 0.5, 1.0)?;
                     self.lock();
 
                     if self.check_for_clears() {
-                        self.line_clear_sound.play_with(ctx, 0.5, 1.0)?;
+                        assets.line_clear_fx.play_with(ctx, 0.5, 1.0)?;
                     }
 
                     if self.check_for_game_over() {
-                        self.game_over_sound.play_with(ctx, 0.2, 1.0)?;
+                        assets.game_over_fx.play_with(ctx, 0.2, 1.0)?;
                         return Ok(Transition::Pop);
                     }
 
@@ -534,15 +551,15 @@ impl Scene for GameScene {
                     self.block.y += 1;
                 }
 
-                self.hard_drop_sound.play_with(ctx, 0.5, 1.0)?;
+                assets.hard_drop_fx.play_with(ctx, 0.5, 1.0)?;
                 self.lock();
 
                 if self.check_for_clears() {
-                    self.line_clear_sound.play_with(ctx, 0.5, 1.0)?;
+                    assets.line_clear_fx.play_with(ctx, 0.5, 1.0)?;
                 }
 
                 if self.check_for_game_over() {
-                    self.game_over_sound.play_with(ctx, 0.2, 1.0)?;
+                    assets.game_over_fx.play_with(ctx, 0.2, 1.0)?;
                     return Ok(Transition::Pop);
                 }
 
@@ -554,12 +571,12 @@ impl Scene for GameScene {
         Ok(Transition::None)
     }
 
-    fn draw(&mut self, ctx: &mut Context) -> tetra::Result<Transition> {
+    fn draw(&mut self, ctx: &mut Context, assets: &Assets) -> tetra::Result<Transition> {
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
         graphics::draw(
             ctx,
-            &self.backdrop_texture,
+            &assets.backdrop,
             Vec2::new(BOARD_OFFSET_X as f32, BOARD_OFFSET_Y as f32),
         );
 
@@ -572,7 +589,7 @@ impl Scene for GameScene {
         for (x, y, color) in self.board_blocks() {
             graphics::draw(
                 ctx,
-                &self.block_texture,
+                &assets.block,
                 DrawParams::new()
                     .position(Vec2::new(
                         (BOARD_OFFSET_X + BORDER_SIZE + x * BLOCK_SIZE) as f32,
@@ -587,7 +604,7 @@ impl Scene for GameScene {
         for (x, y) in self.block.segments() {
             graphics::draw(
                 ctx,
-                &self.block_texture,
+                &assets.block,
                 DrawParams::new()
                     .position(Vec2::new(
                         (BOARD_OFFSET_X + BORDER_SIZE + x * BLOCK_SIZE) as f32,
