@@ -21,7 +21,7 @@ sdl2 = "0.34.0"
 rodio = "0.11.0"
 glow = "0.4.0"
 image = "0.23.1"
-vek = { version = "0.9.12", default-features = false }
+vek = { version = "0.10.4", default-features = false }
 hashbrown = "0.7.1"
 glyph_brush = "0.6.3"
 serde = { version = "1.0.104", optional = true } 
