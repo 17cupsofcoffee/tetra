@@ -1,3 +1,4 @@
+use std::cell::Cell;
 use std::mem;
 use std::rc::Rc;
 
@@ -14,15 +15,20 @@ type FramebufferId = <GlowContext as HasContext>::Framebuffer;
 type VertexArrayId = <GlowContext as HasContext>::VertexArray;
 type UniformLocation = <GlowContext as HasContext>::UniformLocation;
 
-pub struct GraphicsDevice {
-    gl: Rc<GlowContext>,
+#[derive(Debug)]
+struct GraphicsState {
+    gl: GlowContext,
 
-    current_vertex_buffer: Option<BufferId>,
-    current_index_buffer: Option<BufferId>,
-    current_program: Option<ProgramId>,
-    current_texture: Option<TextureId>,
-    current_framebuffer: Option<FramebufferId>,
-    current_vertex_array: Option<VertexArrayId>,
+    current_vertex_buffer: Cell<Option<BufferId>>,
+    current_index_buffer: Cell<Option<BufferId>>,
+    current_program: Cell<Option<ProgramId>>,
+    current_texture: Cell<Option<TextureId>>,
+    current_framebuffer: Cell<Option<FramebufferId>>,
+    current_vertex_array: Cell<Option<VertexArrayId>>,
+}
+
+pub struct GraphicsDevice {
+    state: Rc<GraphicsState>,
 }
 
 impl GraphicsDevice {
@@ -51,45 +57,53 @@ impl GraphicsDevice {
             // TODO: Find a nice way of exposing this via the platform layer
             // println!("Swap Interval: {:?}", video.gl_get_swap_interval());
 
-            Ok(GraphicsDevice {
-                gl: Rc::new(gl),
+            let state = GraphicsState {
+                gl,
 
-                current_vertex_buffer: None,
-                current_index_buffer: None,
-                current_program: None,
-                current_texture: None,
-                current_framebuffer: None,
-                current_vertex_array: Some(current_vertex_array),
+                current_vertex_buffer: Cell::new(None),
+                current_index_buffer: Cell::new(None),
+                current_program: Cell::new(None),
+                current_texture: Cell::new(None),
+                current_framebuffer: Cell::new(None),
+                current_vertex_array: Cell::new(Some(current_vertex_array)),
+            };
+
+            Ok(GraphicsDevice {
+                state: Rc::new(state),
             })
         }
     }
 
     pub fn get_renderer(&self) -> String {
-        unsafe { self.gl.get_parameter_string(glow::RENDERER) }
+        unsafe { self.state.gl.get_parameter_string(glow::RENDERER) }
     }
 
     pub fn get_version(&self) -> String {
-        unsafe { self.gl.get_parameter_string(glow::VERSION) }
+        unsafe { self.state.gl.get_parameter_string(glow::VERSION) }
     }
 
     pub fn get_vendor(&self) -> String {
-        unsafe { self.gl.get_parameter_string(glow::VENDOR) }
+        unsafe { self.state.gl.get_parameter_string(glow::VENDOR) }
     }
 
     pub fn get_shading_language_version(&self) -> String {
-        unsafe { self.gl.get_parameter_string(glow::SHADING_LANGUAGE_VERSION) }
+        unsafe {
+            self.state
+                .gl
+                .get_parameter_string(glow::SHADING_LANGUAGE_VERSION)
+        }
     }
 
     pub fn clear(&mut self, r: f32, g: f32, b: f32, a: f32) {
         unsafe {
-            self.gl.clear_color(r, g, b, a);
-            self.gl.clear(glow::COLOR_BUFFER_BIT);
+            self.state.gl.clear_color(r, g, b, a);
+            self.state.gl.clear(glow::COLOR_BUFFER_BIT);
         }
     }
 
     pub fn front_face(&mut self, front_face: FrontFace) {
         unsafe {
-            self.gl.front_face(front_face.into());
+            self.state.gl.front_face(front_face.into());
         }
     }
 
@@ -100,10 +114,14 @@ impl GraphicsDevice {
         usage: BufferUsage,
     ) -> Result<RawVertexBuffer> {
         unsafe {
-            let id = self.gl.create_buffer().map_err(TetraError::PlatformError)?;
+            let id = self
+                .state
+                .gl
+                .create_buffer()
+                .map_err(TetraError::PlatformError)?;
 
             let buffer = RawVertexBuffer {
-                gl: Rc::clone(&self.gl),
+                state: Rc::clone(&self.state),
                 id,
                 count,
                 stride,
@@ -111,7 +129,7 @@ impl GraphicsDevice {
 
             self.bind_vertex_buffer(Some(&buffer));
 
-            self.gl.buffer_data_size(
+            self.state.gl.buffer_data_size(
                 glow::ARRAY_BUFFER,
                 (count * mem::size_of::<f32>()) as i32,
                 usage.into(),
@@ -133,7 +151,7 @@ impl GraphicsDevice {
         unsafe {
             self.bind_vertex_buffer(Some(buffer));
 
-            self.gl.vertex_attrib_pointer_f32(
+            self.state.gl.vertex_attrib_pointer_f32(
                 index,
                 size,
                 glow::FLOAT,
@@ -142,7 +160,7 @@ impl GraphicsDevice {
                 (offset * mem::size_of::<f32>()) as i32,
             );
 
-            self.gl.enable_vertex_attrib_array(index);
+            self.state.gl.enable_vertex_attrib_array(index);
         }
     }
 
@@ -161,7 +179,7 @@ impl GraphicsDevice {
             let byte_len = std::mem::size_of_val(data) / std::mem::size_of::<u8>();
             let byte_slice = std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_len);
 
-            self.gl.buffer_sub_data_u8_slice(
+            self.state.gl.buffer_sub_data_u8_slice(
                 glow::ARRAY_BUFFER,
                 (offset * mem::size_of::<f32>()) as i32,
                 byte_slice,
@@ -171,17 +189,21 @@ impl GraphicsDevice {
 
     pub fn new_index_buffer(&mut self, count: usize, usage: BufferUsage) -> Result<RawIndexBuffer> {
         unsafe {
-            let id = self.gl.create_buffer().map_err(TetraError::PlatformError)?;
+            let id = self
+                .state
+                .gl
+                .create_buffer()
+                .map_err(TetraError::PlatformError)?;
 
             let buffer = RawIndexBuffer {
-                gl: Rc::clone(&self.gl),
+                state: Rc::clone(&self.state),
                 id,
                 count,
             };
 
             self.bind_index_buffer(Some(&buffer));
 
-            self.gl.buffer_data_size(
+            self.state.gl.buffer_data_size(
                 glow::ELEMENT_ARRAY_BUFFER,
                 (count * mem::size_of::<u32>()) as i32,
                 usage.into(),
@@ -201,7 +223,7 @@ impl GraphicsDevice {
             let byte_len = std::mem::size_of_val(data) / std::mem::size_of::<u8>();
             let byte_slice = std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_len);
 
-            self.gl.buffer_sub_data_u8_slice(
+            self.state.gl.buffer_sub_data_u8_slice(
                 glow::ELEMENT_ARRAY_BUFFER,
                 (offset * mem::size_of::<u32>()) as i32,
                 byte_slice,
@@ -216,58 +238,63 @@ impl GraphicsDevice {
     ) -> Result<RawProgram> {
         unsafe {
             let program_id = self
+                .state
                 .gl
                 .create_program()
                 .map_err(TetraError::PlatformError)?;
 
             // TODO: IDK if this should be applied to *all* shaders...
-            self.gl.bind_attrib_location(program_id, 0, "a_position");
-            self.gl.bind_attrib_location(program_id, 1, "a_uv");
-            self.gl.bind_attrib_location(program_id, 2, "a_color");
+            self.state
+                .gl
+                .bind_attrib_location(program_id, 0, "a_position");
+            self.state.gl.bind_attrib_location(program_id, 1, "a_uv");
+            self.state.gl.bind_attrib_location(program_id, 2, "a_color");
 
             let vertex_id = self
+                .state
                 .gl
                 .create_shader(glow::VERTEX_SHADER)
                 .map_err(TetraError::PlatformError)?;
 
-            self.gl.shader_source(vertex_id, vertex_shader);
-            self.gl.compile_shader(vertex_id);
-            self.gl.attach_shader(program_id, vertex_id);
+            self.state.gl.shader_source(vertex_id, vertex_shader);
+            self.state.gl.compile_shader(vertex_id);
+            self.state.gl.attach_shader(program_id, vertex_id);
 
-            if !self.gl.get_shader_compile_status(vertex_id) {
+            if !self.state.gl.get_shader_compile_status(vertex_id) {
                 return Err(TetraError::InvalidShader(
-                    self.gl.get_shader_info_log(vertex_id),
+                    self.state.gl.get_shader_info_log(vertex_id),
                 ));
             }
 
             let fragment_id = self
+                .state
                 .gl
                 .create_shader(glow::FRAGMENT_SHADER)
                 .map_err(TetraError::PlatformError)?;
 
-            self.gl.shader_source(fragment_id, fragment_shader);
-            self.gl.compile_shader(fragment_id);
-            self.gl.attach_shader(program_id, fragment_id);
+            self.state.gl.shader_source(fragment_id, fragment_shader);
+            self.state.gl.compile_shader(fragment_id);
+            self.state.gl.attach_shader(program_id, fragment_id);
 
-            if !self.gl.get_shader_compile_status(fragment_id) {
+            if !self.state.gl.get_shader_compile_status(fragment_id) {
                 return Err(TetraError::InvalidShader(
-                    self.gl.get_shader_info_log(fragment_id),
+                    self.state.gl.get_shader_info_log(fragment_id),
                 ));
             }
 
-            self.gl.link_program(program_id);
+            self.state.gl.link_program(program_id);
 
-            if !self.gl.get_program_link_status(program_id) {
+            if !self.state.gl.get_program_link_status(program_id) {
                 return Err(TetraError::InvalidShader(
-                    self.gl.get_program_info_log(program_id),
+                    self.state.gl.get_program_info_log(program_id),
                 ));
             }
 
-            self.gl.delete_shader(vertex_id);
-            self.gl.delete_shader(fragment_id);
+            self.state.gl.delete_shader(vertex_id);
+            self.state.gl.delete_shader(fragment_id);
 
             let program = RawProgram {
-                gl: Rc::clone(&self.gl),
+                state: Rc::clone(&self.state),
                 id: program_id,
             };
 
@@ -283,7 +310,7 @@ impl GraphicsDevice {
     {
         unsafe {
             self.bind_program(Some(program));
-            let location = self.gl.get_uniform_location(program.id, name);
+            let location = self.state.gl.get_uniform_location(program.id, name);
             value.set_uniform(program, location);
         }
     }
@@ -292,12 +319,13 @@ impl GraphicsDevice {
         // TODO: I don't think we need mipmaps?
         unsafe {
             let id = self
+                .state
                 .gl
                 .create_texture()
                 .map_err(TetraError::PlatformError)?;
 
             let texture = RawTexture {
-                gl: Rc::clone(&self.gl),
+                state: Rc::clone(&self.state),
 
                 id,
                 width,
@@ -306,19 +334,27 @@ impl GraphicsDevice {
 
             self.bind_texture(Some(&texture));
 
-            self.gl
-                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_WRAP_S, glow::REPEAT as i32);
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_WRAP_S,
+                glow::REPEAT as i32,
+            );
 
-            self.gl
-                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_WRAP_T, glow::REPEAT as i32);
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_WRAP_T,
+                glow::REPEAT as i32,
+            );
 
-            self.gl
+            self.state
+                .gl
                 .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_BASE_LEVEL, 0);
 
-            self.gl
+            self.state
+                .gl
                 .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_MAX_LEVEL, 0);
 
-            self.gl.tex_image_2d(
+            self.state.gl.tex_image_2d(
                 glow::TEXTURE_2D,
                 0,
                 glow::RGBA as i32, // love 2 deal with legacy apis
@@ -346,7 +382,7 @@ impl GraphicsDevice {
         unsafe {
             self.bind_texture(Some(texture));
 
-            self.gl.tex_sub_image_2d_u8_slice(
+            self.state.gl.tex_sub_image_2d_u8_slice(
                 glow::TEXTURE_2D,
                 0,
                 x,
@@ -364,13 +400,13 @@ impl GraphicsDevice {
         self.bind_texture(Some(texture));
 
         unsafe {
-            self.gl.tex_parameter_i32(
+            self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,
                 glow::TEXTURE_MIN_FILTER,
                 filter_mode.into(),
             );
 
-            self.gl.tex_parameter_i32(
+            self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,
                 glow::TEXTURE_MAG_FILTER,
                 filter_mode.into(),
@@ -385,20 +421,21 @@ impl GraphicsDevice {
     ) -> Result<RawFramebuffer> {
         unsafe {
             let id = self
+                .state
                 .gl
                 .create_framebuffer()
                 .map_err(TetraError::PlatformError)?;
 
             let framebuffer = RawFramebuffer {
-                gl: Rc::clone(&self.gl),
+                state: Rc::clone(&self.state),
                 id,
             };
 
-            let previous_id = self.current_framebuffer;
+            let previous_id = self.state.current_framebuffer.get();
 
             self.bind_framebuffer(Some(&framebuffer));
 
-            self.gl.framebuffer_texture_2d(
+            self.state.gl.framebuffer_texture_2d(
                 glow::FRAMEBUFFER,
                 glow::COLOR_ATTACHMENT0,
                 glow::TEXTURE_2D,
@@ -407,8 +444,10 @@ impl GraphicsDevice {
             );
 
             if rebind_previous {
-                self.gl.bind_framebuffer(glow::FRAMEBUFFER, previous_id);
-                self.current_framebuffer = previous_id;
+                self.state
+                    .gl
+                    .bind_framebuffer(glow::FRAMEBUFFER, previous_id);
+                self.state.current_framebuffer.set(previous_id);
             }
 
             Ok(framebuffer)
@@ -417,7 +456,7 @@ impl GraphicsDevice {
 
     pub fn viewport(&mut self, x: i32, y: i32, width: i32, height: i32) {
         unsafe {
-            self.gl.viewport(x, y, width, height);
+            self.state.gl.viewport(x, y, width, height);
         }
     }
 
@@ -435,7 +474,8 @@ impl GraphicsDevice {
             self.bind_texture(Some(texture));
             self.bind_program(Some(program));
 
-            self.gl
+            self.state
+                .gl
                 .draw_elements(glow::TRIANGLES, count, glow::UNSIGNED_INT, 0);
         }
     }
@@ -444,9 +484,9 @@ impl GraphicsDevice {
         unsafe {
             let id = buffer.map(|x| x.id);
 
-            if self.current_vertex_buffer != id {
-                self.gl.bind_buffer(glow::ARRAY_BUFFER, id);
-                self.current_vertex_buffer = id;
+            if self.state.current_vertex_buffer.get() != id {
+                self.state.gl.bind_buffer(glow::ARRAY_BUFFER, id);
+                self.state.current_vertex_buffer.set(id);
             }
         }
     }
@@ -455,9 +495,9 @@ impl GraphicsDevice {
         unsafe {
             let id = buffer.map(|x| x.id);
 
-            if self.current_index_buffer != id {
-                self.gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, id);
-                self.current_index_buffer = id;
+            if self.state.current_index_buffer.get() != id {
+                self.state.gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, id);
+                self.state.current_index_buffer.set(id);
             }
         }
     }
@@ -466,9 +506,9 @@ impl GraphicsDevice {
         unsafe {
             let id = program.map(|x| x.id);
 
-            if self.current_program != id {
-                self.gl.use_program(id);
-                self.current_program = id;
+            if self.state.current_program.get() != id {
+                self.state.gl.use_program(id);
+                self.state.current_program.set(id);
             }
         }
     }
@@ -477,10 +517,10 @@ impl GraphicsDevice {
         unsafe {
             let id = texture.map(|x| x.id);
 
-            if self.current_texture != id {
-                self.gl.active_texture(glow::TEXTURE0);
-                self.gl.bind_texture(glow::TEXTURE_2D, id);
-                self.current_texture = id;
+            if self.state.current_texture.get() != id {
+                self.state.gl.active_texture(glow::TEXTURE0);
+                self.state.gl.bind_texture(glow::TEXTURE_2D, id);
+                self.state.current_texture.set(id);
             }
         }
     }
@@ -489,9 +529,9 @@ impl GraphicsDevice {
         unsafe {
             let id = framebuffer.map(|x| x.id);
 
-            if self.current_framebuffer != id {
-                self.gl.bind_framebuffer(glow::FRAMEBUFFER, id);
-                self.current_framebuffer = id;
+            if self.state.current_framebuffer.get() != id {
+                self.state.gl.bind_framebuffer(glow::FRAMEBUFFER, id);
+                self.state.current_framebuffer.set(id);
             }
         }
     }
@@ -500,10 +540,10 @@ impl GraphicsDevice {
 impl Drop for GraphicsDevice {
     fn drop(&mut self) {
         unsafe {
-            self.gl.bind_vertex_array(None);
+            self.state.gl.bind_vertex_array(None);
 
-            if let Some(va) = self.current_vertex_array {
-                self.gl.delete_vertex_array(va);
+            if let Some(va) = self.state.current_vertex_array.get() {
+                self.state.gl.delete_vertex_array(va);
             }
         }
     }
@@ -555,57 +595,86 @@ macro_rules! handle_impls {
                 self.id == other.id
             }
         }
-
-        impl Drop for $name {
-            fn drop(&mut self) {
-                unsafe {
-                    self.gl.$delete(self.id);
-                }
-            }
-        }
     };
 }
 
 #[derive(Debug)]
 pub struct RawVertexBuffer {
-    gl: Rc<GlowContext>,
-
+    state: Rc<GraphicsState>,
     id: BufferId,
+
     count: usize,
     stride: usize,
+}
+
+impl Drop for RawVertexBuffer {
+    fn drop(&mut self) {
+        unsafe {
+            if self.state.current_vertex_buffer.get() == Some(self.id) {
+                self.state.gl.bind_buffer(glow::ARRAY_BUFFER, None);
+                self.state.current_vertex_buffer.set(None);
+            }
+
+            self.state.gl.delete_buffer(self.id);
+        }
+    }
 }
 
 handle_impls!(RawVertexBuffer, delete_buffer);
 
 #[derive(Debug)]
 pub struct RawIndexBuffer {
-    gl: Rc<GlowContext>,
-
+    state: Rc<GraphicsState>,
     id: BufferId,
+
     count: usize,
+}
+
+impl Drop for RawIndexBuffer {
+    fn drop(&mut self) {
+        unsafe {
+            if self.state.current_index_buffer.get() == Some(self.id) {
+                self.state.gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, None);
+                self.state.current_index_buffer.set(None);
+            }
+
+            self.state.gl.delete_buffer(self.id);
+        }
+    }
 }
 
 handle_impls!(RawIndexBuffer, delete_buffer);
 
 #[derive(Debug)]
 pub struct RawProgram {
-    gl: Rc<GlowContext>,
+    state: Rc<GraphicsState>,
 
     id: ProgramId,
+}
+
+impl Drop for RawProgram {
+    fn drop(&mut self) {
+        unsafe {
+            if self.state.current_program.get() == Some(self.id) {
+                self.state.gl.use_program(None);
+                self.state.current_program.set(None);
+            }
+
+            self.state.gl.delete_program(self.id);
+        }
+    }
 }
 
 handle_impls!(RawProgram, delete_program);
 
 #[derive(Debug)]
 pub struct RawTexture {
-    gl: Rc<GlowContext>,
-
+    state: Rc<GraphicsState>,
     id: TextureId,
+
     width: i32,
     height: i32,
 }
-
-handle_impls!(RawTexture, delete_texture);
 
 impl RawTexture {
     pub fn width(&self) -> i32 {
@@ -617,11 +686,39 @@ impl RawTexture {
     }
 }
 
+impl Drop for RawTexture {
+    fn drop(&mut self) {
+        unsafe {
+            if self.state.current_texture.get() == Some(self.id) {
+                self.state.gl.active_texture(glow::TEXTURE0);
+                self.state.gl.bind_texture(glow::TEXTURE0, None);
+                self.state.current_texture.set(None);
+            }
+
+            self.state.gl.delete_texture(self.id);
+        }
+    }
+}
+
+handle_impls!(RawTexture, delete_texture);
+
 #[derive(Debug)]
 pub struct RawFramebuffer {
-    gl: Rc<GlowContext>,
-
+    state: Rc<GraphicsState>,
     id: FramebufferId,
+}
+
+impl Drop for RawFramebuffer {
+    fn drop(&mut self) {
+        unsafe {
+            if self.state.current_framebuffer.get() == Some(self.id) {
+                self.state.gl.bind_framebuffer(glow::FRAMEBUFFER, None);
+                self.state.current_framebuffer.set(None);
+            }
+
+            self.state.gl.delete_framebuffer(self.id);
+        }
+    }
 }
 
 handle_impls!(RawFramebuffer, delete_framebuffer);
@@ -653,42 +750,51 @@ pub trait UniformValue: sealed::UniformValueTypes {
 impl UniformValue for i32 {
     #[doc(hidden)]
     unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
-        program.gl.uniform_1_i32(location, *self);
+        program.state.gl.uniform_1_i32(location, *self);
     }
 }
 
 impl UniformValue for f32 {
     #[doc(hidden)]
     unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
-        program.gl.uniform_1_f32(location, *self);
+        program.state.gl.uniform_1_f32(location, *self);
     }
 }
 
 impl UniformValue for Vec2<f32> {
     #[doc(hidden)]
     unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
-        program.gl.uniform_2_f32_slice(location, &self.into_array());
+        program
+            .state
+            .gl
+            .uniform_2_f32_slice(location, &self.into_array());
     }
 }
 
 impl UniformValue for Vec3<f32> {
     #[doc(hidden)]
     unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
-        program.gl.uniform_3_f32_slice(location, &self.into_array());
+        program
+            .state
+            .gl
+            .uniform_3_f32_slice(location, &self.into_array());
     }
 }
 
 impl UniformValue for Vec4<f32> {
     #[doc(hidden)]
     unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
-        program.gl.uniform_4_f32_slice(location, &self.into_array());
+        program
+            .state
+            .gl
+            .uniform_4_f32_slice(location, &self.into_array());
     }
 }
 
 impl UniformValue for Mat2<f32> {
     #[doc(hidden)]
     unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
-        program.gl.uniform_matrix_2_f32_slice(
+        program.state.gl.uniform_matrix_2_f32_slice(
             location,
             self.gl_should_transpose(),
             &self.into_col_array(),
@@ -699,7 +805,7 @@ impl UniformValue for Mat2<f32> {
 impl UniformValue for Mat3<f32> {
     #[doc(hidden)]
     unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
-        program.gl.uniform_matrix_3_f32_slice(
+        program.state.gl.uniform_matrix_3_f32_slice(
             location,
             self.gl_should_transpose(),
             &self.into_col_array(),
@@ -710,7 +816,7 @@ impl UniformValue for Mat3<f32> {
 impl UniformValue for Mat4<f32> {
     #[doc(hidden)]
     unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
-        program.gl.uniform_matrix_4_f32_slice(
+        program.state.gl.uniform_matrix_4_f32_slice(
             location,
             self.gl_should_transpose(),
             &self.into_col_array(),

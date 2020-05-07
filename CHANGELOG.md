@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Fixed
+
+* Fixed an issue where OpenGL objects would not be properly unbound when they were dropped.
+
 ## [0.3.5] - 2020-04-25
 
 ### Added
