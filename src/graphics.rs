@@ -103,10 +103,6 @@ impl GraphicsContext {
             BufferUsage::DynamicDraw,
         )?;
 
-        device.set_vertex_buffer_attribute(&vertex_buffer, 0, 2, 0);
-        device.set_vertex_buffer_attribute(&vertex_buffer, 1, 2, 2);
-        device.set_vertex_buffer_attribute(&vertex_buffer, 2, 4, 4);
-
         let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::StaticDraw)?;
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);

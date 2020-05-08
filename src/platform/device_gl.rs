@@ -8,6 +8,21 @@ use crate::error::{Result, TetraError};
 use crate::graphics::FilterMode;
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
+/// Utility function for calculating offsets/sizes.
+fn size<T>(elements: usize) -> i32 {
+    (elements * mem::size_of::<T>()) as i32
+}
+
+/// Utility function for converting a slice to a slice of bytes.
+///
+/// Marked as unsafe, as I don't think it's safe to call for every type! It's fine
+/// for simple aligned numeric types, though, which is the only way we use it.
+unsafe fn byte_slice<T>(data: &[T]) -> &[u8] {
+    // TODO: Is this cast correct?
+    let byte_len = std::mem::size_of_val(data) / std::mem::size_of::<u8>();
+    std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_len)
+}
+
 type BufferId = <GlowContext as HasContext>::Buffer;
 type ProgramId = <GlowContext as HasContext>::Program;
 type TextureId = <GlowContext as HasContext>::Texture;
@@ -129,38 +144,11 @@ impl GraphicsDevice {
 
             self.bind_vertex_buffer(Some(&buffer));
 
-            self.state.gl.buffer_data_size(
-                glow::ARRAY_BUFFER,
-                (count * mem::size_of::<f32>()) as i32,
-                usage.into(),
-            );
+            self.state
+                .gl
+                .buffer_data_size(glow::ARRAY_BUFFER, size::<f32>(count), usage.into());
 
             Ok(buffer)
-        }
-    }
-
-    pub fn set_vertex_buffer_attribute(
-        &mut self,
-        buffer: &RawVertexBuffer,
-        index: u32,
-        size: i32,
-        offset: usize,
-    ) {
-        // TODO: This feels a bit unergonomic...
-
-        unsafe {
-            self.bind_vertex_buffer(Some(buffer));
-
-            self.state.gl.vertex_attrib_pointer_f32(
-                index,
-                size,
-                glow::FLOAT,
-                false,
-                (buffer.stride * mem::size_of::<f32>()) as i32,
-                (offset * mem::size_of::<f32>()) as i32,
-            );
-
-            self.state.gl.enable_vertex_attrib_array(index);
         }
     }
 
@@ -174,15 +162,11 @@ impl GraphicsDevice {
             self.bind_vertex_buffer(Some(buffer));
 
             // TODO: What if we want to discard what's already there?
-            // TODO: Is this cast safe?
-
-            let byte_len = std::mem::size_of_val(data) / std::mem::size_of::<u8>();
-            let byte_slice = std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_len);
 
             self.state.gl.buffer_sub_data_u8_slice(
                 glow::ARRAY_BUFFER,
-                (offset * mem::size_of::<f32>()) as i32,
-                byte_slice,
+                size::<f32>(offset),
+                byte_slice(data),
             );
         }
     }
@@ -205,7 +189,7 @@ impl GraphicsDevice {
 
             self.state.gl.buffer_data_size(
                 glow::ELEMENT_ARRAY_BUFFER,
-                (count * mem::size_of::<u32>()) as i32,
+                size::<u32>(count),
                 usage.into(),
             );
 
@@ -218,15 +202,11 @@ impl GraphicsDevice {
             self.bind_index_buffer(Some(buffer));
 
             // TODO: What if we want to discard what's already there?
-            // TODO: Is this cast safe?
-
-            let byte_len = std::mem::size_of_val(data) / std::mem::size_of::<u8>();
-            let byte_slice = std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_len);
 
             self.state.gl.buffer_sub_data_u8_slice(
                 glow::ELEMENT_ARRAY_BUFFER,
-                (offset * mem::size_of::<u32>()) as i32,
-                byte_slice,
+                size::<u32>(offset),
+                byte_slice(data),
             );
         }
     }
@@ -486,6 +466,49 @@ impl GraphicsDevice {
 
             if self.state.current_vertex_buffer.get() != id {
                 self.state.gl.bind_buffer(glow::ARRAY_BUFFER, id);
+
+                // TODO: This only works because we don't let the user set custom
+                // attribute bindings - will need a rethink at that point!
+                match buffer {
+                    Some(b) => {
+                        self.state.gl.vertex_attrib_pointer_f32(
+                            0,
+                            2,
+                            glow::FLOAT,
+                            false,
+                            size::<f32>(b.stride),
+                            0,
+                        );
+
+                        self.state.gl.vertex_attrib_pointer_f32(
+                            1,
+                            2,
+                            glow::FLOAT,
+                            false,
+                            size::<f32>(b.stride),
+                            size::<f32>(2),
+                        );
+
+                        self.state.gl.vertex_attrib_pointer_f32(
+                            2,
+                            4,
+                            glow::FLOAT,
+                            false,
+                            size::<f32>(b.stride),
+                            size::<f32>(4),
+                        );
+
+                        self.state.gl.enable_vertex_attrib_array(0);
+                        self.state.gl.enable_vertex_attrib_array(1);
+                        self.state.gl.enable_vertex_attrib_array(2);
+                    }
+                    None => {
+                        self.state.gl.disable_vertex_attrib_array(0);
+                        self.state.gl.disable_vertex_attrib_array(1);
+                        self.state.gl.disable_vertex_attrib_array(2);
+                    }
+                }
+
                 self.state.current_vertex_buffer.set(id);
             }
         }
@@ -612,6 +635,13 @@ impl Drop for RawVertexBuffer {
         unsafe {
             if self.state.current_vertex_buffer.get() == Some(self.id) {
                 self.state.gl.bind_buffer(glow::ARRAY_BUFFER, None);
+
+                // TODO: This only works because we don't let the user set custom
+                // attribute bindings - will need a rethink at that point!
+                self.state.gl.disable_vertex_attrib_array(0);
+                self.state.gl.disable_vertex_attrib_array(1);
+                self.state.gl.disable_vertex_attrib_array(2);
+
                 self.state.current_vertex_buffer.set(None);
             }
 
