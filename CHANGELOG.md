@@ -9,6 +9,7 @@ This project adheres to Semantic Versioning.
 ### Fixed
 
 * Fixed an issue where OpenGL objects would not be properly unbound when they were dropped.
+* Fixed an issue where the OpenGL buffer attributes were not being set correctly. 
 
 ## [0.3.5] - 2020-04-25
 

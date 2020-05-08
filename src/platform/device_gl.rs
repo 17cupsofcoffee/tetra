@@ -612,7 +612,7 @@ impl From<FilterMode> for i32 {
 }
 
 macro_rules! handle_impls {
-    ($name:ty, $delete:ident) => {
+    ($name:ty) => {
         impl PartialEq for $name {
             fn eq(&self, other: &$name) -> bool {
                 self.id == other.id
@@ -650,7 +650,7 @@ impl Drop for RawVertexBuffer {
     }
 }
 
-handle_impls!(RawVertexBuffer, delete_buffer);
+handle_impls!(RawVertexBuffer);
 
 #[derive(Debug)]
 pub struct RawIndexBuffer {
@@ -673,7 +673,7 @@ impl Drop for RawIndexBuffer {
     }
 }
 
-handle_impls!(RawIndexBuffer, delete_buffer);
+handle_impls!(RawIndexBuffer);
 
 #[derive(Debug)]
 pub struct RawProgram {
@@ -695,7 +695,7 @@ impl Drop for RawProgram {
     }
 }
 
-handle_impls!(RawProgram, delete_program);
+handle_impls!(RawProgram);
 
 #[derive(Debug)]
 pub struct RawTexture {
@@ -730,7 +730,7 @@ impl Drop for RawTexture {
     }
 }
 
-handle_impls!(RawTexture, delete_texture);
+handle_impls!(RawTexture);
 
 #[derive(Debug)]
 pub struct RawFramebuffer {
@@ -751,7 +751,7 @@ impl Drop for RawFramebuffer {
     }
 }
 
-handle_impls!(RawFramebuffer, delete_framebuffer);
+handle_impls!(RawFramebuffer);
 
 mod sealed {
     use super::*;
