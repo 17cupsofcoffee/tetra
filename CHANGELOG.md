@@ -6,6 +6,10 @@ This project adheres to Semantic Versioning.
 
 ## Upcoming
 
+### Changed
+
+* The window is now hidden when the game loop is not running. This avoids issues where the window would be displayed before the game has a chance to fully load assets, or to determine ideal rendering sizes. 
+
 ### Fixed
 
 * Fixed an issue where OpenGL objects would not be properly unbound when they were dropped.

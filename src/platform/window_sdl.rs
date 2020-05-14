@@ -139,9 +139,6 @@ impl Window {
             })
             .map_err(TetraError::FailedToChangeDisplayMode)?;
 
-        // Now the window is ready to show to the user.
-        sdl_window.show();
-
         let window = Window {
             sdl,
             sdl_window,
@@ -192,6 +189,14 @@ impl Window {
         self.sdl_window
             .set_size(width as u32, height as u32)
             .map_err(|e| TetraError::FailedToChangeDisplayMode(e.to_string()))
+    }
+
+    pub fn set_visible(&mut self, visible: bool) {
+        if visible {
+            self.sdl_window.show()
+        } else {
+            self.sdl_window.hide()
+        }
     }
 
     pub fn set_vsync(&mut self, vsync: bool) -> Result {

@@ -97,15 +97,20 @@ impl Context {
         time::reset(self);
 
         self.running = true;
+        self.window.set_visible(true);
+
+        let mut output = Ok(());
 
         while self.running {
             if let Err(e) = self.tick(state) {
-                self.running = false;
-                return Err(e);
+                output = Err(e);
+                break;
             }
         }
 
-        Ok(())
+        self.window.set_visible(false);
+
+        output
     }
 
     pub(crate) fn tick<S>(&mut self, state: &mut S) -> Result
