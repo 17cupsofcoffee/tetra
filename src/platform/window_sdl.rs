@@ -199,6 +199,33 @@ impl Window {
         }
     }
 
+    pub fn get_monitor_count(&self) -> Result<i32> {
+        self.video_sys
+            .num_video_displays()
+            .map_err(TetraError::PlatformError)
+    }
+
+    pub fn get_monitor_name(&self, monitor_index: i32) -> Result<String> {
+        self.video_sys
+            .display_name(monitor_index)
+            .map_err(TetraError::PlatformError)
+    }
+
+    pub fn get_monitor_size(&self, monitor_index: i32) -> Result<(i32, i32)> {
+        let display_mode = self
+            .video_sys
+            .desktop_display_mode(monitor_index)
+            .map_err(TetraError::PlatformError)?;
+
+        Ok((display_mode.w, display_mode.h))
+    }
+
+    pub fn get_current_monitor(&self) -> Result<i32> {
+        self.sdl_window
+            .display_index()
+            .map_err(TetraError::PlatformError)
+    }
+
     pub fn set_vsync(&mut self, vsync: bool) -> Result {
         self.video_sys
             .gl_set_swap_interval(if vsync {

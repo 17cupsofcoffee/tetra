@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
-## Upcoming
+## [Upcoming]
+
+### Added
+
+* A new suite of functions has been added to the `window` module, allowing you to query info about the monitors that are connected to the current device.
 
 ### Changed
 

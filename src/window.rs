@@ -1,4 +1,4 @@
-//! Functions and types relating to the game window.
+//! Functions and types relating to the game window, and the environment it is running in.
 
 use crate::{Context, Result};
 
@@ -110,4 +110,96 @@ pub fn set_mouse_visible(ctx: &mut Context, visible: bool) -> Result {
 /// Returns whether or not the mouse cursor is currently visible.
 pub fn is_mouse_visible(ctx: &Context) -> bool {
     ctx.window.is_mouse_visible()
+}
+
+/// Get the number of monitors connected to the device.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the monitor state was inaccessible.
+pub fn get_monitor_count(ctx: &Context) -> Result<i32> {
+    ctx.window.get_monitor_count()
+}
+
+/// Get the name of a monitor connected to the device.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the monitor state was inaccessible.
+pub fn get_monitor_name(ctx: &Context, monitor_index: i32) -> Result<String> {
+    ctx.window.get_monitor_name(monitor_index)
+}
+
+/// Get the width of a monitor connected to the device.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the monitor state was inaccessible.
+pub fn get_monitor_width(ctx: &Context, monitor_index: i32) -> Result<i32> {
+    get_monitor_size(ctx, monitor_index).map(|(w, _)| w)
+}
+
+/// Get the height of a monitor connected to the device.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the monitor state was inaccessible.
+pub fn get_monitor_height(ctx: &Context, monitor_index: i32) -> Result<i32> {
+    get_monitor_size(ctx, monitor_index).map(|(_, h)| h)
+}
+
+/// Get the size of a monitor connected to the device.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the monitor state was inaccessible.
+pub fn get_monitor_size(ctx: &Context, monitor_index: i32) -> Result<(i32, i32)> {
+    ctx.window.get_monitor_size(monitor_index)
+}
+
+/// Get the index of the monitor that the window is currently on.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the monitor state was inaccessible.
+pub fn get_current_monitor(ctx: &Context) -> Result<i32> {
+    ctx.window.get_current_monitor()
+}
+
+/// Get the name of the monitor that the window is currently on.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the monitor state was inaccessible.
+pub fn get_current_monitor_name(ctx: &Context) -> Result<String> {
+    let monitor_index = ctx.window.get_current_monitor()?;
+    ctx.window.get_monitor_name(monitor_index)
+}
+
+/// Get the width of the monitor that the window is currently on.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the monitor state was inaccessible.
+pub fn get_current_monitor_width(ctx: &Context) -> Result<i32> {
+    get_current_monitor_size(ctx).map(|(w, _)| w)
+}
+
+/// Get the height of the monitor that the window is currently on.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the monitor state was inaccessible.
+pub fn get_current_monitor_height(ctx: &Context) -> Result<i32> {
+    get_current_monitor_size(ctx).map(|(_, h)| h)
+}
+
+/// Get the size of the monitor that the window is currently on.
+///
+/// # Errors
+///
+/// * `TetraError::PlatformError` will be returned if the monitor state was inaccessible.
+pub fn get_current_monitor_size(ctx: &Context) -> Result<(i32, i32)> {
+    let monitor_index = ctx.window.get_current_monitor()?;
+    ctx.window.get_monitor_size(monitor_index)
 }
