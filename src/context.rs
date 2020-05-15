@@ -104,7 +104,7 @@ impl Context {
         while self.running {
             if let Err(e) = self.tick(state) {
                 output = Err(e);
-                break;
+                self.running = false;
             }
         }
 
