@@ -23,7 +23,7 @@ glow = "0.4.0"
 image = "0.23.1"
 vek = { version = "0.9.12", default-features = false }
 hashbrown = "0.7.1"
-glyph_brush = "0.6.3"
+glyph_brush = "0.7.0"
 serde = { version = "1.0.104", optional = true } 
 
 [dev-dependencies]
