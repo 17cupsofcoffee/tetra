@@ -158,6 +158,7 @@ pub struct ContextBuilder {
     pub(crate) resizable: bool,
     pub(crate) borderless: bool,
     pub(crate) show_mouse: bool,
+    pub(crate) grab_mouse: bool,
     pub(crate) quit_on_escape: bool,
     pub(crate) debug_info: bool,
 }
@@ -262,6 +263,15 @@ impl ContextBuilder {
         self
     }
 
+    /// Sets whether or not the mouse cursor should be grabbed by the game window
+    /// at startup.
+    ///
+    /// Defaults to `false`.
+    pub fn grab_mouse(&mut self, grab_mouse: bool) -> &mut ContextBuilder {
+        self.grab_mouse = grab_mouse;
+        self
+    }
+
     /// Sets whether or not the game should close when the Escape key is pressed.
     ///
     /// Defaults to `false`.
@@ -301,6 +311,7 @@ impl Default for ContextBuilder {
             resizable: false,
             borderless: false,
             show_mouse: false,
+            grab_mouse: false,
             quit_on_escape: false,
             debug_info: false,
         }

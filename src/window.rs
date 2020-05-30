@@ -112,6 +112,22 @@ pub fn is_mouse_visible(ctx: &Context) -> bool {
     ctx.window.is_mouse_visible()
 }
 
+/// Sets whether or not the mouse is grabbed by the window.
+///
+/// When this is active, the cursor will not be able to leave the window while it
+/// is focused.
+pub fn set_mouse_grabbed(ctx: &mut Context, mouse_grabbed: bool) {
+    ctx.window.set_mouse_grabbed(mouse_grabbed);
+}
+
+/// Returns whether or not the mouse is currently grabbed by the window.
+///
+/// When this is active, the cursor will not be able to leave the window while it
+/// is focused.
+pub fn is_mouse_grabbed(ctx: &Context) -> bool {
+    ctx.window.is_mouse_grabbed()
+}
+
 /// Get the number of monitors connected to the device.
 ///
 /// # Errors

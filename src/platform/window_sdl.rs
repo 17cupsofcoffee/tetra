@@ -88,6 +88,10 @@ impl Window {
             window_builder.borderless();
         }
 
+        if settings.grab_mouse {
+            window_builder.input_grabbed();
+        }
+
         sdl.mouse().show_cursor(settings.show_mouse);
 
         let mut sdl_window = window_builder
@@ -274,6 +278,14 @@ impl Window {
 
     pub fn is_mouse_visible(&self) -> bool {
         self.sdl.mouse().is_cursor_showing()
+    }
+
+    pub fn set_mouse_grabbed(&mut self, mouse_grabbed: bool) {
+        self.sdl_window.set_grab(mouse_grabbed);
+    }
+
+    pub fn is_mouse_grabbed(&self) -> bool {
+        self.sdl_window.grab()
     }
 
     pub fn get_clipboard_text(&self) -> Result<String> {

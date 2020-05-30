@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file, following t
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Added
+
+* The mouse can now be grabbed by the window. ([@tatref](https://github.com/tatref) in [#184](https://github.com/17cupsofcoffee/tetra/pull/184))
+    * This is exposed via the `grab_mouse` method on `ContextBuilder`, and the `is_mouse_grabbed`/`set_mouse_grabbed` functions in the `window` module.
+
 ## [0.3.6] - 2020-05-15
 
 ### Added
@@ -479,7 +486,7 @@ for. This can be useful when implementing more complex animation behaviors. ([@V
 
 * Initial release!
 
-[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.3.5..HEAD
+[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.3.6..HEAD
 [0.3.6]: https://github.com/17cupsofcoffee/tetra/compare/0.3.5..0.3.6
 [0.3.5]: https://github.com/17cupsofcoffee/tetra/compare/0.3.4..0.3.5
 [0.3.4]: https://github.com/17cupsofcoffee/tetra/compare/0.3.3..0.3.4
