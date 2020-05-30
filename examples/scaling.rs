@@ -31,7 +31,7 @@ impl GameState {
             ),
             text: Text::new(
                 format!("{}\n{:?}", LABEL, ScalingMode::Fixed),
-                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+                Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
                 16.0,
             ),
         })

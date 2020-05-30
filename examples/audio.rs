@@ -36,7 +36,7 @@ impl GameState {
         Ok(GameState {
             text: Text::new(
                 INSTRUCTIONS,
-                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+                Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
                 16.0,
             ),
             sound,
@@ -63,12 +63,12 @@ impl State for GameState {
                 Key::A => self.channel2.play(),
                 Key::S => self.channel2.pause(),
                 Key::D => self.channel2.stop(),
-                Key::F => self.channel1.toggle_repeating(),
+                Key::F => self.channel2.toggle_repeating(),
 
                 Key::Z => self.channel3.play(),
                 Key::X => self.channel3.pause(),
                 Key::C => self.channel3.stop(),
-                Key::V => self.channel1.toggle_repeating(),
+                Key::V => self.channel3.toggle_repeating(),
 
                 _ => {}
             }
