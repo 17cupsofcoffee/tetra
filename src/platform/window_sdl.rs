@@ -276,6 +276,14 @@ impl Window {
         self.sdl.mouse().is_cursor_showing()
     }
 
+    pub fn set_mouse_grabbed(&mut self, mouse_grabbed: bool) {
+        self.sdl_window.set_grab(mouse_grabbed);
+    }
+
+    pub fn is_mouse_grabbed(&self) -> bool {
+        self.sdl_window.grab()
+    }
+
     pub fn get_clipboard_text(&self) -> Result<String> {
         self.video_sys
             .clipboard()
