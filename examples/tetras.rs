@@ -57,7 +57,7 @@ impl Assets {
             line_clear_fx: Sound::new("./examples/resources/lineclear.wav")?,
             game_over_fx: Sound::new("./examples/resources/gameover.wav")?,
 
-            font: Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+            font: Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
 
             backdrop: Texture::new(ctx, "./examples/resources/backdrop.png")?,
             block: Texture::new(ctx, "./examples/resources/block.png")?,

@@ -12,7 +12,7 @@ impl GameState {
         Ok(GameState {
             text: Text::new(
                 "",
-                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+                Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
                 32.0,
             ),
         })

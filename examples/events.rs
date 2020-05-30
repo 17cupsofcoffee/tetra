@@ -10,7 +10,7 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         let text = Text::new(
             "Look at your console to see what events are being fired!",
-            Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+            Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
             16.0,
         );
 

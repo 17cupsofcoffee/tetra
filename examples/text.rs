@@ -11,7 +11,7 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         let text = Text::new(
             "Hello, world!\n\nThis is some text being rendered from a TTF font.",
-            Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+            Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
             16.0,
         );
 

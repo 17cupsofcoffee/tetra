@@ -112,7 +112,7 @@ impl GameState {
 
             axis_info: Text::new(
                 "",
-                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+                Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
                 16.0,
             ),
         })

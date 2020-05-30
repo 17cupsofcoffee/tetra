@@ -13,7 +13,7 @@ impl GameState {
         Ok(GameState {
             file: Text::new(
                 "Drop a file onto this window to view the contents.",
-                Font::new(ctx, "./examples/resources/DejaVuSansMono.ttf")?,
+                Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
                 16.0,
             ),
         })
