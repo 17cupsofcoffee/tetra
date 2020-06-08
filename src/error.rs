@@ -45,6 +45,9 @@ pub enum TetraError {
     /// Returned when a shader fails to compile.
     InvalidShader(String),
 
+    /// Returned when a font could not be read.
+    InvalidFont,
+
     /// Returned when a sound cannot be decoded.
     InvalidSound(DecoderError),
 
@@ -87,6 +90,7 @@ impl Display for TetraError {
             TetraError::InvalidColor => write!(f, "Invalid color"),
             TetraError::InvalidTexture(reason) => write!(f, "Invalid texture: {}", reason),
             TetraError::InvalidShader(reason) => write!(f, "Invalid shader: {}", reason),
+            TetraError::InvalidFont => write!(f, "Invalid font"),
             TetraError::InvalidSound(reason) => write!(f, "Invalid sound: {}", reason),
             TetraError::NotEnoughData { expected, actual } => write!(
                 f,
@@ -110,6 +114,7 @@ impl Error for TetraError {
             TetraError::InvalidColor => None,
             TetraError::InvalidTexture(reason) => Some(reason),
             TetraError::InvalidShader(_) => None,
+            TetraError::InvalidFont => None,
             TetraError::InvalidSound(reason) => Some(reason),
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,

@@ -1,4 +1,5 @@
-use tetra::graphics::{self, Color, Font, Text};
+use tetra::graphics::text::{Font, Text};
+use tetra::graphics::{self, Color};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, Event, State};
 
@@ -10,8 +11,7 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         let text = Text::new(
             "Look at your console to see what events are being fired!",
-            Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
-            16.0,
+            Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 16.0)?,
         );
 
         Ok(GameState { text })

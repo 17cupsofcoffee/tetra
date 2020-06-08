@@ -13,7 +13,7 @@ mod drawable;
 mod rectangle;
 pub mod scaling;
 mod shader;
-mod text;
+pub mod text;
 mod texture;
 pub mod ui;
 
@@ -23,13 +23,9 @@ pub use color::*;
 pub use drawable::*;
 pub use rectangle::*;
 pub use shader::*;
-pub use text::*;
 pub use texture::*;
 
-use glyph_brush::{GlyphBrush, GlyphBrushBuilder};
-
 use crate::error::Result;
-use crate::graphics::text::FontQuad;
 use crate::math::{FrustumPlanes, Mat4};
 use crate::platform::{BufferUsage, FrontFace, GraphicsDevice, RawIndexBuffer, RawVertexBuffer};
 use crate::window;
@@ -43,7 +39,7 @@ const INDEX_ARRAY: [u32; 6] = [0, 1, 2, 2, 3, 0];
 
 #[derive(PartialEq)]
 pub(crate) enum ActiveTexture {
-    FontCache,
+    Default,
     User(Texture),
 }
 
@@ -64,7 +60,6 @@ pub(crate) struct GraphicsContext {
     index_buffer: RawIndexBuffer,
 
     texture: ActiveTexture,
-    font_cache_texture: Texture,
     default_filter_mode: FilterMode,
 
     shader: ActiveShader,
@@ -78,8 +73,6 @@ pub(crate) struct GraphicsContext {
     vertex_data: Vec<f32>,
     element_capacity: i32,
     element_count: i32,
-
-    font_cache: GlyphBrush<'static, FontQuad>,
 }
 
 impl GraphicsContext {
@@ -114,21 +107,11 @@ impl GraphicsContext {
             shader::DEFAULT_FRAGMENT_SHADER,
         )?;
 
-        let font_cache = GlyphBrushBuilder::without_fonts().build();
-        let (font_cache_width, font_cache_height) = font_cache.texture_dimensions();
-        let font_cache_texture = Texture::with_device_empty(
-            device,
-            font_cache_width as i32,
-            font_cache_height as i32,
-            default_filter_mode,
-        )?;
-
         Ok(GraphicsContext {
             vertex_buffer,
             index_buffer,
 
-            texture: ActiveTexture::FontCache,
-            font_cache_texture,
+            texture: ActiveTexture::Default,
             default_filter_mode,
 
             shader: ActiveShader::Default,
@@ -142,8 +125,6 @@ impl GraphicsContext {
             vertex_data: Vec::with_capacity(MAX_VERTICES * VERTEX_STRIDE),
             element_capacity: MAX_INDICES as i32,
             element_count: 0,
-
-            font_cache,
         })
     }
 }
@@ -355,7 +336,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 pub fn flush(ctx: &mut Context) {
     if !ctx.graphics.vertex_data.is_empty() {
         let texture = match &ctx.graphics.texture {
-            ActiveTexture::FontCache => &ctx.graphics.font_cache_texture,
+            ActiveTexture::Default => return,
             ActiveTexture::User(t) => t,
         };
 

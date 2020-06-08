@@ -1,69 +1,129 @@
 //! Functions and types relating to text rendering.
 
-use std::cell::RefCell;
+mod cache;
+mod packer;
+mod vector;
+
+use std::cell::{RefCell, RefMut};
+use std::fmt::{self, Debug, Formatter};
 use std::path::Path;
+use std::rc::Rc;
 
-use glyph_brush::rusttype::{Rect, Scale};
-use glyph_brush::{BrushAction, BrushError, FontId, GlyphCruncher, GlyphVertex, Section};
+use ab_glyph::{FontRef, FontVec};
 
-use crate::error::Result;
+use crate::error::{Result, TetraError};
 use crate::fs;
-use crate::graphics::{self, ActiveTexture, DrawParams, Drawable, Rectangle, Texture};
-use crate::platform::GraphicsDevice;
+use crate::graphics::text::cache::{FontCache, Rasterizer, TextGeometry};
+use crate::graphics::text::vector::VectorRasterizer;
+use crate::graphics::{self, DrawParams, Drawable, Rectangle};
 use crate::Context;
 
 #[derive(Debug, Clone)]
-pub(crate) struct FontQuad {
-    x1: f32,
-    y1: f32,
-    x2: f32,
-    y2: f32,
-    u1: f32,
-    v1: f32,
-    u2: f32,
-    v2: f32,
+enum VectorFontData {
+    Owned(Rc<FontVec>),
+    Slice(Rc<FontRef<'static>>),
 }
 
-/// A font that can be used to render text.
+/// A loader for vector-based fonts.
 ///
-/// TrueType fonts (.ttf) and a subset of OpenType fonts (.otf)
-/// are supported.
+/// TrueType and OpenType fonts are supported. The font data will only be loaded
+/// into memory once, and it will be shared between all [`Font`](struct.Font.html)s that
+/// are subsequently created by the loader instance.
 ///
-/// The actual data for fonts is cached in the `Context`, so there should be no overhead for copying
-/// this type - as such, it implements `Copy` and `Clone`.
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub struct Font {
-    id: FontId,
+/// [`Font::vector`](struct.Font.html#method.vector) provides a simpler API for loading
+/// vector fonts, if you don't need all of the functionality of this struct.
+#[derive(Debug, Clone)]
+pub struct VectorFontLoader {
+    data: VectorFontData,
 }
 
-impl Font {
-    /// Loads a font from the given file.
+impl VectorFontLoader {
+    /// Loads a vector font from the given file.
     ///
     /// # Errors
     ///
     /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
-    pub fn new<P>(ctx: &mut Context, path: P) -> Result<Font>
+    /// * `TetraError::InvalidFont` will be returned if the font data was invalid.
+    pub fn new<P>(path: P) -> Result<VectorFontLoader>
     where
         P: AsRef<Path>,
     {
         let font_bytes = fs::read(path)?;
-        let id = ctx.graphics.font_cache.add_font_bytes(font_bytes);
+        let font = FontVec::try_from_vec(font_bytes).map_err(|_| TetraError::InvalidFont)?;
 
-        Ok(Font { id })
+        Ok(VectorFontLoader {
+            data: VectorFontData::Owned(Rc::new(font)),
+        })
     }
 
-    /// Loads a font from a slice of binary TTF data.
+    /// Loads a vector font from a slice of binary data.
     ///
-    /// This is useful in combination with `include_bytes`, as it allows you to
-    /// include your fonts directly in the binary.
+    /// # Errors
     ///
-    /// Note that this function currently requires the slice to have the `'static`
-    /// lifetime due to the way that the font cache is implemented - this may change
-    /// in the future.
-    pub fn from_file_data(ctx: &mut Context, data: &'static [u8]) -> Font {
-        let id = ctx.graphics.font_cache.add_font_bytes(data);
+    /// * `TetraError::InvalidFont` will be returned if the font data was invalid.
+    pub fn from_file_data(data: &'static [u8]) -> Result<VectorFontLoader> {
+        let font = FontRef::try_from_slice(data).map_err(|_| TetraError::InvalidFont)?;
 
-        Font { id }
+        Ok(VectorFontLoader {
+            data: VectorFontData::Slice(Rc::new(font)),
+        })
+    }
+
+    /// Creates a `Font` with the given size.
+    ///
+    /// # Errors
+    ///
+    /// * `TetraError::PlatformError` will be returned if the GPU cache for the font
+    ///   could not be created.
+    pub fn with_size(&self, ctx: &mut Context, size: f32) -> Result<Font> {
+        let rasterizer: Box<dyn Rasterizer> = match &self.data {
+            VectorFontData::Owned(f) => Box::new(VectorRasterizer::new(Rc::clone(f), size)),
+            VectorFontData::Slice(f) => Box::new(VectorRasterizer::new(Rc::clone(f), size)),
+        };
+
+        let cache = FontCache::new(&mut ctx.device, rasterizer)?;
+
+        Ok(Font {
+            data: Rc::new(RefCell::new(cache)),
+        })
+    }
+}
+
+/// A font with an associated size, cached on the GPU.
+///
+/// This type acts as a lightweight handle to the associated font data,
+/// and so can be cloned with little overhead.
+#[derive(Clone)]
+pub struct Font {
+    data: Rc<RefCell<FontCache>>,
+}
+
+impl Font {
+    /// Creates a `Font` from a vector font file, with the given size.
+    ///
+    /// TrueType and OpenType fonts are supported.
+    ///
+    /// If you want to load multiple sizes of the same font, you can use a
+    /// [`VectorFontLoader`](struct.VectorFontLoader.html) to avoid loading/parsing
+    /// the file multiple times.
+    ///
+    /// # Errors
+    ///
+    /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
+    /// * `TetraError::InvalidFont` will be returned if the font data was invalid.
+    /// * `TetraError::PlatformError` will be returned if the GPU cache for the font
+    ///   could not be created.
+    pub fn vector<P>(ctx: &mut Context, path: P, size: f32) -> Result<Font>
+    where
+        P: AsRef<Path>,
+    {
+        VectorFontLoader::new(path)?.with_size(ctx, size)
+    }
+}
+
+impl Debug for Font {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Font").finish()
     }
 }
 
@@ -72,23 +132,19 @@ impl Font {
 pub struct Text {
     content: String,
     font: Font,
-    size: Scale,
-    quads: RefCell<Vec<FontQuad>>,
+    geometry: RefCell<Option<TextGeometry>>,
 }
 
 impl Text {
-    /// Creates a new `Text`, with the given content, font and scale.
-    pub fn new<S>(content: S, font: Font, size: f32) -> Text
+    /// Creates a new `Text`, with the given content and font.
+    pub fn new<C>(content: C, font: Font) -> Text
     where
-        S: Into<String>,
+        C: Into<String>,
     {
-        let content = content.into();
-
         Text {
-            content,
+            content: content.into(),
             font,
-            size: Scale::uniform(size),
-            quads: RefCell::new(Vec::new()),
+            geometry: RefCell::new(None),
         }
     }
 
@@ -97,17 +153,59 @@ impl Text {
         &self.content
     }
 
-    /// Returns a mutable reference to the content of the text.
-    pub fn content_mut(&mut self) -> &mut String {
-        &mut self.content
+    /// Sets the content of the text.
+    ///
+    /// Calling this function will cause a re-layout of the text the next time it
+    /// is rendered.
+    pub fn set_content<C>(&mut self, content: C)
+    where
+        C: Into<String>,
+    {
+        self.geometry.replace(None);
+        self.content = content.into();
     }
 
-    /// Sets the content of the text.
-    pub fn set_content<S>(&mut self, content: S)
-    where
-        S: Into<String>,
-    {
-        self.content = content.into();
+    /// Gets the font of the text.
+    pub fn font(&self) -> &Font {
+        &self.font
+    }
+
+    /// Sets the font of the text.
+    ///
+    /// Calling this function will cause a re-layout of the text the next time it
+    /// is rendered.
+    pub fn set_font(&mut self, font: Font) {
+        self.geometry.replace(None);
+        self.font = font;
+    }
+
+    /// Appends the given character to the end of the text.
+    ///
+    /// Calling this function will cause a re-layout of the text the next time it
+    /// is rendered.
+    pub fn push(&mut self, ch: char) {
+        self.geometry.replace(None);
+        self.content.push(ch);
+    }
+
+    /// Appends the given string slice to the end of the text.
+    ///
+    /// Calling this function will cause a re-layout of the text the next time it
+    /// is rendered.
+    pub fn push_str(&mut self, string: &str) {
+        self.geometry.replace(None);
+        self.content.push_str(string);
+    }
+
+    /// Removes the last character from the text and returns it.
+    ///
+    /// Returns `None` if the text is empty.
+    ///
+    /// Calling this function will cause a re-layout of the text the next time it
+    /// is rendered.
+    pub fn pop(&mut self) -> Option<char> {
+        self.geometry.replace(None);
+        self.content.pop()
     }
 
     /// Get the outer bounds of the text when rendered to the screen.
@@ -117,84 +215,29 @@ impl Text {
     ///
     /// Note that this method will not take into account the positioning applied to the text via `DrawParams`.
     pub fn get_bounds(&self, ctx: &mut Context) -> Option<Rectangle> {
-        ctx.graphics
-            .font_cache
-            .pixel_bounds(self.build_section())
-            .map(|r| {
-                let x = r.min.x as f32;
-                let y = r.min.y as f32;
-                let width = r.width() as f32;
-                let height = r.height() as f32;
+        let geometry = self.get_latest_geometry(ctx);
 
-                Rectangle::new(x, y, width, height)
-            })
+        geometry.bounds
     }
 
-    /// Gets the font of the text.
-    pub fn font(&self) -> &Font {
-        &self.font
-    }
+    fn get_latest_geometry(&self, ctx: &mut Context) -> RefMut<'_, TextGeometry> {
+        let mut data = self.font.data.borrow_mut();
+        let mut geometry = self.geometry.borrow_mut();
 
-    /// Sets the font of the text.
-    pub fn set_font(&mut self, font: Font) {
-        self.font = font;
-    }
-
-    /// Gets the size of the text.
-    pub fn size(&self) -> f32 {
-        // This is fine, because we only let the user set uniform scales.
-        self.size.x
-    }
-
-    /// Sets the size of the text.
-    pub fn set_size(&mut self, size: f32) {
-        self.size = Scale::uniform(size);
-    }
-
-    fn build_section(&self) -> Section<'_> {
-        Section {
-            text: &self.content,
-            scale: self.size,
-            font_id: self.font.id,
-
-            ..Section::default()
-        }
-    }
-
-    fn check_for_update(&self, ctx: &mut Context) {
-        ctx.graphics.font_cache.queue(self.build_section());
-
-        // to avoid some borrow checker/closure weirdness
-        let texture_ref = &mut ctx.graphics.font_cache_texture;
-        let device_ref = &mut ctx.device;
-
-        let action = loop {
-            let attempted_action = ctx.graphics.font_cache.process_queued(
-                |rect, data| update_texture(device_ref, texture_ref, rect, data),
-                |v| glyph_to_quad(&v),
-            );
-
-            match attempted_action {
-                Ok(action) => break action,
-                Err(BrushError::TextureTooSmall { suggested, .. }) => {
-                    let (width, height) = suggested;
-
-                    *texture_ref = Texture::with_device_empty(
-                        device_ref,
-                        width as i32,
-                        height as i32,
-                        ctx.graphics.default_filter_mode,
-                    )
-                    .expect("Could not recreate font cache texture");
-
-                    ctx.graphics.font_cache.resize_texture(width, height);
-                }
-            }
+        let needs_render = match &*geometry {
+            None => true,
+            Some(g) => g.resize_count != data.resize_count(),
         };
 
-        if let BrushAction::Draw(new_quads) = action {
-            *self.quads.borrow_mut() = new_quads;
+        if needs_render {
+            let new_geometry = data.render(&mut ctx.device, &self.content);
+            geometry.replace(new_geometry);
         }
+
+        RefMut::map(geometry, |g| {
+            g.as_mut()
+                .expect("Geometry should have already been generated")
+        })
     }
 }
 
@@ -205,48 +248,24 @@ impl Drawable for Text {
     {
         let params = params.into();
 
-        self.check_for_update(ctx);
+        let geometry = self.get_latest_geometry(ctx);
 
-        graphics::set_texture_ex(ctx, ActiveTexture::FontCache);
+        let data = self.font.data.borrow();
+        graphics::set_texture(ctx, data.texture());
 
-        for quad in self.quads.borrow().iter() {
+        for quad in &geometry.quads {
             graphics::push_quad(
-                ctx, quad.x1, quad.y1, quad.x2, quad.y2, quad.u1, quad.v1, quad.u2, quad.v2,
+                ctx,
+                quad.position.x,
+                quad.position.y,
+                quad.position.right(),
+                quad.position.bottom(),
+                quad.uv.x,
+                quad.uv.y,
+                quad.uv.right(),
+                quad.uv.bottom(),
                 &params,
             );
         }
-    }
-}
-
-fn update_texture(device: &mut GraphicsDevice, texture: &Texture, rect: Rect<u32>, data: &[u8]) {
-    let mut padded_data = Vec::with_capacity(data.len() * 4);
-
-    for a in data {
-        padded_data.push(255);
-        padded_data.push(255);
-        padded_data.push(255);
-        padded_data.push(*a);
-    }
-
-    device.set_texture_data(
-        &texture.data.handle,
-        &padded_data,
-        rect.min.x as i32,
-        rect.min.y as i32,
-        rect.width() as i32,
-        rect.height() as i32,
-    );
-}
-
-fn glyph_to_quad(v: &GlyphVertex) -> FontQuad {
-    FontQuad {
-        x1: v.pixel_coords.min.x as f32,
-        y1: v.pixel_coords.min.y as f32,
-        x2: v.pixel_coords.max.x as f32,
-        y2: v.pixel_coords.max.y as f32,
-        u1: v.tex_coords.min.x as f32,
-        v1: v.tex_coords.min.y as f32,
-        u2: v.tex_coords.max.x as f32,
-        v2: v.tex_coords.max.y as f32,
     }
 }

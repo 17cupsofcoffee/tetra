@@ -1,6 +1,7 @@
 use std::fs;
 
-use tetra::graphics::{self, Color, Font, Text};
+use tetra::graphics::text::{Font, Text};
+use tetra::graphics::{self, Color};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, Event, State};
 
@@ -13,8 +14,7 @@ impl GameState {
         Ok(GameState {
             file: Text::new(
                 "Drop a file onto this window to view the contents.",
-                Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
-                16.0,
+                Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 16.0)?,
             ),
         })
     }
@@ -32,7 +32,7 @@ impl State for GameState {
         if let Event::FileDropped { path } = event {
             let new_content = fs::read_to_string(path).unwrap();
 
-            *self.file.content_mut() = new_content;
+            self.file.set_content(new_content);
         }
 
         Ok(())

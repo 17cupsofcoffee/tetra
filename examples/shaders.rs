@@ -1,4 +1,5 @@
-use tetra::graphics::{self, Color, DrawParams, Font, Shader, Text, Texture};
+use tetra::graphics::text::{Font, Text};
+use tetra::graphics::{self, Color, DrawParams, Shader, Texture};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
@@ -20,8 +21,7 @@ impl GameState {
             shader: Shader::from_fragment_file(ctx, "./examples/resources/disco.frag")?,
             text: Text::new(
                 "",
-                Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
-                32.0,
+                Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 32.0)?,
             ),
 
             timer: 0.0,

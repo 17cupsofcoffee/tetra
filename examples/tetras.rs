@@ -5,7 +5,8 @@
 use rand::{self, Rng};
 use tetra::audio::Sound;
 use tetra::graphics::scaling::{ScalingMode, ScreenScaler};
-use tetra::graphics::{self, Color, DrawParams, Font, Text, Texture};
+use tetra::graphics::text::{Font, Text, VectorFontLoader};
+use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
 use tetra::window;
@@ -42,7 +43,8 @@ struct Assets {
     line_clear_fx: Sound,
     game_over_fx: Sound,
 
-    font: Font,
+    font_16: Font,
+    font_36: Font,
 
     backdrop: Texture,
     block: Texture,
@@ -50,6 +52,8 @@ struct Assets {
 
 impl Assets {
     fn load(ctx: &mut Context) -> tetra::Result<Assets> {
+        let font = VectorFontLoader::new("./examples/resources/DejaVuSansMono.ttf")?;
+
         Ok(Assets {
             bgm: Sound::new("./examples/resources/bgm.wav")?,
             soft_drop_fx: Sound::new("./examples/resources/softdrop.wav")?,
@@ -57,7 +61,8 @@ impl Assets {
             line_clear_fx: Sound::new("./examples/resources/lineclear.wav")?,
             game_over_fx: Sound::new("./examples/resources/gameover.wav")?,
 
-            font: Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
+            font_16: font.with_size(ctx, 16.0)?,
+            font_36: font.with_size(ctx, 36.0)?,
 
             backdrop: Texture::new(ctx, "./examples/resources/backdrop.png")?,
             block: Texture::new(ctx, "./examples/resources/block.png")?,
@@ -175,8 +180,8 @@ impl TitleScene {
         assets.bgm.repeat(ctx)?;
 
         Ok(TitleScene {
-            title_text: Text::new("Tetras", assets.font, 36.0),
-            help_text: Text::new("An extremely legally distinct puzzle game\n\nControls:\nA and D to move\nQ and E to rotate\nS to drop one row\nSpace to hard drop\n\nPress Space to start.", assets.font, 16.0),
+            title_text: Text::new("Tetras", assets.font_36.clone()),
+            help_text: Text::new("An extremely legally distinct puzzle game\n\nControls:\nA and D to move\nQ and E to rotate\nS to drop one row\nSpace to hard drop\n\nPress Space to start.", assets.font_16.clone()),
         })
     }
 }
@@ -356,7 +361,7 @@ impl GameScene {
             move_queue: Vec::new(),
             board: [[None; 10]; 22],
             score: 0,
-            score_text: Text::new("Score: 0", assets.font, 16.0),
+            score_text: Text::new("Score: 0", assets.font_16.clone()),
         })
     }
 

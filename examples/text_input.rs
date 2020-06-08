@@ -1,4 +1,5 @@
-use tetra::graphics::{self, Color, Font, Text};
+use tetra::graphics::text::{Font, Text};
+use tetra::graphics::{self, Color};
 use tetra::input::{self, Key, KeyModifier};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
@@ -9,39 +10,35 @@ struct GameState {
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+        let font = Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 32.0)?;
+
         Ok(GameState {
-            text: Text::new(
-                "",
-                Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
-                32.0,
-            ),
+            text: Text::new("", font),
         })
     }
 }
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        let content = self.text.content_mut();
-
         if input::is_key_pressed(ctx, Key::Enter) {
-            content.push_str("\n");
+            self.text.push_str("\n");
         }
 
         if input::is_key_pressed(ctx, Key::Backspace) {
-            content.pop();
+            self.text.pop();
         }
 
         if let Some(new_input) = input::get_text_input(ctx) {
-            content.push_str(new_input);
+            self.text.push_str(new_input);
         }
 
         if input::is_key_modifier_down(ctx, KeyModifier::Ctrl) {
             if input::is_key_pressed(ctx, Key::C) {
-                input::set_clipboard_text(ctx, content)?;
+                input::set_clipboard_text(ctx, self.text.content())?;
             }
 
             if input::is_key_pressed(ctx, Key::V) {
-                content.push_str(&input::get_clipboard_text(ctx)?);
+                self.text.push_str(&input::get_clipboard_text(ctx)?);
             }
         }
 

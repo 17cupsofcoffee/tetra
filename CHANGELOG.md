@@ -10,11 +10,18 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
-* **Breaking:** Updated `vek` to 0.11. As Vek is exposed via Tetra's API in the form of the `tetra::math` module, this is potentially a breaking change.
+* **Breaking:** The text rendering API has been rewritten from scratch.
+    * It now uses `ab_glyph` instead of `rusttype`, which allows us to support OTF fonts, and should be faster in general.
+    * This also fixes several long-standing bugs with text rendering ([#125](https://github.com/17cupsofcoffee/tetra/issues/125), [#161](https://github.com/17cupsofcoffee/tetra/issues/161), [#180](https://github.com/17cupsofcoffee/tetra/issues/180)).
+    * The new API has been written with the requirements of bitmap fonts in mind, and a loader for these will likely be added in a future version.
+    * As this API may expand in the future, it has been moved into the `tetra::graphics::text` submodule to avoid cluttering the main `graphics` module.
+* **Breaking:** Updated `vek` to 0.11.
+    * As Vek is exposed via Tetra's API in the form of the `tetra::math` module, this is potentially a breaking change.
 
 ### Removed
 
-* **Breaking:** `Font` no longer implements `Default`, and the Deja Vu Sans Mono font is no longer bundled with Tetra. It was previously a little murky whether or not the default font's license needed to be included even when you're not using it, due to the bytes being included in the binary.
+* **Breaking:** `Font` no longer implements `Default`, and the Deja Vu Sans Mono font is no longer bundled with Tetra ([#174](https://github.com/17cupsofcoffee/tetra/issues/174)).
+    * It was previously a little murky whether or not the default font's license needed to be included even when you're not using it, due to the bytes being included in the binary.
 
 ## [0.3.6] - 2020-05-15
 
