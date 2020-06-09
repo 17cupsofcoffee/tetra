@@ -35,7 +35,7 @@ impl ShelfPacker {
                 FilterMode::Nearest,
             )?,
             shelves: Vec::new(),
-            next_y: 0,
+            next_y: Self::PADDING,
         })
     }
 
@@ -90,7 +90,8 @@ impl ShelfPacker {
         self.shelves
             .iter_mut()
             .find(|shelf| {
-                shelf.height >= source_height && texture_width - shelf.current_x >= source_width
+                shelf.height >= source_height
+                    && texture_width - shelf.current_x - Self::PADDING >= source_width
             })
             .map(|shelf| {
                 // Use existing shelf:
@@ -101,13 +102,14 @@ impl ShelfPacker {
             .or_else(|| {
                 if self.next_y + source_height < texture_height {
                     // Create new shelf:
-                    let position = (0, self.next_y);
+                    let position = (Self::PADDING, self.next_y);
 
                     self.shelves.push(Shelf {
-                        current_x: source_width + Self::PADDING,
+                        current_x: source_width + Self::PADDING * 2,
                         start_y: self.next_y,
                         height: source_height,
                     });
+
                     self.next_y += source_height + Self::PADDING;
 
                     Some(position)
