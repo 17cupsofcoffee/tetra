@@ -9,85 +9,12 @@ use std::fmt::{self, Debug, Formatter};
 use std::path::Path;
 use std::rc::Rc;
 
-use ab_glyph::{FontRef, FontVec};
-
-use crate::error::{Result, TetraError};
-use crate::fs;
-use crate::graphics::text::cache::{FontCache, Rasterizer, TextGeometry};
-use crate::graphics::text::vector::VectorRasterizer;
+use crate::error::Result;
+use crate::graphics::text::cache::{FontCache, TextGeometry};
 use crate::graphics::{self, DrawParams, Drawable, Rectangle};
 use crate::Context;
 
-#[derive(Debug, Clone)]
-enum VectorFontData {
-    Owned(Rc<FontVec>),
-    Slice(Rc<FontRef<'static>>),
-}
-
-/// A loader for vector-based fonts.
-///
-/// TrueType and OpenType fonts are supported. The font data will only be loaded
-/// into memory once, and it will be shared between all [`Font`](struct.Font.html)s that
-/// are subsequently created by the loader instance.
-///
-/// [`Font::vector`](struct.Font.html#method.vector) provides a simpler API for loading
-/// vector fonts, if you don't need all of the functionality of this struct.
-#[derive(Debug, Clone)]
-pub struct VectorFontLoader {
-    data: VectorFontData,
-}
-
-impl VectorFontLoader {
-    /// Loads a vector font from the given file.
-    ///
-    /// # Errors
-    ///
-    /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
-    /// * `TetraError::InvalidFont` will be returned if the font data was invalid.
-    pub fn new<P>(path: P) -> Result<VectorFontLoader>
-    where
-        P: AsRef<Path>,
-    {
-        let font_bytes = fs::read(path)?;
-        let font = FontVec::try_from_vec(font_bytes).map_err(|_| TetraError::InvalidFont)?;
-
-        Ok(VectorFontLoader {
-            data: VectorFontData::Owned(Rc::new(font)),
-        })
-    }
-
-    /// Loads a vector font from a slice of binary data.
-    ///
-    /// # Errors
-    ///
-    /// * `TetraError::InvalidFont` will be returned if the font data was invalid.
-    pub fn from_file_data(data: &'static [u8]) -> Result<VectorFontLoader> {
-        let font = FontRef::try_from_slice(data).map_err(|_| TetraError::InvalidFont)?;
-
-        Ok(VectorFontLoader {
-            data: VectorFontData::Slice(Rc::new(font)),
-        })
-    }
-
-    /// Creates a `Font` with the given size.
-    ///
-    /// # Errors
-    ///
-    /// * `TetraError::PlatformError` will be returned if the GPU cache for the font
-    ///   could not be created.
-    pub fn with_size(&self, ctx: &mut Context, size: f32) -> Result<Font> {
-        let rasterizer: Box<dyn Rasterizer> = match &self.data {
-            VectorFontData::Owned(f) => Box::new(VectorRasterizer::new(Rc::clone(f), size)),
-            VectorFontData::Slice(f) => Box::new(VectorRasterizer::new(Rc::clone(f), size)),
-        };
-
-        let cache = FontCache::new(&mut ctx.device, rasterizer)?;
-
-        Ok(Font {
-            data: Rc::new(RefCell::new(cache)),
-        })
-    }
-}
+pub use crate::graphics::text::vector::VectorFontLoader;
 
 /// A font with an associated size, cached on the GPU.
 ///
