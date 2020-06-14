@@ -13,12 +13,12 @@ pub use crate::platform::UniformValue;
 
 /// The default vertex shader.
 ///
-/// The source code for this shader is available in [`src/resources/shader.vert`](https://github.com/17cupsofcoffee/tetra/blob/master/src/resources/shader.vert).
+/// The source code for this shader is available in [`src/resources/shader.vert`](https://github.com/17cupsofcoffee/tetra/blob/main/src/resources/shader.vert).
 pub const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert");
 
 /// The default fragment shader.
 ///
-/// The source code for this shader is available in [`src/resources/shader.vert`](https://github.com/17cupsofcoffee/tetra/blob/master/src/resources/shader.frag).
+/// The source code for this shader is available in [`src/resources/shader.vert`](https://github.com/17cupsofcoffee/tetra/blob/main/src/resources/shader.frag).
 pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
 
 /// A shader program, consisting of a vertex shader and a fragment shader.

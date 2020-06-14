@@ -452,7 +452,7 @@ for. This can be useful when implementing more complex animation behaviors. ([@V
 * The `NineSlice` type has been added, allowing you to easily create dialog boxes from small textures.
 * The window size can now be set explicitly. This will take precedence over the scale setting.
 * `tetra::error::Result` and `tetra::error::TetraError` are now re-exported in the root of the crate. This allows you to write `tetra::Result` in your function signatures, which aligns a bit better with other custom `Result` types like `io::Result`.
-* [An example of how to use the `Animation` type has been added](https://github.com/17cupsofcoffee/tetra/blob/master/examples/animation.rs).
+* [An example of how to use the `Animation` type has been added](https://github.com/17cupsofcoffee/tetra/blob/main/examples/animation.rs).
 
 
 ## [0.1.2] - 2018-12-03
