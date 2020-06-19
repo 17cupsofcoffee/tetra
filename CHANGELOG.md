@@ -15,6 +15,10 @@ This project adheres to Semantic Versioning.
 
 * Updated `hashbrown` to 0.8.
 
+### Fixed
+
+* Fixed an issue where gamepad axis ranges were not being correctly mapped from integers to floats.
+
 ## [0.3.6] - 2020-05-15
 
 ### Added

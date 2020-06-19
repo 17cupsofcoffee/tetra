@@ -506,7 +506,12 @@ where
                 if let Some(slot) = ctx.window.controllers.get(&which).map(|c| c.slot) {
                     if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
                         let axis = axis.into();
-                        let mapped_value = f32::from(value) / 32767.0;
+
+                        let mapped_value = if value > 0 {
+                            f32::from(value) / 32767.0
+                        } else {
+                            f32::from(value) / 32768.0
+                        };
 
                         pad.set_axis_position(axis, mapped_value);
 
