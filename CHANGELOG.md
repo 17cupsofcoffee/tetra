@@ -11,6 +11,10 @@ This project adheres to Semantic Versioning.
 * The mouse can now be grabbed by the window. ([@tatref](https://github.com/tatref) in [#184](https://github.com/17cupsofcoffee/tetra/pull/184))
     * This is exposed via the `grab_mouse` method on `ContextBuilder`, and the `is_mouse_grabbed`/`set_mouse_grabbed` functions in the `window` module.
 
+### Fixed
+
+* Fixed an issue where gamepad axis ranges were not being correctly mapped from integers to floats.
+
 ## [0.3.6] - 2020-05-15
 
 ### Added
