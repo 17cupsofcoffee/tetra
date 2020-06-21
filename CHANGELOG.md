@@ -13,6 +13,7 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
+* Improved the documentation for various types' performance characteristics.
 * Updated `hashbrown` to 0.8.
 
 ### Fixed

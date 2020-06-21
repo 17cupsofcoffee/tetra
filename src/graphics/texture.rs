@@ -39,8 +39,15 @@ impl PartialEq for TextureSharedData {
 /// * ICO
 /// * PNM
 ///
-/// This type acts as a lightweight handle to the associated graphics hardware data,
-/// and so can be cloned with little overhead.
+/// # Performance
+///
+/// Creating a `Texture` is a relatively expensive operation. If you can, store them in your `State`
+/// struct rather than recreating them each frame.
+///
+/// Cloning a `Texture` is a very cheap operation, as the underlying data is shared between the
+/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
+/// This does mean, however, that updating a `Texture` (for example, changing its filter mode) will also
+/// update any other clones of that `Texture`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Texture {
     pub(crate) data: Rc<TextureSharedData>,

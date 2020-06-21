@@ -14,9 +14,15 @@ use crate::Context;
 /// (e.g. a static background), or if you want to apply transformations/shaders to multiple
 /// things simultaneously.
 ///
-/// Note that creating a canvas is a relatively expensive operation! You rarely (if ever) should
-/// create them in your `draw` or `update` methods. Instead, add it as a member of your `State`
-/// struct.
+/// # Performance
+///
+/// Creating a `Canvas` is a relatively expensive operation. If you can, store them in your `State`
+/// struct rather than recreating them each frame.
+///
+/// Cloning a `Canvas` is a very cheap operation, as the underlying data is shared between the
+/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
+/// This does mean, however, that updating a `Canvas` (for example, changing its filter mode) will also
+/// update any other clones of that `Canvas`.
 ///
 /// # Examples
 ///

@@ -23,10 +23,9 @@ pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag
 
 /// A shader program, consisting of a vertex shader and a fragment shader.
 ///
-/// This type acts as a lightweight handle to the associated graphics hardware data,
-/// and so can be cloned with little overhead.
-///
 /// # Data Format
+///
+/// Shaders are written using [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language).
 ///
 /// ## Vertex Shaders
 ///
@@ -51,6 +50,16 @@ pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag
 /// * `u_texture` - A `sampler2D` which can be used to access color data from the currently active texture.
 ///
 /// You can also set data into your own uniform variables via the `set_uniform` method.
+///
+/// # Performance
+///
+/// Creating a `Shader` is a relatively expensive operation. If you can, store them in your `State`
+/// struct rather than recreating them each frame.
+///
+/// Cloning a `Shader` is a very cheap operation, as the underlying data is shared between the
+/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
+/// This does mean, however, that updating a `Shader` (for example, setting a uniform) will also
+/// update any other clones of that `Shader`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shader {
     pub(crate) handle: Rc<RawProgram>,

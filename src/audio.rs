@@ -19,8 +19,12 @@ use crate::Context;
 /// to 'fire and forget' a sound, you can discard it - the sound will
 /// continue playing regardless.
 ///
-/// This type acts as a lightweight handle to the associated audio data,
-/// and so can be cloned with little overhead.
+/// # Performance
+///
+/// Creating a `Sound` is a fairly cheap operation, as the data is not decoded until playback begins.
+///
+/// Cloning a `Sound` is a very cheap operation, as the underlying data is shared between the
+/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Sound {
     pub(crate) data: Arc<[u8]>,
