@@ -108,34 +108,34 @@ enum VectorFontData {
     Slice(Rc<FontRef<'static>>),
 }
 
-/// A loader for vector-based fonts.
+/// A builder for vector-based fonts.
 ///
 /// TrueType and OpenType fonts are supported. The font data will only be loaded
 /// into memory once, and it will be shared between all [`Font`](struct.Font.html)s that
-/// are subsequently created by the loader instance.
+/// are subsequently created by the builder instance.
 ///
 /// [`Font::vector`](struct.Font.html#method.vector) provides a simpler API for loading
 /// vector fonts, if you don't need all of the functionality of this struct.
 #[derive(Debug, Clone)]
-pub struct VectorFontLoader {
+pub struct VectorFontBuilder {
     data: VectorFontData,
 }
 
-impl VectorFontLoader {
+impl VectorFontBuilder {
     /// Loads a vector font from the given file.
     ///
     /// # Errors
     ///
     /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
     /// * `TetraError::InvalidFont` will be returned if the font data was invalid.
-    pub fn new<P>(path: P) -> Result<VectorFontLoader>
+    pub fn new<P>(path: P) -> Result<VectorFontBuilder>
     where
         P: AsRef<Path>,
     {
         let font_bytes = fs::read(path)?;
         let font = FontVec::try_from_vec(font_bytes).map_err(|_| TetraError::InvalidFont)?;
 
-        Ok(VectorFontLoader {
+        Ok(VectorFontBuilder {
             data: VectorFontData::Owned(Rc::new(font)),
         })
     }
@@ -145,10 +145,10 @@ impl VectorFontLoader {
     /// # Errors
     ///
     /// * `TetraError::InvalidFont` will be returned if the font data was invalid.
-    pub fn from_file_data(data: &'static [u8]) -> Result<VectorFontLoader> {
+    pub fn from_file_data(data: &'static [u8]) -> Result<VectorFontBuilder> {
         let font = FontRef::try_from_slice(data).map_err(|_| TetraError::InvalidFont)?;
 
-        Ok(VectorFontLoader {
+        Ok(VectorFontBuilder {
             data: VectorFontData::Slice(Rc::new(font)),
         })
     }

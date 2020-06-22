@@ -5,7 +5,7 @@
 use rand::{self, Rng};
 use tetra::audio::Sound;
 use tetra::graphics::scaling::{ScalingMode, ScreenScaler};
-use tetra::graphics::text::{Font, Text, VectorFontLoader};
+use tetra::graphics::text::{Font, Text, VectorFontBuilder};
 use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
@@ -52,7 +52,7 @@ struct Assets {
 
 impl Assets {
     fn load(ctx: &mut Context) -> tetra::Result<Assets> {
-        let font = VectorFontLoader::new("./examples/resources/DejaVuSansMono.ttf")?;
+        let font = VectorFontBuilder::new("./examples/resources/DejaVuSansMono.ttf")?;
 
         Ok(Assets {
             bgm: Sound::new("./examples/resources/bgm.wav")?,

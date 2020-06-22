@@ -14,7 +14,7 @@ use crate::graphics::text::cache::{FontCache, TextGeometry};
 use crate::graphics::{self, DrawParams, Drawable, Rectangle};
 use crate::Context;
 
-pub use crate::graphics::text::vector::VectorFontLoader;
+pub use crate::graphics::text::vector::VectorFontBuilder;
 
 /// A font with an associated size, cached on the GPU.
 ///
@@ -31,7 +31,7 @@ impl Font {
     /// TrueType and OpenType fonts are supported.
     ///
     /// If you want to load multiple sizes of the same font, you can use a
-    /// [`VectorFontLoader`](struct.VectorFontLoader.html) to avoid loading/parsing
+    /// [`VectorFontBuilder`](struct.VectorFontBuilder.html) to avoid loading/parsing
     /// the file multiple times.
     ///
     /// # Errors
@@ -44,7 +44,7 @@ impl Font {
     where
         P: AsRef<Path>,
     {
-        VectorFontLoader::new(path)?.with_size(ctx, size)
+        VectorFontBuilder::new(path)?.with_size(ctx, size)
     }
 }
 
