@@ -116,6 +116,14 @@ enum VectorFontData {
 ///
 /// [`Font::vector`](struct.Font.html#method.vector) provides a simpler API for loading
 /// vector fonts, if you don't need all of the functionality of this struct.
+///
+/// # Performance
+///
+/// Creating a `VectorFontBuilder` is a relatively expensive operation. If you need to create
+/// extra sizes of the font later on, store the `VectorFontBuilder` rather than building a new one.
+///
+/// Cloning a `VectorFontBuilder` is a very cheap operation, as the underlying data is shared between the
+/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
 #[derive(Debug, Clone)]
 pub struct VectorFontBuilder {
     data: VectorFontData,

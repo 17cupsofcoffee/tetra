@@ -18,8 +18,13 @@ pub use crate::graphics::text::vector::VectorFontBuilder;
 
 /// A font with an associated size, cached on the GPU.
 ///
-/// This type acts as a lightweight handle to the associated font data,
-/// and so can be cloned with little overhead.
+/// # Performance
+///
+/// Creating a `Font` is a relatively expensive operation. If you can, store them in your `State`
+/// struct rather than recreating them each frame.
+///
+/// Cloning a `Font` is a very cheap operation, as the underlying data is shared between the
+/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
 #[derive(Clone)]
 pub struct Font {
     data: Rc<RefCell<FontCache>>,
@@ -55,6 +60,14 @@ impl Debug for Font {
 }
 
 /// A piece of text that can be rendered.
+///
+/// # Performance
+///
+/// The layout of the text is cached after the first time it is calculated, making subsequent
+/// rendering of the text much faster.
+///
+/// Cloning a `Text` is a fairly expensive operation, as it creates an entirely new copy of the
+/// object with its own cache.
 #[derive(Debug, Clone)]
 pub struct Text {
     content: String,
@@ -137,8 +150,7 @@ impl Text {
 
     /// Get the outer bounds of the text when rendered to the screen.
     ///
-    /// If the text is not rendered yet, this method will re-render it and calculate the bounds.
-    /// The bounds are automatically cached, so calling this multiple times will only render once.
+    /// If the text's layout needs calculating, this method will do so.
     ///
     /// Note that this method will not take into account the positioning applied to the text via `DrawParams`.
     pub fn get_bounds(&self, ctx: &mut Context) -> Option<Rectangle> {
