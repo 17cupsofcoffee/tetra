@@ -1,6 +1,7 @@
 use tetra::graphics::scaling::{ScalingMode, ScreenScaler};
+use tetra::graphics::text::{Font, Text};
 use tetra::graphics::ui::NineSlice;
-use tetra::graphics::{self, Color, Font, Rectangle, Text, Texture};
+use tetra::graphics::{self, Color, Rectangle, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, Event, State};
@@ -31,8 +32,7 @@ impl GameState {
             ),
             text: Text::new(
                 format!("{}\n{:?}", LABEL, ScalingMode::Fixed),
-                Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
-                16.0,
+                Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 16.0)?,
             ),
         })
     }

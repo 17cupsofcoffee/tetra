@@ -1,6 +1,7 @@
 // Button prompts from https://opengameart.org/content/free-keyboard-and-controllers-prompts-pack
 
-use tetra::graphics::{self, Color, DrawParams, Font, Rectangle, Text, Texture};
+use tetra::graphics::text::{Font, Text};
+use tetra::graphics::{self, Color, DrawParams, Rectangle, Texture};
 use tetra::input::{self, GamepadAxis, GamepadButton, GamepadStick};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
@@ -112,8 +113,7 @@ impl GameState {
 
             axis_info: Text::new(
                 "",
-                Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
-                16.0,
+                Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 16.0)?,
             ),
         })
     }

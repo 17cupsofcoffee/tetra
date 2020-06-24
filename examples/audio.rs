@@ -1,5 +1,6 @@
 use tetra::audio::{self, Sound, SoundInstance};
-use tetra::graphics::{self, Color, Font, Text};
+use tetra::graphics::text::{Font, Text};
+use tetra::graphics::{self, Color};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
@@ -36,8 +37,7 @@ impl GameState {
         Ok(GameState {
             text: Text::new(
                 INSTRUCTIONS,
-                Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
-                16.0,
+                Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 16.0)?,
             ),
             sound,
             channel1,

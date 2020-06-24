@@ -1,4 +1,5 @@
-use tetra::graphics::{self, Color, Font, Text};
+use tetra::graphics::text::{Font, Text};
+use tetra::graphics::{self, Color};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
@@ -11,8 +12,7 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         let text = Text::new(
             "Hello, world!\n\nThis is some text being rendered from a TTF font.",
-            Font::new(ctx, "./src/resources/DejaVuSansMono.ttf")?,
-            16.0,
+            Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 16.0)?,
         );
 
         println!("Text bounds are {:?}", text.get_bounds(ctx));

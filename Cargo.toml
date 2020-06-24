@@ -21,10 +21,11 @@ sdl2 = "0.34.0"
 rodio = "0.11.0"
 glow = "0.4.0"
 image = "0.23.1"
-vek = { version = "0.9.12", default-features = false }
+vek = { version = "0.11.0", default-features = false }
 hashbrown = "0.8.0"
-glyph_brush = "0.6.3"
 serde = { version = "1.0.104", optional = true } 
+ab_glyph = "0.2.2"
+unicode-normalization = "0.1.12"
 
 [dev-dependencies]
 rand = "0.7.3"
