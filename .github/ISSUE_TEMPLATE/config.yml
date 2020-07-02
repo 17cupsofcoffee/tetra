@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - name: "Rust Community Discord server"
+  - name: "Discord: Game Development in Rust"
+    url: https://discord.gg/yNtPTb2
+    about: "For discussion of game development in Rust, and showing off your projects"
+  - name: "Discord: Rust Community"
     url: https://bit.ly/rust-community
-    about: "For general discussion of gamedev in Rust, join the #games-and-graphics channel on the Rust Community Discord server"
+    about: "For general Rust-related discussion - there is also a #games-and-graphics channel"
