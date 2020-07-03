@@ -2,7 +2,7 @@ use std::cell::Cell;
 use std::mem;
 use std::rc::Rc;
 
-use glow::{Context as GlowContext, HasContext};
+use glow::{Context as GlowContext, HasContext, PixelUnpackData};
 
 use crate::error::{Result, TetraError};
 use crate::graphics::FilterMode;
@@ -291,7 +291,7 @@ impl GraphicsDevice {
         unsafe {
             self.bind_program(Some(program));
             let location = self.state.gl.get_uniform_location(program.id, name);
-            value.set_uniform(program, location);
+            value.set_uniform(program, location.as_ref());
         }
     }
 
@@ -362,7 +362,7 @@ impl GraphicsDevice {
         unsafe {
             self.bind_texture(Some(texture));
 
-            self.state.gl.tex_sub_image_2d_u8_slice(
+            self.state.gl.tex_sub_image_2d(
                 glow::TEXTURE_2D,
                 0,
                 x,
@@ -371,7 +371,7 @@ impl GraphicsDevice {
                 height,
                 glow::RGBA,
                 glow::UNSIGNED_BYTE,
-                Some(data),
+                PixelUnpackData::Slice(data),
             )
         }
     }
@@ -774,26 +774,26 @@ mod sealed {
 /// and can't be implemented outside of Tetra. This might change in the future!
 pub trait UniformValue: sealed::UniformValueTypes {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>);
+    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>);
 }
 
 impl UniformValue for i32 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
+    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
         program.state.gl.uniform_1_i32(location, *self);
     }
 }
 
 impl UniformValue for f32 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
+    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
         program.state.gl.uniform_1_f32(location, *self);
     }
 }
 
 impl UniformValue for Vec2<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
+    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
         program
             .state
             .gl
@@ -803,7 +803,7 @@ impl UniformValue for Vec2<f32> {
 
 impl UniformValue for Vec3<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
+    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
         program
             .state
             .gl
@@ -813,7 +813,7 @@ impl UniformValue for Vec3<f32> {
 
 impl UniformValue for Vec4<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
+    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
         program
             .state
             .gl
@@ -823,7 +823,7 @@ impl UniformValue for Vec4<f32> {
 
 impl UniformValue for Mat2<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
+    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
         program.state.gl.uniform_matrix_2_f32_slice(
             location,
             self.gl_should_transpose(),
@@ -834,7 +834,7 @@ impl UniformValue for Mat2<f32> {
 
 impl UniformValue for Mat3<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
+    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
         program.state.gl.uniform_matrix_3_f32_slice(
             location,
             self.gl_should_transpose(),
@@ -845,7 +845,7 @@ impl UniformValue for Mat3<f32> {
 
 impl UniformValue for Mat4<f32> {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
+    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
         program.state.gl.uniform_matrix_4_f32_slice(
             location,
             self.gl_should_transpose(),
@@ -859,7 +859,7 @@ where
     T: UniformValue,
 {
     #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<UniformLocation>) {
+    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
         (**self).set_uniform(program, location);
     }
 }
