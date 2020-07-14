@@ -13,16 +13,6 @@ fn size<T>(elements: usize) -> i32 {
     (elements * mem::size_of::<T>()) as i32
 }
 
-/// Utility function for converting a slice to a slice of bytes.
-///
-/// Marked as unsafe, as I don't think it's safe to call for every type! It's fine
-/// for simple aligned numeric types, though, which is the only way we use it.
-unsafe fn byte_slice<T>(data: &[T]) -> &[u8] {
-    // TODO: Is this cast correct?
-    let byte_len = std::mem::size_of_val(data) / std::mem::size_of::<u8>();
-    std::slice::from_raw_parts(data.as_ptr() as *const u8, byte_len)
-}
-
 type BufferId = <GlowContext as HasContext>::Buffer;
 type ProgramId = <GlowContext as HasContext>::Program;
 type TextureId = <GlowContext as HasContext>::Texture;
@@ -166,7 +156,7 @@ impl GraphicsDevice {
             self.state.gl.buffer_sub_data_u8_slice(
                 glow::ARRAY_BUFFER,
                 size::<f32>(offset),
-                byte_slice(data),
+                bytemuck::cast_slice(data),
             );
         }
     }
@@ -206,7 +196,7 @@ impl GraphicsDevice {
             self.state.gl.buffer_sub_data_u8_slice(
                 glow::ELEMENT_ARRAY_BUFFER,
                 size::<u32>(offset),
-                byte_slice(data),
+                bytemuck::cast_slice(data),
             );
         }
     }
