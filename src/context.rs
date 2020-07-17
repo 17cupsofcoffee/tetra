@@ -146,6 +146,10 @@ impl Context {
 
 /// Settings that can be configured when starting up a game.
 #[derive(Debug, Clone)]
+#[cfg_attr(
+    feature = "serde_support",
+    derive(serde::Serialize, serde::Deserialize)
+)]
 pub struct ContextBuilder {
     pub(crate) title: String,
     pub(crate) window_width: i32,
