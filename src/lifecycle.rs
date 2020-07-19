@@ -32,6 +32,7 @@ pub trait State {
 ///
 /// The [`event` method on the `State` trait](trait.State.html#method.event) will recieve
 /// events as they occur.
+#[non_exhaustive]
 #[derive(Debug, Clone)]
 pub enum Event {
     /// The game window was resized.
@@ -163,9 +164,4 @@ pub enum Event {
         /// The path of the file that was dropped.
         path: PathBuf,
     },
-
-    /// This is here so that adding new error types will not be a breaking change.
-    /// Can be removed once #[non_exhaustive] is stabilized.
-    #[doc(hidden)]
-    __Nonexhaustive,
 }
