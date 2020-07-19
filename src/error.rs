@@ -17,9 +17,7 @@ use crate::platform::DecoderError;
 pub type Result<T = ()> = result::Result<T, TetraError>;
 
 /// The types of error that can occur in a Tetra game.
-///
-/// Note that if you `match` on this enum, you will be forced to add a wildcard arm by the compiler.
-/// This is so that if a new error type is added later on, it will not break your code.
+#[non_exhaustive]
 #[derive(Debug)]
 pub enum TetraError {
     /// Returned when the underlying platform returns an unexpected error.
@@ -68,11 +66,6 @@ pub enum TetraError {
     /// Returned when your game tried to change the display settings (e.g. fullscreen, vsync)
     /// but was unable to do so.
     FailedToChangeDisplayMode(String),
-
-    /// This is here so that adding new error types will not be a breaking change.
-    /// Can be removed once #[non_exhaustive] is stabilized.
-    #[doc(hidden)]
-    __Nonexhaustive,
 }
 
 impl Display for TetraError {
@@ -101,7 +94,6 @@ impl Display for TetraError {
                 write!(f, "Failed to change display mode: {}", reason)
             }
             TetraError::NoAudioDevice => write!(f, "No audio device was available for playback."),
-            TetraError::__Nonexhaustive => unreachable!(),
         }
     }
 }
@@ -119,7 +111,6 @@ impl Error for TetraError {
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,
             TetraError::FailedToChangeDisplayMode(_) => None,
-            TetraError::__Nonexhaustive => unreachable!(),
         }
     }
 }

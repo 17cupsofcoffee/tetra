@@ -10,6 +10,8 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
+* The `TetraError` and `Event` enums are now marked as `non_exhaustive`.
+    * This is not a breaking change, as exaustive matching was already enforced via a hidden enum variant. This change just makes the code/docs/errors clearer, as well as potentially unlocking some compiler optimizations in the future.
 * Updated `glow` to 0.5.
 
 ## [0.4.0]
