@@ -54,6 +54,11 @@ impl GamepadState {
 )]
 #[allow(missing_docs)]
 /// A button on a gamepad.
+///
+/// # Serde
+///
+/// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
+/// can be enabled via the `serde_support` feature.
 pub enum GamepadButton {
     A,
     B,
@@ -81,6 +86,11 @@ pub enum GamepadButton {
 )]
 #[allow(missing_docs)]
 /// An axis of movement on a gamepad.
+///
+/// # Serde
+///
+/// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
+/// can be enabled via the `serde_support` feature.
 pub enum GamepadAxis {
     LeftStickX,
     LeftStickY,
@@ -97,6 +107,11 @@ pub enum GamepadAxis {
 )]
 #[allow(missing_docs)]
 /// A control stick on a gamepad.
+///
+/// # Serde
+///
+/// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
+/// can be enabled via the `serde_support` feature.
 pub enum GamepadStick {
     LeftStick,
     RightStick,

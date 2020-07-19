@@ -1,6 +1,11 @@
 use crate::math::Vec2;
 
 /// A rectangle of `f32`s.
+///
+/// # Serde
+///
+/// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
+/// can be enabled via the `serde_support` feature.
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[cfg_attr(
     feature = "serde_support",

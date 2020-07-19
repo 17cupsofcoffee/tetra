@@ -7,6 +7,11 @@ use std::time::{Duration, Instant};
 use crate::Context;
 
 /// The different timestep modes that a game can have.
+///
+/// # Serde
+///
+/// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
+/// can be enabled via the `serde_support` feature.
 #[derive(Debug, Copy, Clone)]
 #[cfg_attr(
     feature = "serde_support",

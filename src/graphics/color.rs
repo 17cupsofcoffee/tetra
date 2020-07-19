@@ -3,6 +3,15 @@
 use crate::error::{Result, TetraError};
 
 /// An RGBA color.
+///
+/// The components are stored as `f32` values in the range of 0.0 to 1.0.
+/// If your data is made up of bytes or hex values, this type provides
+/// constructors that will carry out the conversion for you.
+///
+/// # Serde
+///
+/// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
+/// can be enabled via the `serde_support` feature.
 #[derive(Debug, Copy, Clone, PartialEq)]
 #[cfg_attr(
     feature = "serde_support",

@@ -8,6 +8,11 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added
+
+* `ContextBuilder` can now be serialized and deserialized via Serde, if the `serde_support` feature is enabled. ([@puppetmaster-](https://github.com/puppetmaster-) in [#195](https://github.com/17cupsofcoffee/tetra/pull/195))
+    * Note that the available settings could change between releases of Tetra (semver permitting). If you need a config file schema that will be stable in the long term, consider making your own and then mapping it to Tetra's API, rather than relying on `ContextBuilder` to not change. 
+
 ### Changed
 
 * The `TetraError` and `Event` enums are now marked as `non_exhaustive`.

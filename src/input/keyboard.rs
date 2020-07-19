@@ -7,6 +7,11 @@ use crate::Context;
 )]
 #[allow(missing_docs)]
 /// A key on a keyboard.
+///
+/// # Serde
+///
+/// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
+/// can be enabled via the `serde_support` feature.
 pub enum Key {
     A,
     B,
@@ -149,6 +154,11 @@ pub enum Key {
 ///
 /// These mainly consist of keys that have duplicates in multiple places on the keyboard, such as
 /// Control and Shift.
+///
+/// # Serde
+///
+/// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
+/// can be enabled via the `serde_support` feature.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(
     feature = "serde_support",

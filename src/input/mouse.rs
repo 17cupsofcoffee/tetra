@@ -8,6 +8,11 @@ use crate::Context;
 )]
 #[allow(missing_docs)]
 /// A button on a mouse.
+///
+/// # Serde
+///
+/// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
+/// can be enabled via the `serde_support` feature.
 pub enum MouseButton {
     Left,
     Middle,

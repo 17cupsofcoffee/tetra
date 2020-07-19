@@ -145,6 +145,17 @@ impl Context {
 }
 
 /// Settings that can be configured when starting up a game.
+///
+/// # Serde
+///
+/// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
+/// can be enabled via the `serde_support` feature.
+///
+/// Note that the available settings could change between releases of
+/// Tetra (semver permitting). If you need a config file schema that will
+/// be stable in the long term, consider making your own and then mapping
+/// it to Tetra's API, rather than relying on `ContextBuilder` to not
+/// change.
 #[derive(Debug, Clone)]
 #[cfg_attr(
     feature = "serde_support",
