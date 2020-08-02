@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Changed
+
+* Updated `bytemuck` to 1.3.
+
 ## [0.4.1] - 2020-08-02
 
 ### Added
