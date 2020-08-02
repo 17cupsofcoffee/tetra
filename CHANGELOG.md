@@ -6,7 +6,7 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
-## [Upcoming]
+## [0.4.1] - 2020-08-02
 
 ### Added
 
@@ -19,7 +19,7 @@ This project adheres to Semantic Versioning.
     * This is not a breaking change, as exaustive matching was already enforced via a hidden enum variant. This change just makes the code/docs/errors clearer, as well as potentially unlocking some compiler optimizations in the future.
 * Updated `glow` to 0.5.
 
-## [0.4.0]
+## [0.4.0] - 2020-06-24
 
 ### Added
 
@@ -522,7 +522,8 @@ for. This can be useful when implementing more complex animation behaviors. ([@V
 
 * Initial release!
 
-[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.4.0..HEAD
+[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.4.1..HEAD
+[0.4.1]: https://github.com/17cupsofcoffee/tetra/compare/0.4.0..0.4.1
 [0.4.0]: https://github.com/17cupsofcoffee/tetra/compare/0.3.6..0.4.0
 [0.3.6]: https://github.com/17cupsofcoffee/tetra/compare/0.3.5..0.3.6
 [0.3.5]: https://github.com/17cupsofcoffee/tetra/compare/0.3.4..0.3.5
