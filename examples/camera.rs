@@ -1,3 +1,4 @@
+use tetra::graphics::scaling::{ScalingMode, ScreenScaler};
 use tetra::graphics::{self, Camera, Color, DrawParams, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
@@ -9,6 +10,7 @@ const ZOOM_SPEED: f32 = 0.1;
 
 struct GameState {
     texture: Texture,
+    scaler: ScreenScaler,
     camera: Camera,
 }
 
@@ -16,7 +18,16 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
-            camera: Camera::with_window_size(ctx),
+            scaler: ScreenScaler::with_window_size(
+                ctx,
+                640,
+                480,
+                ScalingMode::ShowAllPixelPerfect,
+            )?,
+
+            // The camera's viewport size should match the target you're rendering
+            // to - in this case, the ScreenScaler:
+            camera: Camera::new(640.0, 480.0),
         })
     }
 }
@@ -61,8 +72,14 @@ impl State for GameState {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
+        graphics::set_canvas(ctx, self.scaler.canvas());
         graphics::clear(ctx, Color::rgb(0.769, 0.812, 0.631));
+
+        // To 'look through' the camera, we pass the calculated transform matrix
+        // into the renderer:
         graphics::set_transform_matrix(ctx, self.camera.as_matrix());
+
+        // Now all drawing operations will be transformed:
         graphics::draw(
             ctx,
             &self.texture,
@@ -71,13 +88,21 @@ impl State for GameState {
                 .scale(Vec2::new(2.0, 2.0)),
         );
 
+        // If you want to go back to drawing without transformations, reset the
+        // matrix. This is important here, as we're going to draw more stuff
+        // this frame, which we don't want to transform:
+        graphics::reset_transform_matrix(ctx);
+
+        graphics::reset_canvas(ctx);
+        graphics::clear(ctx, Color::BLACK);
+        graphics::draw(ctx, &self.scaler, Vec2::zero());
+
         Ok(())
     }
 
     fn event(&mut self, _: &mut Context, event: Event) -> tetra::Result {
         if let Event::Resized { width, height } = event {
-            self.camera.set_viewport_size(width as f32, height as f32);
-            self.camera.update();
+            self.scaler.set_outer_size(width, height);
         }
 
         Ok(())
