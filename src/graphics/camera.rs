@@ -25,7 +25,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    /// Creates a new camera.
+    /// Creates a new camera with the given viewport size.
     pub fn new(viewport_width: f32, viewport_height: f32) -> Camera {
         Camera {
             position: Vec2::zero(),
@@ -38,10 +38,11 @@ impl Camera {
         }
     }
 
-    /// Creates a new camera, with the viewport size set to match the window.
+    /// Creates a new camera, with the viewport size set to match the size of the window.
     ///
-    /// If the window is resizable, make sure that you call `set_viewport_size` when
-    /// the size changes!
+    /// Note that if the window is resized, the camera's viewport size will *not* automatically
+    /// update. If you need to keep the window size and the viewport size in sync, then call
+    /// `set_viewport_size` in your `State`'s `event` method when `Event::Resized` is fired.
     pub fn with_window_size(ctx: &Context) -> Camera {
         let (width, height) = window::get_size(ctx);
         Camera::new(width as f32, height as f32)
@@ -68,7 +69,7 @@ impl Camera {
     /// Returns the current transformation matrix.
     ///
     /// Pass this to `graphics::set_transform_matrix` to apply the transformation to
-    /// your scene!
+    /// your scene. To disable the transformation, call `graphics::reset_transform_matrix`.
     pub fn as_matrix(&self) -> Mat4<f32> {
         self.matrix
     }
