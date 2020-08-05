@@ -1,3 +1,4 @@
+use super::Rectangle;
 use crate::input;
 use crate::math::{Mat4, Vec2, Vec3};
 use crate::window;
@@ -107,4 +108,58 @@ impl Camera {
     pub fn mouse_y(&self, ctx: &Context) -> f32 {
         self.mouse_position(ctx).y
     }
+
+    /// Returns the visible rectangle. Everything inside of this rectangle is drawn on the screen.
+    pub fn visible_rect(&self) -> Rectangle {
+        let viewport_width = self.viewport_width / self.zoom;
+        let viewport_height = self.viewport_height / self.zoom;
+        let left = self.position.x - viewport_width / 2.0;
+        let top = self.position.y - viewport_height / 2.0;
+
+        Rectangle {
+            x: left,
+            y: top,
+            width: viewport_width,
+            height: viewport_height,
+        }
+    }
+}
+
+#[test]
+fn validate_camera_visible_rect() {
+    let mut camera = Camera::new(800., 600.);
+    // Camera is centered on 0.0 / 0.0 by default
+    assert_eq!(
+        camera.visible_rect(),
+        Rectangle {
+            x: -400.,
+            y: -300.,
+            width: 800.,
+            height: 600.
+        }
+    );
+
+    // Zooming in will reduce the visible rect size and x/y position by half
+    camera.zoom = 2.0;
+    assert_eq!(
+        camera.visible_rect(),
+        Rectangle {
+            x: -200.,
+            y: -150.,
+            width: 400.,
+            height: 300.
+        }
+    );
+
+    // Moving the camera will simply move the x/y position
+    camera.position = Vec2::new(-100., 100.);
+    assert_eq!(
+        camera.visible_rect(),
+        Rectangle {
+            x: -300.,
+            y: -50.,
+            width: 400.,
+            height: 300.
+        }
+    );
 }
