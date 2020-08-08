@@ -10,6 +10,7 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
+* Various improvements have been made to the documentation.
 * Updated `bytemuck` to 1.3.
 
 ## [0.4.1] - 2020-08-02

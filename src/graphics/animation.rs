@@ -9,8 +9,9 @@ use crate::Context;
 
 /// An animation, cycling between regions of a texture at a regular interval.
 ///
-/// Calling `advance` within your `draw` method will drive the animation, switching the texture
-/// region once the specified time has passed.
+/// Calling [`advance`](#method.advance) or [`advance_by`](#method.advance_by)
+/// within your `State`'s `draw` method will drive the animation, switching
+/// the texture region once the specified time has passed.
 #[derive(Debug, Clone)]
 pub struct Animation {
     texture: Texture,
@@ -50,11 +51,23 @@ impl Animation {
     }
 
     /// Advances the animation's timer, switching the texture region if required.
+    ///
+    /// This method uses the current [delta time](../../time/fn.get_delta_time.html)
+    /// to calculate how much time has passed - as such, you should call it in your
+    /// `State`'s `draw` method for accurate results.
+    ///
+    /// If you need greater control over the timing of your animation (e.g. if you
+    /// want to update it deterministically via your `State`'s `update` method),
+    /// consider using the [`advance_by`](#method.advance_by) method instead.
     pub fn advance(&mut self, ctx: &Context) {
         self.advance_by(time::get_delta_time(ctx));
     }
 
-    /// Advances the animation's timer by a specified amount, switching the texture region if required.
+    /// Advances the animation's timer by a specified amount, switching the texture
+    /// region if required.
+    ///
+    /// If the specified duration is longer than the frame length, frames will be
+    /// skipped.
     pub fn advance_by(&mut self, duration: Duration) {
         self.timer += duration;
 
