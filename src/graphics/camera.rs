@@ -11,6 +11,12 @@ use crate::Context;
 ///
 /// The camera's matrix is cached internally as an optimization. After adjusting parameters
 /// on the camera, you can call the `update` method to recalculate the matrix.
+///
+/// # Examples
+///
+/// The [`camera`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/camera.rs)
+/// example demonstrates how a camera can be used to transform a simple
+/// scene.
 #[derive(Debug, Clone)]
 pub struct Camera {
     /// The position of the camera.

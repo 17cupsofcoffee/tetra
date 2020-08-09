@@ -29,7 +29,8 @@ pub enum Timestep {
     /// of updating and rendering to be out of sync with each other.
     ///
     /// To avoid stutter, you should interpolate your rendering using `time::get_blend_factor`. The
-    /// `interpolation` example in the Tetra repository shows some different approaches to doing this.
+    /// [`interpolation`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/interpolation.rs)
+    /// example in the Tetra repository shows some different approaches to doing this.
     ///
     /// This mode is currently the default.
     Fixed(f64),

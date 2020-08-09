@@ -25,6 +25,11 @@ use crate::Context;
 ///
 /// Cloning a `Sound` is a very cheap operation, as the underlying data is shared between the
 /// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
+///
+/// # Examples
+///
+/// The [`audio`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/audio.rs)
+/// example demonstrates how to play several different kinds of sound.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Sound {
     pub(crate) data: Arc<[u8]>,

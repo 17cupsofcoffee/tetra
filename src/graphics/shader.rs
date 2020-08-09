@@ -60,6 +60,12 @@ pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag
 /// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
 /// This does mean, however, that updating a `Shader` (for example, setting a uniform) will also
 /// update any other clones of that `Shader`.
+///
+/// # Examples
+///
+/// The [`shaders`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/shaders.rs)
+/// example demonstrates how to draw using a custom shader, supplying inputs via uniform
+/// variables.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shader {
     pub(crate) handle: Rc<RawProgram>,

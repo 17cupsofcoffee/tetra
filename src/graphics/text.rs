@@ -25,6 +25,11 @@ pub use crate::graphics::text::vector::VectorFontBuilder;
 ///
 /// Cloning a `Font` is a very cheap operation, as the underlying data is shared between the
 /// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
+///
+/// # Examples
+///
+/// The [`text`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/text.rs)
+/// example demonstrates how to load a font and then draw some text.
 #[derive(Clone)]
 pub struct Font {
     data: Rc<RefCell<FontCache>>,
@@ -68,6 +73,11 @@ impl Debug for Font {
 ///
 /// Cloning a `Text` is a fairly expensive operation, as it creates an entirely new copy of the
 /// object with its own cache.
+///
+/// # Examples
+///
+/// The [`text`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/text.rs)
+/// example demonstrates how to load a font and then draw some text.
 #[derive(Debug, Clone)]
 pub struct Text {
     content: String,

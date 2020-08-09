@@ -8,6 +8,20 @@
 //! If a controller is disconnected, the next controller to be connected will take its ID - otherwise,
 //! a new one will be allocated. This means that if you unplug a controller and then plug it back in,
 //! it should retain its existing ID. This behaviour might be made smarter in future versions.
+//!
+//! # Examples
+//!
+//! The [`keyboard`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/keyboard.rs)
+//! example demonstrates how to handle keyboard input.
+//!
+//! The [`mouse`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/mouse.rs)
+//! example demonstrates how to handle mouse input.
+//!
+//! The [`gamepad`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/gamepad.rs)
+//! example demonstrates how to handle gamepad input.
+//!
+//! The [`text_input`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/text_input.rs)
+//! example demonstrates how to handle text entry.
 
 mod gamepad;
 mod keyboard;

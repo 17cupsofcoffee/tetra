@@ -12,6 +12,15 @@ use crate::Context;
 /// Calling [`advance`](#method.advance) or [`advance_by`](#method.advance_by)
 /// within your `State`'s `draw` method will drive the animation, switching
 /// the texture region once the specified time has passed.
+///
+/// # Examples
+///
+/// The [`animation`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/animation.rs)
+/// example demonstrates basic usage of an `Animation` with a spritesheet.
+///
+/// The [`animation_controller`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/animation_controller.rs)
+/// example demonstrates how multiple `Animation`s can be combined using a
+/// simple state machine.
 #[derive(Debug, Clone)]
 pub struct Animation {
     texture: Texture,
