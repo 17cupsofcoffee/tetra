@@ -13,6 +13,10 @@ This project adheres to Semantic Versioning.
 * Various improvements have been made to the documentation.
 * Updated `bytemuck` to 1.3.
 
+### Fixed
+
+* The matrix created by a `Camera` now correctly reflects the viewport width and height before the first `update`.
+
 ## [0.4.1] - 2020-08-02
 
 ### Added

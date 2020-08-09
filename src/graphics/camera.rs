@@ -34,7 +34,7 @@ impl Camera {
             viewport_width,
             viewport_height,
 
-            matrix: Mat4::identity(),
+            matrix: Mat4::translation_2d(Vec2::new(viewport_width / 2.0, viewport_height / 2.0)),
         }
     }
 
