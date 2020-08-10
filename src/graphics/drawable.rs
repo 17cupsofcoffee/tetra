@@ -31,7 +31,10 @@ pub struct DrawParams {
 
     /// A sub-region of the graphic to draw. Defaults to `None`, which means the the full graphic will be drawn.
     ///
-    /// This is useful if you're using spritesheets (which you should be, if you want good performance!).
+    /// Note that clipped texture regions may 'bleed' when drawing at non-integer co-ordinates.
+    /// To avoid this, either add one pixel of padding around the images in the texture atlas
+    /// (preferably matching the color of the actual border), or ensure your drawing is
+    /// clamped to integer co-ordinates.
     pub clip: Option<Rectangle>,
 }
 
