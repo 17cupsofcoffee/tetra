@@ -11,6 +11,8 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * Various improvements have been made to the documentation.
+* Textures now use `CLAMP_TO_EDGE` wrapping, to avoid some sampling issues when drawing at non-integer co-ordinates.
+    * In the future, it may be made possible to select other wrapping modes.
 * Updated `bytemuck` to 1.3.
 
 ### Fixed
