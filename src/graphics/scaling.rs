@@ -14,7 +14,6 @@ use crate::Context;
 /// The [`scaling`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/scaling.rs)
 /// example demonstrates how to use a `ScreenScaler` with each of the different
 /// scaling algorithms.
-/// ```
 #[derive(Debug)]
 pub struct ScreenScaler {
     canvas: Canvas,

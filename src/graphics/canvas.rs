@@ -29,7 +29,6 @@ use crate::Context;
 /// The [`canvas`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/canvas.rs)
 /// example demonstrates how to draw to a canvas, and then draw that canvas to
 /// the screen.
-/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Canvas {
     pub(crate) texture: Texture,
