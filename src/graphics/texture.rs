@@ -48,6 +48,11 @@ impl PartialEq for TextureSharedData {
 /// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
 /// This does mean, however, that updating a `Texture` (for example, changing its filter mode) will also
 /// update any other clones of that `Texture`.
+///
+/// # Examples
+///
+/// The [`texture`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/texture.rs)
+/// example demonstrates how to draw a simple texture.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Texture {
     pub(crate) data: Rc<TextureSharedData>,

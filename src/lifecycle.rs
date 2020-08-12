@@ -32,6 +32,11 @@ pub trait State {
 ///
 /// The [`event` method on the `State` trait](trait.State.html#method.event) will recieve
 /// events as they occur.
+///
+/// # Examples
+///
+/// The [`events`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/events.rs)
+/// example demonstrates how to handle events.
 #[non_exhaustive]
 #[derive(Debug, Clone)]
 pub enum Event {

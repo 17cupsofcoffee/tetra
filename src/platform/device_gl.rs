@@ -307,13 +307,13 @@ impl GraphicsDevice {
             self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,
                 glow::TEXTURE_WRAP_S,
-                glow::REPEAT as i32,
+                glow::CLAMP_TO_EDGE as i32,
             );
 
             self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,
                 glow::TEXTURE_WRAP_T,
-                glow::REPEAT as i32,
+                glow::CLAMP_TO_EDGE as i32,
             );
 
             self.state

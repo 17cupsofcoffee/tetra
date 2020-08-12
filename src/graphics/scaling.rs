@@ -11,47 +11,9 @@ use crate::Context;
 ///
 /// # Examples
 ///
-/// ```rust
-/// # use tetra::{Context, State, Event};
-/// # use tetra::graphics::{self, Color};
-/// # use tetra::graphics::scaling::{ScreenScaler, ScalingMode};
-/// # use tetra::math::Vec2;
-/// #
-/// struct GameState {
-///     scaler: ScreenScaler,
-/// }
-///
-/// impl GameState {
-///     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
-///         Ok(GameState {
-///             scaler: ScreenScaler::with_window_size(ctx, 128, 128, ScalingMode::ShowAllPixelPerfect)?
-///         })
-///     }
-/// }
-///
-/// impl State for GameState {
-///     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
-///         graphics::set_canvas(ctx, self.scaler.canvas());
-///
-///         // Draw your scene here...
-///
-///         graphics::reset_canvas(ctx);
-///         graphics::clear(ctx, Color::BLACK);
-///         graphics::draw(ctx, &self.scaler, Vec2::new(0.0, 0.0));
-///
-///         Ok(())
-///     }
-///
-///     fn event(&mut self, _ctx: &mut Context, event: Event) -> tetra::Result {
-///         if let Event::Resized { width, height } = event {
-///             // Ensure your scaler is kept aware of screen size changes!
-///             self.scaler.set_outer_size(width, height);
-///         }
-///
-///         Ok(())
-///     }
-/// }
-/// ```
+/// The [`scaling`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/scaling.rs)
+/// example demonstrates how to use a `ScreenScaler` with each of the different
+/// scaling algorithms.
 #[derive(Debug)]
 pub struct ScreenScaler {
     canvas: Canvas,

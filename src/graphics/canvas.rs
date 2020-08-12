@@ -26,40 +26,9 @@ use crate::Context;
 ///
 /// # Examples
 ///
-/// ```rust
-/// # use tetra::{Context, State};
-/// # use tetra::graphics::{self, Color, Canvas};
-/// # use tetra::math::Vec2;
-/// #
-/// struct GameState {
-///     canvas: Canvas,
-/// }
-///
-/// impl GameState {
-///     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
-///         Ok(GameState {
-///             canvas: Canvas::new(ctx, 640, 480)?
-///         })
-///     }
-/// }
-///
-/// impl State for GameState {
-///     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
-///         graphics::set_canvas(ctx, &self.canvas);
-///
-///         // Draw some stuff to the canvas here, using the normal graphics API.
-///
-///         // When you're done, reset the canvas:
-///         graphics::reset_canvas(ctx);
-///
-///         // Now you can draw the canvas to the screen:
-///         graphics::clear(ctx, Color::BLACK);
-///         graphics::draw(ctx, &self.canvas, Vec2::new(0.0, 0.0));
-///
-///         Ok(())
-///     }
-/// }
-/// ```
+/// The [`canvas`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/canvas.rs)
+/// example demonstrates how to draw to a canvas, and then draw that canvas to
+/// the screen.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Canvas {
     pub(crate) texture: Texture,
