@@ -1,3 +1,4 @@
+use super::Rectangle;
 use crate::input;
 use crate::math::{Mat4, Vec2, Vec3};
 use crate::window;
@@ -134,4 +135,105 @@ impl Camera {
     pub fn mouse_y(&self, ctx: &Context) -> f32 {
         self.mouse_position(ctx).y
     }
+
+    /// Returns the visible rectangle. Everything inside of this rectangle is drawn on the screen.
+    ///
+    /// When used on a rotated camera, this will return the smallest rectangle that contains the camera viewport.
+    pub fn visible_rect(&self) -> Rectangle {
+        let viewport_width = self.viewport_width / self.zoom;
+        let viewport_height = self.viewport_height / self.zoom;
+
+        if self.rotation.abs() > std::f32::EPSILON {
+            // Rotate the top-left and bottom-left point.
+            // Then get the max x and y from both vectors.
+            // This is the range to the bounds of the bounding box that contains this rectangle.
+            let mut vector_to_top_left = Vec2::new(-viewport_width / 2.0, -viewport_height / 2.0);
+            let mut vector_to_bottom_left = Vec2::new(-viewport_width / 2.0, viewport_height / 2.0);
+
+            vector_to_top_left.rotate_z(self.rotation);
+            vector_to_bottom_left.rotate_z(self.rotation);
+
+            let largest_x = vector_to_top_left
+                .x
+                .abs()
+                .max(vector_to_bottom_left.x.abs());
+            let largest_y = vector_to_top_left
+                .y
+                .abs()
+                .max(vector_to_bottom_left.y.abs());
+
+            let left = self.position.x - largest_x;
+            let top = self.position.y - largest_y;
+            // The largest x and y are the distance from the center, so the width is twice that.
+            let width = largest_x * 2.0;
+            let height = largest_y * 2.0;
+
+            Rectangle {
+                x: left,
+                y: top,
+                width,
+                height,
+            }
+        } else {
+            // Quick happy path with no rotation
+            let left = self.position.x - viewport_width / 2.0;
+            let top = self.position.y - viewport_height / 2.0;
+
+            Rectangle {
+                x: left,
+                y: top,
+                width: viewport_width,
+                height: viewport_height,
+            }
+        }
+    }
+}
+
+#[test]
+fn validate_camera_visible_rect() {
+    let mut camera = Camera::new(800., 600.);
+    // Camera is centered on 0.0 / 0.0 by default
+    assert_eq!(
+        camera.visible_rect(),
+        Rectangle {
+            x: -400.,
+            y: -300.,
+            width: 800.,
+            height: 600.
+        }
+    );
+
+    // Zooming in will reduce the visible rect size and x/y position by half
+    camera.zoom = 2.0;
+    assert_eq!(
+        camera.visible_rect(),
+        Rectangle {
+            x: -200.,
+            y: -150.,
+            width: 400.,
+            height: 300.
+        }
+    );
+
+    // Moving the camera will simply move the x/y position
+    camera.position = Vec2::new(-100., 100.);
+    assert_eq!(
+        camera.visible_rect(),
+        Rectangle {
+            x: -300.,
+            y: -50.,
+            width: 400.,
+            height: 300.
+        }
+    );
+
+    // Rotating the camera 0.5PI rad will rotate the rectangle by 90 degrees
+    // So the width/height will be swapped
+    camera.rotation = std::f32::consts::FRAC_PI_2;
+    let rect = camera.visible_rect();
+    // we need to manually compare this to a small value because of rounding errors
+    assert!((rect.x + 250.) < 0.001);
+    assert!((rect.y + 100.) < 0.001);
+    assert!((rect.width - 300.) < 0.001);
+    assert!((rect.height - 400.) < 0.001);
 }
