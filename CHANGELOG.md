@@ -8,6 +8,10 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added
+
+* A `visible_rect` method has been added to `Camera`, which calculates the area of the screen that is currently visible. ([@VictorKoenders](https://github.com/VictorKoenders) in [#201](https://github.com/17cupsofcoffee/tetra/pull/201))
+
 ### Changed
 
 * Various improvements have been made to the documentation.

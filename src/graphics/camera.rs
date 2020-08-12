@@ -136,34 +136,35 @@ impl Camera {
         self.mouse_position(ctx).y
     }
 
-    /// Returns the visible rectangle. Everything inside of this rectangle is drawn on the screen.
+    /// Calculates the visible rectangle of the camera.
     ///
-    /// When used on a rotated camera, this will return the smallest rectangle that contains the camera viewport.
+    /// When used on a rotated camera, this will return the smallest rectangle that
+    /// contains the full camera viewport.
+    ///
+    /// Note that this method does not take into account any other transformations being
+    /// made to the view (e.g. screen scaling).
     pub fn visible_rect(&self) -> Rectangle {
         let viewport_width = self.viewport_width / self.zoom;
         let viewport_height = self.viewport_height / self.zoom;
 
-        if self.rotation.abs() > std::f32::EPSILON {
-            // Rotate the top-left and bottom-left point.
-            // Then get the max x and y from both vectors.
-            // This is the range to the bounds of the bounding box that contains this rectangle.
-            let mut vector_to_top_left = Vec2::new(-viewport_width / 2.0, -viewport_height / 2.0);
-            let mut vector_to_bottom_left = Vec2::new(-viewport_width / 2.0, viewport_height / 2.0);
+        let half_viewport_width = viewport_width / 2.0;
+        let half_viewport_height = viewport_height / 2.0;
 
-            vector_to_top_left.rotate_z(self.rotation);
-            vector_to_bottom_left.rotate_z(self.rotation);
+        if self.rotation.abs() > f32::EPSILON {
+            // Rotate the top-left and bottom-left point, then get the max x and y from both vectors.
+            // This is the range of the bounding box that contains this rectangle.
+            let mut top_left = Vec2::new(-half_viewport_width, -half_viewport_height);
+            let mut bottom_left = Vec2::new(-half_viewport_width, half_viewport_height);
 
-            let largest_x = vector_to_top_left
-                .x
-                .abs()
-                .max(vector_to_bottom_left.x.abs());
-            let largest_y = vector_to_top_left
-                .y
-                .abs()
-                .max(vector_to_bottom_left.y.abs());
+            top_left.rotate_z(self.rotation);
+            bottom_left.rotate_z(self.rotation);
+
+            let largest_x = f32::max(top_left.x.abs(), bottom_left.x.abs());
+            let largest_y = f32::max(top_left.y.abs(), bottom_left.y.abs());
 
             let left = self.position.x - largest_x;
             let top = self.position.y - largest_y;
+
             // The largest x and y are the distance from the center, so the width is twice that.
             let width = largest_x * 2.0;
             let height = largest_y * 2.0;
@@ -176,8 +177,8 @@ impl Camera {
             }
         } else {
             // Quick happy path with no rotation
-            let left = self.position.x - viewport_width / 2.0;
-            let top = self.position.y - viewport_height / 2.0;
+            let left = self.position.x - half_viewport_width;
+            let top = self.position.y - half_viewport_height;
 
             Rectangle {
                 x: left,
@@ -189,51 +190,60 @@ impl Camera {
     }
 }
 
-#[test]
-fn validate_camera_visible_rect() {
-    let mut camera = Camera::new(800., 600.);
-    // Camera is centered on 0.0 / 0.0 by default
-    assert_eq!(
-        camera.visible_rect(),
-        Rectangle {
-            x: -400.,
-            y: -300.,
-            width: 800.,
-            height: 600.
-        }
-    );
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    // Zooming in will reduce the visible rect size and x/y position by half
-    camera.zoom = 2.0;
-    assert_eq!(
-        camera.visible_rect(),
-        Rectangle {
-            x: -200.,
-            y: -150.,
-            width: 400.,
-            height: 300.
-        }
-    );
+    #[test]
+    fn validate_camera_visible_rect() {
+        let mut camera = Camera::new(800.0, 600.0);
 
-    // Moving the camera will simply move the x/y position
-    camera.position = Vec2::new(-100., 100.);
-    assert_eq!(
-        camera.visible_rect(),
-        Rectangle {
-            x: -300.,
-            y: -50.,
-            width: 400.,
-            height: 300.
-        }
-    );
+        // Camera is centered on 0.0 / 0.0 by default
+        assert_eq!(
+            camera.visible_rect(),
+            Rectangle {
+                x: -400.0,
+                y: -300.0,
+                width: 800.0,
+                height: 600.0
+            }
+        );
 
-    // Rotating the camera 0.5PI rad will rotate the rectangle by 90 degrees
-    // So the width/height will be swapped
-    camera.rotation = std::f32::consts::FRAC_PI_2;
-    let rect = camera.visible_rect();
-    // we need to manually compare this to a small value because of rounding errors
-    assert!((rect.x + 250.) < 0.001);
-    assert!((rect.y + 100.) < 0.001);
-    assert!((rect.width - 300.) < 0.001);
-    assert!((rect.height - 400.) < 0.001);
+        // Zooming in will reduce the visible rect size and x/y position by half
+        camera.zoom = 2.0;
+
+        assert_eq!(
+            camera.visible_rect(),
+            Rectangle {
+                x: -200.0,
+                y: -150.0,
+                width: 400.0,
+                height: 300.0
+            }
+        );
+
+        // Moving the camera will simply move the x/y position
+        camera.position = Vec2::new(-100.0, 100.0);
+
+        assert_eq!(
+            camera.visible_rect(),
+            Rectangle {
+                x: -300.0,
+                y: -50.0,
+                width: 400.0,
+                height: 300.0
+            }
+        );
+
+        // Rotating the camera by 0.5 * pi will rotate the rectangle by 90 degrees,
+        // so the width and height will be swapped
+        camera.rotation = std::f32::consts::FRAC_PI_2;
+
+        // We need to manually compare this to a small value because of rounding errors
+        let rect = camera.visible_rect();
+        assert!(rect.x + 250.0 < 0.001);
+        assert!(rect.y + 100.0 < 0.001);
+        assert!(rect.width - 300.0 < 0.001);
+        assert!(rect.height - 400.0 < 0.001);
+    }
 }
