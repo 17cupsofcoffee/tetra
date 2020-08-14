@@ -195,6 +195,46 @@ mod tests {
     use super::*;
 
     #[test]
+    fn point_projections() {
+        let mut camera = Camera::new(128.0, 256.0);
+
+        let proj_initial = camera.project(Vec2::zero());
+        let unproj_initial = camera.unproject(proj_initial);
+
+        assert_eq!(proj_initial, Vec2::new(-64.0, -128.0));
+        assert_eq!(unproj_initial, Vec2::zero());
+
+        camera.position = Vec2::new(16.0, 16.0);
+        camera.update();
+
+        let proj_positioned = camera.project(Vec2::zero());
+        let unproj_positioned = camera.unproject(proj_positioned);
+
+        assert_eq!(proj_positioned, Vec2::new(-48.0, -112.0));
+        assert_eq!(unproj_positioned, Vec2::zero());
+
+        camera.zoom = 2.0;
+        camera.update();
+
+        let proj_zoomed = camera.project(Vec2::zero());
+        let unproj_zoomed = camera.unproject(proj_zoomed);
+
+        assert_eq!(proj_zoomed, Vec2::new(-16.0, -48.0));
+        assert_eq!(unproj_zoomed, Vec2::zero());
+
+        camera.rotation = std::f32::consts::FRAC_PI_2;
+        camera.update();
+
+        let proj_rotated = camera.project(Vec2::zero());
+        let unproj_rotated = camera.unproject(proj_rotated);
+
+        assert!(proj_rotated.x + 48.0 <= 0.001);
+        assert!(proj_rotated.y - 48.0 <= 0.001);
+        assert!(unproj_rotated.x.abs() <= 0.001);
+        assert!(unproj_rotated.y.abs() <= 0.001);
+    }
+
+    #[test]
     fn validate_camera_visible_rect() {
         let mut camera = Camera::new(800.0, 600.0);
 
