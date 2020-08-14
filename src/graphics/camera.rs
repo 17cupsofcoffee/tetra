@@ -98,15 +98,26 @@ impl Camera {
 
     /// Projects a point from world co-ordinates to camera co-ordinates.
     pub fn project(&self, point: Vec2<f32>) -> Vec2<f32> {
-        self.as_matrix()
-            .inverted()
-            .mul_point(Vec3::from_point_2d(point))
-            .xy()
+        let mut proj = Vec2::new(
+            (point.x - self.viewport_width / 2.0) / self.zoom,
+            (point.y - self.viewport_height / 2.0) / self.zoom,
+        );
+
+        proj.rotate_z(-self.rotation);
+        proj += self.position;
+
+        proj
     }
 
     /// Projects a point from camera co-ordinates to world co-ordinates.
     pub fn unproject(&self, point: Vec2<f32>) -> Vec2<f32> {
-        self.as_matrix().mul_point(Vec3::from_point_2d(point)).xy()
+        let mut unproj = point - self.position;
+        unproj.rotate_z(self.rotation);
+
+        unproj.x = unproj.x * self.zoom + self.viewport_width / 2.0;
+        unproj.y = unproj.y * self.zoom + self.viewport_height / 2.0;
+
+        unproj
     }
 
     /// Returns the mouse's position in camera co-ordinates.
@@ -205,7 +216,6 @@ mod tests {
         assert_eq!(unproj_initial, Vec2::zero());
 
         camera.position = Vec2::new(16.0, 16.0);
-        camera.update();
 
         let proj_positioned = camera.project(Vec2::zero());
         let unproj_positioned = camera.unproject(proj_positioned);
@@ -214,7 +224,6 @@ mod tests {
         assert_eq!(unproj_positioned, Vec2::zero());
 
         camera.zoom = 2.0;
-        camera.update();
 
         let proj_zoomed = camera.project(Vec2::zero());
         let unproj_zoomed = camera.unproject(proj_zoomed);
@@ -223,7 +232,6 @@ mod tests {
         assert_eq!(unproj_zoomed, Vec2::zero());
 
         camera.rotation = std::f32::consts::FRAC_PI_2;
-        camera.update();
 
         let proj_rotated = camera.project(Vec2::zero());
         let unproj_rotated = camera.unproject(proj_rotated);

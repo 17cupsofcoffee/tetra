@@ -15,6 +15,8 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * Various improvements have been made to the documentation.
+* `Camera::project` and `Camera::unproject` no longer require `Camera::update` to be called to give correct results.
+    * This is for consistency with the new `visible_rect` method.
 * Textures now use `CLAMP_TO_EDGE` wrapping, to avoid some sampling issues when drawing at non-integer co-ordinates.
     * In the future, it may be made possible to select other wrapping modes.
 * Updated `bytemuck` to 1.3.
