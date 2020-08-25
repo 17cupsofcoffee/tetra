@@ -409,10 +409,11 @@ where
                 }
             }
 
-            SdlEvent::MouseMotion { x, y, .. } => {
+            SdlEvent::MouseMotion { x, y, xrel, yrel , .. } => {
                 let position = Vec2::new(x as f32, y as f32);
+                let relative_position = Vec2::new(xrel as f32, yrel as f32);
                 input::set_mouse_position(ctx, position);
-                state.event(ctx, Event::MouseMoved { position })?;
+                state.event(ctx, Event::MouseMoved { position, relative_position })?;
             }
 
             SdlEvent::MouseWheel {

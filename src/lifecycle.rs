@@ -83,6 +83,8 @@ pub enum Event {
     MouseMoved {
         /// The new position of the mouse, in window co-ordinates.
         position: Vec2<f32>,
+        /// The relative motion of the mouse
+        relative_position: Vec2<f32>,
     },
 
     /// The mouse wheel was moved.
