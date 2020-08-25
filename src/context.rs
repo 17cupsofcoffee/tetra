@@ -292,7 +292,6 @@ impl ContextBuilder {
     /// While the mouse is in relative mode, the cursor is hidden,
     /// and the driver will try to report continuous motion in the current window.
     /// Only relative motion events will be delivered, the mouse position will not change. 
-    /// at startup.
     ///
     /// Defaults to `false`.
     pub fn relative_mouse(&mut self, relative_mouse: bool) -> &mut ContextBuilder {
