@@ -188,6 +188,11 @@ impl SoundInstance {
     pub fn toggle_repeating(&self) {
         self.controls.set_repeating(!self.controls.repeating());
     }
+    
+    /// return true when playback is finished
+    pub fn finished(&self) -> bool{
+        self.controls.finished()
+    }
 }
 
 // TODO: Remove or make more useful in 0.4.
