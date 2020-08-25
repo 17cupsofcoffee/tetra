@@ -47,6 +47,10 @@ impl AudioControls {
     pub fn set_repeating(&self, repeating: bool) {
         self.repeating.store(repeating, Ordering::SeqCst);
     }
+    
+    pub fn finished(&self) -> bool{
+        self.rewind.load(Ordering::SeqCst)
+    }
 }
 
 pub struct AudioDevice {
