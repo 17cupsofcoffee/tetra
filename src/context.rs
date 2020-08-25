@@ -174,6 +174,7 @@ pub struct ContextBuilder {
     pub(crate) borderless: bool,
     pub(crate) show_mouse: bool,
     pub(crate) grab_mouse: bool,
+    pub(crate) relative_mouse: bool,
     pub(crate) quit_on_escape: bool,
     pub(crate) debug_info: bool,
 }
@@ -287,6 +288,18 @@ impl ContextBuilder {
         self
     }
 
+    /// Sets whether or not the mouse movement is reported in relative motion.
+    /// While the mouse is in relative mode, the cursor is hidden,
+    /// and the driver will try to report continuous motion in the current window.
+    /// Only relative motion events will be delivered, the mouse position will not change. 
+    /// at startup.
+    ///
+    /// Defaults to `false`.
+    pub fn relative_mouse(&mut self, relative_mouse: bool) -> &mut ContextBuilder {
+        self.relative_mouse = relative_mouse;
+        self
+    }
+
     /// Sets whether or not the game should close when the Escape key is pressed.
     ///
     /// Defaults to `false`.
@@ -327,6 +340,7 @@ impl Default for ContextBuilder {
             borderless: false,
             show_mouse: false,
             grab_mouse: false,
+            relative_mouse: false,
             quit_on_escape: false,
             debug_info: false,
         }

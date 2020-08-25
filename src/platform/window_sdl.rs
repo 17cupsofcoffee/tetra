@@ -91,6 +91,8 @@ impl Window {
         if settings.grab_mouse {
             window_builder.input_grabbed();
         }
+        
+        sdl.mouse().set_relative_mouse_mode(settings.relative_mouse);
 
         sdl.mouse().show_cursor(settings.show_mouse);
 
