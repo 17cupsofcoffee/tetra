@@ -6,6 +6,13 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Added
+
+* `SoundInstance::state` and `SoundInstance::set_state` have been added, which allow you to check the current state of playback and modify it respectively. ([@puppetmaster-](https://github.com/puppetmaster-) in [#205](https://github.com/17cupsofcoffee/tetra/pull/205))
+    * These methods use a new enum called `SoundState`, which represents the possible states that a `SoundInstance` can be in.
+
 ## [0.4.2] - 2020-08-14
 
 ### Added

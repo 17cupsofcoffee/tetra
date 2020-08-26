@@ -6,6 +6,7 @@ use std::time::Duration;
 use rodio::source::{Buffered, Empty};
 use rodio::{Decoder, Device as RodioDevice, Sample, Source};
 
+use crate::audio::SoundState;
 use crate::error::{Result, TetraError};
 
 pub use rodio::decoder::DecoderError;
@@ -19,21 +20,33 @@ pub struct AudioControls {
 }
 
 impl AudioControls {
-    pub fn play(&self) {
-        self.playing.store(true, Ordering::SeqCst);
-    }
-
-    pub fn stop(&self) {
-        self.playing.store(false, Ordering::SeqCst);
-        self.rewind.store(true, Ordering::SeqCst);
-    }
-
-    pub fn pause(&self) {
-        self.playing.store(false, Ordering::SeqCst);
-    }
-
     pub fn set_volume(&self, volume: f32) {
         *self.volume.lock().unwrap() = volume;
+    }
+
+    pub fn state(&self) -> SoundState {
+        if self.playing.load(Ordering::SeqCst) {
+            SoundState::Playing
+        } else if self.rewind.load(Ordering::SeqCst) {
+            SoundState::Stopped
+        } else {
+            SoundState::Paused
+        }
+    }
+
+    pub fn set_state(&self, state: SoundState) {
+        match state {
+            SoundState::Playing => {
+                self.playing.store(true, Ordering::SeqCst);
+            }
+            SoundState::Paused => {
+                self.playing.store(false, Ordering::SeqCst);
+            }
+            SoundState::Stopped => {
+                self.playing.store(false, Ordering::SeqCst);
+                self.rewind.store(true, Ordering::SeqCst);
+            }
+        }
     }
 
     pub fn set_speed(&self, speed: f32) {

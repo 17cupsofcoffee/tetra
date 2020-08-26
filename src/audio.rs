@@ -155,17 +155,33 @@ pub struct SoundInstance {
 impl SoundInstance {
     /// Plays the sound if it is stopped, or resumes the sound if it is paused.
     pub fn play(&self) {
-        self.controls.play();
+        self.set_state(SoundState::Playing)
     }
 
-    /// Stops the sound, and rewinds it to the beginning.
+    /// Stops the sound. If playback is resumed, it will start over from the
+    /// beginning.
     pub fn stop(&self) {
-        self.controls.stop();
+        self.set_state(SoundState::Stopped);
     }
 
-    /// Pauses the sound.
+    /// Pauses the sound. If playback is resumed, it will continue
+    /// from the point where it was paused.
     pub fn pause(&self) {
-        self.controls.pause();
+        self.set_state(SoundState::Paused);
+    }
+
+    /// Returns the current state of playback.
+    pub fn state(&self) -> SoundState {
+        self.controls.state()
+    }
+
+    /// Sets the current state of playback.
+    ///
+    /// In most cases, using the `play`, `stop` and `pause` methods is easier than explicitly
+    /// setting a state, but this may be useful when, for example, defining transitions from
+    /// one state to another.
+    pub fn set_state(&self, state: SoundState) {
+        self.controls.set_state(state)
     }
 
     /// Sets the volume of the sound.
@@ -202,6 +218,32 @@ impl Debug for SoundInstance {
             .field("controls", &"<platform internals>")
             .finish()
     }
+}
+
+/// The states that playback of a `SoundInstance` can be in.
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum SoundState {
+    /// The sound is currently playing.
+    ///
+    /// If a `SoundInstance` is created via `Sound::play`, `Sound::play_with`,
+    /// `Sound::repeat` or `Sound::repeat_with`, it will be in this state
+    /// initially.
+    Playing,
+
+    /// The sound is paused. If playback is resumed, it will continue
+    /// from the point where it was paused.
+    ///
+    /// If a `SoundInstance` is created via `Sound::spawn` or `Sound::spawn_with`,
+    /// it will be in this state initially.
+    Paused,
+
+    /// The sound has stopped, either manually or as a result of it reaching
+    /// the end of the audio data. If playback is resumed, it will start
+    /// over from the beginning of the sound.
+    ///
+    /// This state will never occur while a `SoundInstance` is set
+    /// to be `repeating`.
+    Stopped,
 }
 
 /// Sets the master volume for the game.
