@@ -12,6 +12,8 @@ This project adheres to Semantic Versioning.
 
 * `SoundInstance::state` and `SoundInstance::set_state` have been added, which allow you to check the current state of playback and modify it respectively. ([@puppetmaster-](https://github.com/puppetmaster-) in [#205](https://github.com/17cupsofcoffee/tetra/pull/205))
     * These methods use a new enum called `SoundState`, which represents the possible states that a `SoundInstance` can be in.
+* The position of the mouse relative to the previous motion event can now be obtained via the `relative_position` field on `Event::MouseMoved`. ([@GGalizzi](https://github.com/GGalizzi) in [#206](https://github.com/17cupsofcoffee/tetra/pull/206))
+* The window can now be set into relative mouse mode, which allows the mouse to move outside of the bounds of the window while still reporting motion events. ([@GGalizzi](https://github.com/GGalizzi) in [#206](https://github.com/17cupsofcoffee/tetra/pull/206))
 
 ## [0.4.2] - 2020-08-14
 
