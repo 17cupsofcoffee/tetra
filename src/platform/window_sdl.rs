@@ -91,9 +91,9 @@ impl Window {
         if settings.grab_mouse {
             window_builder.input_grabbed();
         }
-        
-        sdl.mouse().set_relative_mouse_mode(settings.relative_mouse);
 
+        sdl.mouse()
+            .set_relative_mouse_mode(settings.relative_mouse_mode);
         sdl.mouse().show_cursor(settings.show_mouse);
 
         let mut sdl_window = window_builder
@@ -290,6 +290,16 @@ impl Window {
         self.sdl_window.grab()
     }
 
+    pub fn set_relative_mouse_mode(&mut self, relative_mouse_mode: bool) {
+        self.sdl
+            .mouse()
+            .set_relative_mouse_mode(relative_mouse_mode);
+    }
+
+    pub fn is_relative_mouse_mode(&self) -> bool {
+        self.sdl.mouse().relative_mouse_mode()
+    }
+
     pub fn get_clipboard_text(&self) -> Result<String> {
         self.video_sys
             .clipboard()
@@ -411,11 +421,14 @@ where
                 }
             }
 
-            SdlEvent::MouseMotion { x, y, xrel, yrel , .. } => {
+            SdlEvent::MouseMotion {
+                x, y, xrel, yrel, ..
+            } => {
                 let position = Vec2::new(x as f32, y as f32);
-                let relative_position = Vec2::new(xrel as f32, yrel as f32);
+                let delta = Vec2::new(xrel as f32, yrel as f32);
+
                 input::set_mouse_position(ctx, position);
-                state.event(ctx, Event::MouseMoved { position, relative_position })?;
+                state.event(ctx, Event::MouseMoved { position, delta })?;
             }
 
             SdlEvent::MouseWheel {

@@ -82,9 +82,14 @@ pub enum Event {
     /// The mouse was moved.
     MouseMoved {
         /// The new position of the mouse, in window co-ordinates.
+        ///
+        /// If [relative mouse mode](./window/fn.set_relative_mouse_mode.html) is
+        /// enabled, this field is not guarenteed to update.
         position: Vec2<f32>,
-        /// The relative motion of the mouse
-        relative_position: Vec2<f32>,
+
+        /// The movement of the mouse, relative to the `position` of the previous
+        /// `MouseMoved` event.
+        delta: Vec2<f32>,
     },
 
     /// The mouse wheel was moved.

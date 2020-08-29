@@ -128,6 +128,34 @@ pub fn is_mouse_grabbed(ctx: &Context) -> bool {
     ctx.window.is_mouse_grabbed()
 }
 
+/// Sets whether or not relative mouse mode is enabled.
+///
+/// While the mouse is in relative mode, the cursor is hidden and can move beyond the
+/// bounds of the window. The [`delta` field of `Event::MouseMoved`](../enum.Event.html#variant.MouseMoved.field.delta)
+/// can then be used to track the cursor's changes in position. This is useful when
+/// implementing control schemes that require the mouse to be able to move infinitely
+/// in any direction (for example, FPS-style movement).
+///
+/// While this mode is enabled, the absolute position of the mouse may not be updated -
+/// as such, you should not rely on it.
+pub fn set_relative_mouse_mode(ctx: &mut Context, relative_mouse_mode: bool) {
+    ctx.window.set_relative_mouse_mode(relative_mouse_mode);
+}
+
+/// Returns whether or not relative mouse mode is currently enabled.
+///
+/// While the mouse is in relative mode, the cursor is hidden and can move beyond the
+/// bounds of the window. The [`delta` field of `Event::MouseMoved`](../enum.Event.html#variant.MouseMoved.field.delta)
+/// can then be used to track the cursor's changes in position. This is useful when
+/// implementing control schemes that require the mouse to be able to move infinitely
+/// in any direction (for example, FPS-style movement).
+///
+/// While this mode is enabled, the absolute position of the mouse may not be updated -
+/// as such, you should not rely on it.
+pub fn is_relative_mouse_mode(ctx: &Context) -> bool {
+    ctx.window.is_relative_mouse_mode()
+}
+
 /// Get the number of monitors connected to the device.
 ///
 /// # Errors

@@ -174,7 +174,7 @@ pub struct ContextBuilder {
     pub(crate) borderless: bool,
     pub(crate) show_mouse: bool,
     pub(crate) grab_mouse: bool,
-    pub(crate) relative_mouse: bool,
+    pub(crate) relative_mouse_mode: bool,
     pub(crate) quit_on_escape: bool,
     pub(crate) debug_info: bool,
 }
@@ -288,14 +288,20 @@ impl ContextBuilder {
         self
     }
 
-    /// Sets whether or not the mouse movement is reported in relative motion.
-    /// While the mouse is in relative mode, the cursor is hidden,
-    /// and the driver will try to report continuous motion in the current window.
-    /// Only relative motion events will be delivered, the mouse position will not change. 
+    /// Sets whether or not relative mouse mode should be enabled.
+    ///
+    /// While the mouse is in relative mode, the cursor is hidden and can move beyond the
+    /// bounds of the window. The [`delta` field of `Event::MouseMoved`](./enum.Event.html#variant.MouseMoved.field.delta)
+    /// can then be used to track the cursor's changes in position. This is useful when
+    /// implementing control schemes that require the mouse to be able to move infinitely
+    /// in any direction (for example, FPS-style movement).
+    ///
+    /// While this mode is enabled, the absolute position of the mouse may not be updated -
+    /// as such, you should not rely on it.
     ///
     /// Defaults to `false`.
-    pub fn relative_mouse(&mut self, relative_mouse: bool) -> &mut ContextBuilder {
-        self.relative_mouse = relative_mouse;
+    pub fn relative_mouse_mode(&mut self, relative_mouse_mode: bool) -> &mut ContextBuilder {
+        self.relative_mouse_mode = relative_mouse_mode;
         self
     }
 
@@ -339,7 +345,7 @@ impl Default for ContextBuilder {
             borderless: false,
             show_mouse: false,
             grab_mouse: false,
-            relative_mouse: false,
+            relative_mouse_mode: false,
             quit_on_escape: false,
             debug_info: false,
         }
