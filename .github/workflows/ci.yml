@@ -21,6 +21,6 @@ jobs:
         rustup default ${{ matrix.rust }}
     - uses: actions/checkout@v1
     - name: Build and test (all features, all targets)
-      run: cargo test --verbose --all
+      run: cargo test
     - name: Build and test (no features, library only)
-      run: cargo test --verbose --no-default-features
+      run: cargo test --lib --no-default-features 
