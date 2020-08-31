@@ -28,8 +28,8 @@ rand = "0.7.3"
 
 [features]
 default = [
-    "audio",
     "audio_default_formats",
+    "font_default_formats",
     "texture_default_formats"
 ]
 
@@ -49,6 +49,13 @@ audio_flac = ["audio", "rodio/flac"]
 audio_mp3 = ["audio", "rodio/mp3"]
 audio_vorbis = ["audio", "rodio/vorbis"]
 audio_wav = ["audio", "rodio/wav"]
+
+# Enables all supported font formats.
+font_all_formats = ["font_default_formats"]
+
+# Enables the font formats that are available by default. This is useful if you have
+# `default-features` set to false on your Tetra dependency.
+font_default_formats = ["font_ttf"]
 
 # Enables specific font formats.
 font_ttf = ["ab_glyph"]
