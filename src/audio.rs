@@ -160,7 +160,7 @@ impl Sound {
 /// rather than creating a new instance.
 ///
 /// Note that dropping a `SoundInstance` does not stop playback.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct SoundInstance {
     controls: Arc<AudioControls>,
 }
@@ -224,15 +224,6 @@ impl SoundInstance {
     }
 }
 
-// TODO: Remove or make more useful in 0.4.
-impl Debug for SoundInstance {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.debug_struct("SoundInstance")
-            .field("controls", &"<platform internals>")
-            .finish()
-    }
-}
-
 /// The states that playback of a `SoundInstance` can be in.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum SoundState {
@@ -272,6 +263,7 @@ pub fn get_master_volume(ctx: &mut Context) -> f32 {
     ctx.audio.master_volume()
 }
 
+#[derive(Debug)]
 struct AudioControls {
     playing: AtomicBool,
     repeating: AtomicBool,

@@ -599,8 +599,6 @@ where
     Ok(())
 }
 
-// TODO: Replace these with TryFrom once we're on a high enough minimum Rust version?
-
 fn into_mouse_button(button: SdlMouseButton) -> Option<MouseButton> {
     match button {
         SdlMouseButton::Left => Some(MouseButton::Left),
