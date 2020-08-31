@@ -20,5 +20,7 @@ jobs:
         rustup update ${{ matrix.rust }} --no-self-update
         rustup default ${{ matrix.rust }}
     - uses: actions/checkout@v1
-    - name: Run build and tests via Cargo
+    - name: Build and test (all features, all targets)
       run: cargo test --verbose --all
+    - name: Build and test (no features, library only)
+      run: cargo test --verbose --no-default-features

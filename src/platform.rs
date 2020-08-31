@@ -1,7 +1,9 @@
+#[cfg(feature = "audio")]
 mod audio_rodio;
 mod device_gl;
 mod window_sdl;
 
+#[cfg(feature = "audio")]
 pub use audio_rodio::{AudioControls, AudioDevice, DecoderError};
 pub use device_gl::{
     BufferUsage, FrontFace, GraphicsDevice, RawFramebuffer, RawIndexBuffer, RawProgram, RawTexture,

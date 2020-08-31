@@ -8,6 +8,7 @@ use std::result;
 
 use image::ImageError;
 
+#[cfg(feature = "audio")]
 use crate::platform::DecoderError;
 
 /// A specialized `Result` type for Tetra.
@@ -47,6 +48,7 @@ pub enum TetraError {
     InvalidFont,
 
     /// Returned when a sound cannot be decoded.
+    #[cfg(feature = "audio")]
     InvalidSound(DecoderError),
 
     /// Returned when not enough data is provided to fill a buffer.
@@ -84,6 +86,7 @@ impl Display for TetraError {
             TetraError::InvalidTexture(reason) => write!(f, "Invalid texture: {}", reason),
             TetraError::InvalidShader(reason) => write!(f, "Invalid shader: {}", reason),
             TetraError::InvalidFont => write!(f, "Invalid font"),
+            #[cfg(feature = "audio")]
             TetraError::InvalidSound(reason) => write!(f, "Invalid sound: {}", reason),
             TetraError::NotEnoughData { expected, actual } => write!(
                 f,
@@ -107,6 +110,7 @@ impl Error for TetraError {
             TetraError::InvalidTexture(reason) => Some(reason),
             TetraError::InvalidShader(_) => None,
             TetraError::InvalidFont => None,
+            #[cfg(feature = "audio")]
             TetraError::InvalidSound(reason) => Some(reason),
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,

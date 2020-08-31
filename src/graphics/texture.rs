@@ -27,17 +27,25 @@ impl PartialEq for TextureSharedData {
 
 /// A texture, held in GPU memory.
 ///
-/// The following file formats are supported:
+/// # Supported Formats
 ///
-/// * PNG
-/// * JPEG
-/// * GIF
-/// * BMP
-/// * TIFF
-/// * TGA
-/// * WEBP
-/// * ICO
-/// * PNM
+/// Various file formats are supported, and can be enabled or disabled via Cargo features:
+///
+/// | Format | Cargo feature | Enabled by default? |
+/// |-|-|-|
+/// | PNG | `texture_png` | Yes |
+/// | JPEG | `texture_jpeg` | Yes |
+/// | GIF | `texture_gif` | Yes |
+/// | BMP | `texture_bmp` | Yes |
+/// | TIFF | `texture_tiff` | No |
+/// | TGA | `texture_tga` | No |
+/// | WebP | `texture_webp` | No |
+/// | ICO | `texture_ico` | No |
+/// | PNM | `texture_pnm` | No |
+/// | DDS/DXT | `texture_dds` | No |
+///
+/// For convenience, there is also a `texture_all_formats` feature (which enables all of the above formats)
+/// and a `texture_default_formats` feature (which just enables the default formats).
 ///
 /// # Performance
 ///

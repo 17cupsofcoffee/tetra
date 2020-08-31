@@ -11,13 +11,24 @@ use crate::Context;
 
 /// Sound data that can be played back.
 ///
-/// Supports WAV, Ogg Vorbis, MP3 and FLAC (in other words, everything that
-/// [Rodio](https://github.com/tomaka/rodio) provides support for).
-///
 /// All of the playback methods on this type return a [`SoundInstance`](./struct.SoundInstance.html) that
 /// can be used to control the sound after it has started. If you just want
 /// to 'fire and forget' a sound, you can discard it - the sound will
 /// continue playing regardless.
+///
+/// # Supported Formats
+///
+/// Various file formats are supported, and can be enabled or disabled via Cargo features:
+///
+/// | Format | Cargo feature | Enabled by default? |
+/// |-|-|-|
+/// | WAV | `audio_wav` | Yes |
+/// | OGG Vorbis | `audio_vorbis | Yes |
+/// | FLAC | `audio_flac` | Yes |
+/// | MP3 | `audio_mp3` | Yes |
+///
+/// For convenience, there is also an `audio_all_formats` feature (which enables all of the above formats)
+/// and an `audio_default_formats` feature (which just enables the default formats).
 ///
 /// # Performance
 ///

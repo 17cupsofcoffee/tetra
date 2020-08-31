@@ -1,5 +1,8 @@
 //! Internal utilities for reading files while retaining context about file paths.
 
+// To avoid warnings in the rare case where all features are disabled at the same time:
+#![allow(unused)]
+
 use std::fs;
 use std::path::Path;
 

@@ -11,22 +11,88 @@ readme = "README.md"
 keywords = ["game", "engine", "framework", "gamedev"]
 categories = ["game-engines"]
 
-[features]
-sdl2_bundled = ["sdl2/bundled"]
-sdl2_static_link = ["sdl2/static-link"]
-serde_support = ["serde", "vek/serde"]
-
 [dependencies]
 sdl2 = "0.34.0"
-rodio = "0.11.0"
+rodio = { version = "0.11.0", optional = true, default-features = false }
 glow = "0.5.0"
-image = "0.23.1"
+image = { version = "0.23.1", default-features = false }
 vek = { version = "0.12.0", default-features = false }
 hashbrown = "0.8.0"
 serde = { version = "1.0.104", optional = true } 
-ab_glyph = "0.2.2"
+ab_glyph = { version = "0.2.2", optional = true }
 unicode-normalization = "0.1.12"
 bytemuck = "1.4.0"
 
 [dev-dependencies]
 rand = "0.7.3"
+
+[features]
+default = [
+    "audio",
+    "audio_default_formats",
+    "texture_default_formats"
+]
+
+# Enables the `tetra::audio` API. This feature can be disabled if you want to use a different
+# audio API in your game (e.g. FMod or WWise).
+audio = ["rodio"]
+
+# Enables all supported audio formats.
+audio_all_formats = ["audio_default_formats"]
+
+# Enables the audio formats that are available by default. This is useful if you have
+# `default-features` set to false on your Tetra dependency.
+audio_default_formats = ["audio_flac", "audio_mp3", "audio_vorbis", "audio_wav"]
+
+# Enables specific audio formats.
+audio_flac = ["audio", "rodio/flac"]
+audio_mp3 = ["audio", "rodio/mp3"]
+audio_vorbis = ["audio", "rodio/vorbis"]
+audio_wav = ["audio", "rodio/wav"]
+
+# Enables specific font formats.
+font_ttf = ["ab_glyph"]
+
+# Enables all supported texture formats.
+texture_all_formats = [
+    "texture_png",
+    "texture_jpeg",
+    "texture_gif",
+    "texture_bmp",
+    "texture_ico",
+    "texture_tiff",
+    "texture_webp",
+    "texture_pnm",
+    "texture_dds",
+    "texture_tga",
+]
+
+# Enables the texture formats that are available by default. This is useful if you have
+# `default-features` set to false on your Tetra dependency.
+texture_default_formats = [
+    "texture_png",
+    "texture_jpeg",
+    "texture_gif",
+    "texture_bmp",
+]
+
+# Enables specific texture formats.
+texture_png = ["image/png"]
+texture_jpeg = ["image/jpeg", "image/jpeg_rayon"]
+texture_gif = ["image/gif"]
+texture_bmp = ["image/bmp"]
+texture_ico = ["image/ico"]
+texture_tiff = ["image/tiff"]
+texture_webp = ["image/webp"]
+texture_pnm = ["image/pnm"]
+texture_dds = ["image/dds", "image/dxt"]
+texture_tga = ["image/tga"]
+
+# Enables support for serialization/deserialization via Serde.
+serde_support = ["serde", "vek/serde"]
+
+# Compiles SDL2 from source (see https://github.com/Rust-SDL2/rust-sdl2#bundled-feature).
+sdl2_bundled = ["sdl2/bundled"]
+
+# Links SDL2 statically (see https://hg.libsdl.org/SDL/file/default/docs/README-dynapi.md).
+sdl2_static_link = ["sdl2/static-link"]

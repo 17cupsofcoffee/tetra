@@ -15,9 +15,12 @@ This project adheres to Semantic Versioning.
 * **Breaking:** The position of the mouse relative to the previous motion event can now be obtained via the `delta` field on `Event::MouseMoved`. ([@GGalizzi](https://github.com/GGalizzi) in [#206](https://github.com/17cupsofcoffee/tetra/pull/206))
     * As existing code may have been exhastively pattern matching on `Event::MouseMoved`'s data, this is technically a breaking change.
 * The window can now be set to `relative_mouse_mode`, which allows the mouse to move outside of the bounds of the window while still reporting motion events. ([@GGalizzi](https://github.com/GGalizzi) in [#206](https://github.com/17cupsofcoffee/tetra/pull/206))
+* Various feature flags have been added, allowing you to shrink your dependency tree by removing unused functionality.
 
 ### Changed
 
+* **Breaking**: ICO, TIFF, PNM, DDS/DXT and TGA texture loading is now off by default.
+    * Feature flags can be used to re-enable them.
 * Updated `bytemuck` to 1.4.
 * **Breaking:** Updated `vek` to 0.12.
     * As Vek is exposed via Tetra's API in the form of the `tetra::math` module, this is potentially a breaking change.
