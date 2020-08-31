@@ -44,9 +44,6 @@ impl PartialEq for TextureSharedData {
 /// | PNM | `texture_pnm` | No |
 /// | DDS/DXT | `texture_dds` | No |
 ///
-/// For convenience, there is also a `texture_all_formats` feature (which enables all of the above formats)
-/// and a `texture_default_formats` feature (which just enables the default formats).
-///
 /// # Performance
 ///
 /// Creating a `Texture` is a relatively expensive operation. If you can, store them in your `State`

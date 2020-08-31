@@ -27,9 +27,6 @@ use crate::Context;
 /// | FLAC | `audio_flac` | Yes |
 /// | MP3 | `audio_mp3` | Yes |
 ///
-/// For convenience, there is also an `audio_all_formats` feature (which enables all of the above formats)
-/// and an `audio_default_formats` feature (which just enables the default formats).
-///
 /// # Performance
 ///
 /// Creating a `Sound` is a fairly cheap operation, as the data is not decoded until playback begins.

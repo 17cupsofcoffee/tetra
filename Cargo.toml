@@ -28,62 +28,32 @@ rand = "0.7.3"
 
 [features]
 default = [
-    "audio_default_formats",
-    "font_default_formats",
-    "texture_default_formats"
+    "audio",
+    "audio_flac",
+    "audio_mp3",
+    "audio_vorbis",
+    "audio_wav",
+    "font_ttf",
+    "texture_png",
+    "texture_jpeg",
+    "texture_gif",
+    "texture_bmp",
 ]
 
 # Enables the `tetra::audio` API. This feature can be disabled if you want to use a different
 # audio API in your game (e.g. FMod or WWise).
 audio = ["rodio"]
 
-# Enables all supported audio formats.
-audio_all_formats = ["audio_default_formats"]
-
-# Enables the audio formats that are available by default. This is useful if you have
-# `default-features` set to false on your Tetra dependency.
-audio_default_formats = ["audio_flac", "audio_mp3", "audio_vorbis", "audio_wav"]
-
-# Enables specific audio formats.
+# Enables support for audio formats.
 audio_flac = ["audio", "rodio/flac"]
 audio_mp3 = ["audio", "rodio/mp3"]
 audio_vorbis = ["audio", "rodio/vorbis"]
 audio_wav = ["audio", "rodio/wav"]
 
-# Enables all supported font formats.
-font_all_formats = ["font_default_formats"]
-
-# Enables the font formats that are available by default. This is useful if you have
-# `default-features` set to false on your Tetra dependency.
-font_default_formats = ["font_ttf"]
-
-# Enables specific font formats.
+# Enables support for font formats.
 font_ttf = ["ab_glyph"]
 
-# Enables all supported texture formats.
-texture_all_formats = [
-    "texture_png",
-    "texture_jpeg",
-    "texture_gif",
-    "texture_bmp",
-    "texture_ico",
-    "texture_tiff",
-    "texture_webp",
-    "texture_pnm",
-    "texture_dds",
-    "texture_tga",
-]
-
-# Enables the texture formats that are available by default. This is useful if you have
-# `default-features` set to false on your Tetra dependency.
-texture_default_formats = [
-    "texture_png",
-    "texture_jpeg",
-    "texture_gif",
-    "texture_bmp",
-]
-
-# Enables specific texture formats.
+# Enables support for texture formats.
 texture_png = ["image/png"]
 texture_jpeg = ["image/jpeg", "image/jpeg_rayon"]
 texture_gif = ["image/gif"]
