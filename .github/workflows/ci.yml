@@ -15,10 +15,9 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install libsdl2-dev libasound2-dev
-    - name: Install Rust toolchains
-      run: |
-        rustup update ${{ matrix.rust }} --no-self-update
-        rustup default ${{ matrix.rust }}
+    - uses: hecrj/setup-rust-action@v1
+      with:
+        rust-version: ${{ matrix.rust }}
     - uses: actions/checkout@v1
     - name: Build and test (all features, all targets)
       run: cargo test
