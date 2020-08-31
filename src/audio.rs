@@ -1,6 +1,5 @@
 //! Functions and types relating to audio playback.
 
-use std::fmt::{self, Debug, Formatter};
 use std::io::Cursor;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
