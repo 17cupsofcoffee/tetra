@@ -5,7 +5,7 @@ use crate::time::{self, TimeContext, Timestep};
 use crate::{Result, State};
 
 #[cfg(feature = "audio")]
-use crate::platform::AudioDevice;
+use crate::audio::AudioDevice;
 
 /// A struct containing all of the 'global' state within the framework.
 pub struct Context {
