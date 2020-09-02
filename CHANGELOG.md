@@ -21,6 +21,8 @@ This project adheres to Semantic Versioning.
 
 * **Breaking**: ICO, TIFF, PNM, DDS/DXT and TGA texture loading is now off by default.
     * Feature flags can be used to re-enable them.
+* **Breaking:** `graphics::set_texture` is now private.
+    * There was no meaningful way to use this function without access to other private functions, so it has been hidden to avoid confusion.
 * Updated `bytemuck` to 1.4.
 * **Breaking:** Updated `vek` to 0.12.
     * As Vek is exposed via Tetra's API in the form of the `tetra::math` module, this is potentially a breaking change.

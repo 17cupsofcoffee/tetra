@@ -255,7 +255,7 @@ pub fn draw<D: Drawable, P: Into<DrawParams>>(ctx: &mut Context, drawable: &D, p
 /// If the texture is different from the one that is currently in use, this will trigger a
 /// [`flush`](fn.flush.html) to the graphics hardware - try to avoid texture swapping as
 /// much as you can.
-pub fn set_texture(ctx: &mut Context, texture: &Texture) {
+pub(crate) fn set_texture(ctx: &mut Context, texture: &Texture) {
     set_texture_ex(ctx, ActiveTexture::User(texture.clone()));
 }
 
