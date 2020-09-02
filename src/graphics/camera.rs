@@ -21,18 +21,39 @@ use crate::Context;
 #[derive(Debug, Clone)]
 pub struct Camera {
     /// The position of the camera.
+    ///
+    /// Note that this defines the center point of the view, rather than the top-left.
+    /// This makes it easy to position the camera relative to your game objects - for
+    /// example, to focus the camera on the player, you can just set the camera
+    /// position to match the player's position.
+    ///
+    /// You may need to take this behaviour into account when positioning the camera,
+    /// however. For example, if the viewport width or height is an odd number, setting
+    /// the position to a whole number will mean that the view will not be aligned with
+    /// the pixel grid, which may cause issues for pixel-perfect rendering.
     pub position: Vec2<f32>,
 
     /// The rotation of the camera, in radians.
     pub rotation: f32,
 
     /// The zoom level of the camera.
+    ///
+    /// This is expressed as a scale factor - `0.5` will shrink everything by half,
+    /// while `2.0` will make everything twice as big.
     pub zoom: f32,
 
     /// The width of the camera's viewport.
+    ///
+    /// This is primarily used for calculating where the center of the screen is,
+    /// and usually should match the size of the target you're currently rendering to
+    /// (e.g. the screen, or a `Canvas`).
     pub viewport_width: f32,
 
     /// The height of the camera's viewport.
+    ///
+    /// This is primarily used for calculating where the center of the screen is,
+    /// and usually should match the size of the target you're currently rendering to
+    /// (e.g. the screen, or a `Canvas`).
     pub viewport_height: f32,
 
     matrix: Mat4<f32>,
@@ -40,6 +61,9 @@ pub struct Camera {
 
 impl Camera {
     /// Creates a new camera with the given viewport size.
+    ///
+    /// The provided size usually should match the size of the target you're currently rendering to
+    /// (e.g. the screen, or a `Canvas`).
     pub fn new(viewport_width: f32, viewport_height: f32) -> Camera {
         Camera {
             position: Vec2::zero(),
@@ -68,6 +92,9 @@ impl Camera {
     }
 
     /// Sets the size of the camera's viewport.
+    ///
+    /// The provided size usually should match the size of the target you're currently rendering to
+    /// (e.g. the screen, or a `Canvas`).
     pub fn set_viewport_size(&mut self, width: f32, height: f32) {
         self.viewport_width = width;
         self.viewport_height = height;
