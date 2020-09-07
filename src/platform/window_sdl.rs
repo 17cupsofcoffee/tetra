@@ -134,8 +134,9 @@ impl Window {
             .gl_create_context()
             .map_err(TetraError::PlatformError)?;
 
-        let gl_ctx =
-            GlowContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _);
+        let gl_ctx = unsafe {
+            GlowContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _)
+        };
 
         video_sys
             .gl_set_swap_interval(if settings.vsync {

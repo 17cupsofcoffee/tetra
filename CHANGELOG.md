@@ -11,6 +11,7 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * Updated `hashbrown` to 0.8.
+* Updated `glow` to 0.6.
 
 ## [0.5.0] - 2020-09-02
 
