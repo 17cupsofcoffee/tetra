@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Changed
+
+* Updated `hashbrown` to 0.8.
+
 ## [0.5.0] - 2020-09-02
 
 ### Added
