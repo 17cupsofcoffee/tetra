@@ -11,6 +11,8 @@ This project adheres to Semantic Versioning.
 ### Added
 
 * Color now implements `Add`, `AddAssign`, `Sub`, `SubAssign`, `Mul`, `MulAssign`, `Div` and `DivAssign.`
+    * For convenience's sake, these are currently implemented as saturating operations, preventing values from going outside the valid range for a color.
+    * In future versions, this clamping behaviour might be applied to the type as a whole, but this would require breaking changes.
 
 ### Changed
 

@@ -6,9 +6,13 @@ use crate::error::{Result, TetraError};
 
 /// An RGBA color.
 ///
-/// The components are stored as `f32` values in the range of 0.0 to 1.0.
+/// The components are stored as `f32` values in the range of `0.0` to `1.0`.
 /// If your data is made up of bytes or hex values, this type provides
 /// constructors that will carry out the conversion for you.
+///
+/// The `std` arithmetic traits are implemented for this type, which allows you to
+/// add/subtract/multiply/divide colors. These are implemented as saturating
+/// operations (i.e. the values will always remain between `0.0` and `1.0`).
 ///
 /// # Serde
 ///
@@ -139,20 +143,21 @@ impl Add for Color {
     type Output = Color;
 
     fn add(mut self, rhs: Self) -> Self::Output {
-        self.r += rhs.r;
-        self.g += rhs.g;
-        self.b += rhs.b;
-        self.a += rhs.a;
+        self.r = clamp(self.r + rhs.r);
+        self.g = clamp(self.g + rhs.g);
+        self.b = clamp(self.b + rhs.b);
+        self.a = clamp(self.a + rhs.a);
+
         self
     }
 }
 
 impl AddAssign for Color {
     fn add_assign(&mut self, rhs: Self) {
-        self.r += rhs.r;
-        self.g += rhs.g;
-        self.b += rhs.b;
-        self.a += rhs.a;
+        self.r = clamp(self.r + rhs.r);
+        self.g = clamp(self.g + rhs.g);
+        self.b = clamp(self.b + rhs.b);
+        self.a = clamp(self.a + rhs.a);
     }
 }
 
@@ -160,20 +165,21 @@ impl Sub for Color {
     type Output = Color;
 
     fn sub(mut self, rhs: Self) -> Self::Output {
-        self.r -= rhs.r;
-        self.g -= rhs.g;
-        self.b -= rhs.b;
-        self.a -= rhs.a;
+        self.r = clamp(self.r - rhs.r);
+        self.g = clamp(self.g - rhs.g);
+        self.b = clamp(self.b - rhs.b);
+        self.a = clamp(self.a - rhs.a);
+
         self
     }
 }
 
 impl SubAssign for Color {
     fn sub_assign(&mut self, rhs: Self) {
-        self.r -= rhs.r;
-        self.g -= rhs.g;
-        self.b -= rhs.b;
-        self.a -= rhs.a;
+        self.r = clamp(self.r - rhs.r);
+        self.g = clamp(self.g - rhs.g);
+        self.b = clamp(self.b - rhs.b);
+        self.a = clamp(self.a - rhs.a);
     }
 }
 
@@ -181,20 +187,21 @@ impl Mul for Color {
     type Output = Color;
 
     fn mul(mut self, rhs: Self) -> Self::Output {
-        self.r *= rhs.r;
-        self.g *= rhs.g;
-        self.b *= rhs.b;
-        self.a *= rhs.a;
+        self.r = clamp(self.r * rhs.r);
+        self.g = clamp(self.g * rhs.g);
+        self.b = clamp(self.b * rhs.b);
+        self.a = clamp(self.a * rhs.a);
+
         self
     }
 }
 
 impl MulAssign for Color {
     fn mul_assign(&mut self, rhs: Self) {
-        self.r *= rhs.r;
-        self.g *= rhs.g;
-        self.b *= rhs.b;
-        self.a *= rhs.a;
+        self.r = clamp(self.r * rhs.r);
+        self.g = clamp(self.g * rhs.g);
+        self.b = clamp(self.b * rhs.b);
+        self.a = clamp(self.a * rhs.a);
     }
 }
 
@@ -202,21 +209,26 @@ impl Div for Color {
     type Output = Color;
 
     fn div(mut self, rhs: Self) -> Self::Output {
-        self.r /= rhs.r;
-        self.g /= rhs.g;
-        self.b /= rhs.b;
-        self.a /= rhs.a;
+        self.r = clamp(self.r / rhs.r);
+        self.g = clamp(self.g / rhs.g);
+        self.b = clamp(self.b / rhs.b);
+        self.a = clamp(self.a / rhs.a);
+
         self
     }
 }
 
 impl DivAssign for Color {
     fn div_assign(&mut self, rhs: Self) {
-        self.r /= rhs.r;
-        self.g /= rhs.g;
-        self.b /= rhs.b;
-        self.a /= rhs.a;
+        self.r = clamp(self.r / rhs.r);
+        self.g = clamp(self.g / rhs.g);
+        self.b = clamp(self.b / rhs.b);
+        self.a = clamp(self.a / rhs.a);
     }
+}
+
+fn clamp(val: f32) -> f32 {
+    f32::min(f32::max(0.0, val), 1.0)
 }
 
 #[cfg(test)]
