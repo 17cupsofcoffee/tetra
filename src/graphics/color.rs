@@ -1,5 +1,7 @@
 //! Functions and types relating to color.
 
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+
 use crate::error::{Result, TetraError};
 
 /// An RGBA color.
@@ -133,6 +135,90 @@ impl Color {
     pub const BLUE: Color = Color::rgb(0.0, 0.0, 1.0);
 }
 
+impl Add for Color {
+    type Output = Color;
+
+    fn add(mut self, rhs: Self) -> Self::Output {
+        self.r += rhs.r;
+        self.g += rhs.g;
+        self.b += rhs.b;
+        self.a += rhs.a;
+        self
+    }
+}
+
+impl AddAssign for Color {
+    fn add_assign(&mut self, rhs: Self) {
+        self.r += rhs.r;
+        self.g += rhs.g;
+        self.b += rhs.b;
+        self.a += rhs.a;
+    }
+}
+
+impl Sub for Color {
+    type Output = Color;
+
+    fn sub(mut self, rhs: Self) -> Self::Output {
+        self.r -= rhs.r;
+        self.g -= rhs.g;
+        self.b -= rhs.b;
+        self.a -= rhs.a;
+        self
+    }
+}
+
+impl SubAssign for Color {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.r -= rhs.r;
+        self.g -= rhs.g;
+        self.b -= rhs.b;
+        self.a -= rhs.a;
+    }
+}
+
+impl Mul for Color {
+    type Output = Color;
+
+    fn mul(mut self, rhs: Self) -> Self::Output {
+        self.r *= rhs.r;
+        self.g *= rhs.g;
+        self.b *= rhs.b;
+        self.a *= rhs.a;
+        self
+    }
+}
+
+impl MulAssign for Color {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.r *= rhs.r;
+        self.g *= rhs.g;
+        self.b *= rhs.b;
+        self.a *= rhs.a;
+    }
+}
+
+impl Div for Color {
+    type Output = Color;
+
+    fn div(mut self, rhs: Self) -> Self::Output {
+        self.r /= rhs.r;
+        self.g /= rhs.g;
+        self.b /= rhs.b;
+        self.a /= rhs.a;
+        self
+    }
+}
+
+impl DivAssign for Color {
+    fn div_assign(&mut self, rhs: Self) {
+        self.r /= rhs.r;
+        self.g /= rhs.g;
+        self.b /= rhs.b;
+        self.a /= rhs.a;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Color;
@@ -165,6 +251,53 @@ mod tests {
         assert!(same_color(expected, Color::try_hex("#336699FF").unwrap()));
 
         assert!(Color::try_hex("ZZZZZZ").is_err());
+    }
+
+    #[test]
+    fn ops() {
+        assert_eq!(
+            Color::rgba(1.0, 1.0, 1.0, 1.0),
+            Color::rgba(0.1, 0.2, 0.3, 0.4) + Color::rgba(0.9, 0.8, 0.7, 0.6)
+        );
+
+        assert_eq!(Color::rgba(1.0, 1.0, 1.0, 1.0), {
+            let mut add_assign = Color::rgba(0.1, 0.2, 0.3, 0.4);
+            add_assign += Color::rgba(0.9, 0.8, 0.7, 0.6);
+            add_assign
+        });
+
+        assert_eq!(
+            Color::rgba(0.0, 0.0, 0.0, 0.0),
+            Color::rgba(0.5, 0.5, 0.5, 0.5) - Color::rgba(0.5, 0.5, 0.5, 0.5)
+        );
+
+        assert_eq!(Color::rgba(0.0, 0.0, 0.0, 0.0), {
+            let mut sub_assign = Color::rgba(0.5, 0.5, 0.5, 0.5);
+            sub_assign -= Color::rgba(0.5, 0.5, 0.5, 0.5);
+            sub_assign
+        });
+
+        assert_eq!(
+            Color::rgba(1.0, 1.0, 1.0, 1.0),
+            Color::rgba(0.5, 0.5, 0.5, 0.5) * Color::rgba(2.0, 2.0, 2.0, 2.0)
+        );
+
+        assert_eq!(Color::rgba(1.0, 1.0, 1.0, 1.0), {
+            let mut mul_assign = Color::rgba(0.5, 0.5, 0.5, 0.5);
+            mul_assign *= Color::rgba(2.0, 2.0, 2.0, 2.0);
+            mul_assign
+        });
+
+        assert_eq!(
+            Color::rgba(0.5, 0.5, 0.5, 0.5),
+            Color::rgba(1.0, 1.0, 1.0, 1.0) / Color::rgba(2.0, 2.0, 2.0, 2.0)
+        );
+
+        assert_eq!(Color::rgba(0.5, 0.5, 0.5, 0.5), {
+            let mut div_assign = Color::rgba(1.0, 1.0, 1.0, 1.0);
+            div_assign /= Color::rgba(2.0, 2.0, 2.0, 2.0);
+            div_assign
+        });
     }
 
     fn same_color(a: Color, b: Color) -> bool {

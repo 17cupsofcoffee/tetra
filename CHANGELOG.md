@@ -8,6 +8,10 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added
+
+* Color now implements `Add`, `AddAssign`, `Sub`, `SubAssign`, `Mul`, `MulAssign`, `Div` and `DivAssign.`
+
 ### Changed
 
 * Updated `hashbrown` to 0.8.
