@@ -90,6 +90,47 @@ impl Canvas {
         self.texture.set_filter_mode(ctx, filter_mode);
     }
 
+    /// Writes RGBA pixel data to a specified region of the canvas.
+    ///
+    /// This method requires you to provide enough data to fill the target rectangle.
+    /// If you provide too little data, an error will be returned.
+    /// If you provide too much data, it will be truncated.
+    ///
+    /// # Errors
+    ///
+    /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
+    /// the target rectangle. This is to prevent the graphics API from trying to read
+    /// uninitialized memory.
+    ///
+    /// # Panics
+    ///
+    /// Panics if any part of the target rectangle is outside the bounds of the canvas.
+    pub fn set_data(
+        &self,
+        ctx: &mut Context,
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+        data: &[u8],
+    ) -> Result {
+        self.texture.set_data(ctx, x, y, width, height, data)
+    }
+
+    /// Replaces the canvas' data with new RGBA pixel data.
+    ///
+    /// This method requires you to provide enough data to fill the canvas.
+    /// If you provide too little data, an error will be returned.
+    /// If you provide too much data, it will be truncated.
+    ///
+    /// # Errors
+    ///
+    /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
+    /// the canvas. This is to prevent the graphics API from trying to read uninitialized memory.
+    pub fn replace_data(&self, ctx: &mut Context, data: &[u8]) -> Result {
+        self.texture.replace_data(ctx, data)
+    }
+
     /// Returns a reference to the canvas' underlying texture.
     pub fn texture(&self) -> &Texture {
         &self.texture

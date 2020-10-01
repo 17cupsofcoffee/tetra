@@ -122,7 +122,8 @@ impl Texture {
     ///
     /// This is useful if you wish to create a texture at runtime.
     ///
-    /// Note that this method requires you to provide enough data to fill the texture.
+    /// This method requires you to provide enough data to fill the texture.
+    /// If you provide too little data, an error will be returned.
     /// If you provide too much data, it will be truncated.
     ///
     /// # Errors
@@ -209,6 +210,64 @@ impl Texture {
             .set_texture_filter_mode(&self.data.handle, filter_mode);
 
         self.data.filter_mode.set(filter_mode);
+    }
+
+    /// Writes RGBA pixel data to a specified region of the texture.
+    ///
+    /// This method requires you to provide enough data to fill the target rectangle.
+    /// If you provide too little data, an error will be returned.
+    /// If you provide too much data, it will be truncated.
+    ///
+    /// # Errors
+    ///
+    /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
+    /// the target rectangle. This is to prevent the graphics API from trying to read
+    /// uninitialized memory.
+    ///
+    /// # Panics
+    ///
+    /// Panics if any part of the target rectangle is outside the bounds of the texture.
+    pub fn set_data(
+        &self,
+        ctx: &mut Context,
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+        data: &[u8],
+    ) -> Result {
+        let expected = (width * height * 4) as usize;
+        let actual = data.len();
+
+        if expected > actual {
+            return Err(TetraError::NotEnoughData { expected, actual });
+        }
+
+        let (texture_width, texture_height) = self.size();
+
+        if x < 0 || y < 0 || x + width > texture_width || y + height > texture_height {
+            panic!("tried to write outside of texture bounds");
+        }
+
+        ctx.device
+            .set_texture_data(&self.data.handle, &data, x, y, width, height);
+
+        Ok(())
+    }
+
+    /// Replaces the texture's data with new RGBA pixel data.
+    ///
+    /// This method requires you to provide enough data to fill the texture.
+    /// If you provide too little data, an error will be returned.
+    /// If you provide too much data, it will be truncated.
+    ///
+    /// # Errors
+    ///
+    /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
+    /// the texture. This is to prevent the graphics API from trying to read uninitialized memory.
+    pub fn replace_data(&self, ctx: &mut Context, data: &[u8]) -> Result {
+        let (width, height) = self.size();
+        self.set_data(ctx, 0, 0, width, height, data)
     }
 }
 
