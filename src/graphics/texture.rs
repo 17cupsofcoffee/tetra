@@ -218,6 +218,9 @@ impl Texture {
     /// If you provide too little data, an error will be returned.
     /// If you provide too much data, it will be truncated.
     ///
+    /// If you want to overwrite the entire texture, the `replace_data` method offers a
+    /// more concise way of doing this.
+    ///
     /// # Errors
     ///
     /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
@@ -255,11 +258,14 @@ impl Texture {
         Ok(())
     }
 
-    /// Replaces the texture's data with new RGBA pixel data.
+    /// Overwrites the entire texture with new RGBA pixel data.
     ///
     /// This method requires you to provide enough data to fill the texture.
     /// If you provide too little data, an error will be returned.
     /// If you provide too much data, it will be truncated.
+    ///
+    /// If you only want to write to a subsection of the texture, use the `set_data`
+    /// method instead.
     ///
     /// # Errors
     ///

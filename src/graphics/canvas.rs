@@ -96,6 +96,9 @@ impl Canvas {
     /// If you provide too little data, an error will be returned.
     /// If you provide too much data, it will be truncated.
     ///
+    /// If you want to overwrite the entire canvas, the `replace_data` method offers a
+    /// more concise way of doing this.
+    ///
     /// # Errors
     ///
     /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
@@ -117,11 +120,14 @@ impl Canvas {
         self.texture.set_data(ctx, x, y, width, height, data)
     }
 
-    /// Replaces the canvas' data with new RGBA pixel data.
+    /// Overwrites the entire canvas with new RGBA pixel data.
     ///
     /// This method requires you to provide enough data to fill the canvas.
     /// If you provide too little data, an error will be returned.
     /// If you provide too much data, it will be truncated.
+    ///
+    /// If you only want to write to a subsection of the canvas, use the `set_data`
+    /// method instead.
     ///
     /// # Errors
     ///
