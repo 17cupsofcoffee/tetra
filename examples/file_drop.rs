@@ -3,7 +3,7 @@ use std::fs;
 use tetra::graphics::text::{Font, Text};
 use tetra::graphics::{self, Color};
 use tetra::math::Vec2;
-use tetra::{Context, ContextBuilder, Event, State};
+use tetra::{Context, ContextBuilder, Event, State, TetraError};
 
 struct GameState {
     file: Text,
@@ -30,7 +30,8 @@ impl State for GameState {
 
     fn event(&mut self, _: &mut Context, event: Event) -> tetra::Result {
         if let Event::FileDropped { path } = event {
-            let new_content = fs::read_to_string(path).unwrap();
+            let new_content = fs::read_to_string(&path)
+                .map_err(|e| TetraError::FailedToLoadAsset { reason: e, path })?;
 
             self.file.set_content(new_content);
         }
