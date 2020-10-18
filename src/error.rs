@@ -73,30 +73,23 @@ pub enum TetraError {
 impl Display for TetraError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            TetraError::PlatformError(reason) => {
-                write!(f, "An error was thrown by the platform: {}", reason)
+            TetraError::PlatformError(_) => write!(f, "An error was thrown by the platform"),
+            TetraError::FailedToLoadAsset { path, .. } => {
+                write!(f, "Failed to load asset from {}", path.to_string_lossy())
             }
-            TetraError::FailedToLoadAsset { reason, path } => write!(
-                f,
-                "Failed to load asset from {}: {}",
-                path.to_string_lossy(),
-                reason
-            ),
             TetraError::InvalidColor => write!(f, "Invalid color"),
-            TetraError::InvalidTexture(reason) => write!(f, "Invalid texture: {}", reason),
-            TetraError::InvalidShader(reason) => write!(f, "Invalid shader: {}", reason),
-            TetraError::InvalidFont => write!(f, "Invalid font"),
+            TetraError::InvalidTexture(_) => write!(f, "Invalid texture data"),
+            TetraError::InvalidShader(_) => write!(f, "Invalid shader source"),
+            TetraError::InvalidFont => write!(f, "Invalid font data"),
             #[cfg(feature = "audio")]
-            TetraError::InvalidSound(reason) => write!(f, "Invalid sound: {}", reason),
+            TetraError::InvalidSound(_) => write!(f, "Invalid sound data"),
             TetraError::NotEnoughData { expected, actual } => write!(
                 f,
                 "Not enough data was provided to fill a buffer - expected {}, found {}.",
                 expected, actual
             ),
-            TetraError::FailedToChangeDisplayMode(reason) => {
-                write!(f, "Failed to change display mode: {}", reason)
-            }
-            TetraError::NoAudioDevice => write!(f, "No audio device was available for playback."),
+            TetraError::FailedToChangeDisplayMode(_) => write!(f, "Failed to change display mode"),
+            TetraError::NoAudioDevice => write!(f, "No audio device available for playback"),
         }
     }
 }

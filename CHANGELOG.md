@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Changed
+
+* `TetraError`'s `Display` implementation no longer duplicates the source error's `Display` text.
+
 ## [0.5.1] - 2020-10-13
 
 ### Added
