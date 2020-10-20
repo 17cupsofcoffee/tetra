@@ -11,6 +11,7 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * `TetraError`'s `Display` implementation no longer duplicates the source error's `Display` text.
+* The `StateWithError` trait can now optionally be used in place of `State`. This extended interface allows you to use your own custom error types, or third-party error handling crates like `anyhow`, `thiserror` and `eyre`.
 
 ## [0.5.1] - 2020-10-13
 

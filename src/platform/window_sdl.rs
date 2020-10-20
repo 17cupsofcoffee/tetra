@@ -1,9 +1,9 @@
 // TODO: This file is getting way too huge.
 use std::path::PathBuf;
-
-use hashbrown::HashMap;
+use std::result;
 
 use glow::Context as GlowContext;
+use hashbrown::HashMap;
 use sdl2::controller::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, GameController};
 use sdl2::event::{Event as SdlEvent, WindowEvent};
 use sdl2::haptic::Haptic;
@@ -21,7 +21,7 @@ use crate::error::{Result, TetraError};
 use crate::graphics;
 use crate::input::{self, GamepadAxis, GamepadButton, GamepadStick, Key, MouseButton};
 use crate::math::Vec2;
-use crate::{Context, ContextBuilder, Event, State};
+use crate::{Context, ContextBuilder, Event, StateWithError};
 
 struct SdlController {
     // NOTE: The SDL docs say to close the haptic device before the joystick, so
@@ -352,9 +352,9 @@ impl Window {
     }
 }
 
-pub fn handle_events<S>(ctx: &mut Context, state: &mut S) -> Result
+pub fn handle_events<S>(ctx: &mut Context, state: &mut S) -> result::Result<(), S::Error>
 where
-    S: State,
+    S: StateWithError,
 {
     while let Some(event) = ctx.window.event_pump.poll_event() {
         match event {

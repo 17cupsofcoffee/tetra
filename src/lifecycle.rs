@@ -1,15 +1,19 @@
 use std::path::PathBuf;
+use std::result;
 
 use crate::input::{GamepadAxis, GamepadButton, GamepadStick, Key, MouseButton};
 use crate::math::Vec2;
-use crate::{Context, Result};
+use crate::{Context, Result, TetraError};
 
-/// A trait representing a type that contains game state and provides logic for updating it
-/// and drawing it to the screen. This is where you'll write your game logic!
+/// Implemented by types that contain game state and provide logic for updating it
+/// and drawing it to the screen.
 ///
 /// The methods on `State` allow you to return a `Result`, either explicitly or via the `?`
 /// operator. If an error is returned, the game will close and the error will be returned from
 /// the `run` function that was used to start it.
+///
+/// If you want to return a custom error type from your `State` methods, you can switch to the
+/// [`StateWithError`](trait.StateWithError.html) trait.
 #[allow(unused_variables)]
 pub trait State {
     /// Called when it is time for the game to update.
@@ -25,6 +29,53 @@ pub trait State {
     /// Called when a window or input event occurs.
     fn event(&mut self, ctx: &mut Context, event: Event) -> Result {
         Ok(())
+    }
+}
+
+/// Extends [`State`](trait.State.html) with the ability to use a custom error type.
+///
+/// When [associated type defaults](https://github.com/rust-lang/rust/issues/29661) are
+/// stabilized, this trait will be merged with `State`.
+#[allow(unused_variables)]
+pub trait StateWithError {
+    /// The type of error that may be returned from the methods on this trait.
+    ///
+    /// This type must implement `From<TetraError>`, so that any internal errors
+    /// can be converted into your error type.
+    type Error: From<TetraError>;
+
+    /// Called when it is time for the game to update.
+    fn update(&mut self, ctx: &mut Context) -> result::Result<(), Self::Error> {
+        Ok(())
+    }
+
+    /// Called when it is time for the game to be drawn.
+    fn draw(&mut self, ctx: &mut Context) -> result::Result<(), Self::Error> {
+        Ok(())
+    }
+
+    /// Called when a window or input event occurs.
+    fn event(&mut self, ctx: &mut Context, event: Event) -> result::Result<(), Self::Error> {
+        Ok(())
+    }
+}
+
+impl<T> StateWithError for T
+where
+    T: State,
+{
+    type Error = TetraError;
+
+    fn update(&mut self, ctx: &mut Context) -> crate::Result {
+        self.update(ctx)
+    }
+
+    fn draw(&mut self, ctx: &mut Context) -> crate::Result {
+        self.draw(ctx)
+    }
+
+    fn event(&mut self, ctx: &mut Context, event: Event) -> crate::Result {
+        self.event(ctx, event)
     }
 }
 

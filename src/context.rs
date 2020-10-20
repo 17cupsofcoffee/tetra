@@ -1,8 +1,10 @@
+use std::result;
+
 use crate::graphics::{self, GraphicsContext};
 use crate::input::{self, InputContext};
 use crate::platform::{self, GraphicsDevice, Window};
 use crate::time::{self, TimeContext, Timestep};
-use crate::{Result, State};
+use crate::{Result, StateWithError};
 
 #[cfg(feature = "audio")]
 use crate::audio::AudioDevice;
@@ -58,15 +60,15 @@ impl Context {
 
     /// Runs the game.
     ///
-    /// The `init` parameter takes a function or closure that creates a `State`
-    /// implementation. A common pattern is to use method references to pass in
-    /// your state's constructor directly - see the example below for how this
-    /// works.
+    /// The `init` parameter takes a function or closure that creates a
+    /// `State` (or `StateWithError`) implementation. A common pattern is to use
+    /// method references to pass in your state's constructor directly - see the
+    /// example below for how this works.
     ///
     /// # Errors
     ///
-    /// If the `State` returns an error from `update` or `draw`, the game will stop
-    /// running and this method will return the error.
+    /// If the `State` returns an error from `update`, `draw` or `event`, the game
+    /// will stop running and this method will return the error.
     ///
     /// # Examples
     ///
@@ -84,19 +86,18 @@ impl Context {
     /// impl State for GameState { }
     ///
     /// fn main() -> tetra::Result {
-    ///     // Because the signature of GameState::new is
-    ///     // (&mut Context) -> tetra::Result<GameState>, you can pass it
-    ///     // into run directly.
+    ///     // Because GameState::new takes `&mut Context` and returns a `State` implementation
+    ///     // wrapped in a `Result`, you can use it without a closure wrapper:
     ///     ContextBuilder::new("Hello, world!", 1280, 720)
     ///         .build()?
     ///         .run(GameState::new)
     /// }
     /// ```
     ///
-    pub fn run<S, F>(&mut self, init: F) -> Result
+    pub fn run<S, F>(&mut self, init: F) -> result::Result<(), S::Error>
     where
-        S: State,
-        F: FnOnce(&mut Context) -> Result<S>,
+        S: StateWithError,
+        F: FnOnce(&mut Context) -> result::Result<S, S::Error>,
     {
         let state = &mut init(self)?;
 
@@ -119,9 +120,9 @@ impl Context {
         output
     }
 
-    pub(crate) fn tick<S>(&mut self, state: &mut S) -> Result
+    pub(crate) fn tick<S>(&mut self, state: &mut S) -> std::result::Result<(), S::Error>
     where
-        S: State,
+        S: StateWithError,
     {
         time::tick(self);
 
