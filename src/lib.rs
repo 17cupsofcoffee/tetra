@@ -76,4 +76,4 @@ pub mod window;
 
 pub use crate::context::{Context, ContextBuilder};
 pub use crate::error::{Result, TetraError};
-pub use crate::lifecycle::{Event, State, StateWithError};
+pub use crate::lifecycle::{Event, State};

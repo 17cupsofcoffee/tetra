@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 
 use anyhow::{self, Context as _};
-use tetra::{Context, ContextBuilder, StateWithError};
+use tetra::{Context, ContextBuilder, State};
 
 #[derive(Debug)]
 struct MyCustomError;
@@ -21,9 +21,7 @@ fn function_that_will_always_fail() -> Result<(), MyCustomError> {
 
 struct GameState;
 
-impl StateWithError for GameState {
-    type Error = anyhow::Error;
-
+impl State<anyhow::Error> for GameState {
     fn update(&mut self, _: &mut Context) -> anyhow::Result<()> {
         function_that_will_always_fail().context("the function failed, surprisingly enough")
     }

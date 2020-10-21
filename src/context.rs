@@ -4,7 +4,7 @@ use crate::graphics::{self, GraphicsContext};
 use crate::input::{self, InputContext};
 use crate::platform::{self, GraphicsDevice, Window};
 use crate::time::{self, TimeContext, Timestep};
-use crate::{Result, StateWithError};
+use crate::{Result, State, TetraError};
 
 #[cfg(feature = "audio")]
 use crate::audio::AudioDevice;
@@ -61,9 +61,9 @@ impl Context {
     /// Runs the game.
     ///
     /// The `init` parameter takes a function or closure that creates a
-    /// `State` (or `StateWithError`) implementation. A common pattern is to use
-    /// method references to pass in your state's constructor directly - see the
-    /// example below for how this works.
+    /// `State` implementation. A common pattern is to use method references
+    /// to pass in your state's constructor directly - see the example below
+    /// for how this works.
     ///
     /// # Errors
     ///
@@ -94,10 +94,11 @@ impl Context {
     /// }
     /// ```
     ///
-    pub fn run<S, F>(&mut self, init: F) -> result::Result<(), S::Error>
+    pub fn run<S, F, E>(&mut self, init: F) -> result::Result<(), E>
     where
-        S: StateWithError,
-        F: FnOnce(&mut Context) -> result::Result<S, S::Error>,
+        S: State<E>,
+        F: FnOnce(&mut Context) -> result::Result<S, E>,
+        E: From<TetraError>,
     {
         let state = &mut init(self)?;
 
@@ -120,9 +121,10 @@ impl Context {
         output
     }
 
-    pub(crate) fn tick<S>(&mut self, state: &mut S) -> std::result::Result<(), S::Error>
+    pub(crate) fn tick<S, E>(&mut self, state: &mut S) -> result::Result<(), E>
     where
-        S: StateWithError,
+        S: State<E>,
+        E: From<TetraError>,
     {
         time::tick(self);
 

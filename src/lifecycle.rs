@@ -1,9 +1,8 @@
 use std::path::PathBuf;
-use std::result;
 
 use crate::input::{GamepadAxis, GamepadButton, GamepadStick, Key, MouseButton};
 use crate::math::Vec2;
-use crate::{Context, Result, TetraError};
+use crate::{Context, TetraError};
 
 /// Implemented by types that contain game state and provide logic for updating it
 /// and drawing it to the screen.
@@ -12,70 +11,23 @@ use crate::{Context, Result, TetraError};
 /// operator. If an error is returned, the game will close and the error will be returned from
 /// the `run` function that was used to start it.
 ///
-/// If you want to return a custom error type from your `State` methods, you can switch to the
-/// [`StateWithError`](trait.StateWithError.html) trait.
+/// The error type defaults to `TetraError`, but this can be overridden by adding a type parameter
+/// to your `State` implementation (e.g. `State<MyError>`).
 #[allow(unused_variables)]
-pub trait State {
+pub trait State<E = TetraError> {
     /// Called when it is time for the game to update.
-    fn update(&mut self, ctx: &mut Context) -> Result {
+    fn update(&mut self, ctx: &mut Context) -> Result<(), E> {
         Ok(())
     }
 
     /// Called when it is time for the game to be drawn.
-    fn draw(&mut self, ctx: &mut Context) -> Result {
+    fn draw(&mut self, ctx: &mut Context) -> Result<(), E> {
         Ok(())
     }
 
     /// Called when a window or input event occurs.
-    fn event(&mut self, ctx: &mut Context, event: Event) -> Result {
+    fn event(&mut self, ctx: &mut Context, event: Event) -> Result<(), E> {
         Ok(())
-    }
-}
-
-/// Extends [`State`](trait.State.html) with the ability to use a custom error type.
-///
-/// When [associated type defaults](https://github.com/rust-lang/rust/issues/29661) are
-/// stabilized, this trait will be merged with `State`.
-#[allow(unused_variables)]
-pub trait StateWithError {
-    /// The type of error that may be returned from the methods on this trait.
-    ///
-    /// This type must implement `From<TetraError>`, so that any internal errors
-    /// can be converted into your error type.
-    type Error: From<TetraError>;
-
-    /// Called when it is time for the game to update.
-    fn update(&mut self, ctx: &mut Context) -> result::Result<(), Self::Error> {
-        Ok(())
-    }
-
-    /// Called when it is time for the game to be drawn.
-    fn draw(&mut self, ctx: &mut Context) -> result::Result<(), Self::Error> {
-        Ok(())
-    }
-
-    /// Called when a window or input event occurs.
-    fn event(&mut self, ctx: &mut Context, event: Event) -> result::Result<(), Self::Error> {
-        Ok(())
-    }
-}
-
-impl<T> StateWithError for T
-where
-    T: State,
-{
-    type Error = TetraError;
-
-    fn update(&mut self, ctx: &mut Context) -> crate::Result {
-        self.update(ctx)
-    }
-
-    fn draw(&mut self, ctx: &mut Context) -> crate::Result {
-        self.draw(ctx)
-    }
-
-    fn event(&mut self, ctx: &mut Context, event: Event) -> crate::Result {
-        self.event(ctx, event)
     }
 }
 

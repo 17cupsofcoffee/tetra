@@ -21,7 +21,7 @@ use crate::error::{Result, TetraError};
 use crate::graphics;
 use crate::input::{self, GamepadAxis, GamepadButton, GamepadStick, Key, MouseButton};
 use crate::math::Vec2;
-use crate::{Context, ContextBuilder, Event, StateWithError};
+use crate::{Context, ContextBuilder, Event, State};
 
 struct SdlController {
     // NOTE: The SDL docs say to close the haptic device before the joystick, so
@@ -352,9 +352,10 @@ impl Window {
     }
 }
 
-pub fn handle_events<S>(ctx: &mut Context, state: &mut S) -> result::Result<(), S::Error>
+pub fn handle_events<S, E>(ctx: &mut Context, state: &mut S) -> result::Result<(), E>
 where
-    S: StateWithError,
+    S: State<E>,
+    E: From<TetraError>,
 {
     while let Some(event) = ctx.window.event_pump.poll_event() {
         match event {
