@@ -21,6 +21,7 @@ fn function_that_will_always_fail() -> Result<(), MyCustomError> {
 
 struct GameState;
 
+// The default error type for `State` can be overriden via a type parameter:
 impl State<anyhow::Error> for GameState {
     fn update(&mut self, _: &mut Context) -> anyhow::Result<()> {
         function_that_will_always_fail().context("the function failed, surprisingly enough")
@@ -28,6 +29,7 @@ impl State<anyhow::Error> for GameState {
 }
 
 fn main() -> anyhow::Result<()> {
+    // `run` will return whatever error type your `State` implementation uses:
     ContextBuilder::new("Custom Error Handling", 1280, 720)
         .build()?
         .run(|_| Ok(GameState))
