@@ -18,7 +18,8 @@ type ProgramId = <GlowContext as HasContext>::Program;
 type TextureId = <GlowContext as HasContext>::Texture;
 type FramebufferId = <GlowContext as HasContext>::Framebuffer;
 type VertexArrayId = <GlowContext as HasContext>::VertexArray;
-type UniformLocation = <GlowContext as HasContext>::UniformLocation;
+
+pub type UniformLocation = <GlowContext as HasContext>::UniformLocation;
 
 #[derive(Debug)]
 struct GraphicsState {
@@ -27,7 +28,7 @@ struct GraphicsState {
     current_vertex_buffer: Cell<Option<BufferId>>,
     current_index_buffer: Cell<Option<BufferId>>,
     current_program: Cell<Option<ProgramId>>,
-    current_texture: Cell<Option<TextureId>>,
+    current_textures: Vec<Cell<Option<TextureId>>>,
     current_framebuffer: Cell<Option<FramebufferId>>,
     current_vertex_array: Cell<Option<VertexArrayId>>,
 }
@@ -62,13 +63,16 @@ impl GraphicsDevice {
             // TODO: Find a nice way of exposing this via the platform layer
             // println!("Swap Interval: {:?}", video.gl_get_swap_interval());
 
+            let texture_units =
+                gl.get_parameter_i32(glow::MAX_COMBINED_TEXTURE_IMAGE_UNITS) as usize;
+
             let state = GraphicsState {
                 gl,
 
                 current_vertex_buffer: Cell::new(None),
                 current_index_buffer: Cell::new(None),
                 current_program: Cell::new(None),
-                current_texture: Cell::new(None),
+                current_textures: vec![Cell::new(None); texture_units],
                 current_framebuffer: Cell::new(None),
                 current_vertex_array: Cell::new(Some(current_vertex_array)),
             };
@@ -268,20 +272,153 @@ impl GraphicsDevice {
                 id: program_id,
             };
 
-            self.set_uniform(&program, "u_texture", 0);
+            let sampler_location = self.get_uniform_location(&program, "u_texture");
+            self.set_uniform_i32(&program, sampler_location.as_ref(), 0);
 
             Ok(program)
         }
     }
 
-    pub fn set_uniform<T>(&mut self, program: &RawProgram, name: &str, value: T)
-    where
-        T: UniformValue,
-    {
+    pub fn get_uniform_location(
+        &self,
+        program: &RawProgram,
+        name: &str,
+    ) -> Option<UniformLocation> {
+        unsafe { self.state.gl.get_uniform_location(program.id, name) }
+    }
+
+    pub fn set_uniform_i32(
+        &mut self,
+        program: &RawProgram,
+        location: Option<&UniformLocation>,
+        value: i32,
+    ) {
+        self.bind_program(Some(program));
+
         unsafe {
-            self.bind_program(Some(program));
-            let location = self.state.gl.get_uniform_location(program.id, name);
-            value.set_uniform(program, location.as_ref());
+            self.state.gl.uniform_1_i32(location, value);
+        }
+    }
+
+    pub fn set_uniform_u32(
+        &mut self,
+        program: &RawProgram,
+        location: Option<&UniformLocation>,
+        value: u32,
+    ) {
+        self.bind_program(Some(program));
+
+        unsafe {
+            self.state.gl.uniform_1_u32(location, value);
+        }
+    }
+
+    pub fn set_uniform_f32(
+        &mut self,
+        program: &RawProgram,
+        location: Option<&UniformLocation>,
+        value: f32,
+    ) {
+        self.bind_program(Some(program));
+
+        unsafe {
+            self.state.gl.uniform_1_f32(location, value);
+        }
+    }
+
+    pub fn set_uniform_vec2(
+        &mut self,
+        program: &RawProgram,
+        location: Option<&UniformLocation>,
+        value: Vec2<f32>,
+    ) {
+        self.bind_program(Some(program));
+
+        unsafe {
+            self.state
+                .gl
+                .uniform_2_f32_slice(location, &value.into_array());
+        }
+    }
+
+    pub fn set_uniform_vec3(
+        &mut self,
+        program: &RawProgram,
+        location: Option<&UniformLocation>,
+        value: Vec3<f32>,
+    ) {
+        self.bind_program(Some(program));
+
+        unsafe {
+            self.state
+                .gl
+                .uniform_3_f32_slice(location, &value.into_array());
+        }
+    }
+
+    pub fn set_uniform_vec4(
+        &mut self,
+        program: &RawProgram,
+        location: Option<&UniformLocation>,
+        value: Vec4<f32>,
+    ) {
+        self.bind_program(Some(program));
+
+        unsafe {
+            self.state
+                .gl
+                .uniform_4_f32_slice(location, &value.into_array());
+        }
+    }
+
+    pub fn set_uniform_mat2(
+        &mut self,
+        program: &RawProgram,
+        location: Option<&UniformLocation>,
+        value: Mat2<f32>,
+    ) {
+        self.bind_program(Some(program));
+
+        unsafe {
+            self.state.gl.uniform_matrix_2_f32_slice(
+                location,
+                value.gl_should_transpose(),
+                &value.into_col_array(),
+            );
+        }
+    }
+
+    pub fn set_uniform_mat3(
+        &mut self,
+        program: &RawProgram,
+        location: Option<&UniformLocation>,
+        value: Mat3<f32>,
+    ) {
+        self.bind_program(Some(program));
+
+        unsafe {
+            self.state.gl.uniform_matrix_3_f32_slice(
+                location,
+                value.gl_should_transpose(),
+                &value.into_col_array(),
+            );
+        }
+    }
+
+    pub fn set_uniform_mat4(
+        &mut self,
+        program: &RawProgram,
+        location: Option<&UniformLocation>,
+        value: Mat4<f32>,
+    ) {
+        self.bind_program(Some(program));
+
+        unsafe {
+            self.state.gl.uniform_matrix_4_f32_slice(
+                location,
+                value.gl_should_transpose(),
+                &value.into_col_array(),
+            );
         }
     }
 
@@ -302,7 +439,7 @@ impl GraphicsDevice {
                 height,
             };
 
-            self.bind_texture(Some(&texture));
+            self.bind_default_texture(Some(&texture));
 
             self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,
@@ -350,7 +487,7 @@ impl GraphicsDevice {
         height: i32,
     ) {
         unsafe {
-            self.bind_texture(Some(texture));
+            self.bind_default_texture(Some(texture));
 
             self.state.gl.tex_sub_image_2d(
                 glow::TEXTURE_2D,
@@ -367,7 +504,7 @@ impl GraphicsDevice {
     }
 
     pub fn set_texture_filter_mode(&mut self, texture: &RawTexture, filter_mode: FilterMode) {
-        self.bind_texture(Some(texture));
+        self.bind_default_texture(Some(texture));
 
         unsafe {
             self.state.gl.tex_parameter_i32(
@@ -441,7 +578,7 @@ impl GraphicsDevice {
         unsafe {
             self.bind_vertex_buffer(Some(vertex_buffer));
             self.bind_index_buffer(Some(index_buffer));
-            self.bind_texture(Some(texture));
+            self.bind_default_texture(Some(texture));
             self.bind_program(Some(program));
 
             self.state
@@ -526,16 +663,29 @@ impl GraphicsDevice {
         }
     }
 
-    fn bind_texture(&mut self, texture: Option<&RawTexture>) {
+    pub fn bind_texture(&mut self, texture: Option<&RawTexture>, unit: u32) -> Result {
         unsafe {
             let id = texture.map(|x| x.id);
 
-            if self.state.current_texture.get() != id {
-                self.state.gl.active_texture(glow::TEXTURE0);
+            let current = &self
+                .state
+                .current_textures
+                .get(unit as usize)
+                .ok_or_else(|| TetraError::PlatformError("invalid texture unit".into()))?;
+
+            if current.get() != id {
+                self.state.gl.active_texture(glow::TEXTURE0 + unit);
                 self.state.gl.bind_texture(glow::TEXTURE_2D, id);
-                self.state.current_texture.set(id);
+                current.set(id);
             }
         }
+
+        Ok(())
+    }
+
+    pub fn bind_default_texture(&mut self, texture: Option<&RawTexture>) {
+        self.bind_texture(texture, 0)
+            .expect("texture unit 0 should always be available");
     }
 
     pub fn bind_framebuffer(&mut self, framebuffer: Option<&RawFramebuffer>) {
@@ -659,7 +809,6 @@ handle_impls!(RawIndexBuffer);
 #[derive(Debug)]
 pub struct RawProgram {
     state: Rc<GraphicsState>,
-
     id: ProgramId,
 }
 
@@ -699,8 +848,10 @@ impl RawTexture {
 impl Drop for RawTexture {
     fn drop(&mut self) {
         unsafe {
-            if self.state.current_texture.get() == Some(self.id) {
-                self.state.current_texture.set(None);
+            for bound in &self.state.current_textures {
+                if bound.get() == Some(self.id) {
+                    bound.set(None);
+                }
             }
 
             self.state.gl.delete_texture(self.id);
@@ -729,114 +880,3 @@ impl Drop for RawFramebuffer {
 }
 
 handle_impls!(RawFramebuffer);
-
-mod sealed {
-    use super::*;
-    pub trait UniformValueTypes {}
-    impl UniformValueTypes for i32 {}
-    impl UniformValueTypes for f32 {}
-    impl UniformValueTypes for Vec2<f32> {}
-    impl UniformValueTypes for Vec3<f32> {}
-    impl UniformValueTypes for Vec4<f32> {}
-    impl UniformValueTypes for Mat2<f32> {}
-    impl UniformValueTypes for Mat3<f32> {}
-    impl UniformValueTypes for Mat4<f32> {}
-    impl<'a, T> UniformValueTypes for &'a T where T: UniformValueTypes {}
-}
-
-/// Implemented for types that can be passed as a uniform value to a shader.
-///
-/// As the implementation of this trait currently interacts directly with the OpenGL layer,
-/// it's marked as a [sealed trait](https://rust-lang-nursery.github.io/api-guidelines/future-proofing.html#sealed-traits-protect-against-downstream-implementations-c-sealed),
-/// and can't be implemented outside of Tetra. This might change in the future!
-pub trait UniformValue: sealed::UniformValueTypes {
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>);
-}
-
-impl UniformValue for i32 {
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
-        program.state.gl.uniform_1_i32(location, *self);
-    }
-}
-
-impl UniformValue for f32 {
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
-        program.state.gl.uniform_1_f32(location, *self);
-    }
-}
-
-impl UniformValue for Vec2<f32> {
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
-        program
-            .state
-            .gl
-            .uniform_2_f32_slice(location, &self.into_array());
-    }
-}
-
-impl UniformValue for Vec3<f32> {
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
-        program
-            .state
-            .gl
-            .uniform_3_f32_slice(location, &self.into_array());
-    }
-}
-
-impl UniformValue for Vec4<f32> {
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
-        program
-            .state
-            .gl
-            .uniform_4_f32_slice(location, &self.into_array());
-    }
-}
-
-impl UniformValue for Mat2<f32> {
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
-        program.state.gl.uniform_matrix_2_f32_slice(
-            location,
-            self.gl_should_transpose(),
-            &self.into_col_array(),
-        );
-    }
-}
-
-impl UniformValue for Mat3<f32> {
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
-        program.state.gl.uniform_matrix_3_f32_slice(
-            location,
-            self.gl_should_transpose(),
-            &self.into_col_array(),
-        );
-    }
-}
-
-impl UniformValue for Mat4<f32> {
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
-        program.state.gl.uniform_matrix_4_f32_slice(
-            location,
-            self.gl_should_transpose(),
-            &self.into_col_array(),
-        );
-    }
-}
-
-impl<'a, T> UniformValue for &'a T
-where
-    T: UniformValue,
-{
-    #[doc(hidden)]
-    unsafe fn set_uniform(&self, program: &RawProgram, location: Option<&UniformLocation>) {
-        (**self).set_uniform(program, location);
-    }
-}

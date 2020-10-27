@@ -1,15 +1,17 @@
 //! Functions and types relating to shader programs.
 
+use std::cell::{Cell, RefCell};
 use std::path::Path;
 use std::rc::Rc;
 
+use hashbrown::HashMap;
+
 use crate::error::Result;
 use crate::fs;
+use crate::graphics::{Color, Texture};
+use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 use crate::platform::{GraphicsDevice, RawProgram};
 use crate::Context;
-
-#[doc(inline)]
-pub use crate::platform::UniformValue;
 
 /// The default vertex shader.
 ///
@@ -20,6 +22,25 @@ pub const DEFAULT_VERTEX_SHADER: &str = include_str!("../resources/shader.vert")
 ///
 /// The source code for this shader is available in [`src/resources/shader.vert`](https://github.com/17cupsofcoffee/tetra/blob/main/src/resources/shader.frag).
 pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag");
+
+#[derive(Debug)]
+pub(crate) struct Sampler {
+    pub(crate) texture: Texture,
+    pub(crate) unit: u32,
+}
+
+#[derive(Debug)]
+pub(crate) struct ShaderSharedData {
+    pub(crate) handle: RawProgram,
+    pub(crate) samplers: RefCell<HashMap<String, Sampler>>,
+    pub(crate) next_unit: Cell<u32>,
+}
+
+impl PartialEq for ShaderSharedData {
+    fn eq(&self, other: &ShaderSharedData) -> bool {
+        self.handle.eq(&other.handle)
+    }
+}
 
 /// A shader program, consisting of a vertex shader and a fragment shader.
 ///
@@ -68,7 +89,7 @@ pub const DEFAULT_FRAGMENT_SHADER: &str = include_str!("../resources/shader.frag
 /// variables.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Shader {
-    pub(crate) handle: Rc<RawProgram>,
+    pub(crate) data: Rc<ShaderSharedData>,
 }
 
 impl Shader {
@@ -176,7 +197,11 @@ impl Shader {
         let handle = device.new_program(vertex_shader, fragment_shader)?;
 
         Ok(Shader {
-            handle: Rc::new(handle),
+            data: Rc::new(ShaderSharedData {
+                handle,
+                samplers: RefCell::new(HashMap::new()),
+                next_unit: Cell::new(1),
+            }),
         })
     }
 
@@ -185,6 +210,103 @@ impl Shader {
     where
         V: UniformValue,
     {
-        ctx.device.set_uniform(&self.handle, name, value);
+        value.set_uniform(ctx, self, name)
+    }
+
+    pub(crate) fn bind_samplers(&self, device: &mut GraphicsDevice) -> Result {
+        let samplers = self.data.samplers.borrow();
+
+        for sampler in samplers.values() {
+            device.bind_texture(Some(&sampler.texture.data.handle), sampler.unit)?;
+        }
+
+        Ok(())
+    }
+}
+
+/// Implemented for types that can be passed as a uniform value to a shader.
+///
+/// As the implementation of this trait currently interacts directly with the platform layer,
+/// it cannot be implemented outside of Tetra itself. This may change in the future!
+pub trait UniformValue {
+    #[doc(hidden)]
+    fn set_uniform(&self, ctx: &mut Context, shader: &Shader, name: &str);
+}
+
+macro_rules! simple_uniforms {
+    ($($t:ty => $f:ident),* $(,)?) => {
+        $(
+            impl UniformValue for $t {
+                #[doc(hidden)]
+                 fn set_uniform(
+                    &self,
+                    ctx: &mut Context,
+                    shader: &Shader,
+                    name: &str,
+                ) {
+                    let location = ctx.device.get_uniform_location(&shader.data.handle, name);
+                    ctx.device.$f(&shader.data.handle, location.as_ref(), *self);
+                }
+            }
+        )*
+    };
+}
+
+simple_uniforms! {
+    i32 => set_uniform_i32,
+    u32 => set_uniform_u32,
+    f32 => set_uniform_f32,
+    Vec2<f32> => set_uniform_vec2,
+    Vec3<f32> => set_uniform_vec3,
+    Vec4<f32> => set_uniform_vec4,
+    Mat2<f32> => set_uniform_mat2,
+    Mat3<f32> => set_uniform_mat3,
+    Mat4<f32> => set_uniform_mat4,
+}
+
+impl UniformValue for Color {
+    #[doc(hidden)]
+    fn set_uniform(&self, ctx: &mut Context, shader: &Shader, name: &str) {
+        let vec4: Vec4<f32> = (*self).into();
+        vec4.set_uniform(ctx, shader, name);
+    }
+}
+
+impl UniformValue for Texture {
+    fn set_uniform(&self, ctx: &mut Context, shader: &Shader, name: &str) {
+        let mut samplers = shader.data.samplers.borrow_mut();
+
+        if let Some(sampler) = samplers.get_mut(name) {
+            if sampler.texture != *self {
+                sampler.texture = self.clone();
+            }
+        } else {
+            let next_unit = shader.data.next_unit.get();
+
+            samplers.insert(
+                name.to_owned(),
+                Sampler {
+                    texture: self.clone(),
+                    unit: next_unit,
+                },
+            );
+
+            // Sampler uniforms have to be set via glUniform1i
+            (next_unit as i32).set_uniform(ctx, shader, name);
+
+            shader.data.next_unit.set(next_unit + 1);
+        }
+    }
+}
+
+impl<'a, T> UniformValue for &'a T
+where
+    T: UniformValue,
+{
+    #[doc(hidden)]
+    fn set_uniform(&self, ctx: &mut Context, shader: &Shader, name: &str) {
+        {
+            (**self).set_uniform(ctx, shader, name);
+        }
     }
 }

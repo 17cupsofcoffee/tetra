@@ -16,13 +16,21 @@ struct GameState {
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+        let texture = Texture::new(ctx, "./examples/resources/player.png")?;
+        let overlay = Texture::new(ctx, "./examples/resources/overlay.png")?;
+
+        let shader = Shader::from_fragment_file(ctx, "./examples/resources/disco.frag")?;
+        shader.set_uniform(ctx, "u_overlay", overlay);
+
+        let text = Text::new(
+            "",
+            Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 32.0)?,
+        );
+
         Ok(GameState {
-            texture: Texture::new(ctx, "./examples/resources/player.png")?,
-            shader: Shader::from_fragment_file(ctx, "./examples/resources/disco.frag")?,
-            text: Text::new(
-                "",
-                Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 32.0)?,
-            ),
+            texture,
+            shader,
+            text,
 
             timer: 0.0,
             red: 0.0,
@@ -54,9 +62,7 @@ impl State for GameState {
         graphics::set_shader(ctx, &self.shader);
 
         self.shader.set_uniform(ctx, "u_red", self.red);
-
         self.shader.set_uniform(ctx, "u_green", self.green);
-
         self.shader.set_uniform(ctx, "u_blue", self.blue);
 
         graphics::draw(

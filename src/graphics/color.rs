@@ -3,6 +3,7 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use crate::error::{Result, TetraError};
+use crate::math::Vec4;
 
 /// An RGBA color.
 ///
@@ -137,6 +138,18 @@ impl Color {
 
     /// Shortcut for `Color::rgb(0.0, 0.0, 1.0)`.
     pub const BLUE: Color = Color::rgb(0.0, 0.0, 1.0);
+}
+
+impl From<Color> for Vec4<f32> {
+    fn from(color: Color) -> Vec4<f32> {
+        Vec4::new(color.r, color.g, color.b, color.a)
+    }
+}
+
+impl From<Vec4<f32>> for Color {
+    fn from(v: Vec4<f32>) -> Self {
+        Color::rgba(v.x, v.y, v.z, v.w)
+    }
 }
 
 impl Add for Color {

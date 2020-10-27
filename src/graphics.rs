@@ -345,9 +345,17 @@ pub fn flush(ctx: &mut Context) {
             ActiveShader::User(s) => s,
         };
 
-        ctx.device.set_uniform(
-            &shader.handle,
-            "u_projection",
+        // TODO: Failing to bind samplers should be handled more gracefully than this,
+        // but we can't do that without breaking changes.
+        let _ = shader.bind_samplers(&mut ctx.device);
+
+        let projection_location = ctx
+            .device
+            .get_uniform_location(&shader.data.handle, "u_projection");
+
+        ctx.device.set_uniform_mat4(
+            &shader.data.handle,
+            projection_location.as_ref(),
             ctx.graphics.projection_matrix * ctx.graphics.transform_matrix,
         );
 
@@ -361,7 +369,7 @@ pub fn flush(ctx: &mut Context) {
             &ctx.graphics.vertex_buffer,
             &ctx.graphics.index_buffer,
             &texture.data.handle,
-            &shader.handle,
+            &shader.data.handle,
             ctx.graphics.element_count,
         );
 

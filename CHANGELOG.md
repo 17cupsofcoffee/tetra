@@ -8,6 +8,12 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added
+
+* You can now use `u32`, `Color` and `Texture` values as shader uniforms.
+* `From<Color>` is now implemented for `Vec4<f32>`.
+* `From<Vec4<f32>>` is now implemented for `Color`.
+
 ### Changed
 
 * `TetraError`'s `Display` implementation no longer duplicates the source error's `Display` text.

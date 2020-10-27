@@ -3,6 +3,6 @@ mod window_sdl;
 
 pub use device_gl::{
     BufferUsage, FrontFace, GraphicsDevice, RawFramebuffer, RawIndexBuffer, RawProgram, RawTexture,
-    RawVertexBuffer, UniformValue,
+    RawVertexBuffer, UniformLocation,
 };
 pub use window_sdl::{handle_events, Window};
