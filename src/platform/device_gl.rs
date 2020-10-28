@@ -624,14 +624,6 @@ impl Drop for RawVertexBuffer {
     fn drop(&mut self) {
         unsafe {
             if self.state.current_vertex_buffer.get() == Some(self.id) {
-                self.state.gl.bind_buffer(glow::ARRAY_BUFFER, None);
-
-                // TODO: This only works because we don't let the user set custom
-                // attribute bindings - will need a rethink at that point!
-                self.state.gl.disable_vertex_attrib_array(0);
-                self.state.gl.disable_vertex_attrib_array(1);
-                self.state.gl.disable_vertex_attrib_array(2);
-
                 self.state.current_vertex_buffer.set(None);
             }
 
@@ -654,7 +646,6 @@ impl Drop for RawIndexBuffer {
     fn drop(&mut self) {
         unsafe {
             if self.state.current_index_buffer.get() == Some(self.id) {
-                self.state.gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, None);
                 self.state.current_index_buffer.set(None);
             }
 
@@ -676,7 +667,6 @@ impl Drop for RawProgram {
     fn drop(&mut self) {
         unsafe {
             if self.state.current_program.get() == Some(self.id) {
-                self.state.gl.use_program(None);
                 self.state.current_program.set(None);
             }
 
@@ -710,8 +700,6 @@ impl Drop for RawTexture {
     fn drop(&mut self) {
         unsafe {
             if self.state.current_texture.get() == Some(self.id) {
-                self.state.gl.active_texture(glow::TEXTURE0);
-                self.state.gl.bind_texture(glow::TEXTURE0, None);
                 self.state.current_texture.set(None);
             }
 
@@ -732,7 +720,6 @@ impl Drop for RawFramebuffer {
     fn drop(&mut self) {
         unsafe {
             if self.state.current_framebuffer.get() == Some(self.id) {
-                self.state.gl.bind_framebuffer(glow::FRAMEBUFFER, None);
                 self.state.current_framebuffer.set(None);
             }
 
