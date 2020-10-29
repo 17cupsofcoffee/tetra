@@ -12,6 +12,8 @@ This project adheres to Semantic Versioning.
 
 * `TetraError`'s `Display` implementation no longer duplicates the source error's `Display` text.
 * The `State` trait now has an optional type parameter for the error type. This allows you to use your own custom error types, or third-party error handling crates like `anyhow`, `thiserror` and `eyre`.
+* Some of `Texture`'s state caching has been moved into the platform layer, for consistency/to simplify the implementation.
+    * This may cause a minor performance regression in debug mode - however, you should probably be using [profile overrides](https://tetra.seventeencups.net/faq/#why-is-my-game-running-slow) rather than running Tetra's code in debug mode anyway!
 
 ## [0.5.1] - 2020-10-13
 
