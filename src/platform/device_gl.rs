@@ -285,12 +285,7 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn new_texture(
-        &mut self,
-        width: i32,
-        height: i32,
-        filter_mode: FilterMode,
-    ) -> Result<RawTexture> {
+    pub fn new_texture(&mut self, width: i32, height: i32) -> Result<RawTexture> {
         // TODO: I don't think we need mipmaps?
         unsafe {
             let id = self
@@ -303,22 +298,11 @@ impl GraphicsDevice {
                 state: Rc::clone(&self.state),
 
                 id,
-                filter_mode,
+                width,
+                height,
             };
 
             self.bind_texture(Some(&texture));
-
-            self.state.gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
-                glow::TEXTURE_MIN_FILTER,
-                filter_mode.into(),
-            );
-
-            self.state.gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
-                glow::TEXTURE_MAG_FILTER,
-                filter_mode.into(),
-            );
 
             self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,
@@ -382,25 +366,21 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn set_texture_filter_mode(&mut self, texture: &mut RawTexture, filter_mode: FilterMode) {
-        if texture.filter_mode != filter_mode {
-            self.bind_texture(Some(texture));
+    pub fn set_texture_filter_mode(&mut self, texture: &RawTexture, filter_mode: FilterMode) {
+        self.bind_texture(Some(texture));
 
-            unsafe {
-                self.state.gl.tex_parameter_i32(
-                    glow::TEXTURE_2D,
-                    glow::TEXTURE_MIN_FILTER,
-                    filter_mode.into(),
-                );
+        unsafe {
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MIN_FILTER,
+                filter_mode.into(),
+            );
 
-                self.state.gl.tex_parameter_i32(
-                    glow::TEXTURE_2D,
-                    glow::TEXTURE_MAG_FILTER,
-                    filter_mode.into(),
-                );
-
-                texture.filter_mode = filter_mode;
-            }
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MAG_FILTER,
+                filter_mode.into(),
+            );
         }
     }
 
@@ -702,12 +682,17 @@ pub struct RawTexture {
     state: Rc<GraphicsState>,
     id: TextureId,
 
-    filter_mode: FilterMode,
+    width: i32,
+    height: i32,
 }
 
 impl RawTexture {
-    pub fn filter_mode(&self) -> FilterMode {
-        self.filter_mode
+    pub fn width(&self) -> i32 {
+        self.width
+    }
+
+    pub fn height(&self) -> i32 {
+        self.height
     }
 }
 

@@ -360,7 +360,7 @@ pub fn flush(ctx: &mut Context) {
         ctx.device.draw_elements(
             &ctx.graphics.vertex_buffer,
             &ctx.graphics.index_buffer,
-            &texture.handle.borrow(),
+            &texture.data.handle,
             &shader.handle,
             ctx.graphics.element_count,
         );

@@ -1,6 +1,6 @@
 //! Functions and types relating to textures.
 
-use std::cell::RefCell;
+use std::cell::Cell;
 use std::path::Path;
 use std::rc::Rc;
 
@@ -9,6 +9,21 @@ use crate::fs;
 use crate::graphics::{self, DrawParams, Drawable};
 use crate::platform::{GraphicsDevice, RawTexture};
 use crate::Context;
+
+#[derive(Debug)]
+pub(crate) struct TextureSharedData {
+    pub(crate) handle: RawTexture,
+    filter_mode: Cell<FilterMode>,
+}
+
+impl PartialEq for TextureSharedData {
+    fn eq(&self, other: &TextureSharedData) -> bool {
+        // filter_mode should always match what's set on the GPU,
+        // so we can ignore it for equality checks.
+
+        self.handle.eq(&other.handle)
+    }
+}
 
 /// A texture, held in GPU memory.
 ///
@@ -45,9 +60,7 @@ use crate::Context;
 /// example demonstrates how to draw a simple texture.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Texture {
-    pub(crate) handle: Rc<RefCell<RawTexture>>,
-    width: i32,
-    height: i32,
+    pub(crate) data: Rc<TextureSharedData>,
 }
 
 impl Texture {
@@ -141,14 +154,16 @@ impl Texture {
             return Err(TetraError::NotEnoughData { expected, actual });
         }
 
-        let handle = device.new_texture(width, height, filter_mode)?;
+        let handle = device.new_texture(width, height)?;
 
         device.set_texture_data(&handle, &data, 0, 0, width, height);
+        device.set_texture_filter_mode(&handle, filter_mode);
 
         Ok(Texture {
-            handle: Rc::new(RefCell::new(handle)),
-            width,
-            height,
+            data: Rc::new(TextureSharedData {
+                handle,
+                filter_mode: Cell::new(FilterMode::Linear),
+            }),
         })
     }
 
@@ -158,39 +173,43 @@ impl Texture {
         height: i32,
         filter_mode: FilterMode,
     ) -> Result<Texture> {
-        let handle = device.new_texture(width, height, filter_mode)?;
+        let handle = device.new_texture(width, height)?;
+        device.set_texture_filter_mode(&handle, filter_mode);
 
         Ok(Texture {
-            handle: Rc::new(RefCell::new(handle)),
-            width,
-            height,
+            data: Rc::new(TextureSharedData {
+                handle,
+                filter_mode: Cell::new(filter_mode),
+            }),
         })
     }
 
     /// Returns the width of the texture.
     pub fn width(&self) -> i32 {
-        self.width
+        self.data.handle.width()
     }
 
     /// Returns the height of the texture.
     pub fn height(&self) -> i32 {
-        self.height
+        self.data.handle.height()
     }
 
     /// Returns the size of the canvas.
     pub fn size(&self) -> (i32, i32) {
-        (self.width, self.height)
+        (self.data.handle.width(), self.data.handle.height())
     }
 
     /// Returns the filter mode being used by the texture.
     pub fn filter_mode(&self) -> FilterMode {
-        self.handle.borrow().filter_mode()
+        self.data.filter_mode.get()
     }
 
     /// Sets the filter mode that should be used by the texture.
     pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
         ctx.device
-            .set_texture_filter_mode(&mut self.handle.borrow_mut(), filter_mode);
+            .set_texture_filter_mode(&self.data.handle, filter_mode);
+
+        self.data.filter_mode.set(filter_mode);
     }
 
     /// Writes RGBA pixel data to a specified region of the texture.
@@ -234,7 +253,7 @@ impl Texture {
         }
 
         ctx.device
-            .set_texture_data(&self.handle.borrow(), &data, x, y, width, height);
+            .set_texture_data(&self.data.handle, &data, x, y, width, height);
 
         Ok(())
     }
@@ -291,7 +310,7 @@ impl Drawable for Texture {
 /// Filtering algorithms that can be used when scaling an image.
 ///
 /// Tetra currently defaults to using `Nearest` for all newly created textures.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy)]
 pub enum FilterMode {
     /// Nearest-neighbor interpolation. This preserves hard edges and details, but may look pixelated.
     ///

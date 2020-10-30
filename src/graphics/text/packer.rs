@@ -73,7 +73,7 @@ impl ShelfPacker {
         let space = self.find_space(width, height);
 
         if let Some((x, y)) = space {
-            device.set_texture_data(&self.texture.handle.borrow(), data, x, y, width, height);
+            device.set_texture_data(&self.texture.data.handle, data, x, y, width, height);
         }
 
         space

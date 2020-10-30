@@ -57,7 +57,7 @@ impl Canvas {
         filter_mode: FilterMode,
     ) -> Result<Canvas> {
         let texture = Texture::with_device_empty(device, width, height, filter_mode)?;
-        let framebuffer = device.new_framebuffer(&texture.handle.borrow(), true)?;
+        let framebuffer = device.new_framebuffer(&texture.data.handle, true)?;
 
         Ok(Canvas {
             texture,
