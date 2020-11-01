@@ -65,6 +65,10 @@ impl Context {
     /// to pass in your state's constructor directly - see the example below
     /// for how this works.
     ///
+    /// The error type returned by your `init` closure currently must match the error
+    /// type returned by your `State` methods. This limitation may be lifted
+    /// in the future.
+    ///
     /// # Errors
     ///
     /// If the `State` returns an error from `update`, `draw` or `event`, the game
