@@ -61,13 +61,10 @@ pub(crate) trait Rasterizer {
     fn rasterize(&self, glyph: char, position: Vec2<f32>) -> Option<RasterizedGlyph>;
 
     /// The horizonal advance for a given glyph.
-    fn h_advance(&self, glyph: char) -> f32;
+    fn advance(&self, glyph: char) -> f32;
 
     /// The height of the font.
-    fn height(&self) -> f32;
-
-    /// The gap between lines for the font.
-    fn line_gap(&self) -> f32;
+    fn line_height(&self) -> f32;
 
     /// The ascent of the font.
     fn ascent(&self) -> f32;
@@ -142,7 +139,7 @@ impl FontCache {
         device: &mut GraphicsDevice,
         input: &str,
     ) -> std::result::Result<TextGeometry, CacheError> {
-        let v_advance = self.rasterizer.height() + self.rasterizer.line_gap();
+        let line_height = self.rasterizer.line_height();
 
         let mut quads = Vec::new();
         let mut cursor = Vec2::new(0.0, self.rasterizer.ascent());
@@ -153,7 +150,7 @@ impl FontCache {
             if ch.is_control() {
                 if ch == '\n' {
                     cursor.x = 0.0;
-                    cursor.y += v_advance;
+                    cursor.y += line_height;
                     last_glyph = None;
                 }
 
@@ -217,7 +214,7 @@ impl FontCache {
                 });
             }
 
-            cursor.x += self.rasterizer.h_advance(ch);
+            cursor.x += self.rasterizer.advance(ch);
 
             last_glyph = Some(ch);
         }

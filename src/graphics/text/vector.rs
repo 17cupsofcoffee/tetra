@@ -63,22 +63,16 @@ where
         }
     }
 
-    fn h_advance(&self, glyph: char) -> f32 {
+    fn advance(&self, glyph: char) -> f32 {
         let scaled_font = self.font.as_scaled(self.scale);
 
         scaled_font.h_advance(scaled_font.glyph_id(glyph))
     }
 
-    fn height(&self) -> f32 {
+    fn line_height(&self) -> f32 {
         let scaled_font = self.font.as_scaled(self.scale);
 
-        scaled_font.height()
-    }
-
-    fn line_gap(&self) -> f32 {
-        let scaled_font = self.font.as_scaled(self.scale);
-
-        scaled_font.line_gap()
+        scaled_font.height() + scaled_font.line_gap()
     }
 
     fn ascent(&self) -> f32 {
