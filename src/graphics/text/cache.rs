@@ -13,10 +13,12 @@ pub(crate) struct RasterizedGlyph {
     /// The rasterized RGBA data.
     pub data: Vec<u8>,
 
-    /// The bounds of the glyph, relative to the glyph's position.
+    /// How the glyph should be positioned, relative to the cursor's
+    /// position on the baseline.
     ///
-    /// If the font uses subpixel rendering, the position may be
-    /// offset. Otherwise, this will be (0, 0).
+    /// The X and Y can be positive or negative, depending on the design of the font.
+    /// The Y will almost always be negative though, as this is how the glyph is raised up
+    /// to sit above the baseline.
     pub bounds: Rectangle,
 }
 
@@ -25,10 +27,12 @@ struct CachedGlyph {
     /// The position of the glyph in the texture, in UV co-ordinates.
     uv: Rectangle,
 
-    /// The bounds of the glyph, relative to the glyph's position.
+    /// How the glyph should be positioned, relative to the cursor's
+    /// position on the baseline.
     ///
-    /// If the font uses subpixel rendering, the position may be
-    /// offset. Otherwise, this will be (0, 0).
+    /// The X and Y can be positive or negative, depending on the design of the font.
+    /// The Y will almost always be negative though, as this is how the glyph is raised up
+    /// to sit above the baseline.
     bounds: Rectangle,
 }
 
@@ -88,7 +92,7 @@ pub(crate) struct TextGeometry {
     pub resize_count: usize,
 }
 
-/// Renders text using a generated texture atlas
+/// Renders text using a generated texture atlas.
 pub(crate) struct FontCache {
     rasterizer: Box<dyn Rasterizer>,
     packer: ShelfPacker,
