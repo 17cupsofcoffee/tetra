@@ -161,12 +161,26 @@ impl FontCache {
                 continue;
             }
 
-            let offset = subpixel_offset(cursor);
+            let subpixel_offset = cursor.map(f32::fract);
+
+            // This is a bit of a hack to allow us to hash the subpixel offset:
+            //
+            // * Multiply by ten, so that the first decimal place becomes the integer part.
+            // * Round to the closest number.
+            //
+            // So 0.05 becomes 0, 0.57 becomes 6, 0.99 becomes 10, etc. This effectively gives us
+            // up to eleven different subpixel rendered versions of each glyph, which strikes
+            // a nice balance between prettiness and reasonable texture size.
+            //
+            // We could wrap back around to 0 instead of 10 being a valid value, which would make
+            // the distribution a bit more even, but I don't know if it's worth it.
+            let subpixel_x = (subpixel_offset.x * 10.0).round() as u32;
+            let subpixel_y = (subpixel_offset.y * 10.0).round() as u32;
 
             let cache_key = CacheKey {
                 glyph: ch,
-                subpixel_x: (offset.x * 10.0).round() as u32,
-                subpixel_y: (offset.y * 10.0).round() as u32,
+                subpixel_x,
+                subpixel_y,
             };
 
             let cached_glyph = match self.glyphs.entry(cache_key) {
@@ -274,25 +288,4 @@ fn add_glyph_to_texture(
             glyph.bounds.height / texture_height as f32,
         ),
     })
-}
-
-/// Returns the fractional offset of a given point as a number
-/// between -0.5 and 0.5.
-fn subpixel_offset(point: Vec2<f32>) -> Vec2<f32> {
-    let mut xf = point.x.fract();
-    let mut yf = point.y.fract();
-
-    if xf > 0.5 {
-        xf -= 1.0;
-    } else if xf < -0.5 {
-        xf += 1.0;
-    }
-
-    if yf > 0.5 {
-        yf -= 1.0;
-    } else if yf < -0.5 {
-        yf += 1.0;
-    }
-
-    Vec2::new(xf, yf)
 }

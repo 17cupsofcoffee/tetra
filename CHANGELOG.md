@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+# [Upcoming]
+
+### Fixed
+
+* Fixed an issue where vector fonts would not create new cached glyphs for certain subpixel positionings.
+
 ## [0.5.2] - 2020-11-01
 
 ### Added
