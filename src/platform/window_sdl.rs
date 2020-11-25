@@ -12,6 +12,7 @@ use sdl2::mouse::{MouseButton as SdlMouseButton, MouseWheelDirection};
 use sdl2::sys::SDL_HAPTIC_INFINITY;
 use sdl2::video::{
     FullscreenType, GLContext as SdlGlContext, GLProfile, SwapInterval, Window as SdlWindow,
+    WindowPos,
 };
 use sdl2::{
     EventPump, GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem,
@@ -75,6 +76,8 @@ impl Window {
             settings.window_width as u32,
             settings.window_height as u32,
         );
+
+        window_builder.allow_highdpi();
 
         // The window starts hidden, so that it doesn't look weird if we
         // maximize/minimize/fullscreen the window after it opens.
@@ -189,6 +192,10 @@ impl Window {
         (self.window_width, self.window_height)
     }
 
+    pub fn get_window_pos(&self) -> (i32, i32) {
+        self.sdl_window.position()
+    }
+
     pub fn set_window_size(&mut self, width: i32, height: i32) -> Result {
         self.window_width = width;
         self.window_height = height;
@@ -196,6 +203,11 @@ impl Window {
         self.sdl_window
             .set_size(width as u32, height as u32)
             .map_err(|e| TetraError::FailedToChangeDisplayMode(e.to_string()))
+    }
+
+    pub fn set_window_pos(&mut self, x: i32, y: i32) {
+        self.sdl_window
+            .set_position(WindowPos::Positioned(x), WindowPos::Positioned(y));
     }
 
     pub fn set_visible(&mut self, visible: bool) {
@@ -368,6 +380,13 @@ where
 
                     graphics::update_window_projection(ctx, width, height);
                     state.event(ctx, Event::Resized { width, height })?;
+
+                    // Resizing the window causes the drawing to go wrong until the window is moved.
+                    // This is a temporary workaround. (Ref: http://github.com/Rust-SDL2/rust-sdl2/issues/978)
+                    if cfg!(target_os = "macos") {
+                        let pos = ctx.window.get_window_pos();
+                        ctx.window.set_window_pos(pos.0, pos.1);
+                    }
                 }
 
                 WindowEvent::FocusGained => {
