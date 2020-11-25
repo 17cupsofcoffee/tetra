@@ -384,8 +384,8 @@ where
                     // Resizing the window causes the drawing to go wrong until the window is moved.
                     // This is a temporary workaround. (Ref: http://github.com/Rust-SDL2/rust-sdl2/issues/978)
                     if cfg!(target_os = "macos") {
-                        let pos = ctx.window.get_window_pos();
-                        ctx.window.set_window_pos(pos.0, pos.1);
+                        let (x, y) = ctx.window.get_window_pos();
+                        ctx.window.set_window_pos(x, y);
                     }
                 }
 
