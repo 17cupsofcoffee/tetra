@@ -77,7 +77,7 @@ impl Texture {
     where
         P: AsRef<Path>,
     {
-        let image = fs::read_to_image(path)?.to_rgba();
+        let image = fs::read_to_image(path)?.to_rgba8();
         let (width, height) = image.dimensions();
 
         Texture::from_rgba(
@@ -106,7 +106,7 @@ impl Texture {
     pub fn from_file_data(ctx: &mut Context, data: &[u8]) -> Result<Texture> {
         let image = image::load_from_memory(data)
             .map_err(TetraError::InvalidTexture)?
-            .to_rgba();
+            .to_rgba8();
 
         let (width, height) = image.dimensions();
 
