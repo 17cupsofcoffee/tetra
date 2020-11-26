@@ -10,7 +10,7 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
-* Added experimental support for high-DPI rendering, on platforms that support it.
+* Added experimental support for high-DPI rendering, on platforms that support it. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#212](https://github.com/17cupsofcoffee/tetra/pull/212))
 
 ## [0.5.3] - 2020-11-21
 
