@@ -88,12 +88,17 @@ impl Window {
             window_builder.borderless();
         }
 
+        if settings.high_dpi {
+            window_builder.allow_highdpi();
+        }
+
         if settings.grab_mouse {
             window_builder.input_grabbed();
         }
 
         sdl.mouse()
             .set_relative_mouse_mode(settings.relative_mouse_mode);
+
         sdl.mouse().show_cursor(settings.show_mouse);
 
         let mut sdl_window = window_builder
@@ -366,7 +371,16 @@ where
                     ctx.window.window_width = width;
                     ctx.window.window_height = height;
 
-                    graphics::update_window_projection(ctx, width, height);
+                    let (pixel_width, pixel_height) = ctx.window.sdl_window.drawable_size();
+
+                    graphics::set_viewport_size(
+                        ctx,
+                        width,
+                        height,
+                        pixel_width as i32,
+                        pixel_height as i32,
+                    );
+
                     state.event(ctx, Event::Resized { width, height })?;
                 }
 

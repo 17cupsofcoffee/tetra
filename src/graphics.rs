@@ -451,10 +451,16 @@ pub fn reset_transform_matrix(ctx: &mut Context) {
     set_transform_matrix(ctx, Mat4::identity());
 }
 
-pub(crate) fn update_window_projection(ctx: &mut Context, width: i32, height: i32) {
+pub(crate) fn set_viewport_size(
+    ctx: &mut Context,
+    width: i32,
+    height: i32,
+    pixel_width: i32,
+    pixel_height: i32,
+) {
     if let ActiveCanvas::Window = ctx.graphics.canvas {
         ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
-        ctx.device.viewport(0, 0, width, height);
+        ctx.device.viewport(0, 0, pixel_width, pixel_height);
     }
 }
 

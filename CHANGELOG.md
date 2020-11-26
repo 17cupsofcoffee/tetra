@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Added
+
+* Added experimental support for high-DPI rendering, on platforms that support it.
+
 ## [0.5.3] - 2020-11-21
 
 ### Fixed

@@ -185,6 +185,7 @@ pub struct ContextBuilder {
     pub(crate) minimized: bool,
     pub(crate) resizable: bool,
     pub(crate) borderless: bool,
+    pub(crate) high_dpi: bool,
     pub(crate) show_mouse: bool,
     pub(crate) grab_mouse: bool,
     pub(crate) relative_mouse_mode: bool,
@@ -283,6 +284,24 @@ impl ContextBuilder {
         self
     }
 
+    /// Sets whether or not the window should use a high-DPI backbuffer, on platforms
+    /// that support it (e.g. MacOS with a retina display).
+    ///
+    /// Note that you may also need to configure your game's packaging to allow for
+    /// high-DPI rendering:
+    ///
+    /// * On Windows, you will need to set the 'DPI Awareness' setting in a
+    ///   [manifest resource](https://github.com/rust-lang/rust/issues/11207#issuecomment-573424095)
+    ///   or call into the `SetProcessDpiAwareness` function in the Windows API.
+    /// * On Mac, you will need to set `NSHighResolutionCapable` to `true` in your Info.plist. This is the
+    ///   default on Catalina and higher.
+    ///
+    /// Defaults to `false`.
+    pub fn high_dpi(&mut self, high_dpi: bool) -> &mut ContextBuilder {
+        self.high_dpi = high_dpi;
+        self
+    }
+
     /// Sets whether or not the mouse cursor should be visible when it is within the
     /// game window.
     ///
@@ -356,6 +375,7 @@ impl Default for ContextBuilder {
             minimized: false,
             resizable: false,
             borderless: false,
+            high_dpi: false,
             show_mouse: false,
             grab_mouse: false,
             relative_mouse_mode: false,
