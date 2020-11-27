@@ -13,6 +13,9 @@ use crate::Context;
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vertex {
     /// The position of the vertex, in screen co-ordinates.
+    ///
+    /// The transform matrix will be applied to this value, followed by a projection
+    /// from screen co-ordinates to device co-ordinates.
     pub position: Vec2<f32>,
 
     /// The texture co-ordinates that should be sampled for this vertex.
@@ -21,6 +24,9 @@ pub struct Vertex {
     pub uv: Vec2<f32>,
 
     /// The color of the vertex.
+    ///
+    /// This will be multiplied by the `color` of the `DrawParams` when drawing a
+    /// mesh.
     pub color: Color,
 }
 
