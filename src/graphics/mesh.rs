@@ -224,6 +224,9 @@ struct DrawRange {
 /// Without a texture set, the mesh will be drawn in white - the `color` attribute on the vertex data or
 /// `DrawParams` can be used to change this.
 ///
+/// Note that, unlike quad rendering via `Texture`, mesh rendering is not batched by default - each time you
+/// draw the mesh will result in a seperate draw call.
+///
 /// # Performance
 ///
 /// Creating or cloning a `Mesh` is a very cheap operation, as meshes are effectively just collections
