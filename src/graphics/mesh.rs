@@ -268,9 +268,21 @@ impl Mesh {
         }
     }
 
+    /// Gets a reference to the vertex buffer contained within this mesh.
+    pub fn vertex_buffer(&self) -> &VertexBuffer {
+        &self.vertex_buffer
+    }
+
     /// Sets the vertex buffer that will be used when drawing the mesh.
     pub fn set_vertex_buffer(&mut self, vertex_buffer: VertexBuffer) {
         self.vertex_buffer = vertex_buffer;
+    }
+
+    /// Gets a reference to the index buffer contained within this mesh.
+    ///
+    /// Returns [`None`] if this mesh does not currently have an index buffer attatched.
+    pub fn index_buffer(&self) -> Option<&IndexBuffer> {
+        self.index_buffer.as_ref()
     }
 
     /// Sets the index buffer that will be used when drawing the mesh.
@@ -281,6 +293,13 @@ impl Mesh {
     /// Resets the mesh to no longer use indexed drawing.
     pub fn reset_index_buffer(&mut self) {
         self.index_buffer = None;
+    }
+
+    /// Gets a reference to the texture contained within this mesh.
+    ///
+    /// Returns [`None`] if this mesh does not currently have an texture attatched.
+    pub fn texture(&self) -> Option<&Texture> {
+        self.texture.as_ref()
     }
 
     /// Sets the texture that will be used when drawing the mesh.
