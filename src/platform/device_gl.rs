@@ -158,7 +158,10 @@ impl GraphicsDevice {
     ) {
         self.bind_vertex_buffer(Some(buffer));
 
-        assert!(data.len() + offset <= buffer.size());
+        assert!(
+            data.len() + offset <= buffer.size(),
+            "tried to write out of bounds buffer data"
+        );
 
         unsafe {
             // TODO: What if we want to discard what's already there?
@@ -200,7 +203,10 @@ impl GraphicsDevice {
     pub fn set_index_buffer_data(&mut self, buffer: &RawIndexBuffer, data: &[u32], offset: usize) {
         self.bind_index_buffer(Some(buffer));
 
-        assert!(data.len() + offset <= buffer.count());
+        assert!(
+            data.len() + offset <= buffer.count(),
+            "tried to write out of bounds buffer data"
+        );
 
         unsafe {
             // TODO: What if we want to discard what's already there?
@@ -493,10 +499,22 @@ impl GraphicsDevice {
         y: i32,
         width: i32,
         height: i32,
-    ) {
-        unsafe {
-            self.bind_default_texture(Some(texture));
+    ) -> Result {
+        assert!(
+            x >= 0 && y >= 0 && x + width <= texture.width && y + height <= texture.height,
+            "tried to write outside of texture bounds"
+        );
 
+        let expected = (width * height * 4) as usize;
+        let actual = data.len();
+
+        if expected > actual {
+            return Err(TetraError::NotEnoughData { expected, actual });
+        }
+
+        self.bind_default_texture(Some(texture));
+
+        unsafe {
             self.state.gl.tex_sub_image_2d(
                 glow::TEXTURE_2D,
                 0,
@@ -509,6 +527,8 @@ impl GraphicsDevice {
                 PixelUnpackData::Slice(data),
             )
         }
+
+        Ok(())
     }
 
     pub fn set_texture_filter_mode(&mut self, texture: &RawTexture, filter_mode: FilterMode) {

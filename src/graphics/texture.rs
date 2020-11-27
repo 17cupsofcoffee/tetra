@@ -239,23 +239,8 @@ impl Texture {
         height: i32,
         data: &[u8],
     ) -> Result {
-        let expected = (width * height * 4) as usize;
-        let actual = data.len();
-
-        if expected > actual {
-            return Err(TetraError::NotEnoughData { expected, actual });
-        }
-
-        let (texture_width, texture_height) = self.size();
-
-        if x < 0 || y < 0 || x + width > texture_width || y + height > texture_height {
-            panic!("tried to write outside of texture bounds");
-        }
-
         ctx.device
-            .set_texture_data(&self.data.handle, &data, x, y, width, height);
-
-        Ok(())
+            .set_texture_data(&self.data.handle, &data, x, y, width, height)
     }
 
     /// Overwrites the entire texture with new RGBA pixel data.
