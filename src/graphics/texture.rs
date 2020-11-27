@@ -147,16 +147,9 @@ impl Texture {
         data: &[u8],
         filter_mode: FilterMode,
     ) -> Result<Texture> {
-        let expected = (width * height * 4) as usize;
-        let actual = data.len();
-
-        if expected > actual {
-            return Err(TetraError::NotEnoughData { expected, actual });
-        }
-
         let handle = device.new_texture(width, height)?;
 
-        device.set_texture_data(&handle, &data, 0, 0, width, height);
+        device.set_texture_data(&handle, &data, 0, 0, width, height)?;
         device.set_texture_filter_mode(&handle, filter_mode);
 
         Ok(Texture {
