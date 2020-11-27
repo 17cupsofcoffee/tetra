@@ -24,11 +24,11 @@ pub enum Timestep {
     ///
     /// This has the advantage of making your game's updates deterministic, so they will act the same
     /// on hardware of different speeds. It also means that your update code does not need to use
-    /// `time::get_delta_time` to integrate the amount of time passed into your calculations. However,
+    /// [`get_delta_time`] to integrate the amount of time passed into your calculations. However,
     /// it can lead to some slight stutter if your rendering code does not account for the possibility
     /// of updating and rendering to be out of sync with each other.
     ///
-    /// To avoid stutter, you should interpolate your rendering using `time::get_blend_factor`. The
+    /// To avoid stutter, you should interpolate your rendering using [`get_blend_factor`]. The
     /// [`interpolation`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/interpolation.rs)
     /// example in the Tetra repository shows some different approaches to doing this.
     ///
@@ -43,7 +43,7 @@ pub enum Timestep {
     /// run of the game loop.
     ///
     /// To integrate the amount of time that has passed into your game's calculations, use
-    /// `time::get_delta_time`.
+    /// [`get_delta_time`].
     Variable,
 }
 
@@ -114,8 +114,8 @@ pub(crate) fn is_fixed_update_ready(ctx: &mut Context) -> bool {
 /// Returns the amount of time that has passed since the last frame was rendered.
 ///
 /// When using a variable time step, you should use this to integrate the amount of time that
-/// has passed into your game's calculations. For example, if you wanted to move a `Vec2` 32
-/// units to the right per second, you would do
+/// has passed into your game's calculations. For example, if you wanted to move a
+/// [`Vec2`](crate::math::Vec2) 32 units to the right per second, you would do
 /// `foo.y += 32.0 * time::get_delta_time(ctx).as_secs_f32()`
 ///
 /// When using a fixed time step, the above still applies, but only to rendering - you should
@@ -145,9 +145,9 @@ pub fn get_accumulator(ctx: &Context) -> Duration {
 ///
 /// This can be used to interpolate when rendering.
 ///
-/// This function returns an f32, which is usually what you want when blending - however,
+/// This function returns an [`f32`], which is usually what you want when blending - however,
 /// if you need a more precise representation of the blend factor, you can call
-/// `time::get_blend_factor_precise`.
+/// [`get_blend_factor_precise`].
 pub fn get_blend_factor(ctx: &Context) -> f32 {
     match &ctx.time.timestep {
         Some(fixed) => fixed.accumulator.as_secs_f32() / fixed.tick_rate.as_secs_f32(),
@@ -163,9 +163,9 @@ pub fn get_blend_factor(ctx: &Context) -> f32 {
 ///
 /// This can be used to interpolate when rendering.
 ///
-/// This function returns an f64, which is a very precise representation of the blend factor,
-/// but often difficult to use in game logic without casting. If you need an `f32`, call
-/// `time::get_blend_factor` instead.
+/// This function returns an [`f64`], which is a very precise representation of the blend factor,
+/// but often difficult to use in game logic without casting. If you need an [`f32`], call
+/// [`get_blend_factor`] instead.
 pub fn get_blend_factor_precise(ctx: &Context) -> f64 {
     match &ctx.time.timestep {
         Some(fixed) => fixed.accumulator.as_secs_f64() / fixed.tick_rate.as_secs_f64(),

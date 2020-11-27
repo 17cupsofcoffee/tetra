@@ -7,8 +7,8 @@ use crate::Context;
 /// A camera that can be used to transform the player's view of the scene.
 ///
 /// To apply the transformation, call the `as_matrix` method and pass the
-/// resulting `Mat4` to [`graphics::set_transform_matrix`](../fn.set_transform_matrix.html).
-/// To disable it, call [`graphics::reset_transform_matrix`](../fn.set_transform_matrix.html).
+/// resulting `Mat4` to [`graphics::set_transform_matrix`](crate::graphics::set_transform_matrix`).
+/// To disable it, call [`graphics::reset_transform_matrix`](crate::graphics::reset_transform_matrix`).
 ///
 /// The camera's matrix is cached internally as an optimization. After adjusting parameters
 /// on the camera, you can call the `update` method to recalculate the matrix.
@@ -53,7 +53,7 @@ pub struct Camera {
     ///
     /// This is primarily used for calculating where the center of the screen is,
     /// and usually should match the size of the target you're currently rendering to
-    /// (e.g. the screen, or a `Canvas`).
+    /// (e.g. the screen, or a [`Canvas`](crate::graphics::Canvas)).
     pub viewport_height: f32,
 
     matrix: Mat4<f32>,
@@ -63,7 +63,7 @@ impl Camera {
     /// Creates a new camera with the given viewport size.
     ///
     /// The provided size usually should match the size of the target you're currently rendering to
-    /// (e.g. the screen, or a `Canvas`).
+    /// (e.g. the screen, or a [`Canvas`](crate::graphics::Canvas)).
     pub fn new(viewport_width: f32, viewport_height: f32) -> Camera {
         Camera {
             position: Vec2::zero(),
@@ -79,13 +79,14 @@ impl Camera {
     /// Creates a new camera, with the viewport size set to match the size of the window.
     ///
     /// This is a useful shortcut if your game renders at a 1:1 ratio with the game window.
-    /// If you're rendering to a differently sized target (e.g. a `Canvas` or a
-    /// `ScreenScaler`), then you should use call `new` with the target size
-    /// instead.
+    /// If you're rendering to a differently sized target (e.g. a [`Canvas`](crate::graphics::Canvas) or a
+    /// [`ScreenScaler`](crate::graphics::scaling::ScreenScaler)), then you should use call [`new`](Self::new)
+    /// with the target size instead.
     ///
     /// Note that if the window is resized, the camera's viewport size will *not* automatically
     /// update. If you need to keep the window size and the viewport size in sync, then call
-    /// `set_viewport_size` in your `State`'s `event` method when `Event::Resized` is fired.
+    /// [`set_viewport_size`](Self::set_viewport_size) in [`State::event`](crate::State::event) when
+    /// [`Event::Resized`](crate::Event::Resized) is fired.
     pub fn with_window_size(ctx: &Context) -> Camera {
         let (width, height) = window::get_size(ctx);
         Camera::new(width as f32, height as f32)
@@ -94,7 +95,7 @@ impl Camera {
     /// Sets the size of the camera's viewport.
     ///
     /// The provided size usually should match the size of the target you're currently rendering to
-    /// (e.g. the screen, or a `Canvas`).
+    /// (e.g. the screen, or a [`Canvas`](crate::graphics::Canvas)).
     pub fn set_viewport_size(&mut self, width: f32, height: f32) {
         self.viewport_width = width;
         self.viewport_height = height;
@@ -114,8 +115,9 @@ impl Camera {
 
     /// Returns the current transformation matrix.
     ///
-    /// Pass this to `graphics::set_transform_matrix` to apply the transformation to
-    /// your scene. To disable the transformation, call `graphics::reset_transform_matrix`.
+    /// Pass this to [`graphics::set_transform_matrix`](crate::graphics::set_transform_matrix`)
+    /// to apply the transformation to your scene. To disable the transformation, call
+    /// [`graphics::reset_transform_matrix`](crate::graphics::reset_transform_matrix`).
     ///
     /// The matrix is cached internally, so calling this method multiple times will not
     /// cause it to be recalculated from scratch.
@@ -149,7 +151,7 @@ impl Camera {
 
     /// Returns the mouse's position in camera co-ordinates.
     ///
-    /// This is a shortcut for calling `project(input::get_mouse_position(ctx))`.
+    /// This is a shortcut for calling [`project(input::get_mouse_position(ctx))`](Self::project).
     /// As such, it does not take into account any other transformations
     /// being made to the view (e.g. screen scaling).
     pub fn mouse_position(&self, ctx: &Context) -> Vec2<f32> {
@@ -158,7 +160,7 @@ impl Camera {
 
     /// Returns the X co-ordinate of the mouse's position in camera co-ordinates.
     ///
-    /// This is a shortcut for calling `project(input::get_mouse_position(ctx)).x`.
+    /// This is a shortcut for calling [`project(input::get_mouse_position(ctx)).x`](Self::project).
     /// As such, it does not take into account any other transformations
     /// being made to the view (e.g. screen scaling).
     pub fn mouse_x(&self, ctx: &Context) -> f32 {
@@ -167,7 +169,7 @@ impl Camera {
 
     /// Returns the Y co-ordinate of the mouse's position in camera co-ordinates.
     ///
-    /// This is a shortcut for calling `project(input::get_mouse_position(ctx)).y`.
+    /// This is a shortcut for calling [`project(input::get_mouse_position(ctx)).y`](Self::project).
     /// As such, it does not take into account any other transformations
     /// being made to the view (e.g. screen scaling).
     pub fn mouse_y(&self, ctx: &Context) -> f32 {

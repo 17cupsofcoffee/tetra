@@ -122,7 +122,7 @@ pub fn is_gamepad_connected(ctx: &Context, gamepad_id: usize) -> bool {
     get_gamepad(ctx, gamepad_id).is_some()
 }
 
-/// Returns the name of the specified gamepad, or `None` if it is not connected.
+/// Returns the name of the specified gamepad, or [`None`] if it is not connected.
 pub fn get_gamepad_name(ctx: &Context, gamepad_id: usize) -> Option<String> {
     get_gamepad(ctx, gamepad_id)
         .map(|g| g.platform_id)

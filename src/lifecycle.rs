@@ -7,11 +7,12 @@ use crate::{Context, TetraError};
 /// Implemented by types that contain game state and provide logic for updating it
 /// and drawing it to the screen.
 ///
-/// The methods on `State` allow you to return a `Result`, either explicitly or via the `?`
+/// The methods on `State` allow you to return a [`Result`], either explicitly or via the `?`
 /// operator. If an error is returned, the game will close and the error will be returned from
-/// the `run` function that was used to start it.
+/// the [`Context::run`] call that was used to start it. This allows you to propagate errors
+/// back to `main` for reporting/logging.
 ///
-/// The error type defaults to `TetraError`, but this can be overridden by adding a type parameter
+/// The error type defaults to [`TetraError`], but this can be overridden by adding a type parameter
 /// to your `State` implementation (e.g. `State<MyError>`).
 #[allow(unused_variables)]
 pub trait State<E = TetraError> {
@@ -33,8 +34,7 @@ pub trait State<E = TetraError> {
 
 /// Events that can occur while the game is running.
 ///
-/// The [`event` method on the `State` trait](trait.State.html#method.event) will recieve
-/// events as they occur.
+/// [`State::event`] will receive events as they occur.
 ///
 /// # Examples
 ///
@@ -86,7 +86,7 @@ pub enum Event {
     MouseMoved {
         /// The new position of the mouse, in window co-ordinates.
         ///
-        /// If [relative mouse mode](./window/fn.set_relative_mouse_mode.html) is
+        /// If [relative mouse mode](crate::window::set_relative_mouse_mode) is
         /// enabled, this field is not guarenteed to update.
         position: Vec2<f32>,
 

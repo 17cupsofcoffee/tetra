@@ -63,12 +63,12 @@ pub enum BufferUsage {
 
 /// Vertex data, stored in GPU memory.
 ///
-/// This data can be drawn to the screen via a `Mesh`.
+/// This data can be drawn to the screen via a [`Mesh`].
 ///
 /// # Performance
 ///
-/// Creating a `VertexBuffer` is a relatively expensive operation. If you can, store them in your `State`
-/// struct rather than recreating them each frame.
+/// Creating a `VertexBuffer` is a relatively expensive operation. If you can, store them in your
+/// [`State`](crate::State) struct rather than recreating them each frame.
 ///
 /// Cloning a `VertexBuffer` is a very cheap operation, as the underlying data is shared between the
 /// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
@@ -83,12 +83,13 @@ pub struct VertexBuffer {
 impl VertexBuffer {
     /// Creates a new vertex buffer.
     ///
-    /// The buffer will be created with the `BufferUsage::Dynamic` usage hint - this can
-    /// be overridden via the `with_usage` constructor.
+    /// The buffer will be created with the [`BufferUsage::Dynamic`] usage hint - this can
+    /// be overridden via the [`with_usage`](Self::with_usage) constructor.
     ///
     /// # Errors
     ///
-    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
     pub fn new(ctx: &mut Context, vertices: &[Vertex]) -> Result<VertexBuffer> {
         VertexBuffer::with_usage(ctx, vertices, BufferUsage::Dynamic)
     }
@@ -99,7 +100,8 @@ impl VertexBuffer {
     ///
     /// # Errors
     ///
-    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
     pub fn with_usage(
         ctx: &mut Context,
         vertices: &[Vertex],
@@ -127,7 +129,7 @@ impl VertexBuffer {
 
     /// Creates a mesh using this buffer.
     ///
-    /// This is a shortcut for calling `Mesh::new`.
+    /// This is a shortcut for calling [`Mesh::new`].
     pub fn into_mesh(self) -> Mesh {
         Mesh::new(self)
     }
@@ -135,7 +137,7 @@ impl VertexBuffer {
 
 /// Index data, stored in GPU memory.
 ///
-/// An index buffer can be used as part of a `Mesh`, in order to describe which vertex data should be drawn,
+/// An index buffer can be used as part of a [`Mesh`], in order to describe which vertex data should be drawn,
 /// and what order it should be drawn in.
 ///
 /// For example, to draw a square with raw vertex data, you need to use six vertices (two triangles,
@@ -143,14 +145,14 @@ impl VertexBuffer {
 /// triangles! Using an index buffer, you can instruct the graphics card to use vertices
 /// multiple times while constructing your square.
 ///
-/// Index data is made up of `u32` values, each of which correspond to the zero-based index of a vertex.
+/// Index data is made up of [`u32`] values, each of which correspond to the zero-based index of a vertex.
 /// For example, to get the mesh to draw the third vertex, then the first, then the second, you would
 /// create an index buffer containing `[2, 0, 1]`.
 ///
 /// # Performance
 ///
-/// Creating an `IndexBuffer` is a relatively expensive operation. If you can, store them in your `State`
-/// struct rather than recreating them each frame.
+/// Creating an `IndexBuffer` is a relatively expensive operation. If you can, store them in your
+/// [`State`](crate::State) struct rather than recreating them each frame.
 ///
 /// Cloning an `IndexBuffer` is a very cheap operation, as the underlying data is shared between the
 /// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
@@ -164,12 +166,13 @@ pub struct IndexBuffer {
 impl IndexBuffer {
     /// Creates a new index buffer.
     ///
-    /// The buffer will be created with the `BufferUsage::Dynamic` usage hint - this can
-    /// be overridden via the `with_usage` constructor.
+    /// The buffer will be created with the [`BufferUsage::Dynamic`] usage hint - this can
+    /// be overridden via the [`with_usage`](Self::with_usage) constructor.
     ///
     /// # Errors
     ///
-    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
     pub fn new(ctx: &mut Context, indices: &[u32]) -> Result<IndexBuffer> {
         IndexBuffer::with_usage(ctx, indices, BufferUsage::Dynamic)
     }
@@ -180,7 +183,8 @@ impl IndexBuffer {
     ///
     /// # Errors
     ///
-    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
     pub fn with_usage(
         ctx: &mut Context,
         indices: &[u32],
@@ -214,17 +218,17 @@ struct DrawRange {
 
 /// A 2D mesh that can be drawn to the screen.
 ///
-/// A `Mesh` is a wrapper for a vertex buffer, which allows it to be drawn in combination with three
+/// A `Mesh` is a wrapper for a [`VertexBuffer`], which allows it to be drawn in combination with three
 /// optional modifiers:
 ///
-/// * A texture that individual vertices can sample from.
-/// * An index buffer that can be used to modify the order/subset of vertices that are drawn.
+/// * A [`Texture`] that individual vertices can sample from.
+/// * An [`IndexBuffer`] that can be used to modify the order/subset of vertices that are drawn.
 /// * A draw range, which can be used to draw subsections of the mesh.
 ///
-/// Without a texture set, the mesh will be drawn in white - the `color` attribute on the vertex data or
-/// `DrawParams` can be used to change this.
+/// Without a texture set, the mesh will be drawn in white - the `color` attribute on the [vertex data](Vertex) or
+/// [`DrawParams`] can be used to change this.
 ///
-/// Note that, unlike quad rendering via `Texture`, mesh rendering is not batched by default - each time you
+/// Note that, unlike quad rendering via [`Texture`], mesh rendering is not batched by default - each time you
 /// draw the mesh will result in a seperate draw call.
 ///
 /// # Performance

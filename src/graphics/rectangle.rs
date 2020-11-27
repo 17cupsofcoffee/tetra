@@ -1,6 +1,6 @@
 use crate::math::Vec2;
 
-/// A rectangle of `f32`s.
+/// A rectangle of [`f32`]s.
 ///
 /// # Serde
 ///
@@ -103,7 +103,7 @@ impl Rectangle {
     /// Returns the X co-ordinate of the left side of the rectangle.
     ///
     /// You can also obtain this via the `x` field - this method is provided for
-    /// symmetry with the `right` method.
+    /// symmetry with the [`right`](Self::right) method.
     pub fn left(&self) -> f32 {
         self.x
     }
@@ -116,7 +116,7 @@ impl Rectangle {
     /// Returns the Y co-ordinate of the top of the rectangle.
     ///
     /// You can also obtain this via the `y` field - this method is provided for
-    /// symmetry with the `bottom` method.
+    /// symmetry with the [`bottom`](Self::bottom) method.
     pub fn top(&self) -> f32 {
         self.y
     }

@@ -4,7 +4,7 @@ use crate::Context;
 
 /// Parameters that can be manipulated when drawing an object.
 ///
-/// You can either use this as a builder by calling `DrawParams::new` and then chaining methods, or
+/// You can either use this as a builder by calling [`DrawParams::new`] and then chaining methods, or
 /// construct it manually - whichever you find more pleasant to write.
 #[derive(Debug, Clone, PartialEq)]
 pub struct DrawParams {
@@ -26,10 +26,10 @@ pub struct DrawParams {
     /// The rotation of the graphic, in radians. Defaults to `0.0`.
     pub rotation: f32,
 
-    /// A color to multiply the graphic by. Defaults to `Color::WHITE`.
+    /// A color to multiply the graphic by. Defaults to [`Color::WHITE`].
     pub color: Color,
 
-    /// A sub-region of the graphic to draw. Defaults to `None`, which means the the full graphic will be drawn.
+    /// A sub-region of the graphic to draw. Defaults to [`None`], which means the the full graphic will be drawn.
     ///
     /// Note that clipped texture regions may 'bleed' when drawing at non-integer co-ordinates.
     /// To avoid this, either add one pixel of padding around the images in the texture atlas
@@ -105,14 +105,14 @@ impl From<Vec2<f32>> for DrawParams {
 
 /// Implemented for types that can be drawn.
 ///
-/// [`graphics::draw`](fn.draw.html) can be used to draw without importing this trait, which is sometimes
+/// [`graphics::draw`](super::draw) can be used to draw without importing this trait, which is sometimes
 /// more convienent.
 pub trait Drawable {
     /// Draws `self` to the screen (or a canvas, if one is enabled), using the specified parameters.
     ///
-    /// Any type that implements `Into<DrawParams>` can be passed into this method. For example, since the majority
-    /// of the time, you only care about changing the position, a `Vec2` can be passed to set the position and leave
-    /// everything else as the defaults.
+    /// Any type that implements [`Into<DrawParams>`] can be passed into this method. For example, since the majority
+    /// of the time, you only care about changing the position, a [`Vec2`](crate::math::Vec2) can be passed to set
+    /// the position and leave everything else as the defaults.
     fn draw<P>(&self, ctx: &mut Context, params: P)
     where
         P: Into<DrawParams>;

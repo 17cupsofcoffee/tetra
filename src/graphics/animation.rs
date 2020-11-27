@@ -9,9 +9,9 @@ use crate::Context;
 
 /// An animation, cycling between regions of a texture at a regular interval.
 ///
-/// Calling [`advance`](#method.advance) or [`advance_by`](#method.advance_by)
-/// within your `State`'s `draw` method will drive the animation, switching
-/// the texture region once the specified time has passed.
+/// Calling [`advance`](Self::advance) or [`advance`](Self::advance_by) within [`State::draw`](crate::State::draw)
+/// will drive the animation, switching the texture region once the specified
+/// time has passed.
 ///
 /// # Examples
 ///
@@ -61,13 +61,13 @@ impl Animation {
 
     /// Advances the animation's timer, switching the texture region if required.
     ///
-    /// This method uses the current [delta time](../../time/fn.get_delta_time.html)
-    /// to calculate how much time has passed - as such, you should call it in your
-    /// `State`'s `draw` method for accurate results.
+    /// This method uses the current [delta time](crate::time::get_delta_time)
+    /// to calculate how much time has passed - as such, you should call it in
+    /// [`State::draw`](crate::State::draw) method for accurate results.
     ///
     /// If you need greater control over the timing of your animation (e.g. if you
-    /// want to update it deterministically via your `State`'s `update` method),
-    /// consider using the [`advance_by`](#method.advance_by) method instead.
+    /// want to update it deterministically via [`State::update`](crate::State::update)),
+    /// consider using the [`advance`](Self::advance_by) method instead.
     pub fn advance(&mut self, ctx: &Context) {
         self.advance_by(time::get_delta_time(ctx));
     }
@@ -107,7 +107,7 @@ impl Animation {
     ///
     /// This method will not change the frame definitions or current state of the animation,
     /// so it can be used for e.g. swapping spritesheets. If you need to change the slicing
-    /// for the new texture, call `set_frames`.
+    /// for the new texture, call [`set_frames`](Self::set_frames).
     pub fn set_texture(&mut self, texture: Texture) {
         self.texture = texture;
     }
@@ -149,7 +149,7 @@ impl Animation {
 
     /// Gets the index of the frame that is currently being displayed.
     ///
-    /// This index is zero-based, and can be used in combination with the [`frames`](#method.frames)
+    /// This index is zero-based, and can be used in combination with the [`frames`](Self::frames)
     /// method in order to track the progress of the animation.
     pub fn current_frame_index(&self) -> usize {
         self.current_frame
@@ -157,12 +157,14 @@ impl Animation {
 
     /// Sets which frame of the animation should be displayed.
     ///
-    /// Usually you will want to control the animation by calling [`advance`](#method.advance)
-    /// or [`advance_by`](#method.advance), but this method can be useful for more fine-grained
-    /// control.
+    /// Usually you will want to control the animation by calling [`advance`](Self::advance)
+    /// or [`advance`](Self::advance_by), but this method can be useful for more
+    /// fine-grained control.
+    ///
+    /// # Panics
     ///
     /// The index is zero-based, and must be within the bounds of the animation's
-    /// [`frames`](#method.frames), otherwise this method will panic.
+    /// [`frames`](Self::frames), otherwise this method will panic.
     pub fn set_current_frame_index(&mut self, index: usize) {
         // Without this check, the code would panic in `Drawable::draw` because `self.frames[self.current_frame]`
         // is invalid, but the developer would have no clue where it was set.
@@ -173,7 +175,7 @@ impl Animation {
 
     /// Gets the duration that the current frame has been visible.
     ///
-    /// This can be used in combination with the [`frame_length`](#method.frame_length) method
+    /// This can be used in combination with the [`frame_length`](Self::frame_length) method
     /// in order to track the progress of the animation.
     pub fn current_frame_time(&self) -> Duration {
         self.timer
@@ -181,13 +183,14 @@ impl Animation {
 
     /// Sets the duration that the current frame has been visible.
     ///
-    /// Usually you will want to control the animation by calling [`advance`](#method.advance)
-    /// or [`advance_by`](#method.advance), but this method can be useful for more fine-grained
-    /// control.
+    /// Usually you will want to control the animation by calling [`advance`](Self::advance)
+    /// or [`advance`](Self::advance_by),but this method can be useful for more
+    /// fine-grained control.
     ///
     /// The animation will not advance past the end of the current frame until the next call
-    /// to [`advance`](#method.advance) or [`advance_by`](#method.advance_by). If a value is
-    /// given that is larger than [`frame_length`](#method.frame_length), this animation may skip frames.
+    /// to [`advance`](Self::advance) or [`advance`](Self::advance_by). If a value is given
+    /// that is larger than [`frame_length`](Self::frame_length), this animation may
+    /// skip frames.
     pub fn set_current_frame_time(&mut self, duration: Duration) {
         self.timer = duration;
     }

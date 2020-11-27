@@ -108,8 +108,8 @@ enum VectorFontData {
 /// into memory once, and it will be shared between all [`Font`](struct.Font.html)s that
 /// are subsequently created by the builder instance.
 ///
-/// [`Font::vector`](struct.Font.html#method.vector) provides a simpler API for loading
-/// vector fonts, if you don't need all of the functionality of this struct.
+/// [`Font::vector`] provides a simpler API for loading vector fonts, if you don't need
+/// all of the functionality of this struct.
 ///
 /// # Performance
 ///
@@ -128,8 +128,8 @@ impl VectorFontBuilder {
     ///
     /// # Errors
     ///
-    /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
-    /// * `TetraError::InvalidFont` will be returned if the font data was invalid.
+    /// * [`TetraError::FailedToLoadAsset`] will be returned if the file could not be loaded.
+    /// * [`TetraError::InvalidFont`] will be returned if the font data was invalid.
     pub fn new<P>(path: P) -> Result<VectorFontBuilder>
     where
         P: AsRef<Path>,
@@ -146,7 +146,7 @@ impl VectorFontBuilder {
     ///
     /// # Errors
     ///
-    /// * `TetraError::InvalidFont` will be returned if the font data was invalid.
+    /// * [`TetraError::InvalidFont`] will be returned if the font data was invalid.
     pub fn from_file_data(data: &'static [u8]) -> Result<VectorFontBuilder> {
         let font = FontRef::try_from_slice(data).map_err(|_| TetraError::InvalidFont)?;
 
@@ -159,7 +159,7 @@ impl VectorFontBuilder {
     ///
     /// # Errors
     ///
-    /// * `TetraError::PlatformError` will be returned if the GPU cache for the font
+    /// * [`TetraError::PlatformError`] will be returned if the GPU cache for the font
     ///   could not be created.
     pub fn with_size(&self, ctx: &mut Context, size: f32) -> Result<Font> {
         let rasterizer: Box<dyn Rasterizer> = match &self.data {

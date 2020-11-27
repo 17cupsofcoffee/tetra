@@ -66,13 +66,14 @@ impl Context {
     /// for how this works.
     ///
     /// The error type returned by your `init` closure currently must match the error
-    /// type returned by your `State` methods. This limitation may be lifted
+    /// type returned by your [`State`] methods. This limitation may be lifted
     /// in the future.
     ///
     /// # Errors
     ///
-    /// If the `State` returns an error from `update`, `draw` or `event`, the game
-    /// will stop running and this method will return the error.
+    /// If the [`State`] returns an error from [`update`](State::update), [`draw`](State::draw)
+    /// or [`event`](State::event), the game will stop running and this method will
+    /// return the error.
     ///
     /// # Examples
     ///
@@ -323,10 +324,10 @@ impl ContextBuilder {
     /// Sets whether or not relative mouse mode should be enabled.
     ///
     /// While the mouse is in relative mode, the cursor is hidden and can move beyond the
-    /// bounds of the window. The [`delta` field of `Event::MouseMoved`](./enum.Event.html#variant.MouseMoved.field.delta)
-    /// can then be used to track the cursor's changes in position. This is useful when
-    /// implementing control schemes that require the mouse to be able to move infinitely
-    /// in any direction (for example, FPS-style movement).
+    /// bounds of the window. The `delta` field of [`Event::MouseMoved`](crate::lifecycle::Event::MouseMoved)
+    /// can then be used to track the cursor's changes in position. This is useful
+    /// when implementing control schemes that require the mouse to be able to
+    /// move infinitely in any direction (for example, FPS-style movement).
     ///
     /// While this mode is enabled, the absolute position of the mouse may not be updated -
     /// as such, you should not rely on it.
@@ -356,7 +357,7 @@ impl ContextBuilder {
     ///
     /// # Errors
     ///
-    /// * `TetraError::PlatformError` will be returned if the context cannot be initialized.
+    /// * [`TetraError::PlatformError`] will be returned if the context cannot be initialized.
     pub fn build(&self) -> Result<Context> {
         Context::new(self)
     }

@@ -46,8 +46,8 @@ impl PartialEq for TextureSharedData {
 ///
 /// # Performance
 ///
-/// Creating a `Texture` is a relatively expensive operation. If you can, store them in your `State`
-/// struct rather than recreating them each frame.
+/// Creating a `Texture` is a relatively expensive operation. If you can, store them in your
+/// [`State`](crate::State) struct rather than recreating them each frame.
 ///
 /// Cloning a `Texture` is a very cheap operation, as the underlying data is shared between the
 /// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
@@ -70,9 +70,9 @@ impl Texture {
     ///
     /// # Errors
     ///
-    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
-    /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
-    /// * `TetraError::InvalidTexture` will be returned if the texture data was invalid.
+    /// * [`TetraError::PlatformError`] will be returned if the underlying graphics API encounters an error.
+    /// * [`TetraError::FailedToLoadAsset`] will be returned if the file could not be loaded.
+    /// * [`TetraError::InvalidTexture`] will be returned if the texture data was invalid.
     pub fn new<P>(ctx: &mut Context, path: P) -> Result<Texture>
     where
         P: AsRef<Path>,
@@ -91,8 +91,8 @@ impl Texture {
     /// Creates a new texture from a slice of data, encoded in one of Tetra's supported
     /// file formats (except for TGA).
     ///
-    /// This is useful in combination with `include_bytes`, as it allows you to include
-    /// your textures directly in the binary.
+    /// This is useful in combination with [`include_bytes`](std::include_bytes), as it
+    /// allows you to include your textures directly in the binary.
     ///
     /// The format will be determined based on the 'magic bytes' at the beginning of the
     /// data. This should be reasonably reliable, but a `from_data_with_format` function
@@ -101,8 +101,8 @@ impl Texture {
     ///
     /// # Errors
     ///
-    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
-    /// * `TetraError::InvalidTexture` will be returned if the texture data was invalid.
+    /// * [`TetraError::PlatformError`] will be returned if the underlying graphics API encounters an error.
+    /// * [`TetraError::InvalidTexture`] will be returned if the texture data was invalid.
     pub fn from_file_data(ctx: &mut Context, data: &[u8]) -> Result<Texture> {
         let image = image::load_from_memory(data)
             .map_err(TetraError::InvalidTexture)?
@@ -128,7 +128,7 @@ impl Texture {
     ///
     /// # Errors
     ///
-    /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
+    /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
     /// the texture. This is to prevent the graphics API from trying to read uninitialized memory.
     pub fn from_rgba(ctx: &mut Context, width: i32, height: i32, data: &[u8]) -> Result<Texture> {
         Texture::with_device(
@@ -211,12 +211,12 @@ impl Texture {
     /// If you provide too little data, an error will be returned.
     /// If you provide too much data, it will be truncated.
     ///
-    /// If you want to overwrite the entire texture, the `replace_data` method offers a
-    /// more concise way of doing this.
+    /// If you want to overwrite the entire texture, the [`replace_data`](Self::replace_data)
+    /// method offers a more concise way of doing this.
     ///
     /// # Errors
     ///
-    /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
+    /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
     /// the target rectangle. This is to prevent the graphics API from trying to read
     /// uninitialized memory.
     ///
@@ -242,12 +242,12 @@ impl Texture {
     /// If you provide too little data, an error will be returned.
     /// If you provide too much data, it will be truncated.
     ///
-    /// If you only want to write to a subsection of the texture, use the `set_data`
+    /// If you only want to write to a subsection of the texture, use the [`set_data`](Self::set_data)
     /// method instead.
     ///
     /// # Errors
     ///
-    /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
+    /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
     /// the texture. This is to prevent the graphics API from trying to read uninitialized memory.
     pub fn replace_data(&self, ctx: &mut Context, data: &[u8]) -> Result {
         let (width, height) = self.size();

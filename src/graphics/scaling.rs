@@ -7,7 +7,7 @@ use crate::math::Vec2;
 use crate::window;
 use crate::Context;
 
-/// A wrapper for a `Canvas` that handles scaling the image to fit the screen.
+/// A wrapper for a [`Canvas`] that handles scaling the image to fit the screen.
 ///
 /// # Examples
 ///
@@ -148,14 +148,14 @@ impl ScreenScaler {
 
     /// Returns the position of the mouse in scaled screen co-ordinates.
     ///
-    /// This is a shortcut for calling `.project(input::get_mouse_position(ctx))`.
+    /// This is a shortcut for calling [`.project(input::get_mouse_position(ctx))`](Self::project).
     pub fn mouse_position(&self, ctx: &Context) -> Vec2<f32> {
         self.project(input::get_mouse_position(ctx))
     }
 
     /// Returns the X co-ordinate of the mouse in scaled screen co-ordinates.
     ///
-    /// This is a shortcut for calling `project(input::get_mouse_position(ctx)).x`.
+    /// This is a shortcut for calling [`project(input::get_mouse_position(ctx)).x`](Self::project).
     pub fn mouse_x(&self, ctx: &Context) -> f32 {
         let width = self.canvas().width();
 
@@ -169,7 +169,7 @@ impl ScreenScaler {
 
     /// Returns the Y co-ordinate of the mouse in scaled screen co-ordinates.
     ///
-    /// This is a shortcut for calling `project(input::get_mouse_position(ctx)).y`.
+    /// This is a shortcut for calling [`project(input::get_mouse_position(ctx)).y`](Self::project).
     pub fn mouse_y(&self, ctx: &Context) -> f32 {
         let height = self.canvas().height();
 
@@ -242,7 +242,7 @@ pub enum ScalingMode {
 /// Converts a screen's dimensions into a rectangle that is scaled to fit in the given bounds.
 ///
 /// This function may be useful if you want to use Tetra's scaling algorithms, but
-/// the built-in `ScreenScaler` abstraction does not fit your needs.
+/// the built-in [`ScreenScaler`] abstraction does not fit your needs.
 pub fn get_screen_rect(
     mode: ScalingMode,
     inner_width: i32,

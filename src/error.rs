@@ -11,7 +11,7 @@ use image::ImageError;
 #[cfg(feature = "audio")]
 use rodio::decoder::DecoderError;
 
-/// A specialized `Result` type for Tetra.
+/// A specialized [`Result`](std::result::Result) type for Tetra.
 ///
 /// All Tetra functions with a recoverable failure condition will return this type.
 /// In your game code, you can either use it directly, or wrap it in your own error type.

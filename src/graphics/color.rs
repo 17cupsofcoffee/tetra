@@ -7,11 +7,11 @@ use crate::math::Vec4;
 
 /// An RGBA color.
 ///
-/// The components are stored as `f32` values in the range of `0.0` to `1.0`.
+/// The components are stored as [`f32`] values in the range of `0.0` to `1.0`.
 /// If your data is made up of bytes or hex values, this type provides
 /// constructors that will carry out the conversion for you.
 ///
-/// The `std` arithmetic traits are implemented for this type, which allows you to
+/// The [`std` arithmetic traits](std::ops) are implemented for this type, which allows you to
 /// add/subtract/multiply/divide colors. These are implemented as saturating
 /// operations (i.e. the values will always remain between `0.0` and `1.0`).
 ///
@@ -100,7 +100,7 @@ impl Color {
     ///
     /// # Errors
     ///
-    /// * `TetraError::InvalidColor` will be returned if the specified color is invalid.
+    /// * [`TetraError::InvalidColor`] will be returned if the specified color is invalid.
     pub fn try_hex(hex: &str) -> Result<Color> {
         let hex = hex.trim_start_matches('#');
 
@@ -125,19 +125,19 @@ impl Color {
     // the docs readable - don't want to have to scroll through a load of colors
     // to get to the methods!
 
-    /// Shortcut for `Color::rgb(0.0, 0.0, 0.0)`.
+    /// Shortcut for [`Color::rgb(0.0, 0.0, 0.0)`](Self::rgb).
     pub const BLACK: Color = Color::rgb(0.0, 0.0, 0.0);
 
-    /// Shortcut for `Color::rgb(1.0, 1.0, 1.0)`.
+    /// Shortcut for [`Color::rgb(1.0, 1.0, 1.0)`](Self::rgb).
     pub const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 
-    /// Shortcut for `Color::rgb(1.0, 0.0, 0.0)`.
+    /// Shortcut for [`Color::rgb(1.0, 0.0, 0.0)`](Self::rgb).
     pub const RED: Color = Color::rgb(1.0, 0.0, 0.0);
 
-    /// Shortcut for `Color::rgb(0.0, 1.0, 0.0)`.
+    /// Shortcut for [`Color::rgb(0.0, 1.0, 0.0)`](Self::rgb).
     pub const GREEN: Color = Color::rgb(0.0, 1.0, 0.0);
 
-    /// Shortcut for `Color::rgb(0.0, 0.0, 1.0)`.
+    /// Shortcut for Color::rgb(0.0, 0.0, 1.0)`](Self::rgb).
     pub const BLUE: Color = Color::rgb(0.0, 0.0, 1.0);
 }
 

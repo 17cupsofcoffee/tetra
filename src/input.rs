@@ -99,8 +99,8 @@ pub fn get_text_input(ctx: &Context) -> Option<&str> {
 ///
 /// # Errors
 ///
-/// * `TetraError::PlatformError` will be returned if the text could not be
-/// retrieved from the clipboard.
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be
+/// returned if the text could not be retrieved from the clipboard.
 pub fn get_clipboard_text(ctx: &Context) -> Result<String> {
     ctx.window.get_clipboard_text()
 }
@@ -109,8 +109,8 @@ pub fn get_clipboard_text(ctx: &Context) -> Result<String> {
 ///
 /// # Errors
 ///
-/// * `TetraError::PlatformError` will be returned if the clipboard could not
-/// be modified.
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be
+/// returned if the clipboard could not be modified.
 pub fn set_clipboard_text(ctx: &Context, text: &str) -> Result {
     ctx.window.set_clipboard_text(text)
 }

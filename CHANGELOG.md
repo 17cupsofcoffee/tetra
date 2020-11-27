@@ -17,6 +17,7 @@ This project adheres to Semantic Versioning.
 
 * Backface culling has been disabled by default, to better support integration with other libraries that output clockwise vertex data (e.g. imGUI).
     * This will be brought back as an opt-in setting soon.
+* Lots of cross-links between docs pages have been added, using [intra-doc links](https://doc.rust-lang.org/stable/rustdoc/linking-to-items-by-name.html).
 
 ## [0.5.3] - 2020-11-21
 

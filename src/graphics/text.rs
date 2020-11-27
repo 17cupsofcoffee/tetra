@@ -47,14 +47,15 @@ impl Font {
     /// TrueType and OpenType fonts are supported.
     ///
     /// If you want to load multiple sizes of the same font, you can use a
-    /// [`VectorFontBuilder`](struct.VectorFontBuilder.html) to avoid loading/parsing
-    /// the file multiple times.
+    /// [`VectorFontBuilder`] to avoid loading/parsing the file multiple times.
     ///
     /// # Errors
     ///
-    /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
-    /// * `TetraError::InvalidFont` will be returned if the font data was invalid.
-    /// * `TetraError::PlatformError` will be returned if the GPU cache for the font
+    /// * [`TetraError::FailedToLoadAsset`](crate::TetraError::FailedToLoadAsset) will be returned
+    /// if the file could not be loaded.
+    /// * [`TetraError::InvalidFont`](crate::TetraError::InvalidFont) will be returned if the font
+    /// data was invalid.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the GPU cache for the font
     ///   could not be created.
     #[cfg(feature = "font_ttf")]
     pub fn vector<P>(ctx: &mut Context, path: P, size: f32) -> Result<Font>
@@ -156,7 +157,7 @@ impl Text {
 
     /// Removes the last character from the text and returns it.
     ///
-    /// Returns `None` if the text is empty.
+    /// Returns [`None`] if the text is empty.
     ///
     /// Calling this function will cause a re-layout of the text the next time it
     /// is rendered.
@@ -169,7 +170,7 @@ impl Text {
     ///
     /// If the text's layout needs calculating, this method will do so.
     ///
-    /// Note that this method will not take into account the positioning applied to the text via `DrawParams`.
+    /// Note that this method will not take into account the positioning applied to the text via [`DrawParams`].
     pub fn get_bounds(&self, ctx: &mut Context) -> Option<Rectangle> {
         let geometry = self.get_latest_geometry(ctx);
 

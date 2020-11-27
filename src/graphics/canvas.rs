@@ -16,8 +16,8 @@ use crate::Context;
 ///
 /// # Performance
 ///
-/// Creating a `Canvas` is a relatively expensive operation. If you can, store them in your `State`
-/// struct rather than recreating them each frame.
+/// Creating a `Canvas` is a relatively expensive operation. If you can, store them in your
+/// [`State`](crate::State) struct rather than recreating them each frame.
 ///
 /// Cloning a `Canvas` is a very cheap operation, as the underlying data is shared between the
 /// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
@@ -40,7 +40,8 @@ impl Canvas {
     ///
     /// # Errors
     ///
-    /// * `TetraError::PlatformError` will be returned if the underlying graphics API encounters an error.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Result<Canvas> {
         Canvas::with_device(
             &mut ctx.device,
@@ -101,9 +102,9 @@ impl Canvas {
     ///
     /// # Errors
     ///
-    /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
-    /// the target rectangle. This is to prevent the graphics API from trying to read
-    /// uninitialized memory.
+    /// * [`TetraError::NotEnoughData`](crate::TetraError::NotEnoughData) will be returned
+    /// if not enough data is provided to fill the target rectangle. This is to prevent
+    /// the graphics API from trying to read uninitialized memory.
     ///
     /// # Panics
     ///
@@ -131,8 +132,9 @@ impl Canvas {
     ///
     /// # Errors
     ///
-    /// * `TetraError::NotEnoughData` will be returned if not enough data is provided to fill
-    /// the canvas. This is to prevent the graphics API from trying to read uninitialized memory.
+    /// * [`TetraError::NotEnoughData`](crate::TetraError::NotEnoughData) will be returned
+    /// if not enough data is provided to fill the target rectangle. This is to prevent
+    /// the graphics API from trying to read uninitialized memory.
     pub fn replace_data(&self, ctx: &mut Context, data: &[u8]) -> Result {
         self.texture.replace_data(ctx, data)
     }

@@ -247,8 +247,8 @@ pub(crate) fn push_quad(
 
 /// Draws an object to the screen (or to a canvas, if one is enabled).
 ///
-/// This function simply calls [`draw`](trait.Drawable.html#tymethod.draw) on the passed object - it is
-/// provided to allow you to avoid having to import the [`Drawable`](trait.Drawable.html) trait as well
+/// This function simply calls [`Drawable::draw`] on the passed object - it is
+/// provided to allow you to avoid having to import the [`Drawable`] trait as well
 /// as the `graphics` module.
 pub fn draw<D: Drawable, P: Into<DrawParams>>(ctx: &mut Context, drawable: &D, params: P) {
     drawable.draw(ctx, params);
@@ -257,7 +257,7 @@ pub fn draw<D: Drawable, P: Into<DrawParams>>(ctx: &mut Context, drawable: &D, p
 /// Sets the texture that is currently being used for rendering.
 ///
 /// If the texture is different from the one that is currently in use, this will trigger a
-/// [`flush`](fn.flush.html) to the graphics hardware - try to avoid texture swapping as
+/// [`flush`] to the graphics hardware - try to avoid texture swapping as
 /// much as you can.
 pub(crate) fn set_texture(ctx: &mut Context, texture: &Texture) {
     set_texture_ex(ctx, ActiveTexture::User(texture.clone()));
@@ -273,7 +273,7 @@ pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
 /// Sets the shader that is currently being used for rendering.
 ///
 /// If the shader is different from the one that is currently in use, this will trigger a
-/// [`flush`](fn.flush.html) to the graphics hardware - try to avoid shader swapping as
+/// [`flush`] to the graphics hardware - try to avoid shader swapping as
 /// much as you can.
 pub fn set_shader(ctx: &mut Context, shader: &Shader) {
     set_shader_ex(ctx, ActiveShader::User(shader.clone()));
@@ -294,7 +294,7 @@ pub(crate) fn set_shader_ex(ctx: &mut Context, shader: ActiveShader) {
 /// Sets the renderer to redirect all drawing commands to the specified canvas.
 ///
 /// If the canvas is different from the one that is currently in use, this will trigger a
-/// [`flush`](fn.flush.html) to the graphics hardware.
+/// [`flush`] to the graphics hardware.
 pub fn set_canvas(ctx: &mut Context, canvas: &Canvas) {
     set_canvas_ex(ctx, ActiveCanvas::User(canvas.clone()));
 }
@@ -334,9 +334,10 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 
 /// Sends queued data to the graphics hardware.
 ///
-/// You usually will not have to call this manually, as [`set_texture`](fn.set_texture.html) and
-/// [`present`](fn.present.html) will automatically flush when necessary. Try to keep flushing
-/// to a minimum, as this will reduce the number of draw calls made to the graphics device.
+/// You usually will not have to call this manually, as the graphics API will
+/// automatically flush when necessary. Try to keep flushing to a minimum,
+/// as this will reduce the number of draw calls made to the
+/// graphics device.
 pub fn flush(ctx: &mut Context) {
     if !ctx.graphics.vertex_data.is_empty() {
         let texture = match &ctx.graphics.texture {
@@ -389,7 +390,7 @@ pub fn flush(ctx: &mut Context) {
 /// don't rely on the state of one render carrying over to the next!
 ///
 /// You usually will not have to call this manually, as it is called for you at the end of every
-/// frame. Note that calling it will trigger a [`flush`](fn.flush.html) to the graphics hardware.
+/// frame. Note that calling it will trigger a [`flush`] to the graphics hardware.
 pub fn present(ctx: &mut Context) {
     flush(ctx);
 
@@ -451,7 +452,7 @@ pub fn set_transform_matrix(ctx: &mut Context, matrix: Mat4<f32>) {
 
 /// Resets the transform matrix.
 ///
-/// This is a shortcut for calling `graphics::set_transform_matrix(ctx, Mat4::identity())`.
+/// This is a shortcut for calling [`graphics::set_transform_matrix(ctx, Mat4::identity())`](set_transform_matrix).
 pub fn reset_transform_matrix(ctx: &mut Context) {
     set_transform_matrix(ctx, Mat4::identity());
 }

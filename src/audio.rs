@@ -15,7 +15,7 @@ use crate::Context;
 
 /// Sound data that can be played back.
 ///
-/// All of the playback methods on this type return a [`SoundInstance`](./struct.SoundInstance.html) that
+/// All of the playback methods on this type return a [`SoundInstance`] that
 /// can be used to control the sound after it has started. If you just want
 /// to 'fire and forget' a sound, you can discard it - the sound will
 /// continue playing regardless.
@@ -55,7 +55,7 @@ impl Sound {
     ///
     /// # Errors
     ///
-    /// * `TetraError::FailedToLoadAsset` will be returned if the file could not be loaded.
+    /// * [`TetraError::FailedToLoadAsset`] will be returned if the file could not be loaded.
     pub fn new<P>(path: P) -> Result<Sound>
     where
         P: AsRef<Path>,
@@ -68,8 +68,8 @@ impl Sound {
     /// Creates a new sound from a slice of binary data, encoded in one of Tetra's supported
     /// file formats.
     ///
-    /// This is useful in combination with `include_bytes`, as it allows you to include
-    /// your audio data directly in the binary.
+    /// This is useful in combination with [`include_bytes`](std::include_bytes), as it
+    /// allows you to include your audio data directly in the binary.
     ///
     /// Note that the data is not decoded until playback begins, so this function will not
     /// validate that the data being read is formatted correctly.
@@ -81,8 +81,8 @@ impl Sound {
     ///
     /// # Errors
     ///
-    /// * `TetraError::NoAudioDevice` will be returned if no audio device is active.
-    /// * `TetraError::InvalidSound` will be returned if the sound data could not be decoded.
+    /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
+    /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn play(&self, ctx: &Context) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, false, 1.0, 1.0)
@@ -93,8 +93,8 @@ impl Sound {
     ///
     /// # Errors
     ///
-    /// * `TetraError::NoAudioDevice` will be returned if no audio device is active.
-    /// * `TetraError::InvalidSound` will be returned if the sound data could not be decoded.
+    /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
+    /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn repeat(&self, ctx: &Context) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, true, 1.0, 1.0)
@@ -105,8 +105,8 @@ impl Sound {
     ///
     /// # Errors
     ///
-    /// * `TetraError::NoAudioDevice` will be returned if no audio device is active.
-    /// * `TetraError::InvalidSound` will be returned if the sound data could not be decoded.
+    /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
+    /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn spawn(&self, ctx: &Context) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), false, false, 1.0, 1.0)
@@ -117,8 +117,8 @@ impl Sound {
     ///
     /// # Errors
     ///
-    /// * `TetraError::NoAudioDevice` will be returned if no audio device is active.
-    /// * `TetraError::InvalidSound` will be returned if the sound data could not be decoded.
+    /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
+    /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn play_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, false, volume, speed)
@@ -129,8 +129,8 @@ impl Sound {
     ///
     /// # Errors
     ///
-    /// * `TetraError::NoAudioDevice` will be returned if no audio device is active.
-    /// * `TetraError::InvalidSound` will be returned if the sound data could not be decoded.
+    /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
+    /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn repeat_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, true, volume, speed)
@@ -141,8 +141,8 @@ impl Sound {
     ///
     /// # Errors
     ///
-    /// * `TetraError::NoAudioDevice` will be returned if no audio device is active.
-    /// * `TetraError::InvalidSound` will be returned if the sound data could not be decoded.
+    /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
+    /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn spawn_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), false, false, volume, speed)
@@ -150,7 +150,7 @@ impl Sound {
     }
 }
 
-/// A handle to a single instance of a [`Sound`](./struct.Sound.html).
+/// A handle to a single instance of a [`Sound`].
 ///
 /// The audio thread will poll this for updates every 220 samples (roughly
 /// every 5ms at a 44100hz sample rate).
@@ -189,9 +189,9 @@ impl SoundInstance {
 
     /// Sets the current state of playback.
     ///
-    /// In most cases, using the `play`, `stop` and `pause` methods is easier than explicitly
-    /// setting a state, but this may be useful when, for example, defining transitions from
-    /// one state to another.
+    /// In most cases, using the [`play`](SoundInstance::play), [`stop`](SoundInstance::stop) and
+    /// [`pause`](SoundInstance::pause) methods is easier than explicitly setting a state, but
+    /// this may be useful when, for example, defining transitions from one state to another.
     pub fn set_state(&self, state: SoundState) {
         self.controls.set_state(state)
     }
@@ -223,20 +223,20 @@ impl SoundInstance {
     }
 }
 
-/// The states that playback of a `SoundInstance` can be in.
+/// The states that playback of a [`SoundInstance`] can be in.
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum SoundState {
     /// The sound is currently playing.
     ///
-    /// If a `SoundInstance` is created via `Sound::play`, `Sound::play_with`,
-    /// `Sound::repeat` or `Sound::repeat_with`, it will be in this state
+    /// If a [`SoundInstance`] is created via [`Sound::play`], [`Sound::play_with`],
+    /// [`Sound::repeat`] or [`Sound::repeat_with`], it will be in this state
     /// initially.
     Playing,
 
     /// The sound is paused. If playback is resumed, it will continue
     /// from the point where it was paused.
     ///
-    /// If a `SoundInstance` is created via `Sound::spawn` or `Sound::spawn_with`,
+    /// If a [`SoundInstance`] is created via [`Sound::spawn`] or [`Sound::spawn_with`],
     /// it will be in this state initially.
     Paused,
 
@@ -244,8 +244,8 @@ pub enum SoundState {
     /// the end of the audio data. If playback is resumed, it will start
     /// over from the beginning of the sound.
     ///
-    /// This state will never occur while a `SoundInstance` is set
-    /// to be `repeating`.
+    /// This state will never occur while a [`SoundInstance`] is set
+    /// to be [`repeating`](SoundInstance::set_repeating).
     Stopped,
 }
 

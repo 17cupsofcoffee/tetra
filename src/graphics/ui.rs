@@ -5,7 +5,7 @@ use crate::Context;
 
 /// A panel made up of nine slices of an image. Useful for panels with borders.
 ///
-/// Note that `NineSlice` does not currently support the `clip` `DrawParam`.
+/// Note that `NineSlice` does not currently support the [`clip` `DrawParam`](DrawParams).
 ///
 /// # Examples
 ///
@@ -41,7 +41,7 @@ impl NineSlice {
     /// Sets the underlying texture for the panel.
     ///
     /// This will not adjust the way that the texture is sliced, so you may need to also call
-    /// `set_fill_rect`.
+    /// [`set_fill_rect`](Self::set_fill_rect).
     pub fn set_texture(&mut self, texture: Texture) {
         self.texture = texture;
     }
