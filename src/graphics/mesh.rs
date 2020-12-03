@@ -371,6 +371,16 @@ impl Drawable for Mesh {
             ctx.graphics.projection_matrix * ctx.graphics.transform_matrix * transform,
         );
 
+        let diffuse_location = ctx
+            .device
+            .get_uniform_location(&shader.data.handle, "u_diffuse");
+
+        ctx.device.set_uniform_vec4(
+            &shader.data.handle,
+            diffuse_location.as_ref(),
+            params.color.into(),
+        );
+
         let draw_range = self.draw_range.map(|r| (r.start, r.count));
 
         match &self.index_buffer {

@@ -54,7 +54,8 @@ impl PartialEq for ShaderSharedData {
 ///
 /// * `a_position` - A `vec2` representing the position of the vertex in world space.
 /// * `a_uv` - A `vec2` representing the texture co-ordinates that are associated with the vertex.
-/// * `a_color` - A `vec4` representing a color to multiply the output by.
+/// * `a_color` - A `vec4` representing the color of the vertex. This will be multiplied by
+///   `u_diffuse` and the color sampled from `u_texture` (see 'Uniforms' below).
 ///
 /// Position data should be output as a `vec4` to the built-in `gl_Position` variable.
 ///
@@ -65,10 +66,13 @@ impl PartialEq for ShaderSharedData {
 ///
 /// ## Uniforms
 ///
-/// By default, the shader is provided with two uniform variables:
+/// By default, the shader is provided with three uniform variables:
 ///
 /// * `u_projection` - A `mat4` which can be used to translate world space co-ordinates into screen space.
 /// * `u_texture` - A `sampler2D` which can be used to access color data from the currently active texture.
+/// * `u_diffuse` - A `vec4` representing the color of the current geometry. This is currently only used to
+///   pass through the [`DrawParams::color`](super::DrawParams::color) for a [`Mesh`](super::Mesh), and will
+///   otherwise be set to [`Color::WHITE`].
 ///
 /// You can also set data into your own uniform variables via the `set_uniform` method.
 ///

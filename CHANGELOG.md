@@ -6,6 +6,13 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+* `Mesh` now supports `DrawParams::color`.
+    * This is implemented via a new shader uniform called `u_diffuse`. If you are using custom shaders, you will need to add this parameter in order for `Mesh` tinting to work.
+
 ## [0.5.4] - 2020-11-27
 
 ### Added
