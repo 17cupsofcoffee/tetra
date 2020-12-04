@@ -355,6 +355,18 @@ impl Window {
             haptic.rumble_stop();
         }
     }
+
+    pub fn set_screen_saver_enabled(&self, screen_saver_enabled: bool) {
+        if screen_saver_enabled {
+            self.video_sys.enable_screen_saver()
+        } else {
+            self.video_sys.disable_screen_saver()
+        }
+    }
+
+    pub fn is_screen_saver_enabled(&self) -> bool {
+        self.video_sys.is_screen_saver_enabled()
+    }
 }
 
 pub fn handle_events<S, E>(ctx: &mut Context, state: &mut S) -> result::Result<(), E>

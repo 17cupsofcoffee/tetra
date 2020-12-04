@@ -258,3 +258,13 @@ pub fn get_current_monitor_size(ctx: &Context) -> Result<(i32, i32)> {
     let monitor_index = ctx.window.get_current_monitor()?;
     ctx.window.get_monitor_size(monitor_index)
 }
+
+/// Set whether to enable the screen saver while the application is running.
+pub fn set_screen_saver_enabled(ctx: &Context, screen_saver_enabled: bool) {
+    ctx.window.set_screen_saver_enabled(screen_saver_enabled);
+}
+
+/// Get whether to enable the screen saver while the application is running.
+pub fn is_screen_saver_enabled(ctx: &Context) -> bool {
+    ctx.window.is_screen_saver_enabled()
+}
