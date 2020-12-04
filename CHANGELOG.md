@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Added
+
+* `window::set_screen_saver_enabled` and `window::is_screen_saver_enabled` have been added, allowing you to control whether the user's screensaver can activate while playing your game. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#216](https://github.com/17cupsofcoffee/tetra/pull/216))
+
 ## [0.5.5] - 2020-12-03
 
 ### Added

@@ -157,7 +157,7 @@ pub fn is_relative_mouse_mode(ctx: &Context) -> bool {
     ctx.window.is_relative_mouse_mode()
 }
 
-/// Get the number of monitors connected to the device.
+/// Gets the number of monitors connected to the device.
 ///
 /// # Errors
 ///
@@ -167,7 +167,7 @@ pub fn get_monitor_count(ctx: &Context) -> Result<i32> {
     ctx.window.get_monitor_count()
 }
 
-/// Get the name of a monitor connected to the device.
+/// Gets the name of a monitor connected to the device.
 ///
 /// # Errors
 ///
@@ -177,7 +177,7 @@ pub fn get_monitor_name(ctx: &Context, monitor_index: i32) -> Result<String> {
     ctx.window.get_monitor_name(monitor_index)
 }
 
-/// Get the width of a monitor connected to the device.
+/// Gets the width of a monitor connected to the device.
 ///
 /// # Errors
 ///
@@ -187,7 +187,7 @@ pub fn get_monitor_width(ctx: &Context, monitor_index: i32) -> Result<i32> {
     get_monitor_size(ctx, monitor_index).map(|(w, _)| w)
 }
 
-/// Get the height of a monitor connected to the device.
+/// Gets the height of a monitor connected to the device.
 ///
 /// # Errors
 ///
@@ -197,7 +197,7 @@ pub fn get_monitor_height(ctx: &Context, monitor_index: i32) -> Result<i32> {
     get_monitor_size(ctx, monitor_index).map(|(_, h)| h)
 }
 
-/// Get the size of a monitor connected to the device.
+/// Gets the size of a monitor connected to the device.
 ///
 /// # Errors
 ///
@@ -207,7 +207,7 @@ pub fn get_monitor_size(ctx: &Context, monitor_index: i32) -> Result<(i32, i32)>
     ctx.window.get_monitor_size(monitor_index)
 }
 
-/// Get the index of the monitor that the window is currently on.
+/// Gets the index of the monitor that the window is currently on.
 ///
 /// # Errors
 ///
@@ -217,7 +217,7 @@ pub fn get_current_monitor(ctx: &Context) -> Result<i32> {
     ctx.window.get_current_monitor()
 }
 
-/// Get the name of the monitor that the window is currently on.
+/// Gets the name of the monitor that the window is currently on.
 ///
 /// # Errors
 ///
@@ -228,7 +228,7 @@ pub fn get_current_monitor_name(ctx: &Context) -> Result<String> {
     ctx.window.get_monitor_name(monitor_index)
 }
 
-/// Get the width of the monitor that the window is currently on.
+/// Gets the width of the monitor that the window is currently on.
 ///
 /// # Errors
 ///
@@ -238,7 +238,7 @@ pub fn get_current_monitor_width(ctx: &Context) -> Result<i32> {
     get_current_monitor_size(ctx).map(|(w, _)| w)
 }
 
-/// Get the height of the monitor that the window is currently on.
+/// Gets the height of the monitor that the window is currently on.
 ///
 /// # Errors
 ///
@@ -248,7 +248,7 @@ pub fn get_current_monitor_height(ctx: &Context) -> Result<i32> {
     get_current_monitor_size(ctx).map(|(_, h)| h)
 }
 
-/// Get the size of the monitor that the window is currently on.
+/// Gets the size of the monitor that the window is currently on.
 ///
 /// # Errors
 ///
@@ -259,12 +259,12 @@ pub fn get_current_monitor_size(ctx: &Context) -> Result<(i32, i32)> {
     ctx.window.get_monitor_size(monitor_index)
 }
 
-/// Set whether to enable the screen saver while the application is running.
+/// Sets whether or not the user's screen saver can be displayed while the game is running.
 pub fn set_screen_saver_enabled(ctx: &Context, screen_saver_enabled: bool) {
     ctx.window.set_screen_saver_enabled(screen_saver_enabled);
 }
 
-/// Get whether to enable the screen saver while the application is running.
+/// Returns whether or not the user's screen saver can be displayed while the game is running.
 pub fn is_screen_saver_enabled(ctx: &Context) -> bool {
     ctx.window.is_screen_saver_enabled()
 }
