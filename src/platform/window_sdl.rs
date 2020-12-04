@@ -357,7 +357,7 @@ impl Window {
     }
 
     pub fn set_screen_saver_enabled(&self, screen_saver_enabled: bool) {
-        if screen_saver_enable {
+        if screen_saver_enabled {
             self.video_sys.enable_screen_saver()
         } else {
             self.video_sys.disable_screen_saver()
