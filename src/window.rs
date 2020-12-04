@@ -260,7 +260,7 @@ pub fn get_current_monitor_size(ctx: &Context) -> Result<(i32, i32)> {
 }
 
 /// Set whether to enable the screen saver while the application is running.
-pub fn set_screen_saver_enable(ctx: &Context, screen_saver_enable: bool) {
+pub fn set_screen_saver_enabled(ctx: &Context, screen_saver_enabled: bool) {
     ctx.window.set_screen_saver_enable(screen_saver_enable);
 }
 
