@@ -28,7 +28,7 @@ pub use shader::*;
 pub use texture::*;
 
 use crate::error::Result;
-use crate::math::{FrustumPlanes, Mat4, Vec4};
+use crate::math::{FrustumPlanes, Mat4};
 use crate::platform::{FrontFace, GraphicsDevice, RawIndexBuffer, RawVertexBuffer};
 use crate::window;
 use crate::Context;
@@ -350,28 +350,12 @@ pub fn flush(ctx: &mut Context) {
             ActiveShader::User(s) => s,
         };
 
-        // TODO: Failing to bind samplers should be handled more gracefully than this,
+        // TODO: Failing to apply the defaults should be handled more gracefully than this,
         // but we can't do that without breaking changes.
-        let _ = shader.bind_samplers(&mut ctx.device);
-
-        let projection_location = ctx
-            .device
-            .get_uniform_location(&shader.data.handle, "u_projection");
-
-        ctx.device.set_uniform_mat4(
-            &shader.data.handle,
-            projection_location.as_ref(),
+        let _ = shader.set_default_uniforms(
+            &mut ctx.device,
             ctx.graphics.projection_matrix * ctx.graphics.transform_matrix,
-        );
-
-        let diffuse_location = ctx
-            .device
-            .get_uniform_location(&shader.data.handle, "u_diffuse");
-
-        ctx.device.set_uniform_vec4(
-            &shader.data.handle,
-            diffuse_location.as_ref(),
-            Vec4::new(1.0, 1.0, 1.0, 1.0),
+            Color::WHITE,
         );
 
         ctx.device.set_vertex_buffer_data(

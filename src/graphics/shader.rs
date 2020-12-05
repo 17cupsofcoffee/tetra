@@ -232,12 +232,25 @@ impl Shader {
         value.set_uniform(ctx, self, name)
     }
 
-    pub(crate) fn bind_samplers(&self, device: &mut GraphicsDevice) -> Result {
+    pub(crate) fn set_default_uniforms(
+        &self,
+        device: &mut GraphicsDevice,
+        projection: Mat4<f32>,
+        diffuse: Color,
+    ) -> Result {
         let samplers = self.data.samplers.borrow();
 
         for sampler in samplers.values() {
             device.bind_texture(Some(&sampler.texture.data.handle), sampler.unit)?;
         }
+
+        let projection_location = device.get_uniform_location(&self.data.handle, "u_projection");
+
+        device.set_uniform_mat4(&self.data.handle, projection_location.as_ref(), projection);
+
+        let diffuse_location = device.get_uniform_location(&self.data.handle, "u_diffuse");
+
+        device.set_uniform_vec4(&self.data.handle, diffuse_location.as_ref(), diffuse.into());
 
         Ok(())
     }

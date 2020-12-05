@@ -357,28 +357,12 @@ impl Drawable for Mesh {
         transform.rotate_z(params.rotation);
         transform.translate_2d(params.position);
 
-        // TODO: Failing to bind samplers should be handled more gracefully than this,
+        // TODO: Failing to apply the defaults should be handled more gracefully than this,
         // but we can't do that without breaking changes.
-        let _ = shader.bind_samplers(&mut ctx.device);
-
-        let projection_location = ctx
-            .device
-            .get_uniform_location(&shader.data.handle, "u_projection");
-
-        ctx.device.set_uniform_mat4(
-            &shader.data.handle,
-            projection_location.as_ref(),
+        let _ = shader.set_default_uniforms(
+            &mut ctx.device,
             ctx.graphics.projection_matrix * ctx.graphics.transform_matrix * transform,
-        );
-
-        let diffuse_location = ctx
-            .device
-            .get_uniform_location(&shader.data.handle, "u_diffuse");
-
-        ctx.device.set_uniform_vec4(
-            &shader.data.handle,
-            diffuse_location.as_ref(),
-            params.color.into(),
+            params.color,
         );
 
         let draw_range = self.draw_range.map(|r| (r.start, r.count));
