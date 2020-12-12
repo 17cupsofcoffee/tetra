@@ -49,10 +49,12 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
+        let mut play_one_shot = false;
+
         for key in input::get_keys_pressed(ctx) {
             match key {
                 Key::Space => {
-                    self.sound.play(ctx)?;
+                    play_one_shot = true;
                 }
 
                 Key::Q => self.channel1.play(),
@@ -72,6 +74,10 @@ impl State for GameState {
 
                 _ => {}
             }
+        }
+
+        if play_one_shot {
+            self.sound.play(ctx)?;
         }
 
         Ok(())

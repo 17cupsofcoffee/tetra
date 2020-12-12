@@ -6,8 +6,10 @@ use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use rodio::source::{Buffered, Empty};
-use rodio::{Decoder, Device as RodioDevice, Sample, Source};
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use cpal::{BufferSize, Stream, StreamConfig};
+use hound::{SampleFormat, WavReader};
+use oddio::{Frames, FramesSignal, MixerHandle, MonoToStereo, Signal};
 
 use crate::error::{Result, TetraError};
 use crate::fs;
@@ -42,9 +44,9 @@ use crate::Context;
 ///
 /// The [`audio`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/audio.rs)
 /// example demonstrates how to play several different kinds of sound.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)] // TODO: This used to impl PartialEq, do we still want that?
 pub struct Sound {
-    pub(crate) data: Arc<[u8]>,
+    pub(crate) data: Arc<Frames<[f32; 2]>>,
 }
 
 impl Sound {
@@ -60,9 +62,45 @@ impl Sound {
     where
         P: AsRef<Path>,
     {
-        Ok(Sound {
-            data: fs::read(path)?.into(),
-        })
+        let mut reader = WavReader::open(path).expect("TODO");
+        let spec = reader.spec();
+
+        let data = match spec.sample_format {
+            SampleFormat::Float => {
+                let samples = reader.samples::<f32>().map(|s| s.unwrap_or(0.0));
+
+                match spec.channels {
+                    1 => Frames::from_iter(spec.sample_rate, samples.map(|s| [s, s])),
+                    2 => {
+                        let mut buffer = samples.collect::<Vec<_>>();
+                        let stereo = oddio::frame_stereo(&mut buffer);
+                        Frames::from_slice(spec.sample_rate, stereo)
+                    }
+                    _ => todo!(),
+                }
+            }
+
+            SampleFormat::Int => {
+                let max_int = (1 << spec.bits_per_sample) / 2;
+                let scale = 1.0 / max_int as f32;
+
+                let samples = reader
+                    .samples::<i32>()
+                    .map(|s| s.unwrap_or(0) as f32 * scale);
+
+                match spec.channels {
+                    1 => Frames::from_iter(spec.sample_rate, samples.map(|s| [s, s])),
+                    2 => {
+                        let mut buffer = samples.collect::<Vec<_>>();
+                        let stereo = oddio::frame_stereo(&mut buffer);
+                        Frames::from_slice(spec.sample_rate, stereo)
+                    }
+                    _ => todo!(),
+                }
+            }
+        };
+
+        Ok(Sound { data })
     }
 
     /// Creates a new sound from a slice of binary data, encoded in one of Tetra's supported
@@ -74,7 +112,7 @@ impl Sound {
     /// Note that the data is not decoded until playback begins, so this function will not
     /// validate that the data being read is formatted correctly.
     pub fn from_file_data(data: &[u8]) -> Sound {
-        Sound { data: data.into() }
+        todo!()
     }
 
     /// Plays the sound.
@@ -83,7 +121,7 @@ impl Sound {
     ///
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
-    pub fn play(&self, ctx: &Context) -> Result<SoundInstance> {
+    pub fn play(&self, ctx: &mut Context) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, false, 1.0, 1.0)
             .map(|controls| SoundInstance { controls })
@@ -95,7 +133,7 @@ impl Sound {
     ///
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
-    pub fn repeat(&self, ctx: &Context) -> Result<SoundInstance> {
+    pub fn repeat(&self, ctx: &mut Context) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, true, 1.0, 1.0)
             .map(|controls| SoundInstance { controls })
@@ -107,7 +145,7 @@ impl Sound {
     ///
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
-    pub fn spawn(&self, ctx: &Context) -> Result<SoundInstance> {
+    pub fn spawn(&self, ctx: &mut Context) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), false, false, 1.0, 1.0)
             .map(|controls| SoundInstance { controls })
@@ -119,7 +157,7 @@ impl Sound {
     ///
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
-    pub fn play_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
+    pub fn play_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, false, volume, speed)
             .map(|controls| SoundInstance { controls })
@@ -131,7 +169,7 @@ impl Sound {
     ///
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
-    pub fn repeat_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
+    pub fn repeat_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, true, volume, speed)
             .map(|controls| SoundInstance { controls })
@@ -143,7 +181,7 @@ impl Sound {
     ///
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
-    pub fn spawn_with(&self, ctx: &Context, volume: f32, speed: f32) -> Result<SoundInstance> {
+    pub fn spawn_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), false, false, volume, speed)
             .map(|controls| SoundInstance { controls })
@@ -318,20 +356,43 @@ impl AudioControls {
 }
 
 pub(crate) struct AudioDevice {
-    device: Option<RodioDevice>,
+    stream: Stream,
+    mixer_handle: MixerHandle<[f32; 2]>,
     master_volume: Arc<AtomicU32>,
 }
 
 impl AudioDevice {
     pub(crate) fn new() -> AudioDevice {
-        let device = rodio::default_output_device();
+        let host = cpal::default_host();
+        let device = host.default_output_device().expect("TODO");
+        let output_config = device.default_output_config().expect("TODO").config();
+        let sample_rate = output_config.sample_rate.0;
 
-        if let Some(active_device) = &device {
-            rodio::play_raw(&active_device, Empty::new());
-        }
+        let (mut mixer_handle, mut mixer) = oddio::mixer();
+
+        let stream = device
+            .build_output_stream(
+                &output_config,
+                move |data: &mut [f32], _| {
+                    let samples = oddio::frame_stereo(data);
+
+                    for s in &mut samples[..] {
+                        *s = [0.0, 0.0];
+                    }
+
+                    oddio::run(&mixer, sample_rate, samples);
+                },
+                move |err| {
+                    eprintln!("{}", err);
+                },
+            )
+            .expect("TODO");
+
+        stream.play().expect("TODO");
 
         AudioDevice {
-            device,
+            stream,
+            mixer_handle,
             master_volume: Arc::new(AtomicU32::new(1.0f32.to_bits())),
         }
     }
@@ -345,177 +406,23 @@ impl AudioDevice {
     }
 
     fn play_sound(
-        &self,
-        data: Arc<[u8]>,
+        &mut self,
+        data: Arc<Frames<[f32; 2]>>,
         playing: bool,
         repeating: bool,
         volume: f32,
         speed: f32,
     ) -> Result<Arc<AudioControls>> {
-        let controls = Arc::new(AudioControls {
+        let source = FramesSignal::new(data, 0.0);
+
+        let handle = self.mixer_handle.play(source);
+
+        Ok(Arc::new(AudioControls {
             playing: AtomicBool::new(playing),
             repeating: AtomicBool::new(repeating),
             rewind: AtomicBool::new(false),
             volume: AtomicU32::new(volume.to_bits()),
             speed: AtomicU32::new(speed.to_bits()),
-        });
-
-        let master_volume = f32::from_bits(self.master_volume.load(Ordering::SeqCst));
-
-        let data = Decoder::new(Cursor::new(data))
-            .map_err(TetraError::InvalidSound)?
-            .buffered();
-
-        let source = TetraSource {
-            repeat_source: data.clone(),
-            data,
-
-            remote_master_volume: Arc::clone(&self.master_volume),
-            remote_controls: Arc::clone(&controls),
-            time_till_update: 220,
-
-            detached: false,
-            playing,
-            repeating,
-            rewind: false,
-            master_volume,
-            volume,
-            speed,
-        };
-
-        rodio::play_raw(
-            self.device.as_ref().ok_or(TetraError::NoAudioDevice)?,
-            source.convert_samples(),
-        );
-
-        Ok(controls)
-    }
-}
-
-type TetraSourceData = Buffered<Decoder<Cursor<Arc<[u8]>>>>;
-
-struct TetraSource {
-    data: TetraSourceData,
-    repeat_source: TetraSourceData,
-
-    remote_master_volume: Arc<AtomicU32>,
-    remote_controls: Arc<AudioControls>,
-    time_till_update: u32,
-
-    detached: bool,
-    playing: bool,
-    repeating: bool,
-    rewind: bool,
-    master_volume: f32,
-    volume: f32,
-    speed: f32,
-}
-
-impl Iterator for TetraSource {
-    type Item = i16;
-
-    #[inline]
-    fn next(&mut self) -> Option<i16> {
-        // There's a lot of shenanigans in this method where we try to keep the local state and
-        // the remote state in sync. I'm not sure if it'd be a better idea to just load data from the
-        // controls every sample or whether that'd be too slow...
-
-        self.time_till_update -= 1;
-
-        if self.time_till_update == 0 {
-            self.master_volume = f32::from_bits(self.remote_master_volume.load(Ordering::SeqCst));
-            self.playing = self.remote_controls.playing.load(Ordering::SeqCst);
-
-            // If we're not playing, we don't really care about updating the rest of the state.
-            if self.playing {
-                self.repeating = self.remote_controls.repeating.load(Ordering::SeqCst);
-                self.rewind = self.remote_controls.rewind.load(Ordering::SeqCst);
-                self.volume = f32::from_bits(self.remote_controls.volume.load(Ordering::SeqCst));
-                self.speed = f32::from_bits(self.remote_controls.speed.load(Ordering::SeqCst));
-            }
-
-            // If the strong count ever hits 1, that means all of the SoundInstances have been
-            // dropped, so we can free this Source if/when it finishes playing.
-            if Arc::strong_count(&self.remote_controls) == 1 {
-                self.detached = true;
-            }
-
-            self.time_till_update = 220;
-        }
-
-        if !self.playing {
-            return if self.detached { None } else { Some(0) };
-        }
-
-        if self.rewind {
-            self.data = self.repeat_source.clone();
-            self.rewind = false;
-
-            self.remote_controls.rewind.store(false, Ordering::SeqCst);
-        }
-
-        self.data
-            .next()
-            .or_else(|| {
-                if self.repeating {
-                    self.data = self.repeat_source.clone();
-                    self.data.next()
-                } else {
-                    None
-                }
-            })
-            .map(|v| v.amplify(self.volume).amplify(self.master_volume))
-            .or_else(|| {
-                if self.detached {
-                    None
-                } else {
-                    // Report that the sound has finished.
-                    if !self.rewind {
-                        self.playing = false;
-                        self.rewind = true;
-
-                        self.remote_controls.playing.store(false, Ordering::SeqCst);
-                        self.remote_controls.rewind.store(true, Ordering::SeqCst);
-                    }
-
-                    Some(0)
-                }
-            })
-    }
-
-    #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        (0, None)
-    }
-}
-
-impl Source for TetraSource {
-    #[inline]
-    fn current_frame_len(&self) -> Option<usize> {
-        match self.data.current_frame_len() {
-            Some(0) => self.repeat_source.current_frame_len(),
-            a => a,
-        }
-    }
-
-    #[inline]
-    fn channels(&self) -> u16 {
-        match self.data.current_frame_len() {
-            Some(0) => self.repeat_source.channels(),
-            _ => self.data.channels(),
-        }
-    }
-
-    #[inline]
-    fn sample_rate(&self) -> u32 {
-        match self.data.current_frame_len() {
-            Some(0) => (self.repeat_source.sample_rate() as f32 * self.speed) as u32,
-            _ => (self.data.sample_rate() as f32 * self.speed) as u32,
-        }
-    }
-
-    #[inline]
-    fn total_duration(&self) -> Option<Duration> {
-        None
+        }))
     }
 }
