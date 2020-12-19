@@ -1,4 +1,6 @@
 use std::result;
+use std::thread;
+use std::time::Duration;
 
 use crate::graphics::{self, GraphicsContext};
 use crate::input::{self, InputContext};
@@ -152,7 +154,9 @@ impl Context {
 
         graphics::present(self);
 
-        std::thread::yield_now();
+        // This provides a sensible FPS limit when running without vsync, and
+        // avoids CPU usage skyrocketing on some systems.
+        thread::sleep(Duration::from_millis(1));
 
         Ok(())
     }
