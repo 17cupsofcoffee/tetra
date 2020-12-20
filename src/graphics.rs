@@ -29,7 +29,7 @@ pub use texture::*;
 
 use crate::error::Result;
 use crate::math::{FrustumPlanes, Mat4};
-use crate::platform::{FrontFace, GraphicsDevice, RawIndexBuffer, RawVertexBuffer};
+use crate::platform::{GraphicsDevice, RawIndexBuffer, RawVertexBuffer};
 use crate::window;
 use crate::Context;
 
@@ -70,6 +70,7 @@ pub(crate) struct GraphicsContext {
 
     canvas: ActiveCanvas,
 
+    winding: VertexWinding,
     projection_matrix: Mat4<f32>,
     transform_matrix: Mat4<f32>,
 
@@ -123,6 +124,7 @@ impl GraphicsContext {
 
             canvas: ActiveCanvas::Window,
 
+            winding: VertexWinding::CounterClockwise,
             projection_matrix: ortho(window_width as f32, window_height as f32, false),
             transform_matrix: Mat4::identity(),
 
@@ -316,7 +318,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
 
                 ctx.device.bind_framebuffer(None);
-                ctx.device.front_face(FrontFace::CounterClockwise);
+                ctx.device.front_face(ctx.graphics.winding);
                 ctx.device.viewport(0, 0, width, height);
             }
             ActiveCanvas::User(r) => {
@@ -325,7 +327,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, true);
 
                 ctx.device.bind_framebuffer(Some(&r.framebuffer));
-                ctx.device.front_face(FrontFace::Clockwise);
+                ctx.device.front_face(ctx.graphics.winding.flipped());
                 ctx.device.viewport(0, 0, width, height);
             }
         }
@@ -449,6 +451,38 @@ pub fn set_transform_matrix(ctx: &mut Context, matrix: Mat4<f32>) {
 /// This is a shortcut for calling [`graphics::set_transform_matrix(ctx, Mat4::identity())`](set_transform_matrix).
 pub fn reset_transform_matrix(ctx: &mut Context) {
     set_transform_matrix(ctx, Mat4::identity());
+}
+
+/// Returns whether clockwise or counter-clockwise ordered vertices are currently considered front-facing.
+///
+/// Back-facing geometry will be culled (not rendered) by default.
+///
+/// The default winding order is counter-clockwise. This is correct for all of the geometry that Tetra
+/// generates, but if you are rendering a `Mesh` with clockwise ordered data, you will need to change
+/// this setting via [`set_front_face_winding`].
+pub fn get_front_face_winding(ctx: &mut Context) -> VertexWinding {
+    ctx.graphics.winding
+}
+
+/// Sets whether clockwise or counter-clockwise ordered vertices should be considered front-facing.
+///
+/// Back-facing geometry will be culled (not rendered) by default.
+///
+/// The default winding order is counter-clockwise. This is correct for all of the geometry that Tetra
+/// generates, but if you are rendering a `Mesh` with clockwise ordered data, you will need to change
+/// this setting.
+pub fn set_front_face_winding(ctx: &mut Context, winding: VertexWinding) {
+    if ctx.graphics.winding != winding {
+        flush(ctx);
+        ctx.graphics.winding = winding;
+
+        // Because canvas rendering is effectively done upside-down, the winding order is the opposite
+        // of what you'd expect in that case.
+        ctx.device.front_face(match &ctx.graphics.canvas {
+            ActiveCanvas::Window => winding,
+            ActiveCanvas::User(_) => winding.flipped(),
+        });
+    }
 }
 
 pub(crate) fn set_viewport_size(

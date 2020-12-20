@@ -61,6 +61,26 @@ pub enum BufferUsage {
     Stream,
 }
 
+/// The ordering of the vertices in a piece of geometry.
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum VertexWinding {
+    /// The vertices are in clockwise order.
+    Clockwise,
+
+    /// The vertices are in counter-clockwise order.
+    CounterClockwise,
+}
+
+impl VertexWinding {
+    /// Returns the opposite winding, compared to `self`.
+    pub fn flipped(self) -> VertexWinding {
+        match self {
+            VertexWinding::Clockwise => VertexWinding::CounterClockwise,
+            VertexWinding::CounterClockwise => VertexWinding::Clockwise,
+        }
+    }
+}
+
 /// Vertex data, stored in GPU memory.
 ///
 /// This data can be drawn to the screen via a [`Mesh`].

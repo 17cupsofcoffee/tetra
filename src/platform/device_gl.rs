@@ -5,7 +5,7 @@ use std::rc::Rc;
 use glow::{Context as GlowContext, HasContext, PixelUnpackData};
 
 use crate::error::{Result, TetraError};
-use crate::graphics::{BufferUsage, FilterMode};
+use crate::graphics::{BufferUsage, FilterMode, VertexWinding};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
 /// Utility function for calculating offsets/sizes.
@@ -40,9 +40,7 @@ pub struct GraphicsDevice {
 impl GraphicsDevice {
     pub fn new(gl: GlowContext) -> Result<GraphicsDevice> {
         unsafe {
-            // This needs replacing with a user-facing API.
-            // gl.enable(glow::CULL_FACE);
-
+            gl.enable(glow::CULL_FACE);
             gl.enable(glow::BLEND);
 
             // This default might want to change if we introduce
@@ -112,7 +110,7 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn front_face(&mut self, front_face: FrontFace) {
+    pub fn front_face(&mut self, front_face: VertexWinding) {
         unsafe {
             self.state.gl.front_face(front_face.into());
         }
@@ -783,17 +781,13 @@ impl From<BufferUsage> for u32 {
         }
     }
 }
-#[derive(Clone, Copy)]
-pub enum FrontFace {
-    Clockwise,
-    CounterClockwise,
-}
 
-impl From<FrontFace> for u32 {
-    fn from(front_face: FrontFace) -> u32 {
+#[doc(hidden)]
+impl From<VertexWinding> for u32 {
+    fn from(front_face: VertexWinding) -> u32 {
         match front_face {
-            FrontFace::Clockwise => glow::CW,
-            FrontFace::CounterClockwise => glow::CCW,
+            VertexWinding::Clockwise => glow::CW,
+            VertexWinding::CounterClockwise => glow::CCW,
         }
     }
 }

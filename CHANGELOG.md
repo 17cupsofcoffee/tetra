@@ -10,10 +10,13 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
+* `graphics::get_front_face_winding` and `graphics::set_front_face_winding` have been added, allowing the winding order of geometry to be changed.
+    * This is useful if you are working with a library that only outputs clockwise-ordered data (e.g. ImGUI).
 * `ContextBuilder::screen_saver_enabled`, `window::set_screen_saver_enabled` and `window::is_screen_saver_enabled` have been added, allowing you to control whether the user's screensaver can activate while playing your game. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#216](https://github.com/17cupsofcoffee/tetra/pull/216))
 
 ### Changed
 
+* Backface culling has been re-enabled, as the winding order of geometry can now be overridden.
 * The game loop now calls `std::thread::sleep` instead of `std::thread::yield_now` at the end of each iteration.
     * This provides some basic frame-limiting when running without vsync, and prevents CPU usage skyrocketing on some systems.
 
