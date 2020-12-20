@@ -191,6 +191,7 @@ pub struct ContextBuilder {
     pub(crate) resizable: bool,
     pub(crate) borderless: bool,
     pub(crate) high_dpi: bool,
+    pub(crate) screen_saver_enabled: bool,
     pub(crate) show_mouse: bool,
     pub(crate) grab_mouse: bool,
     pub(crate) relative_mouse_mode: bool,
@@ -307,6 +308,14 @@ impl ContextBuilder {
         self
     }
 
+    /// Sets whether or not the user's screen saver can be displayed while the game is running.
+    ///
+    /// Defaults to `false`.
+    pub fn screen_saver_enabled(&mut self, screen_saver_enabled: bool) -> &mut ContextBuilder {
+        self.screen_saver_enabled = screen_saver_enabled;
+        self
+    }
+
     /// Sets whether or not the mouse cursor should be visible when it is within the
     /// game window.
     ///
@@ -381,6 +390,7 @@ impl Default for ContextBuilder {
             resizable: false,
             borderless: false,
             high_dpi: false,
+            screen_saver_enabled: false,
             show_mouse: false,
             grab_mouse: false,
             relative_mouse_mode: false,

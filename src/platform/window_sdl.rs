@@ -70,6 +70,12 @@ impl Window {
         gl_attr.set_alpha_size(8);
         gl_attr.set_double_buffer(true);
 
+        if settings.screen_saver_enabled {
+            video_sys.enable_screen_saver();
+        } else {
+            video_sys.disable_screen_saver();
+        }
+
         let mut window_builder = video_sys.window(
             &settings.title,
             settings.window_width as u32,

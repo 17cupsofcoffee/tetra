@@ -10,7 +10,7 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
-* `window::set_screen_saver_enabled` and `window::is_screen_saver_enabled` have been added, allowing you to control whether the user's screensaver can activate while playing your game. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#216](https://github.com/17cupsofcoffee/tetra/pull/216))
+* `ContextBuilder::screen_saver_enabled`, `window::set_screen_saver_enabled` and `window::is_screen_saver_enabled` have been added, allowing you to control whether the user's screensaver can activate while playing your game. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#216](https://github.com/17cupsofcoffee/tetra/pull/216))
 
 ### Changed
 
