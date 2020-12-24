@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
+  - name: "Docs/FAQ"
+    url: https://tetra.seventeencups.net
+    about: "Installation guides and frequently-asked questions are available on Tetra's website."
   - name: "Discussions"
     url: https://github.com/17cupsofcoffee/tetra/discussions
     about: "For questions, discussions and project feedback, visit the Discussions tab."
