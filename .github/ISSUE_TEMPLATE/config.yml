@@ -1,5 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - name: "Discord: Game Development in Rust"
+  - name: "Discussions"
+    url: https://github.com/17cupsofcoffee/tetra/discussions
+    about: "For questions, discussions and project feedback, visit the Discussions tab."
+  - name: "Discord"
     url: https://discord.gg/yNtPTb2
-    about: "For discussion of game development in Rust, and showing off your projects"
+    about: "For real-time discussion, visit the Game Development in Rust Discord server."
