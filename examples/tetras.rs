@@ -374,8 +374,7 @@ impl GameScene {
                 continue;
             }
 
-            if new_x < 0
-                || new_x > 9
+            if !(0..=9).contains(&new_x)
                 || new_y > 21
                 || self.board[new_y as usize][new_x as usize].is_some()
             {
@@ -390,7 +389,7 @@ impl GameScene {
         let color = self.block.color();
 
         for (x, y) in self.block.segments() {
-            if x >= 0 && x <= 9 && y >= 0 && y <= 21 {
+            if (0..=9).contains(&x) && (0..=21).contains(&y) {
                 self.board[y as usize][x as usize] = Some(color);
             }
         }
