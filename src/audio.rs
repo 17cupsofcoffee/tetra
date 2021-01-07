@@ -2,8 +2,8 @@
 
 use std::io::Cursor;
 use std::path::Path;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex, Weak};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::{Arc, Weak};
 use std::time::Duration;
 
 use rodio::source::{Buffered, Empty};
@@ -267,13 +267,13 @@ struct AudioControls {
     playing: AtomicBool,
     repeating: AtomicBool,
     rewind: AtomicBool,
-    volume: Mutex<f32>,
-    speed: Mutex<f32>,
+    volume: AtomicU32,
+    speed: AtomicU32,
 }
 
 impl AudioControls {
     fn set_volume(&self, volume: f32) {
-        *self.volume.lock().unwrap() = volume;
+        self.volume.store(volume.to_bits(), Ordering::SeqCst);
     }
 
     fn state(&self) -> SoundState {
@@ -302,7 +302,7 @@ impl AudioControls {
     }
 
     fn set_speed(&self, speed: f32) {
-        *self.speed.lock().unwrap() = speed;
+        self.speed.store(speed.to_bits(), Ordering::SeqCst);
     }
 
     fn repeating(&self) -> bool {
@@ -316,7 +316,7 @@ impl AudioControls {
 
 pub(crate) struct AudioDevice {
     device: Option<RodioDevice>,
-    master_volume: Arc<Mutex<f32>>,
+    master_volume: Arc<AtomicU32>,
 }
 
 impl AudioDevice {
@@ -329,16 +329,16 @@ impl AudioDevice {
 
         AudioDevice {
             device,
-            master_volume: Arc::new(Mutex::new(1.0)),
+            master_volume: Arc::new(AtomicU32::new(1.0f32.to_bits())),
         }
     }
 
     fn master_volume(&self) -> f32 {
-        *self.master_volume.lock().unwrap()
+        f32::from_bits(self.master_volume.load(Ordering::SeqCst))
     }
 
     fn set_master_volume(&self, volume: f32) {
-        *self.master_volume.lock().unwrap() = volume;
+        self.master_volume.store(volume.to_bits(), Ordering::SeqCst);
     }
 
     fn play_sound(
@@ -353,11 +353,11 @@ impl AudioDevice {
             playing: AtomicBool::new(playing),
             repeating: AtomicBool::new(repeating),
             rewind: AtomicBool::new(false),
-            volume: Mutex::new(volume),
-            speed: Mutex::new(speed),
+            volume: AtomicU32::new(volume.to_bits()),
+            speed: AtomicU32::new(speed.to_bits()),
         });
 
-        let master_volume = { *self.master_volume.lock().unwrap() };
+        let master_volume = f32::from_bits(self.master_volume.load(Ordering::SeqCst));
 
         let data = Decoder::new(Cursor::new(data))
             .map_err(TetraError::InvalidSound)?
@@ -395,7 +395,7 @@ struct TetraSource {
     data: TetraSourceData,
     repeat_source: TetraSourceData,
 
-    remote_master_volume: Arc<Mutex<f32>>,
+    remote_master_volume: Arc<AtomicU32>,
     remote_controls: Weak<AudioControls>,
     time_till_update: u32,
 
@@ -420,7 +420,7 @@ impl Iterator for TetraSource {
         self.time_till_update -= 1;
 
         if self.time_till_update == 0 {
-            self.master_volume = *self.remote_master_volume.lock().unwrap();
+            self.master_volume = f32::from_bits(self.remote_master_volume.load(Ordering::SeqCst));
 
             if let Some(controls) = self.remote_controls.upgrade() {
                 self.playing = controls.playing.load(Ordering::SeqCst);
@@ -429,8 +429,8 @@ impl Iterator for TetraSource {
                 if self.playing {
                     self.repeating = controls.repeating.load(Ordering::SeqCst);
                     self.rewind = controls.rewind.load(Ordering::SeqCst);
-                    self.volume = *controls.volume.lock().unwrap();
-                    self.speed = *controls.speed.lock().unwrap();
+                    self.volume = f32::from_bits(controls.volume.load(Ordering::SeqCst));
+                    self.speed = f32::from_bits(controls.speed.load(Ordering::SeqCst));
                 }
             } else {
                 self.detached = true;

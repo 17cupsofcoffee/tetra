@@ -6,6 +6,13 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Changed
+
+* Reading and writing the volume or speed of a `SoundInstance` is now lock-free, reducing the chances of blocking the audio thread.
+    * This also applies to `audio::get_master_volume` and `audio::set_master_volume`.
+
 ## [0.5.6] - 2020-12-20
 
 ### Added
