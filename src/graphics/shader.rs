@@ -305,6 +305,7 @@ impl UniformValue for Color {
 }
 
 impl UniformValue for Texture {
+    #[doc(hidden)]
     fn set_uniform(&self, ctx: &mut Context, shader: &Shader, name: &str) {
         let mut samplers = shader.data.samplers.borrow_mut();
 
