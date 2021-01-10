@@ -1,5 +1,7 @@
 use std::ops::{Add, AddAssign, Div};
 
+use num_traits::One;
+
 use crate::math::Vec2;
 
 /// A rectangle, represented by a top-left position, a width and a height.
@@ -157,11 +159,11 @@ where
     /// Returns the co-ordinates of the center point of the rectangle.
     pub fn center(&self) -> Vec2<T>
     where
-        T: Add<Output = T> + Div<Output = T> + From<u8>,
+        T: One + Add<Output = T> + Div<Output = T>,
     {
         Vec2::new(
-            self.x + (self.width / T::from(2)),
-            self.y + (self.height / T::from(2)),
+            self.x + (self.width / (T::one() + T::one())),
+            self.y + (self.height / (T::one() + T::one())),
         )
     }
 
