@@ -12,6 +12,8 @@ This project adheres to Semantic Versioning.
 
 * Reading and writing the volume or speed of a `SoundInstance` is now lock-free, reducing the chances of blocking the audio thread.
     * This also applies to `audio::get_master_volume` and `audio::set_master_volume`.
+* `Rectangle` is now generic, allowing types other than `f32` to be used for the components.
+    * The type parameter defaults to `f32`, so this should not be a breaking change.
 
 ## [0.5.6] - 2020-12-20
 
