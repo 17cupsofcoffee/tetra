@@ -15,6 +15,7 @@ This project adheres to Semantic Versioning.
 * `Rectangle` is now generic, allowing types other than `f32` to be used for the components.
     * The type parameter defaults to `f32`, so this should not be a breaking change.
 * `Rectangle` now implements `Eq`, `Default` and `Hash`, if the component type also implements the corresponding trait.
+* Updated `glow` to 0.7.
 
 ## [0.5.6] - 2020-12-20
 
