@@ -293,14 +293,20 @@ impl ContextBuilder {
     /// Sets whether or not the window should use a high-DPI backbuffer, on platforms
     /// that support it (e.g. MacOS with a retina display).
     ///
-    /// Note that you may also need to configure your game's packaging to allow for
-    /// high-DPI rendering:
+    /// Note that you may also need some platform-specific config to enable high-DPI
+    /// rendering:
     ///
-    /// * On Windows, you will need to set the 'DPI Awareness' setting in a
-    ///   [manifest resource](https://github.com/rust-lang/rust/issues/11207#issuecomment-573424095)
-    ///   or call into the `SetProcessDpiAwareness` function in the Windows API.
-    /// * On Mac, you will need to set `NSHighResolutionCapable` to `true` in your Info.plist. This is the
-    ///   default on Catalina and higher.
+    /// * On Windows, set [`dpiAware`](https://docs.microsoft.com/en-gb/windows/win32/sbscs/application-manifests#dpiaware)
+    ///   to `true/pm` and [`dpiAwareness`](https://docs.microsoft.com/en-gb/windows/win32/sbscs/application-manifests#dpiawareness)
+    ///   to `permonitorv2` in your application manifest. This should enable the best behaviour available, regardless of how
+    ///   old the user's version of Windows is.
+    ///     * The [`embed-resource`](https://crates.io/crates/embed-resource) crate can be used to automate embedding
+    ///       an application manifest.
+    ///     * Alternatively, you can use the [`SetProcessDPIAware`](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setprocessdpiaware)
+    ///       or [`SetProcessDpiAwareness`](https://docs.microsoft.com/en-us/windows/desktop/api/shellscalingapi/nf-shellscalingapi-setprocessdpiawareness)
+    ///       Windows API functions to change these settings programatically, but Microsoft recommend not to do this.
+    /// * On Mac, set [`NSHighResolutionCapable`](https://developer.apple.com/documentation/bundleresources/information_property_list/nshighresolutioncapable)
+    ///   to `true` in your Info.plist. This is the default on Catalina and higher.
     ///
     /// Defaults to `false`.
     pub fn high_dpi(&mut self, high_dpi: bool) -> &mut ContextBuilder {
