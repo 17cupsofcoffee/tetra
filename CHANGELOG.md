@@ -17,6 +17,10 @@ This project adheres to Semantic Versioning.
 * `Rectangle` now implements `Eq`, `Default` and `Hash`, if the component type also implements the corresponding trait.
 * Updated `glow` to 0.7.
 
+### Fixed
+
+* `SoundInstance` no longer missed updates if you drop it before they're processed by the audio thread.
+
 ## [0.5.6] - 2020-12-20
 
 ### Added

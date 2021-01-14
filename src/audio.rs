@@ -3,7 +3,7 @@
 use std::io::Cursor;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
-use std::sync::{Arc, Weak};
+use std::sync::Arc;
 use std::time::Duration;
 
 use rodio::source::{Buffered, Empty};
@@ -158,7 +158,10 @@ impl Sound {
 /// Cloning a `SoundInstance` will create a new handle to the same instance,
 /// rather than creating a new instance.
 ///
-/// Note that dropping a `SoundInstance` does not stop playback.
+/// Note that dropping a `SoundInstance` does not stop playback, and the underlying
+/// data will not be freed until playback has finished. This means that dropping a
+/// [repeating](SoundInstance::set_repeating) `SoundInstance` without stopping it
+/// first will cause the sound to loop forever.
 #[derive(Debug, Clone)]
 pub struct SoundInstance {
     controls: Arc<AudioControls>,
@@ -368,7 +371,7 @@ impl AudioDevice {
             data,
 
             remote_master_volume: Arc::clone(&self.master_volume),
-            remote_controls: Arc::downgrade(&Arc::clone(&controls)),
+            remote_controls: Arc::clone(&controls),
             time_till_update: 220,
 
             detached: false,
@@ -396,7 +399,7 @@ struct TetraSource {
     repeat_source: TetraSourceData,
 
     remote_master_volume: Arc<AtomicU32>,
-    remote_controls: Weak<AudioControls>,
+    remote_controls: Arc<AudioControls>,
     time_till_update: u32,
 
     detached: bool,
@@ -421,18 +424,19 @@ impl Iterator for TetraSource {
 
         if self.time_till_update == 0 {
             self.master_volume = f32::from_bits(self.remote_master_volume.load(Ordering::SeqCst));
+            self.playing = self.remote_controls.playing.load(Ordering::SeqCst);
 
-            if let Some(controls) = self.remote_controls.upgrade() {
-                self.playing = controls.playing.load(Ordering::SeqCst);
+            // If we're not playing, we don't really care about updating the rest of the state.
+            if self.playing {
+                self.repeating = self.remote_controls.repeating.load(Ordering::SeqCst);
+                self.rewind = self.remote_controls.rewind.load(Ordering::SeqCst);
+                self.volume = f32::from_bits(self.remote_controls.volume.load(Ordering::SeqCst));
+                self.speed = f32::from_bits(self.remote_controls.speed.load(Ordering::SeqCst));
+            }
 
-                // If we're not playing, we don't really care about updating the rest of the state.
-                if self.playing {
-                    self.repeating = controls.repeating.load(Ordering::SeqCst);
-                    self.rewind = controls.rewind.load(Ordering::SeqCst);
-                    self.volume = f32::from_bits(controls.volume.load(Ordering::SeqCst));
-                    self.speed = f32::from_bits(controls.speed.load(Ordering::SeqCst));
-                }
-            } else {
+            // If the strong count ever hits 1, that means all of the SoundInstances have been
+            // dropped, so we can free this Source if/when it finishes playing.
+            if Arc::strong_count(&self.remote_controls) == 1 {
                 self.detached = true;
             }
 
@@ -447,9 +451,7 @@ impl Iterator for TetraSource {
             self.data = self.repeat_source.clone();
             self.rewind = false;
 
-            if let Some(controls) = self.remote_controls.upgrade() {
-                controls.rewind.store(false, Ordering::SeqCst);
-            }
+            self.remote_controls.rewind.store(false, Ordering::SeqCst);
         }
 
         self.data
@@ -472,10 +474,8 @@ impl Iterator for TetraSource {
                         self.playing = false;
                         self.rewind = true;
 
-                        if let Some(controls) = self.remote_controls.upgrade() {
-                            controls.playing.store(false, Ordering::SeqCst);
-                            controls.rewind.store(true, Ordering::SeqCst);
-                        }
+                        self.remote_controls.playing.store(false, Ordering::SeqCst);
+                        self.remote_controls.rewind.store(true, Ordering::SeqCst);
                     }
 
                     Some(0)
