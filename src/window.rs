@@ -268,3 +268,13 @@ pub fn set_screen_saver_enabled(ctx: &Context, screen_saver_enabled: bool) {
 pub fn is_screen_saver_enabled(ctx: &Context) -> bool {
     ctx.window.is_screen_saver_enabled()
 }
+
+/// Sets whether key repeat is enabled or disabled.
+pub fn set_key_repeat_enabled(ctx: &mut Context, key_repeat_enabled: bool) {
+    ctx.window.set_key_repeat_enabled(key_repeat_enabled);
+}
+
+/// Returns true if key repeat is enabled.
+pub fn is_key_repeat_enabled(ctx: &Context) -> bool {
+    ctx.window.is_key_repeat_enabled()
+}
