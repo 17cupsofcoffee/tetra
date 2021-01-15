@@ -269,12 +269,20 @@ pub fn is_screen_saver_enabled(ctx: &Context) -> bool {
     ctx.window.is_screen_saver_enabled()
 }
 
-/// Sets whether key repeat is enabled or disabled.
+/// Sets whether or not key repeat should be enabled.
+///
+/// Normally, a [`KeyPressed`](crate::Event::KeyPressed) event will only be fired once, when
+/// the key is initially pressed. Enabling key repeat causes `KeyPressed` events to be fired
+/// continuously while the key is held down.
 pub fn set_key_repeat_enabled(ctx: &mut Context, key_repeat_enabled: bool) {
     ctx.window.set_key_repeat_enabled(key_repeat_enabled);
 }
 
-/// Returns true if key repeat is enabled.
+/// Returns whether or not key repeat is enabled.
+///
+/// Normally, a [`KeyPressed`](crate::Event::KeyPressed) event will only be fired once, when
+/// the key is initially pressed. Enabling key repeat causes `KeyPressed` events to be fired
+/// continuously while the key is held down.
 pub fn is_key_repeat_enabled(ctx: &Context) -> bool {
     ctx.window.is_key_repeat_enabled()
 }

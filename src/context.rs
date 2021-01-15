@@ -192,7 +192,7 @@ pub struct ContextBuilder {
     pub(crate) borderless: bool,
     pub(crate) high_dpi: bool,
     pub(crate) screen_saver_enabled: bool,
-    pub(crate) key_repeat_enabled: bool,
+    pub(crate) key_repeat: bool,
     pub(crate) show_mouse: bool,
     pub(crate) grab_mouse: bool,
     pub(crate) relative_mouse_mode: bool,
@@ -323,11 +323,15 @@ impl ContextBuilder {
         self
     }
 
-    /// Sets whether key repeat is enabled or disabled.
+    /// Sets whether or not key repeat should be enabled.
+    ///
+    /// Normally, a [`KeyPressed`](crate::Event::KeyPressed) event will only be fired once, when
+    /// the key is initially pressed. Enabling key repeat causes `KeyPressed` events to be fired
+    /// continuously while the key is held down.
     ///
     /// Defaults to `false`.
-    pub fn key_repeat_enabled(&mut self, key_repeat_enabled: bool) -> &mut ContextBuilder {
-        self.key_repeat_enabled = key_repeat_enabled;
+    pub fn key_repeat(&mut self, key_repeat: bool) -> &mut ContextBuilder {
+        self.key_repeat = key_repeat;
         self
     }
 
@@ -406,7 +410,7 @@ impl Default for ContextBuilder {
             borderless: false,
             high_dpi: false,
             screen_saver_enabled: false,
-            key_repeat_enabled: false,
+            key_repeat: false,
             show_mouse: false,
             grab_mouse: false,
             relative_mouse_mode: false,

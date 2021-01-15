@@ -8,6 +8,10 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added 
+
+* Key repeat events can now be enabled, via `ContextBuilder::key_repeat` or `window::set_key_repeat_enabled`. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#220](https://github.com/17cupsofcoffee/tetra/pull/220)
+
 ### Changed
 
 * Reading and writing the volume or speed of a `SoundInstance` is now lock-free, reducing the chances of blocking the audio thread.

@@ -47,7 +47,7 @@ pub struct Window {
     window_width: i32,
     window_height: i32,
 
-    key_repeat_enabled: bool,
+    key_repeat: bool,
 }
 
 impl Window {
@@ -175,7 +175,7 @@ impl Window {
             window_width,
             window_height,
 
-            key_repeat_enabled: settings.key_repeat_enabled,
+            key_repeat: settings.key_repeat,
         };
 
         Ok((window, gl_ctx, window_width, window_height))
@@ -378,12 +378,12 @@ impl Window {
         self.video_sys.is_screen_saver_enabled()
     }
 
-    pub fn set_key_repeat_enabled(&mut self, key_repeat_enabled: bool) {
-        self.key_repeat_enabled = key_repeat_enabled;
+    pub fn set_key_repeat_enabled(&mut self, key_repeat: bool) {
+        self.key_repeat = key_repeat;
     }
 
     pub fn is_key_repeat_enabled(&self) -> bool {
-        self.key_repeat_enabled
+        self.key_repeat
     }
 }
 
