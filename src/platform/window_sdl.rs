@@ -46,6 +46,8 @@ pub struct Window {
 
     window_width: i32,
     window_height: i32,
+
+    key_repeat_enabled: bool,
 }
 
 impl Window {
@@ -172,6 +174,8 @@ impl Window {
 
             window_width,
             window_height,
+
+            key_repeat_enabled: settings.key_repeat_enabled,
         };
 
         Ok((window, gl_ctx, window_width, window_height))
@@ -373,6 +377,14 @@ impl Window {
     pub fn is_screen_saver_enabled(&self) -> bool {
         self.video_sys.is_screen_saver_enabled()
     }
+
+    pub fn set_key_repeat_enabled(&mut self, key_repeat_enabled: bool) {
+        self.key_repeat_enabled = key_repeat_enabled;
+    }
+
+    pub fn is_key_repeat_enabled(&self) -> bool {
+        self.key_repeat_enabled
+    }
 }
 
 pub fn handle_events<S, E>(ctx: &mut Context, state: &mut S) -> result::Result<(), E>
@@ -415,18 +427,20 @@ where
 
             SdlEvent::KeyDown {
                 keycode: Some(k),
-                repeat: false,
+                repeat,
                 ..
             } => {
-                if let SdlKey::Escape = k {
-                    if ctx.quit_on_escape {
-                        ctx.running = false;
+                if !repeat || ctx.window.is_key_repeat_enabled() {
+                    if let SdlKey::Escape = k {
+                        if ctx.quit_on_escape {
+                            ctx.running = false;
+                        }
                     }
-                }
 
-                if let Some(key) = into_key(k) {
-                    input::set_key_down(ctx, key);
-                    state.event(ctx, Event::KeyPressed { key })?;
+                    if let Some(key) = into_key(k) {
+                        input::set_key_down(ctx, key);
+                        state.event(ctx, Event::KeyPressed { key })?;
+                    }
                 }
             }
 
