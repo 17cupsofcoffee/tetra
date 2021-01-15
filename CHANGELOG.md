@@ -6,7 +6,7 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
-## [Upcoming]
+## [0.5.7] - 2021-01-15
 
 ### Added 
 
@@ -651,7 +651,8 @@ for. This can be useful when implementing more complex animation behaviors. ([@V
 
 * Initial release!
 
-[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.5.6..HEAD
+[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.5.7..HEAD
+[0.5.6]: https://github.com/17cupsofcoffee/tetra/compare/0.5.6..0.5.7
 [0.5.6]: https://github.com/17cupsofcoffee/tetra/compare/0.5.5..0.5.6
 [0.5.5]: https://github.com/17cupsofcoffee/tetra/compare/0.5.4..0.5.5
 [0.5.4]: https://github.com/17cupsofcoffee/tetra/compare/0.5.3..0.5.4
