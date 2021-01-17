@@ -1,18 +1,17 @@
 //! Functions and types relating to audio playback.
 
-use std::io::Cursor;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
-use std::time::Duration;
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::{BufferSize, Stream, StreamConfig};
+use cpal::Stream;
 use hound::{SampleFormat, WavReader};
-use oddio::{Frames, FramesSignal, MixerHandle, MonoToStereo, Signal};
+use oddio::{
+    Controlled, Filter, Frame, Frames, FramesSignal, Gain, Handle, MixerHandle, Signal, Speed,
+};
 
-use crate::error::{Result, TetraError};
-use crate::fs;
+use crate::error::Result;
 use crate::Context;
 
 /// Sound data that can be played back.
@@ -124,7 +123,7 @@ impl Sound {
     pub fn play(&self, ctx: &mut Context) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, false, 1.0, 1.0)
-            .map(|controls| SoundInstance { controls })
+            .map(|handle| SoundInstance { handle })
     }
 
     /// Plays the sound repeatedly.
@@ -136,7 +135,7 @@ impl Sound {
     pub fn repeat(&self, ctx: &mut Context) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, true, 1.0, 1.0)
-            .map(|controls| SoundInstance { controls })
+            .map(|handle| SoundInstance { handle })
     }
 
     /// Spawns a new instance of the sound that is not playing yet.
@@ -148,7 +147,7 @@ impl Sound {
     pub fn spawn(&self, ctx: &mut Context) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), false, false, 1.0, 1.0)
-            .map(|controls| SoundInstance { controls })
+            .map(|handle| SoundInstance { handle })
     }
 
     /// Plays the sound, with the provided settings.
@@ -160,7 +159,7 @@ impl Sound {
     pub fn play_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, false, volume, speed)
-            .map(|controls| SoundInstance { controls })
+            .map(|handle| SoundInstance { handle })
     }
 
     /// Plays the sound repeatedly, with the provided settings.
@@ -172,7 +171,7 @@ impl Sound {
     pub fn repeat_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), true, true, volume, speed)
-            .map(|controls| SoundInstance { controls })
+            .map(|handle| SoundInstance { handle })
     }
 
     /// Spawns a new instance of the sound that is not playing yet, with the provided settings.
@@ -184,7 +183,7 @@ impl Sound {
     pub fn spawn_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         ctx.audio
             .play_sound(Arc::clone(&self.data), false, false, volume, speed)
-            .map(|controls| SoundInstance { controls })
+            .map(|handle| SoundInstance { handle })
     }
 }
 
@@ -200,32 +199,32 @@ impl Sound {
 /// data will not be freed until playback has finished. This means that dropping a
 /// [repeating](SoundInstance::set_repeating) `SoundInstance` without stopping it
 /// first will cause the sound to loop forever.
-#[derive(Debug, Clone)]
+// TODO: This used to be Debug and Clone
 pub struct SoundInstance {
-    controls: Arc<AudioControls>,
+    handle: TetraHandle,
 }
 
 impl SoundInstance {
     /// Plays the sound if it is stopped, or resumes the sound if it is paused.
-    pub fn play(&self) {
+    pub fn play(&mut self) {
         self.set_state(SoundState::Playing)
     }
 
     /// Stops the sound. If playback is resumed, it will start over from the
     /// beginning.
-    pub fn stop(&self) {
+    pub fn stop(&mut self) {
         self.set_state(SoundState::Stopped);
     }
 
     /// Pauses the sound. If playback is resumed, it will continue
     /// from the point where it was paused.
-    pub fn pause(&self) {
+    pub fn pause(&mut self) {
         self.set_state(SoundState::Paused);
     }
 
     /// Returns the current state of playback.
     pub fn state(&self) -> SoundState {
-        self.controls.state()
+        todo!()
     }
 
     /// Sets the current state of playback.
@@ -233,34 +232,44 @@ impl SoundInstance {
     /// In most cases, using the [`play`](SoundInstance::play), [`stop`](SoundInstance::stop) and
     /// [`pause`](SoundInstance::pause) methods is easier than explicitly setting a state, but
     /// this may be useful when, for example, defining transitions from one state to another.
-    pub fn set_state(&self, state: SoundState) {
-        self.controls.set_state(state)
+    pub fn set_state(&mut self, state: SoundState) {
+        match state {
+            SoundState::Playing => {
+                self.handle.control::<Pauseable<_>, _>().set_paused(false);
+            }
+            SoundState::Paused => {
+                self.handle.control::<Pauseable<_>, _>().set_paused(true);
+            }
+            SoundState::Stopped => {
+                todo!()
+            }
+        }
     }
 
     /// Sets the volume of the sound.
     ///
     /// The parameter is used as a multiplier - for example, `1.0` would result in the
     /// sound being played back at its original volume.
-    pub fn set_volume(&self, volume: f32) {
-        self.controls.set_volume(volume);
+    pub fn set_volume(&mut self, volume: f32) {
+        todo!()
     }
 
     /// Sets the speed (and by extension, the pitch) of the sound.
     ///
     /// The parameter is used as a multiplier - for example, `1.0` would result in the
     /// sound being played back at its original speed.
-    pub fn set_speed(&self, speed: f32) {
-        self.controls.set_speed(speed);
+    pub fn set_speed(&mut self, speed: f32) {
+        todo!()
     }
 
     /// Sets whether the sound should repeat or not.
-    pub fn set_repeating(&self, repeating: bool) {
-        self.controls.set_repeating(repeating);
+    pub fn set_repeating(&mut self, repeating: bool) {
+        todo!()
     }
 
     /// Toggles whether the sound should repeat or not.
-    pub fn toggle_repeating(&self) {
-        self.controls.set_repeating(!self.controls.repeating());
+    pub fn toggle_repeating(&mut self) {
+        todo!()
     }
 }
 
@@ -301,58 +310,6 @@ pub fn set_master_volume(ctx: &mut Context, volume: f32) {
 /// Gets the master volume for the game.
 pub fn get_master_volume(ctx: &mut Context) -> f32 {
     ctx.audio.master_volume()
-}
-
-#[derive(Debug)]
-struct AudioControls {
-    playing: AtomicBool,
-    repeating: AtomicBool,
-    rewind: AtomicBool,
-    volume: AtomicU32,
-    speed: AtomicU32,
-}
-
-impl AudioControls {
-    fn set_volume(&self, volume: f32) {
-        self.volume.store(volume.to_bits(), Ordering::SeqCst);
-    }
-
-    fn state(&self) -> SoundState {
-        if self.playing.load(Ordering::SeqCst) {
-            SoundState::Playing
-        } else if self.rewind.load(Ordering::SeqCst) {
-            SoundState::Stopped
-        } else {
-            SoundState::Paused
-        }
-    }
-
-    fn set_state(&self, state: SoundState) {
-        match state {
-            SoundState::Playing => {
-                self.playing.store(true, Ordering::SeqCst);
-            }
-            SoundState::Paused => {
-                self.playing.store(false, Ordering::SeqCst);
-            }
-            SoundState::Stopped => {
-                self.playing.store(false, Ordering::SeqCst);
-                self.rewind.store(true, Ordering::SeqCst);
-            }
-        }
-    }
-
-    fn set_speed(&self, speed: f32) {
-        self.speed.store(speed.to_bits(), Ordering::SeqCst);
-    }
-
-    fn repeating(&self) -> bool {
-        self.repeating.load(Ordering::SeqCst)
-    }
-
-    fn set_repeating(&self, repeating: bool) {
-        self.repeating.store(repeating, Ordering::SeqCst);
-    }
 }
 
 pub(crate) struct AudioDevice {
@@ -412,17 +369,89 @@ impl AudioDevice {
         repeating: bool,
         volume: f32,
         speed: f32,
-    ) -> Result<Arc<AudioControls>> {
+    ) -> Result<TetraHandle> {
         let source = FramesSignal::new(data, 0.0);
 
-        let handle = self.mixer_handle.play(source);
+        let source = Gain::new(source);
+        let source = Speed::new(source);
+        let source = Pauseable::new(source, !playing);
 
-        Ok(Arc::new(AudioControls {
-            playing: AtomicBool::new(playing),
-            repeating: AtomicBool::new(repeating),
-            rewind: AtomicBool::new(false),
-            volume: AtomicU32::new(volume.to_bits()),
-            speed: AtomicU32::new(speed.to_bits()),
-        }))
+        let mut handle = self.mixer_handle.play(source);
+
+        handle.control::<Gain<_>, _>().set_gain(volume);
+        handle.control::<Speed<_>, _>().set_speed(speed);
+
+        Ok(handle)
+    }
+}
+
+type TetraHandle = Handle<Pauseable<Speed<Gain<FramesSignal<[f32; 2]>>>>>;
+
+// TODO: Everything below should be replaced with stuff built-in to Oddio, or I should get Ralith to
+// make sure it's not disgustingly broken.
+
+struct Pauseable<T: ?Sized> {
+    paused: AtomicBool,
+    inner: T,
+}
+
+impl<T> Pauseable<T> {
+    fn new(signal: T, paused: bool) -> Self {
+        Self {
+            paused: AtomicBool::new(paused),
+            inner: signal,
+        }
+    }
+}
+
+impl<T: Signal> Signal for Pauseable<T>
+where
+    T::Frame: Frame,
+{
+    type Frame = T::Frame;
+
+    fn sample(&self, offset: f32, sample_length: f32, out: &mut [T::Frame]) {
+        if self.paused.load(Ordering::Relaxed) {
+            for frame in out {
+                *frame = T::Frame::ZERO;
+            }
+        } else {
+            self.inner.sample(offset, sample_length, out);
+        }
+    }
+
+    fn advance(&self, dt: f32) {
+        if !self.paused.load(Ordering::Relaxed) {
+            self.inner.advance(dt);
+        }
+    }
+
+    fn remaining(&self) -> f32 {
+        // TODO: Is this right?
+        self.inner.remaining()
+    }
+}
+
+impl<T> Filter for Pauseable<T> {
+    type Inner = T;
+
+    fn inner(&self) -> &T {
+        &self.inner
+    }
+}
+
+struct PauseableControl<'a, T>(&'a Pauseable<T>);
+
+unsafe impl<'a, T: 'a> Controlled<'a> for Pauseable<T> {
+    type Control = PauseableControl<'a, T>;
+
+    fn make_control(signal: &'a Pauseable<T>) -> Self::Control {
+        PauseableControl(signal)
+    }
+}
+
+impl<'a, T> PauseableControl<'a, T> {
+    pub fn set_paused(&mut self, paused: bool) {
+        self.0.paused.store(paused, Ordering::Relaxed);
     }
 }
