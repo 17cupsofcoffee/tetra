@@ -72,6 +72,11 @@ impl Window {
         gl_attr.set_alpha_size(8);
         gl_attr.set_double_buffer(true);
 
+        if settings.multisampling > 0 {
+            gl_attr.set_multisample_buffers(1);
+            gl_attr.set_multisample_samples(settings.multisampling);
+        }
+
         if settings.screen_saver_enabled {
             video_sys.enable_screen_saver();
         } else {

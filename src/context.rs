@@ -190,6 +190,7 @@ pub struct ContextBuilder {
     pub(crate) minimized: bool,
     pub(crate) resizable: bool,
     pub(crate) borderless: bool,
+    pub(crate) multisampling: u8,
     pub(crate) high_dpi: bool,
     pub(crate) screen_saver_enabled: bool,
     pub(crate) key_repeat: bool,
@@ -288,6 +289,19 @@ impl ContextBuilder {
     /// Defaults to `false`.
     pub fn borderless(&mut self, borderless: bool) -> &mut ContextBuilder {
         self.borderless = borderless;
+        self
+    }
+
+    /// Sets the number of samples that should be used for multisample anti-aliasing.
+    ///
+    /// The number of samples that can be used varies between graphics cards - `2`, `4` and `8` are reasonably
+    /// well supported. Setting the number of samples to `0` will disable multisampling.
+    ///
+    /// Note that this setting only applies to the main backbuffer, not [`Canvas`](crate::graphics::Canvas)es.
+    ///
+    /// Defaults to `0`.
+    pub fn multisampling(&mut self, multisampling: u8) -> &mut ContextBuilder {
+        self.multisampling = multisampling;
         self
     }
 
@@ -408,6 +422,7 @@ impl Default for ContextBuilder {
             minimized: false,
             resizable: false,
             borderless: false,
+            multisampling: 0,
             high_dpi: false,
             screen_saver_enabled: false,
             key_repeat: false,

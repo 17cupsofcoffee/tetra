@@ -6,6 +6,13 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Added 
+
+* Basic support for multisample anti-aliasing has been added, in the form of `ContextBuilder::multisampling`.
+    * This is currently only supported for the main backbuffer. Supporting `Canvas` multisampling requires a lot more work and raises some tricky API questions, so probably won't be added any time soon (unless someone writes a PR)!
+
 ## [0.5.7] - 2021-01-15
 
 ### Added 
