@@ -13,6 +13,10 @@ This project adheres to Semantic Versioning.
 * Basic support for multisample anti-aliasing has been added, in the form of `ContextBuilder::multisampling`.
     * This is currently only supported for the main backbuffer. Supporting `Canvas` multisampling requires a lot more work and raises some tricky API questions, so probably won't be added any time soon (unless someone writes a PR)!
 
+### Changed
+
+* When running in `Timestep::Fixed` mode, the accumulator now has a cap of 150 milliseconds (around 6.5fps). This prevents the game from entering a 'spiral of doom' if updates are consistently running too slowly for the game loop to catch up - in this scenario, the game will now just slow down. This is still not a good experience for the player, but it prevents freezes/crashes.
+
 ## [0.5.7] - 2021-01-15
 
 ### Added 

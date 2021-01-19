@@ -6,6 +6,8 @@ use std::time::{Duration, Instant};
 
 use crate::Context;
 
+const MAX_DURATION: Duration = Duration::from_millis(150);
+
 /// The different timestep modes that a game can have.
 ///
 /// # Serde
@@ -90,7 +92,7 @@ pub(crate) fn tick(ctx: &mut Context) {
     ctx.time.last_time = current_time;
 
     if let Some(fixed) = &mut ctx.time.timestep {
-        fixed.accumulator += ctx.time.elapsed;
+        fixed.accumulator = (fixed.accumulator + ctx.time.elapsed).min(MAX_DURATION);
     }
 
     // Since we fill the buffer when we create the context, we can cycle it
