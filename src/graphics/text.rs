@@ -4,6 +4,7 @@
 // avoid warnings when fonts are disabled:
 #![cfg_attr(not(feature = "font_ttf"), allow(unused))]
 
+mod bmfont;
 mod cache;
 mod packer;
 #[cfg(feature = "font_ttf")]
@@ -15,7 +16,8 @@ use std::path::Path;
 use std::rc::Rc;
 
 use crate::error::Result;
-use crate::graphics::text::cache::{FontCache, TextGeometry};
+use crate::graphics::text::bmfont::BMFontRasterizer;
+use crate::graphics::text::cache::{FontCache, Rasterizer, TextGeometry};
 use crate::graphics::{self, DrawParams, Rectangle};
 use crate::Context;
 
@@ -92,6 +94,51 @@ impl Font {
         size: f32,
     ) -> Result<Font> {
         VectorFontBuilder::from_file_data(data)?.with_size(ctx, size)
+    }
+
+    /// Creates a `Font` from an AngelCode BMFont file.
+    ///
+    /// Currently, only the text format is supported. Support for the binary file
+    /// format may be added in the future.
+    ///
+    /// # Exporting from BMFont
+    ///
+    /// For best results, follow these guidelines when exporting from BMFont:
+    ///
+    /// ## Font Settings
+    ///
+    /// * For the sizing to match the TTF version of the same font, tick 'match char height'.
+    ///
+    /// ## Export Options
+    ///
+    /// * Unless you are using a custom shader, choose the 'white text with alpha' preset.
+    /// * Export using the 'text' font descriptor format.
+    /// * Make sure the corresponding Tetra feature flag is enabled for your texture's
+    ///   file format.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::FailedToLoadAsset`](crate::TetraError::FailedToLoadAsset) will be returned
+    /// if the font or the associated images could not be loaded.
+    /// * [`TetraError::InvalidFont`](crate::TetraError::InvalidFont) will be returned if the font
+    /// data was invalid.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the GPU cache for the font
+    /// could not be created.
+    pub fn bmfont<P>(ctx: &mut Context, path: P) -> Result<Font>
+    where
+        P: AsRef<Path>,
+    {
+        let rasterizer: Box<dyn Rasterizer> = Box::new(BMFontRasterizer::new(path)?);
+
+        let cache = FontCache::new(
+            &mut ctx.device,
+            rasterizer,
+            ctx.graphics.default_filter_mode,
+        )?;
+
+        Ok(Font {
+            data: Rc::new(RefCell::new(cache)),
+        })
     }
 
     /// Returns the filter mode of the font.

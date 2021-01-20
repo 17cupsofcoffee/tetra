@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Added 
+
+* BMFont-formatted fonts are now supported, via `Font::bmfont`.
+
 ## [0.6.2] - 2021-03-15
 
 ### Fixed
