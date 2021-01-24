@@ -1,6 +1,7 @@
 use std::rc::Rc;
 
 use bytemuck::{Pod, Zeroable};
+use graphics::Rectangle;
 use lyon_tessellation::{
     geometry_builder::simple_builder, math::Point, FillOptions, FillTessellator, StrokeOptions,
     StrokeTessellator, VertexBuffers,
@@ -319,6 +320,33 @@ impl Mesh {
             VertexBuffer::new(ctx, &vertices)?,
             IndexBuffer::new(ctx, &indices)?,
         ))
+    }
+
+    /// Creates a new rectangle mesh.
+    pub fn new_rectangle(
+        ctx: &mut Context,
+        style: ShapeStyle,
+        rectangle: Rectangle,
+    ) -> Result<Mesh> {
+        let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
+        let mut geometry_builder = simple_builder(&mut geometry);
+        match style {
+            ShapeStyle::Fill => {
+                let options = FillOptions::default();
+                let mut tessellator = FillTessellator::new();
+                tessellator
+                    .tessellate_rectangle(&rectangle.into(), &options, &mut geometry_builder)
+                    .map_err(TetraError::TessellationError)?;
+            }
+            ShapeStyle::Stroke(width) => {
+                let options = StrokeOptions::default().with_line_width(width);
+                let mut tessellator = StrokeTessellator::new();
+                tessellator
+                    .tessellate_rectangle(&rectangle.into(), &options, &mut geometry_builder)
+                    .map_err(TetraError::TessellationError)?;
+            }
+        }
+        Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
     }
 
     /// Creates a new circle mesh.
