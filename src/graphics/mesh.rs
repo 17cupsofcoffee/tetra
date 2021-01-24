@@ -1,12 +1,15 @@
 use std::rc::Rc;
 
 use bytemuck::{Pod, Zeroable};
+use lyon_tessellation::{
+    geometry_builder::simple_builder, math::Point, FillOptions, FillTessellator, VertexBuffers,
+};
 
-use crate::error::Result;
 use crate::graphics::{self, ActiveShader, Color, DrawParams, Drawable, Texture};
 use crate::math::{Mat4, Vec2, Vec3};
 use crate::platform::{RawIndexBuffer, RawVertexBuffer};
 use crate::Context;
+use crate::{error::Result, TetraError};
 
 /// An individual piece of vertex data.
 #[repr(C)]
@@ -286,6 +289,38 @@ impl Mesh {
             texture: None,
             draw_range: None,
         }
+    }
+
+    fn from_lyon_vertex_buffers(
+        ctx: &mut Context,
+        vertex_buffers: VertexBuffers<Point, u16>,
+    ) -> Result<Mesh> {
+        let vertices: Vec<Vertex> = vertex_buffers
+            .vertices
+            .iter()
+            .map(|vertex| Vertex::new(Vec2::new(vertex.x, vertex.y), Vec2::zero(), Color::WHITE))
+            .collect();
+        let indices: Vec<u32> = vertex_buffers
+            .indices
+            .iter()
+            .map(|index| (*index).into())
+            .collect();
+        Ok(Mesh::indexed(
+            VertexBuffer::new(ctx, &vertices)?,
+            IndexBuffer::new(ctx, &indices)?,
+        ))
+    }
+
+    /// Creates a new filled circle mesh.
+    pub fn new_filled_circle(ctx: &mut Context, radius: f32) -> Result<Mesh> {
+        let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
+        let mut geometry_builder = simple_builder(&mut geometry);
+        let options = FillOptions::default();
+        let mut tessellator = FillTessellator::new();
+        tessellator
+            .tessellate_circle(Point::zero(), radius, &options, &mut geometry_builder)
+            .map_err(TetraError::TessellationError)?;
+        Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
     }
 
     /// Gets a reference to the vertex buffer contained within this mesh.

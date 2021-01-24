@@ -8,6 +8,7 @@ use std::result;
 
 use image::ImageError;
 
+use lyon_tessellation::TessellationError;
 #[cfg(feature = "audio")]
 use rodio::decoder::DecoderError;
 
@@ -68,6 +69,9 @@ pub enum TetraError {
     /// Returned when your game tried to change the display settings (e.g. fullscreen, vsync)
     /// but was unable to do so.
     FailedToChangeDisplayMode(String),
+
+    /// Returned when a shape cannot be tessellated.
+    TessellationError(TessellationError),
 }
 
 impl Display for TetraError {
@@ -90,6 +94,9 @@ impl Display for TetraError {
             ),
             TetraError::FailedToChangeDisplayMode(_) => write!(f, "Failed to change display mode"),
             TetraError::NoAudioDevice => write!(f, "No audio device available for playback"),
+            TetraError::TessellationError(_) => {
+                write!(f, "An error occurred while tessellating a shape")
+            }
         }
     }
 }
@@ -108,6 +115,7 @@ impl Error for TetraError {
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,
             TetraError::FailedToChangeDisplayMode(_) => None,
+            TetraError::TessellationError(_) => None,
         }
     }
 }
