@@ -55,7 +55,7 @@ impl ShelfPacker {
             Texture::with_device_empty(device, texture_width, texture_height, FilterMode::Nearest)?;
 
         self.shelves.clear();
-        self.next_y = 0;
+        self.next_y = Self::PADDING;
 
         Ok(())
     }
