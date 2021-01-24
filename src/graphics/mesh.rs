@@ -2,7 +2,8 @@ use std::rc::Rc;
 
 use bytemuck::{Pod, Zeroable};
 use lyon_tessellation::{
-    geometry_builder::simple_builder, math::Point, FillOptions, FillTessellator, VertexBuffers,
+    geometry_builder::simple_builder, math::Point, FillOptions, FillTessellator, StrokeOptions,
+    StrokeTessellator, VertexBuffers,
 };
 
 use crate::graphics::{self, ActiveShader, Color, DrawParams, Drawable, Texture};
@@ -239,6 +240,15 @@ struct DrawRange {
     count: usize,
 }
 
+/// Ways of drawing a shape.
+#[derive(Copy, Clone, Debug)]
+pub enum ShapeStyle {
+    /// A filled shape.
+    Fill,
+    /// An outlined shape with the specified stroke width.
+    Stroke(f32),
+}
+
 /// A 2D mesh that can be drawn to the screen.
 ///
 /// A `Mesh` is a wrapper for a [`VertexBuffer`], which allows it to be drawn in combination with three
@@ -311,15 +321,26 @@ impl Mesh {
         ))
     }
 
-    /// Creates a new filled circle mesh.
-    pub fn new_filled_circle(ctx: &mut Context, radius: f32) -> Result<Mesh> {
+    /// Creates a new circle mesh.
+    pub fn new_circle(ctx: &mut Context, style: ShapeStyle, radius: f32) -> Result<Mesh> {
         let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
         let mut geometry_builder = simple_builder(&mut geometry);
-        let options = FillOptions::default();
-        let mut tessellator = FillTessellator::new();
-        tessellator
-            .tessellate_circle(Point::zero(), radius, &options, &mut geometry_builder)
-            .map_err(TetraError::TessellationError)?;
+        match style {
+            ShapeStyle::Fill => {
+                let options = FillOptions::default();
+                let mut tessellator = FillTessellator::new();
+                tessellator
+                    .tessellate_circle(Point::zero(), radius, &options, &mut geometry_builder)
+                    .map_err(TetraError::TessellationError)?;
+            }
+            ShapeStyle::Stroke(width) => {
+                let options = StrokeOptions::default().with_line_width(width);
+                let mut tessellator = StrokeTessellator::new();
+                tessellator
+                    .tessellate_circle(Point::zero(), radius, &options, &mut geometry_builder)
+                    .map_err(TetraError::TessellationError)?;
+            }
+        }
         Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
     }
 
