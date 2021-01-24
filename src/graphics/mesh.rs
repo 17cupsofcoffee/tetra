@@ -322,7 +322,12 @@ impl Mesh {
     }
 
     /// Creates a new circle mesh.
-    pub fn new_circle(ctx: &mut Context, style: ShapeStyle, radius: f32) -> Result<Mesh> {
+    pub fn new_circle(
+        ctx: &mut Context,
+        style: ShapeStyle,
+        center: Vec2<f32>,
+        radius: f32,
+    ) -> Result<Mesh> {
         let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
         let mut geometry_builder = simple_builder(&mut geometry);
         match style {
@@ -330,14 +335,24 @@ impl Mesh {
                 let options = FillOptions::default();
                 let mut tessellator = FillTessellator::new();
                 tessellator
-                    .tessellate_circle(Point::zero(), radius, &options, &mut geometry_builder)
+                    .tessellate_circle(
+                        Point::new(center.x, center.y),
+                        radius,
+                        &options,
+                        &mut geometry_builder,
+                    )
                     .map_err(TetraError::TessellationError)?;
             }
             ShapeStyle::Stroke(width) => {
                 let options = StrokeOptions::default().with_line_width(width);
                 let mut tessellator = StrokeTessellator::new();
                 tessellator
-                    .tessellate_circle(Point::zero(), radius, &options, &mut geometry_builder)
+                    .tessellate_circle(
+                        Point::new(center.x, center.y),
+                        radius,
+                        &options,
+                        &mut geometry_builder,
+                    )
                     .map_err(TetraError::TessellationError)?;
             }
         }
