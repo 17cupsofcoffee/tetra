@@ -23,6 +23,7 @@ ab_glyph = { version = "0.2.2", optional = true }
 unicode-normalization = "0.1.12"
 bytemuck = "1.4.0"
 num-traits = "0.2"
+lyon_tessellation = "0.17.4"
 
 [dev-dependencies]
 rand = "0.8.0"
