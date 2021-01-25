@@ -16,7 +16,7 @@ use crate::graphics::{self, ActiveShader, Color, DrawParams, Drawable, Rectangle
 use crate::math::{Mat4, Vec2, Vec3};
 use crate::platform::{RawIndexBuffer, RawVertexBuffer};
 use crate::Context;
-use crate::{error::Result, TetraError};
+use crate::{Result, TetraError};
 
 /// An individual piece of vertex data.
 #[repr(C)]
