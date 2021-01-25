@@ -3,8 +3,10 @@ use std::rc::Rc;
 use bytemuck::{Pod, Zeroable};
 use graphics::Rectangle;
 use lyon_tessellation::{
-    geometry_builder::simple_builder, math::Point, path::Polygon, FillOptions, FillTessellator,
-    StrokeOptions, StrokeTessellator, VertexBuffers,
+    geometry_builder::simple_builder,
+    math::{Angle, Point, Vector},
+    path::{Polygon, Winding},
+    FillOptions, FillTessellator, StrokeOptions, StrokeTessellator, VertexBuffers,
 };
 
 use crate::graphics::{self, ActiveShader, Color, DrawParams, Drawable, Texture};
@@ -387,6 +389,48 @@ impl Mesh {
         Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
     }
 
+    /// Creates a new ellipse mesh.
+    pub fn new_ellipse(
+        ctx: &mut Context,
+        style: ShapeStyle,
+        center: Vec2<f32>,
+        radii: Vec2<f32>,
+    ) -> Result<Mesh> {
+        let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
+        let mut geometry_builder = simple_builder(&mut geometry);
+        match style {
+            ShapeStyle::Fill => {
+                let options = FillOptions::default();
+                let mut tessellator = FillTessellator::new();
+                tessellator
+                    .tessellate_ellipse(
+                        Point::new(center.x, center.y),
+                        Vector::new(radii.x, radii.y),
+                        Angle::radians(0.0),
+                        Winding::Positive,
+                        &options,
+                        &mut geometry_builder,
+                    )
+                    .map_err(TetraError::TessellationError)?;
+            }
+            ShapeStyle::Stroke(width) => {
+                let options = StrokeOptions::default().with_line_width(width);
+                let mut tessellator = StrokeTessellator::new();
+                tessellator
+                    .tessellate_ellipse(
+                        Point::new(center.x, center.y),
+                        Vector::new(radii.x, radii.y),
+                        Angle::radians(0.0),
+                        Winding::Positive,
+                        &options,
+                        &mut geometry_builder,
+                    )
+                    .map_err(TetraError::TessellationError)?;
+            }
+        }
+        Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
+    }
+
     /// Creates a new polygon mesh.
     pub fn new_polygon(ctx: &mut Context, style: ShapeStyle, points: &[Vec2<f32>]) -> Result<Mesh> {
         let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
@@ -415,6 +459,30 @@ impl Mesh {
                     .map_err(TetraError::TessellationError)?;
             }
         }
+        Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
+    }
+
+    /// Creates a new polyline mesh.
+    pub fn new_polyline(
+        ctx: &mut Context,
+        stroke_width: f32,
+        points: &[Vec2<f32>],
+    ) -> Result<Mesh> {
+        let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
+        let mut geometry_builder = simple_builder(&mut geometry);
+        let points: Vec<Point> = points
+            .iter()
+            .map(|point| Point::new(point.x, point.y))
+            .collect();
+        let polygon = Polygon {
+            points: &points,
+            closed: false,
+        };
+        let options = StrokeOptions::default().with_line_width(stroke_width);
+        let mut tessellator = StrokeTessellator::new();
+        tessellator
+            .tessellate_polygon(polygon, &options, &mut geometry_builder)
+            .map_err(TetraError::TessellationError)?;
         Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
     }
 
