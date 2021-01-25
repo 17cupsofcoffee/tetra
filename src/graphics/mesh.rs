@@ -1,3 +1,5 @@
+pub use lyon_tessellation::path::builder::BorderRadii;
+
 use std::rc::Rc;
 
 use bytemuck::{Pod, Zeroable};
@@ -5,7 +7,7 @@ use graphics::Rectangle;
 use lyon_tessellation::{
     geometry_builder::simple_builder,
     math::{Angle, Point, Vector},
-    path::{Polygon, Winding},
+    path::{builder::*, Polygon, Winding},
     FillOptions, FillTessellator, StrokeOptions, StrokeTessellator, VertexBuffers,
 };
 
@@ -346,6 +348,34 @@ impl Mesh {
                 tessellator
                     .tessellate_rectangle(&rectangle.into(), &options, &mut geometry_builder)
                     .map_err(TetraError::TessellationError)?;
+            }
+        }
+        Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
+    }
+
+    /// Creates a new rounded rectangle mesh.
+    pub fn new_rounded_rectangle(
+        ctx: &mut Context,
+        style: ShapeStyle,
+        rectangle: Rectangle,
+        radii: BorderRadii,
+    ) -> Result<Mesh> {
+        let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
+        let mut geometry_builder = simple_builder(&mut geometry);
+        match style {
+            ShapeStyle::Fill => {
+                let options = FillOptions::default();
+                let mut tessellator = FillTessellator::new();
+                let mut builder = tessellator.builder(&options, &mut geometry_builder);
+                builder.add_rounded_rectangle(&rectangle.into(), &radii, Winding::Positive);
+                builder.build().map_err(TetraError::TessellationError)?;
+            }
+            ShapeStyle::Stroke(width) => {
+                let options = StrokeOptions::default().with_line_width(width);
+                let mut tessellator = StrokeTessellator::new();
+                let mut builder = tessellator.builder(&options, &mut geometry_builder);
+                builder.add_rounded_rectangle(&rectangle.into(), &radii, Winding::Positive);
+                builder.build().map_err(TetraError::TessellationError)?;
             }
         }
         Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
