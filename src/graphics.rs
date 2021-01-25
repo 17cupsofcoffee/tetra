@@ -28,7 +28,7 @@ pub use shader::*;
 pub use texture::*;
 
 use crate::error::Result;
-use crate::math::{FrustumPlanes, Mat4};
+use crate::math::{FrustumPlanes, Mat4, Vec2};
 use crate::platform::{GraphicsDevice, RawIndexBuffer, RawVertexBuffer};
 use crate::window;
 use crate::Context;
@@ -36,7 +36,6 @@ use crate::Context;
 const MAX_SPRITES: usize = 2048;
 const MAX_VERTICES: usize = MAX_SPRITES * 4; // Cannot be greater than 32767!
 const MAX_INDICES: usize = MAX_SPRITES * 6;
-const VERTEX_STRIDE: usize = 8;
 const INDEX_ARRAY: [u32; 6] = [0, 1, 2, 2, 3, 0];
 
 #[derive(PartialEq)]
@@ -74,8 +73,7 @@ pub(crate) struct GraphicsContext {
     projection_matrix: Mat4<f32>,
     transform_matrix: Mat4<f32>,
 
-    vertex_data: Vec<f32>,
-    element_capacity: usize,
+    vertex_data: Vec<Vertex>,
     element_count: usize,
 }
 
@@ -85,6 +83,9 @@ impl GraphicsContext {
         window_width: i32,
         window_height: i32,
     ) -> Result<GraphicsContext> {
+        let vertex_buffer = device.new_vertex_buffer(MAX_VERTICES, 8, BufferUsage::Dynamic)?;
+        let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::Static)?;
+
         let indices: Vec<u32> = INDEX_ARRAY
             .iter()
             .cycle()
@@ -92,11 +93,6 @@ impl GraphicsContext {
             .enumerate()
             .map(|(i, vertex)| vertex + i as u32 / 6 * 4)
             .collect();
-
-        let vertex_buffer =
-            device.new_vertex_buffer(MAX_VERTICES, VERTEX_STRIDE, BufferUsage::Dynamic)?;
-
-        let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::Static)?;
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
@@ -128,8 +124,7 @@ impl GraphicsContext {
             projection_matrix: ortho(window_width as f32, window_height as f32, false),
             transform_matrix: Mat4::identity(),
 
-            vertex_data: Vec::with_capacity(MAX_VERTICES * VERTEX_STRIDE),
-            element_capacity: MAX_INDICES,
+            vertex_data: Vec::with_capacity(MAX_VERTICES),
             element_count: 0,
         })
     }
@@ -159,7 +154,7 @@ pub(crate) fn push_quad(
     //
     // TODO: This function really needs cleaning up before it can be exposed publicly.
 
-    if ctx.graphics.element_count >= ctx.graphics.element_capacity {
+    if ctx.graphics.element_count + 6 > MAX_INDICES {
         flush(ctx);
     }
 
@@ -206,42 +201,10 @@ pub(crate) fn push_quad(
     };
 
     ctx.graphics.vertex_data.extend_from_slice(&[
-        // 1
-        ox1,
-        oy1,
-        u1,
-        v1,
-        params.color.r,
-        params.color.g,
-        params.color.b,
-        params.color.a,
-        // 2
-        ox2,
-        oy2,
-        u1,
-        v2,
-        params.color.r,
-        params.color.g,
-        params.color.b,
-        params.color.a,
-        // 3
-        ox3,
-        oy3,
-        u2,
-        v2,
-        params.color.r,
-        params.color.g,
-        params.color.b,
-        params.color.a,
-        // 4
-        ox4,
-        oy4,
-        u2,
-        v1,
-        params.color.r,
-        params.color.g,
-        params.color.b,
-        params.color.a,
+        Vertex::new(Vec2::new(ox1, oy1), Vec2::new(u1, v1), params.color),
+        Vertex::new(Vec2::new(ox2, oy2), Vec2::new(u1, v2), params.color),
+        Vertex::new(Vec2::new(ox3, oy3), Vec2::new(u2, v2), params.color),
+        Vertex::new(Vec2::new(ox4, oy4), Vec2::new(u2, v1), params.color),
     ]);
 
     ctx.graphics.element_count += 6;
@@ -362,7 +325,7 @@ pub fn flush(ctx: &mut Context) {
 
         ctx.device.set_vertex_buffer_data(
             &ctx.graphics.vertex_buffer,
-            &ctx.graphics.vertex_data,
+            bytemuck::cast_slice(&ctx.graphics.vertex_data),
             0,
         );
 
