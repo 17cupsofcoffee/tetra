@@ -9,6 +9,7 @@ use std::result;
 use image::ImageError;
 
 use lyon_tessellation::TessellationError;
+
 #[cfg(feature = "audio")]
 use rodio::decoder::DecoderError;
 
@@ -115,6 +116,9 @@ impl Error for TetraError {
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,
             TetraError::FailedToChangeDisplayMode(_) => None,
+
+            // This should return the inner error, but Lyon doesn't implement Error for some reason,
+            // so we can't :(
             TetraError::TessellationError(_) => None,
         }
     }

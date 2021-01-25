@@ -1,6 +1,5 @@
 use std::ops::{Add, AddAssign, Div};
 
-use lyon_tessellation::geom::euclid::{Point2D, Size2D};
 use num_traits::One;
 
 use crate::math::Vec2;
@@ -195,15 +194,6 @@ where
         T: Add<Output = T>,
     {
         Vec2::new(self.right(), self.bottom())
-    }
-}
-
-impl Into<lyon_tessellation::math::Rect> for Rectangle {
-    fn into(self) -> lyon_tessellation::math::Rect {
-        lyon_tessellation::math::Rect::new(
-            Point2D::new(self.x, self.y),
-            Size2D::new(self.width, self.height),
-        )
     }
 }
 
