@@ -121,6 +121,26 @@ impl Color {
         Ok(Color::rgba8(r, g, b, a))
     }
 
+    /// Returns the color with the red component set to the specified value.
+    pub const fn with_red(self, r: f32) -> Self {
+        Self { r, ..self }
+    }
+
+    /// Returns the color with the green component set to the specified value.
+    pub const fn with_green(self, g: f32) -> Self {
+        Self { g, ..self }
+    }
+
+    /// Returns the color with the blue component set to the specified value.
+    pub const fn with_blue(self, b: f32) -> Self {
+        Self { b, ..self }
+    }
+
+    /// Returns the color with the alpha component set to the specified value.
+    pub const fn with_alpha(self, a: f32) -> Self {
+        Self { a, ..self }
+    }
+
     // These constants should remain at the bottom of the impl block to keep
     // the docs readable - don't want to have to scroll through a load of colors
     // to get to the methods!
