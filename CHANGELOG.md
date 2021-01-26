@@ -18,6 +18,7 @@ This project adheres to Semantic Versioning.
 ### Changed
 
 * When running in `Timestep::Fixed` mode, the accumulator now has a cap of 150 milliseconds (around 6.5fps). This prevents the game from entering a 'spiral of doom' if updates are consistently running too slowly for the game loop to catch up - in this scenario, the game will now just slow down. This is still not a good experience for the player, but it prevents freezes/crashes.
+* Updated `bytemuck` to 1.5.
 
 ### Fixed
 
