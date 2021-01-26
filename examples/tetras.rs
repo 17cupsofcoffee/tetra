@@ -55,11 +55,11 @@ impl Assets {
         let font = VectorFontBuilder::new("./examples/resources/DejaVuSansMono.ttf")?;
 
         Ok(Assets {
-            bgm: Sound::new("./examples/resources/bgm.wav")?,
-            soft_drop_fx: Sound::new("./examples/resources/softdrop.wav")?,
-            hard_drop_fx: Sound::new("./examples/resources/harddrop.wav")?,
-            line_clear_fx: Sound::new("./examples/resources/lineclear.wav")?,
-            game_over_fx: Sound::new("./examples/resources/gameover.wav")?,
+            bgm: Sound::new("./examples/resources/bgm.ogg")?,
+            soft_drop_fx: Sound::new("./examples/resources/softdrop.ogg")?,
+            hard_drop_fx: Sound::new("./examples/resources/harddrop.ogg")?,
+            line_clear_fx: Sound::new("./examples/resources/lineclear.ogg")?,
+            game_over_fx: Sound::new("./examples/resources/gameover.ogg")?,
 
             font_16: font.with_size(ctx, 16.0)?,
             font_36: font.with_size(ctx, 36.0)?,

@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## Upcoming
+
+### Changed
+
+* The audio files for the `tetras` example are no longer ridiculously big.
+
 ## [0.5.8] - 2021-01-26
 
 ### Added 
