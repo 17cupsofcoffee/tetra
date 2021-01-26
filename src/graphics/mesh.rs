@@ -4,12 +4,12 @@ use std::rc::Rc;
 
 use bytemuck::{Pod, Zeroable};
 use lyon_tessellation::geom::euclid::{Point2D, Size2D};
-use lyon_tessellation::geometry_builder::simple_builder;
 use lyon_tessellation::math::{Angle, Point, Rect, Vector};
 use lyon_tessellation::path::builder::{Build, PathBuilder};
 use lyon_tessellation::path::{Polygon, Winding};
 use lyon_tessellation::{
-    FillOptions, FillTessellator, StrokeOptions, StrokeTessellator, VertexBuffers,
+    BuffersBuilder, FillOptions, FillTessellator, FillVertex, FillVertexConstructor, StrokeOptions,
+    StrokeTessellator, StrokeVertex, StrokeVertexConstructor, VertexBuffers,
 };
 
 use crate::graphics::{self, ActiveShader, Color, DrawParams, Drawable, Rectangle, Texture};
@@ -308,235 +308,120 @@ impl Mesh {
     }
 
     /// Creates a new rectangle mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
     pub fn rectangle(ctx: &mut Context, style: ShapeStyle, rectangle: Rectangle) -> Result<Mesh> {
-        let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
-        let mut geometry_builder = simple_builder(&mut geometry);
-
-        match style {
-            ShapeStyle::Fill => {
-                let options = FillOptions::default();
-                let mut tessellator = FillTessellator::new();
-                tessellator
-                    .tessellate_rectangle(&to_lyon_rect(rectangle), &options, &mut geometry_builder)
-                    .map_err(TetraError::TessellationError)?;
-            }
-
-            ShapeStyle::Stroke(width) => {
-                let options = StrokeOptions::default().with_line_width(width);
-                let mut tessellator = StrokeTessellator::new();
-                tessellator
-                    .tessellate_rectangle(&to_lyon_rect(rectangle), &options, &mut geometry_builder)
-                    .map_err(TetraError::TessellationError)?;
-            }
-        }
-
-        Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
+        GeometryBuilder::new()
+            .rectangle(style, rectangle)?
+            .build_mesh(ctx)
     }
 
     /// Creates a new rounded rectangle mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
     pub fn rounded_rectangle(
         ctx: &mut Context,
         style: ShapeStyle,
         rectangle: Rectangle,
         radii: BorderRadii,
     ) -> Result<Mesh> {
-        let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
-        let mut geometry_builder = simple_builder(&mut geometry);
-
-        match style {
-            ShapeStyle::Fill => {
-                let options = FillOptions::default();
-                let mut tessellator = FillTessellator::new();
-                let mut builder = tessellator.builder(&options, &mut geometry_builder);
-                builder.add_rounded_rectangle(&to_lyon_rect(rectangle), &radii, Winding::Positive);
-                builder.build().map_err(TetraError::TessellationError)?;
-            }
-
-            ShapeStyle::Stroke(width) => {
-                let options = StrokeOptions::default().with_line_width(width);
-                let mut tessellator = StrokeTessellator::new();
-                let mut builder = tessellator.builder(&options, &mut geometry_builder);
-                builder.add_rounded_rectangle(&to_lyon_rect(rectangle), &radii, Winding::Positive);
-                builder.build().map_err(TetraError::TessellationError)?;
-            }
-        }
-
-        Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
+        GeometryBuilder::new()
+            .rounded_rectangle(style, rectangle, radii)?
+            .build_mesh(ctx)
     }
 
     /// Creates a new circle mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
     pub fn circle(
         ctx: &mut Context,
         style: ShapeStyle,
         center: Vec2<f32>,
         radius: f32,
     ) -> Result<Mesh> {
-        let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
-        let mut geometry_builder = simple_builder(&mut geometry);
-
-        match style {
-            ShapeStyle::Fill => {
-                let options = FillOptions::default();
-                let mut tessellator = FillTessellator::new();
-
-                tessellator
-                    .tessellate_circle(
-                        Point::new(center.x, center.y),
-                        radius,
-                        &options,
-                        &mut geometry_builder,
-                    )
-                    .map_err(TetraError::TessellationError)?;
-            }
-
-            ShapeStyle::Stroke(width) => {
-                let options = StrokeOptions::default().with_line_width(width);
-                let mut tessellator = StrokeTessellator::new();
-
-                tessellator
-                    .tessellate_circle(
-                        Point::new(center.x, center.y),
-                        radius,
-                        &options,
-                        &mut geometry_builder,
-                    )
-                    .map_err(TetraError::TessellationError)?;
-            }
-        }
-
-        Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
+        GeometryBuilder::new()
+            .circle(style, center, radius)?
+            .build_mesh(ctx)
     }
 
     /// Creates a new ellipse mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
     pub fn ellipse(
         ctx: &mut Context,
         style: ShapeStyle,
         center: Vec2<f32>,
         radii: Vec2<f32>,
     ) -> Result<Mesh> {
-        let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
-        let mut geometry_builder = simple_builder(&mut geometry);
-
-        match style {
-            ShapeStyle::Fill => {
-                let options = FillOptions::default();
-                let mut tessellator = FillTessellator::new();
-
-                tessellator
-                    .tessellate_ellipse(
-                        Point::new(center.x, center.y),
-                        Vector::new(radii.x, radii.y),
-                        Angle::radians(0.0),
-                        Winding::Positive,
-                        &options,
-                        &mut geometry_builder,
-                    )
-                    .map_err(TetraError::TessellationError)?;
-            }
-
-            ShapeStyle::Stroke(width) => {
-                let options = StrokeOptions::default().with_line_width(width);
-                let mut tessellator = StrokeTessellator::new();
-
-                tessellator
-                    .tessellate_ellipse(
-                        Point::new(center.x, center.y),
-                        Vector::new(radii.x, radii.y),
-                        Angle::radians(0.0),
-                        Winding::Positive,
-                        &options,
-                        &mut geometry_builder,
-                    )
-                    .map_err(TetraError::TessellationError)?;
-            }
-        }
-
-        Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
+        GeometryBuilder::new()
+            .ellipse(style, center, radii)?
+            .build_mesh(ctx)
     }
 
     /// Creates a new polygon mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
     pub fn polygon(ctx: &mut Context, style: ShapeStyle, points: &[Vec2<f32>]) -> Result<Mesh> {
-        let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
-        let mut geometry_builder = simple_builder(&mut geometry);
-
-        let points: Vec<Point> = points
-            .iter()
-            .map(|point| Point::new(point.x, point.y))
-            .collect();
-
-        let polygon = Polygon {
-            points: &points,
-            closed: true,
-        };
-
-        match style {
-            ShapeStyle::Fill => {
-                let options = FillOptions::default();
-                let mut tessellator = FillTessellator::new();
-
-                tessellator
-                    .tessellate_polygon(polygon, &options, &mut geometry_builder)
-                    .map_err(TetraError::TessellationError)?;
-            }
-
-            ShapeStyle::Stroke(width) => {
-                let options = StrokeOptions::default().with_line_width(width);
-                let mut tessellator = StrokeTessellator::new();
-
-                tessellator
-                    .tessellate_polygon(polygon, &options, &mut geometry_builder)
-                    .map_err(TetraError::TessellationError)?;
-            }
-        }
-
-        Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
+        GeometryBuilder::new()
+            .polygon(style, points)?
+            .build_mesh(ctx)
     }
 
     /// Creates a new polyline mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
     pub fn polyline(ctx: &mut Context, stroke_width: f32, points: &[Vec2<f32>]) -> Result<Mesh> {
-        let mut geometry: VertexBuffers<Point, u16> = VertexBuffers::new();
-        let mut geometry_builder = simple_builder(&mut geometry);
-
-        let points: Vec<Point> = points
-            .iter()
-            .map(|point| Point::new(point.x, point.y))
-            .collect();
-
-        let polygon = Polygon {
-            points: &points,
-            closed: false,
-        };
-
-        let options = StrokeOptions::default().with_line_width(stroke_width);
-        let mut tessellator = StrokeTessellator::new();
-
-        tessellator
-            .tessellate_polygon(polygon, &options, &mut geometry_builder)
-            .map_err(TetraError::TessellationError)?;
-
-        Ok(Self::from_lyon_vertex_buffers(ctx, geometry)?)
-    }
-
-    fn from_lyon_vertex_buffers(
-        ctx: &mut Context,
-        vertex_buffers: VertexBuffers<Point, u16>,
-    ) -> Result<Mesh> {
-        let vertices: Vec<Vertex> = vertex_buffers
-            .vertices
-            .iter()
-            .map(|vertex| Vertex::new(Vec2::new(vertex.x, vertex.y), Vec2::zero(), Color::WHITE))
-            .collect();
-
-        let indices: Vec<u32> = vertex_buffers
-            .indices
-            .iter()
-            .map(|index| (*index).into())
-            .collect();
-
-        Ok(Mesh::indexed(
-            VertexBuffer::new(ctx, &vertices)?,
-            IndexBuffer::new(ctx, &indices)?,
-        ))
+        GeometryBuilder::new()
+            .polyline(stroke_width, points)?
+            .build_mesh(ctx)
     }
 
     /// Gets a reference to the vertex buffer contained within this mesh.
@@ -672,4 +557,345 @@ fn to_lyon_rect(rectangle: Rectangle) -> Rect {
         Point2D::new(rectangle.x, rectangle.y),
         Size2D::new(rectangle.width, rectangle.height),
     )
+}
+
+struct TetraVertexConstructor;
+
+impl FillVertexConstructor<Vertex> for TetraVertexConstructor {
+    fn new_vertex(&mut self, vertex: FillVertex) -> Vertex {
+        let position = vertex.position();
+
+        Vertex::new(
+            Vec2::new(position.x, position.y),
+            Vec2::zero(),
+            Color::WHITE,
+        )
+    }
+}
+
+impl StrokeVertexConstructor<Vertex> for TetraVertexConstructor {
+    fn new_vertex(&mut self, vertex: StrokeVertex) -> Vertex {
+        let position = vertex.position();
+
+        Vertex::new(
+            Vec2::new(position.x, position.y),
+            Vec2::zero(),
+            Color::WHITE,
+        )
+    }
+}
+
+/// A builder for creating primitive shape geometry, and associated buffers/meshes.
+#[derive(Debug, Clone)]
+pub struct GeometryBuilder {
+    data: VertexBuffers<Vertex, u32>,
+}
+
+impl GeometryBuilder {
+    /// Creates a new empty geometry builder.
+    pub fn new() -> GeometryBuilder {
+        GeometryBuilder {
+            data: VertexBuffers::new(),
+        }
+    }
+
+    /// Adds a rectangle.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    pub fn rectangle(
+        &mut self,
+        style: ShapeStyle,
+        rectangle: Rectangle,
+    ) -> Result<&mut GeometryBuilder> {
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+
+        match style {
+            ShapeStyle::Fill => {
+                let options = FillOptions::default();
+                let mut tessellator = FillTessellator::new();
+                tessellator
+                    .tessellate_rectangle(&to_lyon_rect(rectangle), &options, &mut builder)
+                    .map_err(TetraError::TessellationError)?;
+            }
+
+            ShapeStyle::Stroke(width) => {
+                let options = StrokeOptions::default().with_line_width(width);
+                let mut tessellator = StrokeTessellator::new();
+                tessellator
+                    .tessellate_rectangle(&to_lyon_rect(rectangle), &options, &mut builder)
+                    .map_err(TetraError::TessellationError)?;
+            }
+        }
+
+        Ok(self)
+    }
+
+    /// Adds a rounded rectangle.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    pub fn rounded_rectangle(
+        &mut self,
+        style: ShapeStyle,
+        rectangle: Rectangle,
+        radii: BorderRadii,
+    ) -> Result<&mut GeometryBuilder> {
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+
+        match style {
+            ShapeStyle::Fill => {
+                let options = FillOptions::default();
+                let mut tessellator = FillTessellator::new();
+                let mut builder = tessellator.builder(&options, &mut builder);
+                builder.add_rounded_rectangle(&to_lyon_rect(rectangle), &radii, Winding::Positive);
+                builder.build().map_err(TetraError::TessellationError)?;
+            }
+
+            ShapeStyle::Stroke(width) => {
+                let options = StrokeOptions::default().with_line_width(width);
+                let mut tessellator = StrokeTessellator::new();
+                let mut builder = tessellator.builder(&options, &mut builder);
+                builder.add_rounded_rectangle(&to_lyon_rect(rectangle), &radii, Winding::Positive);
+                builder.build().map_err(TetraError::TessellationError)?;
+            }
+        }
+
+        Ok(self)
+    }
+
+    /// Adds a circle.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    pub fn circle(
+        &mut self,
+        style: ShapeStyle,
+        center: Vec2<f32>,
+        radius: f32,
+    ) -> Result<&mut GeometryBuilder> {
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+
+        match style {
+            ShapeStyle::Fill => {
+                let options = FillOptions::default();
+                let mut tessellator = FillTessellator::new();
+
+                tessellator
+                    .tessellate_circle(
+                        Point::new(center.x, center.y),
+                        radius,
+                        &options,
+                        &mut builder,
+                    )
+                    .map_err(TetraError::TessellationError)?;
+            }
+
+            ShapeStyle::Stroke(width) => {
+                let options = StrokeOptions::default().with_line_width(width);
+                let mut tessellator = StrokeTessellator::new();
+
+                tessellator
+                    .tessellate_circle(
+                        Point::new(center.x, center.y),
+                        radius,
+                        &options,
+                        &mut builder,
+                    )
+                    .map_err(TetraError::TessellationError)?;
+            }
+        }
+
+        Ok(self)
+    }
+
+    /// Adds an ellipse.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    pub fn ellipse(
+        &mut self,
+        style: ShapeStyle,
+        center: Vec2<f32>,
+        radii: Vec2<f32>,
+    ) -> Result<&mut GeometryBuilder> {
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+
+        match style {
+            ShapeStyle::Fill => {
+                let options = FillOptions::default();
+                let mut tessellator = FillTessellator::new();
+
+                tessellator
+                    .tessellate_ellipse(
+                        Point::new(center.x, center.y),
+                        Vector::new(radii.x, radii.y),
+                        Angle::radians(0.0),
+                        Winding::Positive,
+                        &options,
+                        &mut builder,
+                    )
+                    .map_err(TetraError::TessellationError)?;
+            }
+
+            ShapeStyle::Stroke(width) => {
+                let options = StrokeOptions::default().with_line_width(width);
+                let mut tessellator = StrokeTessellator::new();
+
+                tessellator
+                    .tessellate_ellipse(
+                        Point::new(center.x, center.y),
+                        Vector::new(radii.x, radii.y),
+                        Angle::radians(0.0),
+                        Winding::Positive,
+                        &options,
+                        &mut builder,
+                    )
+                    .map_err(TetraError::TessellationError)?;
+            }
+        }
+
+        Ok(self)
+    }
+
+    /// Adds a polygon.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    pub fn polygon(
+        &mut self,
+        style: ShapeStyle,
+        points: &[Vec2<f32>],
+    ) -> Result<&mut GeometryBuilder> {
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+
+        let points: Vec<Point> = points
+            .iter()
+            .map(|point| Point::new(point.x, point.y))
+            .collect();
+
+        let polygon = Polygon {
+            points: &points,
+            closed: true,
+        };
+
+        match style {
+            ShapeStyle::Fill => {
+                let options = FillOptions::default();
+                let mut tessellator = FillTessellator::new();
+
+                tessellator
+                    .tessellate_polygon(polygon, &options, &mut builder)
+                    .map_err(TetraError::TessellationError)?;
+            }
+
+            ShapeStyle::Stroke(width) => {
+                let options = StrokeOptions::default().with_line_width(width);
+                let mut tessellator = StrokeTessellator::new();
+
+                tessellator
+                    .tessellate_polygon(polygon, &options, &mut builder)
+                    .map_err(TetraError::TessellationError)?;
+            }
+        }
+
+        Ok(self)
+    }
+
+    /// Adds a polyline.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    pub fn polyline(
+        &mut self,
+        stroke_width: f32,
+        points: &[Vec2<f32>],
+    ) -> Result<&mut GeometryBuilder> {
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+
+        let points: Vec<Point> = points
+            .iter()
+            .map(|point| Point::new(point.x, point.y))
+            .collect();
+
+        let polygon = Polygon {
+            points: &points,
+            closed: false,
+        };
+
+        let options = StrokeOptions::default().with_line_width(stroke_width);
+        let mut tessellator = StrokeTessellator::new();
+
+        tessellator
+            .tessellate_polygon(polygon, &options, &mut builder)
+            .map_err(TetraError::TessellationError)?;
+
+        Ok(self)
+    }
+
+    /// Clears the geometry builder's data.
+    pub fn clear(&mut self) -> &mut GeometryBuilder {
+        self.data.vertices.clear();
+        self.data.indices.clear();
+
+        self
+    }
+
+    /// Returns a view of the generated vertex data.
+    pub fn vertices(&self) -> &[Vertex] {
+        &self.data.vertices
+    }
+
+    /// Returns a view of the generated index data.
+    pub fn indices(&self) -> &[u32] {
+        &self.data.indices
+    }
+
+    /// Consumes the builder, returning the generated geometry.
+    pub fn into_data(self) -> (Vec<Vertex>, Vec<u32>) {
+        (self.data.vertices, self.data.indices)
+    }
+
+    /// Builds a vertex and index buffer from the generated geometry.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    pub fn build_buffers(&self, ctx: &mut Context) -> Result<(VertexBuffer, IndexBuffer)> {
+        Ok((
+            VertexBuffer::new(ctx, &self.data.vertices)?,
+            IndexBuffer::new(ctx, &self.data.indices)?,
+        ))
+    }
+
+    /// Builds a mesh from the generated geometry.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    pub fn build_mesh(&self, ctx: &mut Context) -> Result<Mesh> {
+        let (vertex_buffer, index_buffer) = self.build_buffers(ctx)?;
+
+        Ok(Mesh::indexed(vertex_buffer, index_buffer))
+    }
+}
+
+impl Default for GeometryBuilder {
+    fn default() -> Self {
+        GeometryBuilder::new()
+    }
 }
