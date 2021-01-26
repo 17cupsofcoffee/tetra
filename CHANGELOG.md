@@ -12,7 +12,7 @@ This project adheres to Semantic Versioning.
 
 * Basic support for multisample anti-aliasing has been added, in the form of `ContextBuilder::multisampling`.
     * This is currently only supported for the main backbuffer. Supporting `Canvas` multisampling requires a lot more work and raises some tricky API questions, so probably won't be added any time soon (unless someone writes a PR)!
-* `Mesh` now has constructors for various primitive shapes. ([@tesselode](https://github.com/tesselode) in [#226](https://github.com/17cupsofcoffee/tetra/pull/226)
+* `Mesh` now has constructors for various primitive shapes. ([@tesselode](https://github.com/tesselode) in [#226](https://github.com/17cupsofcoffee/tetra/pull/226))
     * There is also a new `GeometryBuilder` type, which can be used to create more complex/combined shapes.
 
 ### Changed
