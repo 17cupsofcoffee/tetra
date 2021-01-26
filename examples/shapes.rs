@@ -9,11 +9,17 @@ struct GameState {
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+        // For simple one-off shapes, `Mesh` has simple constructors.
         let simple = Mesh::circle(ctx, ShapeStyle::Stroke(16.0), Vec2::zero(), 16.0)?;
 
+        // If you want to create a `Mesh` with multiple shapes, there is a `GeometryBuilder`
+        // type that lets you do this. You can also use it to create buffers, or generate
+        // raw vertex data that you can process further yourself.
         let complex = GeometryBuilder::new()
+            // Background
             .set_color(Color::rgb(1.0, 1.0, 0.0))
             .circle(ShapeStyle::Fill, Vec2::zero(), 64.0)?
+            // Face
             .set_color(Color::BLACK)
             .circle(ShapeStyle::Fill, Vec2::new(-16.0, -16.0), 8.0)?
             .circle(ShapeStyle::Fill, Vec2::new(16.0, -16.0), 8.0)?
