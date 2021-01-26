@@ -559,17 +559,13 @@ fn to_lyon_rect(rectangle: Rectangle) -> Rect {
     )
 }
 
-struct TetraVertexConstructor;
+struct TetraVertexConstructor(Color);
 
 impl FillVertexConstructor<Vertex> for TetraVertexConstructor {
     fn new_vertex(&mut self, vertex: FillVertex) -> Vertex {
         let position = vertex.position();
 
-        Vertex::new(
-            Vec2::new(position.x, position.y),
-            Vec2::zero(),
-            Color::WHITE,
-        )
+        Vertex::new(Vec2::new(position.x, position.y), Vec2::zero(), self.0)
     }
 }
 
@@ -577,11 +573,7 @@ impl StrokeVertexConstructor<Vertex> for TetraVertexConstructor {
     fn new_vertex(&mut self, vertex: StrokeVertex) -> Vertex {
         let position = vertex.position();
 
-        Vertex::new(
-            Vec2::new(position.x, position.y),
-            Vec2::zero(),
-            Color::WHITE,
-        )
+        Vertex::new(Vec2::new(position.x, position.y), Vec2::zero(), self.0)
     }
 }
 
@@ -589,6 +581,7 @@ impl StrokeVertexConstructor<Vertex> for TetraVertexConstructor {
 #[derive(Debug, Clone)]
 pub struct GeometryBuilder {
     data: VertexBuffers<Vertex, u32>,
+    color: Color,
 }
 
 impl GeometryBuilder {
@@ -596,6 +589,7 @@ impl GeometryBuilder {
     pub fn new() -> GeometryBuilder {
         GeometryBuilder {
             data: VertexBuffers::new(),
+            color: Color::WHITE,
         }
     }
 
@@ -610,7 +604,7 @@ impl GeometryBuilder {
         style: ShapeStyle,
         rectangle: Rectangle,
     ) -> Result<&mut GeometryBuilder> {
-        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor(self.color));
 
         match style {
             ShapeStyle::Fill => {
@@ -645,7 +639,7 @@ impl GeometryBuilder {
         rectangle: Rectangle,
         radii: BorderRadii,
     ) -> Result<&mut GeometryBuilder> {
-        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor(self.color));
 
         match style {
             ShapeStyle::Fill => {
@@ -680,7 +674,7 @@ impl GeometryBuilder {
         center: Vec2<f32>,
         radius: f32,
     ) -> Result<&mut GeometryBuilder> {
-        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor(self.color));
 
         match style {
             ShapeStyle::Fill => {
@@ -727,7 +721,7 @@ impl GeometryBuilder {
         center: Vec2<f32>,
         radii: Vec2<f32>,
     ) -> Result<&mut GeometryBuilder> {
-        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor(self.color));
 
         match style {
             ShapeStyle::Fill => {
@@ -777,7 +771,7 @@ impl GeometryBuilder {
         style: ShapeStyle,
         points: &[Vec2<f32>],
     ) -> Result<&mut GeometryBuilder> {
-        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor(self.color));
 
         let points: Vec<Point> = points
             .iter()
@@ -823,7 +817,7 @@ impl GeometryBuilder {
         stroke_width: f32,
         points: &[Vec2<f32>],
     ) -> Result<&mut GeometryBuilder> {
-        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor);
+        let mut builder = BuffersBuilder::new(&mut self.data, TetraVertexConstructor(self.color));
 
         let points: Vec<Point> = points
             .iter()
@@ -843,6 +837,16 @@ impl GeometryBuilder {
             .map_err(TetraError::TessellationError)?;
 
         Ok(self)
+    }
+
+    /// Sets the color that will be used for subsequent shapes.
+    ///
+    /// You can also use [`DrawParams::color`](super::DrawParams) to tint an entire mesh -
+    /// this method only needs to be used if you want to display multiple colors in a
+    /// single piece of geometry.
+    pub fn set_color(&mut self, color: Color) -> &mut GeometryBuilder {
+        self.color = color;
+        self
     }
 
     /// Clears the geometry builder's data.
