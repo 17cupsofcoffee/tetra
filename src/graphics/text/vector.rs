@@ -22,10 +22,15 @@ where
     F: AbFont,
 {
     pub fn new(font: Rc<F>, size: f32) -> VectorRasterizer<F> {
-        VectorRasterizer {
-            font,
-            scale: PxScale::from(size),
-        }
+        let scale_factor = font
+            .units_per_em()
+            .map(|units_per_em| font.height_unscaled() / units_per_em)
+            .unwrap_or(1.0);
+
+        let px_size = size * scale_factor;
+        let scale = PxScale::from(px_size);
+
+        VectorRasterizer { font, scale }
     }
 }
 
