@@ -11,6 +11,7 @@ This project adheres to Semantic Versioning.
 ### Added
 
 * `DrawParams::to_matrix` has been added, which can be used to create a transformation matrix matching the behaviour of `DrawParams`.
+* `Font` now has a `from_vector_file_data` constructor, which is a shortcut for `VectorFontBuilder::from_file_data(data)?.with_size(ctx, size)`. ([@fossegutten](https://github.com/fossegutten) in [#232](https://github.com/17cupsofcoffee/tetra/pull/232))
 * More example links have been added to the docs, where appropriate.
 
 ### Changed

@@ -64,6 +64,31 @@ impl Font {
     {
         VectorFontBuilder::new(path)?.with_size(ctx, size)
     }
+
+    /// Creates a `Font` from a slice of binary data.
+    ///
+    /// TrueType and OpenType fonts are supported.
+    ///
+    /// This is useful in combination with [`include_bytes`](std::include_bytes), as it
+    /// allows you to include your font data directly in the binary.
+    ///
+    /// If you want to load multiple sizes of the same font, you can use a
+    /// [`VectorFontBuilder`] to avoid parsing the data multiple times.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::InvalidFont`](crate::TetraError::InvalidFont) will be returned if the font
+    /// data was invalid.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the GPU cache for the font
+    /// could not be created.
+    #[cfg(feature = "font_ttf")]
+    pub fn from_vector_file_data(
+        ctx: &mut Context,
+        data: &'static [u8],
+        size: f32,
+    ) -> Result<Font> {
+        VectorFontBuilder::from_file_data(data)?.with_size(ctx, size)
+    }
 }
 
 impl Debug for Font {
