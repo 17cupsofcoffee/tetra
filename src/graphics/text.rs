@@ -64,6 +64,15 @@ impl Font {
     {
         VectorFontBuilder::new(path)?.with_size(ctx, size)
     }
+    /// Creates a `Font` from a slice of binary data.
+    ///
+    /// TrueType and OpenType fonts are supported.
+    ///
+    /// This is useful in combination with [`include_bytes`](std::include_bytes), as it
+    /// allows you to include your audio data directly in the binary.
+    pub fn from_file_data(ctx: &mut Context, data: &'static [u8], size: f32) -> Result<Font> {
+        VectorFontBuilder::from_file_data(data)?.with_size(ctx, size)
+    }
 }
 
 impl Debug for Font {
