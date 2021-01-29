@@ -10,7 +10,7 @@ mod camera;
 mod canvas;
 mod color;
 mod drawable;
-mod mesh;
+pub mod mesh;
 mod rectangle;
 pub mod scaling;
 mod shader;
@@ -22,7 +22,6 @@ pub use camera::*;
 pub use canvas::*;
 pub use color::*;
 pub use drawable::*;
-pub use mesh::*;
 pub use rectangle::*;
 pub use shader::*;
 pub use texture::*;
@@ -32,6 +31,8 @@ use crate::math::{FrustumPlanes, Mat4, Vec2};
 use crate::platform::{GraphicsDevice, RawIndexBuffer, RawVertexBuffer};
 use crate::window;
 use crate::Context;
+
+use self::mesh::{BufferUsage, Vertex, VertexWinding};
 
 const MAX_SPRITES: usize = 2048;
 const MAX_VERTICES: usize = MAX_SPRITES * 4; // Cannot be greater than 32767!

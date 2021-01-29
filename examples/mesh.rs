@@ -1,4 +1,5 @@
-use tetra::graphics::{self, BufferUsage, Color, DrawParams, Mesh, Texture, Vertex, VertexBuffer};
+use tetra::graphics::mesh::{BufferUsage, Mesh, Vertex, VertexBuffer};
+use tetra::graphics::{self, Color, DrawParams, Texture};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 

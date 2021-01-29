@@ -16,6 +16,7 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
+* **Breaking:** Mesh and shape rendering types have been moved to `graphics::mesh`, to avoid cluttering the main `graphics` module.
 * The audio files for the `tetras` example are no longer ridiculously big.
 
 ## [0.5.8] - 2021-01-26

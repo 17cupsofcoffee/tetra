@@ -71,7 +71,7 @@ impl PartialEq for ShaderSharedData {
 /// * `u_projection` - A `mat4` which can be used to translate world space co-ordinates into screen space.
 /// * `u_texture` - A `sampler2D` which can be used to access color data from the currently active texture.
 /// * `u_diffuse` - A `vec4` representing the color of the current geometry. This is currently only used to
-///   pass through the [`DrawParams::color`](super::DrawParams::color) for a [`Mesh`](super::Mesh), and will
+///   pass through the [`DrawParams::color`](super::DrawParams::color) for a [`Mesh`](super::mesh::Mesh), and will
 ///   otherwise be set to [`Color::WHITE`].
 ///
 /// You can also set data into your own uniform variables via the `set_uniform` method.

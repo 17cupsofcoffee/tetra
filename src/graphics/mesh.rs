@@ -1,3 +1,5 @@
+//! Functions and types relating to meshes and shape drawing.
+
 pub use lyon_tessellation::path::builder::BorderRadii;
 
 use std::rc::Rc;

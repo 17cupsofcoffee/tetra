@@ -5,7 +5,8 @@ use std::rc::Rc;
 use glow::{Context as GlowContext, HasContext, PixelUnpackData};
 
 use crate::error::{Result, TetraError};
-use crate::graphics::{BufferUsage, FilterMode, VertexWinding};
+use crate::graphics::mesh::{BufferUsage, VertexWinding};
+use crate::graphics::FilterMode;
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
 /// Utility function for calculating offsets/sizes.

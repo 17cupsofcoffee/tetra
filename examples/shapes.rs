@@ -1,4 +1,5 @@
-use tetra::graphics::{self, Color, GeometryBuilder, Mesh, ShapeStyle};
+use tetra::graphics::mesh::{GeometryBuilder, Mesh, ShapeStyle};
+use tetra::graphics::{self, Color};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
