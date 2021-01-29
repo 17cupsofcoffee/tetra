@@ -14,7 +14,9 @@ use lyon_tessellation::{
     StrokeTessellator, StrokeVertex, StrokeVertexConstructor, VertexBuffers,
 };
 
-use crate::graphics::{self, ActiveShader, Color, DrawParams, Drawable, Rectangle, Texture};
+use crate::graphics::{
+    self, ActiveCanvas, ActiveShader, Color, DrawParams, Drawable, Rectangle, Texture,
+};
 use crate::math::Vec2;
 use crate::platform::{RawIndexBuffer, RawVertexBuffer};
 use crate::Context;
@@ -259,11 +261,12 @@ pub enum ShapeStyle {
 
 /// A 2D mesh that can be drawn to the screen.
 ///
-/// A `Mesh` is a wrapper for a [`VertexBuffer`], which allows it to be drawn in combination with three
+/// A `Mesh` is a wrapper for a [`VertexBuffer`], which allows it to be drawn in combination with four
 /// optional modifiers:
 ///
 /// * A [`Texture`] that individual vertices can sample from.
 /// * An [`IndexBuffer`] that can be used to modify the order/subset of vertices that are drawn.
+/// * A winding order, which determines which side of the geometry is front facing.
 /// * A draw range, which can be used to draw subsections of the mesh.
 ///
 /// Without a texture set, the mesh will be drawn in white - the `color` attribute on the [vertex data](Vertex) or
@@ -294,6 +297,7 @@ pub struct Mesh {
     vertex_buffer: VertexBuffer,
     index_buffer: Option<IndexBuffer>,
     texture: Option<Texture>,
+    winding: VertexWinding,
     draw_range: Option<DrawRange>,
 }
 
@@ -304,6 +308,7 @@ impl Mesh {
             vertex_buffer,
             index_buffer: None,
             texture: None,
+            winding: VertexWinding::CounterClockwise,
             draw_range: None,
         }
     }
@@ -314,6 +319,7 @@ impl Mesh {
             vertex_buffer,
             index_buffer: Some(index_buffer),
             texture: None,
+            winding: VertexWinding::CounterClockwise,
             draw_range: None,
         }
     }
@@ -479,6 +485,24 @@ impl Mesh {
         self.texture = None;
     }
 
+    /// Returns which winding order represents front-facing geometry in this mesh.
+    ///
+    /// Back-facing geometry will be culled (not rendered) by default.
+    ///
+    /// The default winding order is counter-clockwise.
+    pub fn front_face_winding(&self) -> VertexWinding {
+        self.winding
+    }
+
+    /// Sets which winding order represents front-facing geometry in this mesh.
+    ///
+    /// Back-facing geometry will be culled (not rendered) by default.
+    ///
+    /// The default winding order is counter-clockwise.
+    pub fn set_front_face_winding(&mut self, winding: VertexWinding) {
+        self.winding = winding;
+    }
+
     /// Sets the range of vertices (or indices, if the mesh is indexed) that should be included
     /// when drawing this mesh.
     ///
@@ -527,6 +551,13 @@ impl Drawable for Mesh {
             ctx.graphics.projection_matrix * ctx.graphics.transform_matrix * model_matrix,
             params.color,
         );
+
+        // Because canvas rendering is effectively done upside-down, the winding order is the opposite
+        // of what you'd expect in that case.
+        ctx.device.front_face(match &ctx.graphics.canvas {
+            ActiveCanvas::Window => self.winding,
+            ActiveCanvas::User(_) => self.winding.flipped(),
+        });
 
         let draw_range = self.draw_range.map(|r| (r.start, r.count));
 

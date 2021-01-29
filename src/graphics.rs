@@ -324,6 +324,13 @@ pub fn flush(ctx: &mut Context) {
             Color::WHITE,
         );
 
+        // Because canvas rendering is effectively done upside-down, the winding order is the opposite
+        // of what you'd expect in that case.
+        ctx.device.front_face(match &ctx.graphics.canvas {
+            ActiveCanvas::Window => VertexWinding::CounterClockwise,
+            ActiveCanvas::User(_) => VertexWinding::Clockwise,
+        });
+
         ctx.device.set_vertex_buffer_data(
             &ctx.graphics.vertex_buffer,
             bytemuck::cast_slice(&ctx.graphics.vertex_data),
@@ -415,38 +422,6 @@ pub fn set_transform_matrix(ctx: &mut Context, matrix: Mat4<f32>) {
 /// This is a shortcut for calling [`graphics::set_transform_matrix(ctx, Mat4::identity())`](set_transform_matrix).
 pub fn reset_transform_matrix(ctx: &mut Context) {
     set_transform_matrix(ctx, Mat4::identity());
-}
-
-/// Returns whether clockwise or counter-clockwise ordered vertices are currently considered front-facing.
-///
-/// Back-facing geometry will be culled (not rendered) by default.
-///
-/// The default winding order is counter-clockwise. This is correct for all of the geometry that Tetra
-/// generates, but if you are rendering a `Mesh` with clockwise ordered data, you will need to change
-/// this setting via [`set_front_face_winding`].
-pub fn get_front_face_winding(ctx: &mut Context) -> VertexWinding {
-    ctx.graphics.winding
-}
-
-/// Sets whether clockwise or counter-clockwise ordered vertices should be considered front-facing.
-///
-/// Back-facing geometry will be culled (not rendered) by default.
-///
-/// The default winding order is counter-clockwise. This is correct for all of the geometry that Tetra
-/// generates, but if you are rendering a `Mesh` with clockwise ordered data, you will need to change
-/// this setting.
-pub fn set_front_face_winding(ctx: &mut Context, winding: VertexWinding) {
-    if ctx.graphics.winding != winding {
-        flush(ctx);
-        ctx.graphics.winding = winding;
-
-        // Because canvas rendering is effectively done upside-down, the winding order is the opposite
-        // of what you'd expect in that case.
-        ctx.device.front_face(match &ctx.graphics.canvas {
-            ActiveCanvas::Window => winding,
-            ActiveCanvas::User(_) => winding.flipped(),
-        });
-    }
 }
 
 pub(crate) fn set_viewport_size(

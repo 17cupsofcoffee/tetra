@@ -12,12 +12,17 @@ This project adheres to Semantic Versioning.
 
 * `DrawParams::to_matrix` has been added, which can be used to create a transformation matrix matching the behaviour of `DrawParams`.
 * `Font` now has a `from_vector_file_data` constructor, which is a shortcut for `VectorFontBuilder::from_file_data(data)?.with_size(ctx, size)`. ([@fossegutten](https://github.com/fossegutten) in [#232](https://github.com/17cupsofcoffee/tetra/pull/232))
+* `Mesh` now has methods for getting and setting the winding order, which will automatically be applied when drawing it.
 * More example links have been added to the docs, where appropriate.
 
 ### Changed
 
 * **Breaking:** Mesh and shape rendering types have been moved to `graphics::mesh`, to avoid cluttering the main `graphics` module.
 * The audio files for the `tetras` example are no longer ridiculously big.
+
+### Removed
+
+* **Breaking:** `graphics::get_front_face_winding` and `graphics::set_front_face_winding` have been removed.
 
 ## [0.5.8] - 2021-01-26
 
