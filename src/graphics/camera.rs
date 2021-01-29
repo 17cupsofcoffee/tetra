@@ -36,11 +36,8 @@ pub struct Camera {
     /// The rotation of the camera, in radians.
     pub rotation: f32,
 
-    /// The zoom level of the camera.
-    ///
-    /// This is expressed as a scale factor - `0.5` will shrink everything by half,
-    /// while `2.0` will make everything twice as big.
-    pub zoom: f32,
+    /// The scaling applied by the camera.
+    pub scale: Vec2<f32>,
 
     /// The width of the camera's viewport.
     ///
@@ -68,7 +65,7 @@ impl Camera {
         Camera {
             position: Vec2::zero(),
             rotation: 0.0,
-            zoom: 1.0,
+            scale: Vec2::one(),
             viewport_width,
             viewport_height,
 
@@ -106,7 +103,8 @@ impl Camera {
     pub fn update(&mut self) {
         self.matrix = Mat4::translation_2d(-self.position);
         self.matrix.rotate_z(self.rotation);
-        self.matrix.scale_3d(Vec3::new(self.zoom, self.zoom, 1.0));
+        self.matrix
+            .scale_3d(Vec3::new(self.scale.x, self.scale.y, 1.0));
         self.matrix.translate_2d(Vec2::new(
             self.viewport_width / 2.0,
             self.viewport_height / 2.0,
@@ -128,8 +126,8 @@ impl Camera {
     /// Projects a point from world co-ordinates to camera co-ordinates.
     pub fn project(&self, point: Vec2<f32>) -> Vec2<f32> {
         let mut proj = Vec2::new(
-            (point.x - self.viewport_width / 2.0) / self.zoom,
-            (point.y - self.viewport_height / 2.0) / self.zoom,
+            (point.x - self.viewport_width / 2.0) / self.scale.x,
+            (point.y - self.viewport_height / 2.0) / self.scale.y,
         );
 
         proj.rotate_z(-self.rotation);
@@ -143,8 +141,8 @@ impl Camera {
         let mut unproj = point - self.position;
         unproj.rotate_z(self.rotation);
 
-        unproj.x = unproj.x * self.zoom + self.viewport_width / 2.0;
-        unproj.y = unproj.y * self.zoom + self.viewport_height / 2.0;
+        unproj.x = unproj.x * self.scale.x + self.viewport_width / 2.0;
+        unproj.y = unproj.y * self.scale.y + self.viewport_height / 2.0;
 
         unproj
     }
@@ -184,8 +182,8 @@ impl Camera {
     /// Note that this method does not take into account any other transformations being
     /// made to the view (e.g. screen scaling).
     pub fn visible_rect(&self) -> Rectangle {
-        let viewport_width = self.viewport_width / self.zoom;
-        let viewport_height = self.viewport_height / self.zoom;
+        let viewport_width = self.viewport_width / self.scale.x;
+        let viewport_height = self.viewport_height / self.scale.y;
 
         let half_viewport_width = viewport_width / 2.0;
         let half_viewport_height = viewport_height / 2.0;
@@ -252,12 +250,13 @@ mod tests {
         assert_eq!(proj_positioned, Vec2::new(-48.0, -112.0));
         assert_eq!(unproj_positioned, Vec2::zero());
 
-        camera.zoom = 2.0;
+        camera.scale.x = 2.0;
+        camera.scale.y = 4.0;
 
         let proj_zoomed = camera.project(Vec2::zero());
         let unproj_zoomed = camera.unproject(proj_zoomed);
 
-        assert_eq!(proj_zoomed, Vec2::new(-16.0, -48.0));
+        assert_eq!(proj_zoomed, Vec2::new(-16.0, -16.0));
         assert_eq!(unproj_zoomed, Vec2::zero());
 
         camera.rotation = std::f32::consts::FRAC_PI_2;
@@ -265,7 +264,7 @@ mod tests {
         let proj_rotated = camera.project(Vec2::zero());
         let unproj_rotated = camera.unproject(proj_rotated);
 
-        assert!(proj_rotated.x + 48.0 <= 0.001);
+        assert!(proj_rotated.x + 16.0 <= 0.001);
         assert!(proj_rotated.y - 48.0 <= 0.001);
         assert!(unproj_rotated.x.abs() <= 0.001);
         assert!(unproj_rotated.y.abs() <= 0.001);
@@ -286,16 +285,17 @@ mod tests {
             }
         );
 
-        // Zooming in will reduce the visible rect size and x/y position by half
-        camera.zoom = 2.0;
+        // Zooming in will reduce the visible rect size and x/y position
+        camera.scale.x = 2.0;
+        camera.scale.y = 4.0;
 
         assert_eq!(
             camera.visible_rect(),
             Rectangle {
                 x: -200.0,
-                y: -150.0,
+                y: -75.0,
                 width: 400.0,
-                height: 300.0
+                height: 150.0
             }
         );
 
@@ -306,9 +306,9 @@ mod tests {
             camera.visible_rect(),
             Rectangle {
                 x: -300.0,
-                y: -50.0,
+                y: 25.0,
                 width: 400.0,
-                height: 300.0
+                height: 150.0
             }
         );
 
@@ -318,9 +318,9 @@ mod tests {
 
         // We need to manually compare this to a small value because of rounding errors
         let rect = camera.visible_rect();
-        assert!(rect.x + 250.0 < 0.001);
+        assert!(rect.x + -175.0 < 0.001);
         assert!(rect.y + 100.0 < 0.001);
-        assert!(rect.width - 300.0 < 0.001);
+        assert!(rect.width - 150.0 < 0.001);
         assert!(rect.height - 400.0 < 0.001);
     }
 }
