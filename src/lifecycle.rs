@@ -6,6 +6,8 @@ use crate::{Context, TetraError};
 
 /// Implemented by types that contain game state and provide logic for updating it
 /// and drawing it to the screen.
+/// 
+/// # Error Handling
 ///
 /// The methods on `State` allow you to return a [`Result`], either explicitly or via the `?`
 /// operator. If an error is returned, the game will close and the error will be returned from
@@ -14,6 +16,14 @@ use crate::{Context, TetraError};
 ///
 /// The error type defaults to [`TetraError`], but this can be overridden by adding a type parameter
 /// to your `State` implementation (e.g. `State<MyError>`).
+/// 
+/// # Examples
+/// 
+/// The [`hello_world`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/hello_world.rs) example
+/// demonstrates a minimal implementation of the `State` trait.
+/// 
+/// The [`error_handling`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/error_handling.rs)
+/// example demonstrates how custom error types can be used to implement more robust error handling.
 #[allow(unused_variables)]
 pub trait State<E = TetraError> {
     /// Called when it is time for the game to update.

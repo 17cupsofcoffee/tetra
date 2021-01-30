@@ -8,6 +8,10 @@ This project adheres to Semantic Versioning.
 
 ## Upcoming
 
+### Added
+
+* More example links have been added to the docs, where appropriate.
+
 ### Changed
 
 * The audio files for the `tetras` example are no longer ridiculously big.

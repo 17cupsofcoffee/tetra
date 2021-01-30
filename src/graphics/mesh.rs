@@ -278,6 +278,15 @@ pub enum ShapeStyle {
 ///
 /// Note that cloned meshes do not share data, so updating one instance of a mesh will not affect
 /// other instances.
+/// 
+/// # Examples
+/// 
+/// The [`mesh`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/mesh.rs) example demonstrates
+/// how to build and draw a simple mesh.
+/// 
+/// The [`shapes`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/shapes.rs) example demonstrates
+/// how to draw primitive shapes, both through the simplified API on `Mesh`, and the more powerful
+/// [`GeometryBuilder`] API.  
 #[derive(Clone, Debug)]
 pub struct Mesh {
     vertex_buffer: VertexBuffer,
@@ -578,6 +587,18 @@ impl StrokeVertexConstructor<Vertex> for TetraVertexConstructor {
 }
 
 /// A builder for creating primitive shape geometry, and associated buffers/meshes.
+/// 
+/// # Performance
+/// 
+/// `GeometryBuilder` stores the generated vertex and index data in a pair of `Vec`s. This means that creating
+/// a new builder (as well as cloning an existing one) will allocate memory. Consider reusing a `GeometryBuilder`
+/// if you need to reuse the generated data, or if you need to create new data every frame.
+/// 
+/// # Examples
+/// 
+/// The [`shapes`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/shapes.rs) example demonstrates
+/// how to draw primitive shapes, both through the simplified API on [`Mesh`], and the more powerful
+/// `GeometryBuilder` API.  
 #[derive(Debug, Clone)]
 pub struct GeometryBuilder {
     data: VertexBuffers<Vertex, u32>,
