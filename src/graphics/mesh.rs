@@ -13,7 +13,7 @@ use lyon_tessellation::{
 };
 
 use crate::graphics::{self, ActiveShader, Color, DrawParams, Drawable, Rectangle, Texture};
-use crate::math::{Mat4, Vec2, Vec3};
+use crate::math::Vec2;
 use crate::platform::{RawIndexBuffer, RawVertexBuffer};
 use crate::Context;
 use crate::{Result, TetraError};
@@ -278,12 +278,12 @@ pub enum ShapeStyle {
 ///
 /// Note that cloned meshes do not share data, so updating one instance of a mesh will not affect
 /// other instances.
-/// 
+///
 /// # Examples
-/// 
+///
 /// The [`mesh`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/mesh.rs) example demonstrates
 /// how to build and draw a simple mesh.
-/// 
+///
 /// The [`shapes`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/shapes.rs) example demonstrates
 /// how to draw primitive shapes, both through the simplified API on `Mesh`, and the more powerful
 /// [`GeometryBuilder`] API.  
@@ -516,17 +516,13 @@ impl Drawable for Mesh {
         };
 
         let params = params.into();
-
-        let mut transform: Mat4<f32> = Mat4::translation_2d(-params.origin);
-        transform.scale_3d(Vec3::from(params.scale));
-        transform.rotate_z(params.rotation);
-        transform.translate_2d(params.position);
+        let model_matrix = params.to_matrix();
 
         // TODO: Failing to apply the defaults should be handled more gracefully than this,
         // but we can't do that without breaking changes.
         let _ = shader.set_default_uniforms(
             &mut ctx.device,
-            ctx.graphics.projection_matrix * ctx.graphics.transform_matrix * transform,
+            ctx.graphics.projection_matrix * ctx.graphics.transform_matrix * model_matrix,
             params.color,
         );
 
@@ -587,15 +583,15 @@ impl StrokeVertexConstructor<Vertex> for TetraVertexConstructor {
 }
 
 /// A builder for creating primitive shape geometry, and associated buffers/meshes.
-/// 
+///
 /// # Performance
-/// 
+///
 /// `GeometryBuilder` stores the generated vertex and index data in a pair of `Vec`s. This means that creating
 /// a new builder (as well as cloning an existing one) will allocate memory. Consider reusing a `GeometryBuilder`
 /// if you need to reuse the generated data, or if you need to create new data every frame.
-/// 
+///
 /// # Examples
-/// 
+///
 /// The [`shapes`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/shapes.rs) example demonstrates
 /// how to draw primitive shapes, both through the simplified API on [`Mesh`], and the more powerful
 /// `GeometryBuilder` API.  

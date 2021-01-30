@@ -10,6 +10,7 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
+* `DrawParams::to_matrix` has been added, which can be used to create a transformation matrix matching the behaviour of `DrawParams`.
 * More example links have been added to the docs, where appropriate.
 
 ### Changed

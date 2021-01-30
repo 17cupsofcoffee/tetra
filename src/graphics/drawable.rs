@@ -1,5 +1,5 @@
 use crate::graphics::{Color, Rectangle};
-use crate::math::Vec2;
+use crate::math::{Mat4, Vec2, Vec3};
 use crate::Context;
 
 /// Parameters that can be manipulated when drawing an object.
@@ -79,6 +79,18 @@ impl DrawParams {
         self.clip = Some(clip);
         self
     }
+
+    /// Creates a new transformation matrix equivalent to this set of params.
+    ///
+    /// This method does not take into account `color` or `clip`, as they cannot
+    /// be represented via a matrix.
+    pub fn to_matrix(&self) -> Mat4<f32> {
+        let mut matrix = Mat4::translation_2d(-self.origin);
+        matrix.scale_3d(Vec3::from(self.scale));
+        matrix.rotate_z(self.rotation);
+        matrix.translate_2d(self.position);
+        matrix
+    }
 }
 
 impl Default for DrawParams {
@@ -100,6 +112,12 @@ impl From<Vec2<f32>> for DrawParams {
             position,
             ..DrawParams::default()
         }
+    }
+}
+
+impl From<DrawParams> for Mat4<f32> {
+    fn from(params: DrawParams) -> Self {
+        params.to_matrix()
     }
 }
 
