@@ -3,7 +3,7 @@
 use std::time::Duration;
 
 use crate::graphics::texture::Texture;
-use crate::graphics::{DrawParams, Drawable, Rectangle};
+use crate::graphics::{DrawParams, Rectangle};
 use crate::time;
 use crate::Context;
 
@@ -57,6 +57,16 @@ impl Animation {
             timer: Duration::from_secs(0),
             repeating: false,
         }
+    }
+
+    /// Draws the current frame to the screen (or to a canvas, if one is enabled).
+    pub fn draw<P>(&self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
+        let frame = self.frames[self.current_frame];
+
+        self.texture.draw_region(ctx, frame, params);
     }
 
     /// Advances the animation's timer, switching the texture region if required.
@@ -193,30 +203,5 @@ impl Animation {
     /// skip frames.
     pub fn set_current_frame_time(&mut self, duration: Duration) {
         self.timer = duration;
-    }
-}
-
-impl Drawable for Animation {
-    fn draw<P>(&self, ctx: &mut Context, params: P)
-    where
-        P: Into<DrawParams>,
-    {
-        let frame_clip = self.frames[self.current_frame];
-
-        let mut params = params.into();
-
-        params.clip = match params.clip {
-            Some(mut clip) => {
-                clip.x += frame_clip.x;
-                clip.y += frame_clip.y;
-                clip.width += frame_clip.width;
-                clip.height += frame_clip.height;
-
-                Some(clip)
-            }
-            None => Some(frame_clip),
-        };
-
-        self.texture.draw(ctx, params)
     }
 }

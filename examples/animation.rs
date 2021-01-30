@@ -29,9 +29,8 @@ impl State for GameState {
 
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
-        graphics::draw(
+        self.animation.draw(
             ctx,
-            &self.animation,
             DrawParams::new()
                 .position(Vec2::new(240.0, 160.0))
                 .origin(Vec2::new(8.0, 8.0))

@@ -46,9 +46,8 @@ impl State for GameState {
 
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
-        graphics::draw(
+        self.mesh.draw(
             ctx,
-            &self.mesh,
             DrawParams::new()
                 .position(Vec2::new(1280.0 / 2.0, 720.0 / 2.0))
                 .origin(Vec2::new(64.0, 64.0))

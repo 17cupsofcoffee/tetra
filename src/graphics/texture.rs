@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use crate::error::{Result, TetraError};
 use crate::fs;
-use crate::graphics::{self, DrawParams, Drawable};
+use crate::graphics::{self, DrawParams, Rectangle};
 use crate::platform::{GraphicsDevice, RawTexture};
 use crate::Context;
 
@@ -177,6 +177,53 @@ impl Texture {
         })
     }
 
+    /// Draws the texture to the screen (or to a canvas, if one is enabled).
+    pub fn draw<P>(&self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
+        let params = params.into();
+
+        graphics::set_texture(ctx, self);
+        graphics::push_quad(
+            ctx,
+            0.0,
+            0.0,
+            self.width() as f32,
+            self.height() as f32,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            &params,
+        );
+    }
+
+    /// Draws a region of the texture to the screen (or to a canvas, if one is enabled).
+    pub fn draw_region<P>(&self, ctx: &mut Context, region: Rectangle, params: P)
+    where
+        P: Into<DrawParams>,
+    {
+        let params = params.into();
+
+        let texture_width = self.width() as f32;
+        let texture_height = self.height() as f32;
+
+        graphics::set_texture(ctx, self);
+        graphics::push_quad(
+            ctx,
+            0.0,
+            0.0,
+            region.width,
+            region.height,
+            region.x / texture_width,
+            region.y / texture_height,
+            region.right() / texture_width,
+            region.bottom() / texture_height,
+            &params,
+        );
+    }
+
     /// Returns the width of the texture.
     pub fn width(&self) -> i32 {
         self.data.handle.width()
@@ -252,36 +299,6 @@ impl Texture {
     pub fn replace_data(&self, ctx: &mut Context, data: &[u8]) -> Result {
         let (width, height) = self.size();
         self.set_data(ctx, 0, 0, width, height, data)
-    }
-}
-
-impl Drawable for Texture {
-    fn draw<P>(&self, ctx: &mut Context, params: P)
-    where
-        P: Into<DrawParams>,
-    {
-        let params = params.into();
-
-        let texture_width = self.width() as f32;
-        let texture_height = self.height() as f32;
-
-        let (u, v, clip_width, clip_height) = match params.clip {
-            Some(clip) => (clip.x, clip.y, clip.width, clip.height),
-            None => (0.0, 0.0, texture_width, texture_height),
-        };
-
-        let x1 = 0.0;
-        let y1 = 0.0;
-        let x2 = clip_width;
-        let y2 = clip_height;
-
-        let u1 = u / texture_width;
-        let v1 = v / texture_height;
-        let u2 = (u + clip_width) / texture_width;
-        let v2 = (v + clip_height) / texture_height;
-
-        graphics::set_texture(ctx, self);
-        graphics::push_quad(ctx, x1, y1, x2, y2, u1, v1, u2, v2, &params);
     }
 }
 

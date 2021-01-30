@@ -1,11 +1,9 @@
 //! Functions and types relating to user interfaces.
 
-use crate::graphics::{self, DrawParams, Drawable, Rectangle, Texture};
+use crate::graphics::{self, DrawParams, Rectangle, Texture};
 use crate::Context;
 
 /// A panel made up of nine slices of an image. Useful for panels with borders.
-///
-/// Note that `NineSlice` does not currently support the [`clip` `DrawParam`](DrawParams).
 ///
 /// # Examples
 ///
@@ -33,63 +31,8 @@ impl NineSlice {
         }
     }
 
-    /// Returns a reference to the underlying texture for the panel.
-    pub fn texture(&self) -> &Texture {
-        &self.texture
-    }
-
-    /// Sets the underlying texture for the panel.
-    ///
-    /// This will not adjust the way that the texture is sliced, so you may need to also call
-    /// [`set_fill_rect`](Self::set_fill_rect).
-    pub fn set_texture(&mut self, texture: Texture) {
-        self.texture = texture;
-    }
-
-    /// Gets the width of the panel.
-    pub fn width(&self) -> f32 {
-        self.width
-    }
-
-    /// Sets the width of the panel.
-    pub fn set_width(&mut self, width: f32) {
-        self.width = width;
-    }
-
-    /// Gets the height of the panel.
-    pub fn height(&self) -> f32 {
-        self.height
-    }
-
-    /// Sets the height of the panel.
-    pub fn set_height(&mut self, height: f32) {
-        self.height = height;
-    }
-
-    /// Gets the size of the panel.
-    pub fn size(&self) -> (f32, f32) {
-        (self.width, self.height)
-    }
-
-    /// Sets the size of the panel.
-    pub fn set_size(&mut self, width: f32, height: f32) {
-        self.width = width;
-        self.height = height;
-    }
-
-    /// Gets the section of the texture that is being used to fill the center of the panel.
-    pub fn fill_rect(&self) -> &Rectangle {
-        &self.fill_rect
-    }
-
-    /// Sets the section of the texture that should fill the center of the panel.
-    pub fn set_fill_rect(&mut self, fill_rect: Rectangle) {
-        self.fill_rect = fill_rect;
-    }
-}
-
-impl Drawable for NineSlice {
-    fn draw<P>(&self, ctx: &mut Context, params: P)
+    /// Draws the panel to the screen (or to a canvas, if one is enabled).
+    pub fn draw<P>(&self, ctx: &mut Context, params: P)
     where
         P: Into<DrawParams>,
     {
@@ -144,5 +87,59 @@ impl Drawable for NineSlice {
 
         // Bottom right
         graphics::push_quad(ctx, x3, y3, x4, y4, u3, v3, u4, v4, &params);
+    }
+
+    /// Returns a reference to the underlying texture for the panel.
+    pub fn texture(&self) -> &Texture {
+        &self.texture
+    }
+
+    /// Sets the underlying texture for the panel.
+    ///
+    /// This will not adjust the way that the texture is sliced, so you may need to also call
+    /// [`set_fill_rect`](Self::set_fill_rect).
+    pub fn set_texture(&mut self, texture: Texture) {
+        self.texture = texture;
+    }
+
+    /// Gets the width of the panel.
+    pub fn width(&self) -> f32 {
+        self.width
+    }
+
+    /// Sets the width of the panel.
+    pub fn set_width(&mut self, width: f32) {
+        self.width = width;
+    }
+
+    /// Gets the height of the panel.
+    pub fn height(&self) -> f32 {
+        self.height
+    }
+
+    /// Sets the height of the panel.
+    pub fn set_height(&mut self, height: f32) {
+        self.height = height;
+    }
+
+    /// Gets the size of the panel.
+    pub fn size(&self) -> (f32, f32) {
+        (self.width, self.height)
+    }
+
+    /// Sets the size of the panel.
+    pub fn set_size(&mut self, width: f32, height: f32) {
+        self.width = width;
+        self.height = height;
+    }
+
+    /// Gets the section of the texture that is being used to fill the center of the panel.
+    pub fn fill_rect(&self) -> &Rectangle {
+        &self.fill_rect
+    }
+
+    /// Sets the section of the texture that should fill the center of the panel.
+    pub fn set_fill_rect(&mut self, fill_rect: Rectangle) {
+        self.fill_rect = fill_rect;
     }
 }

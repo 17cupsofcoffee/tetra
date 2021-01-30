@@ -9,7 +9,7 @@ pub mod animation;
 mod camera;
 mod canvas;
 mod color;
-mod drawable;
+mod drawparams;
 pub mod mesh;
 mod rectangle;
 pub mod scaling;
@@ -21,7 +21,7 @@ pub mod ui;
 pub use camera::*;
 pub use canvas::*;
 pub use color::*;
-pub use drawable::*;
+pub use drawparams::*;
 pub use rectangle::*;
 pub use shader::*;
 pub use texture::*;
@@ -211,20 +211,6 @@ pub(crate) fn push_quad(
     ctx.graphics.element_count += 6;
 }
 
-/// Draws an object to the screen (or to a canvas, if one is enabled).
-///
-/// This function simply calls [`Drawable::draw`] on the passed object - it is
-/// provided to allow you to avoid having to import the [`Drawable`] trait as well
-/// as the `graphics` module.
-pub fn draw<D: Drawable, P: Into<DrawParams>>(ctx: &mut Context, drawable: &D, params: P) {
-    drawable.draw(ctx, params);
-}
-
-/// Sets the texture that is currently being used for rendering.
-///
-/// If the texture is different from the one that is currently in use, this will trigger a
-/// [`flush`] to the graphics hardware - try to avoid texture swapping as
-/// much as you can.
 pub(crate) fn set_texture(ctx: &mut Context, texture: &Texture) {
     set_texture_ex(ctx, ActiveTexture::User(texture.clone()));
 }

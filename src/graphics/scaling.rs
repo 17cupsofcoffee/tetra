@@ -1,7 +1,7 @@
 //! Functions and types relating to screen scaling.
 
 use crate::error::Result;
-use crate::graphics::{self, Canvas, DrawParams, Drawable, Rectangle};
+use crate::graphics::{self, Canvas, DrawParams, Rectangle};
 use crate::input;
 use crate::math::Vec2;
 use crate::window;
@@ -65,6 +65,24 @@ impl ScreenScaler {
             outer_height,
             mode,
         )
+    }
+
+    /// Draws the scaled image to the screen.
+    pub fn draw(&self, ctx: &mut Context) {
+        graphics::set_texture(ctx, &self.canvas.texture);
+
+        graphics::push_quad(
+            ctx,
+            self.screen_rect.x,
+            self.screen_rect.y,
+            self.screen_rect.x + self.screen_rect.width,
+            self.screen_rect.y + self.screen_rect.height,
+            0.0,
+            0.0,
+            1.0,
+            1.0,
+            &DrawParams::new(),
+        );
     }
 
     /// Updates the scaler's outer size (i.e. the size of the box that the screen will be scaled to
@@ -188,28 +206,6 @@ fn project_impl(window_pos: f32, rect_pos: f32, rect_size: f32, real_size: f32) 
 
 fn unproject_impl(screen_pos: f32, rect_pos: f32, rect_size: f32, real_size: f32) -> f32 {
     rect_pos + ((rect_size * screen_pos) / real_size)
-}
-
-impl Drawable for ScreenScaler {
-    fn draw<P>(&self, ctx: &mut Context, params: P)
-    where
-        P: Into<DrawParams>,
-    {
-        graphics::set_texture(ctx, &self.canvas.texture);
-
-        graphics::push_quad(
-            ctx,
-            self.screen_rect.x,
-            self.screen_rect.y,
-            self.screen_rect.x + self.screen_rect.width,
-            self.screen_rect.y + self.screen_rect.height,
-            0.0,
-            0.0,
-            1.0,
-            1.0,
-            &params.into(),
-        );
-    }
 }
 
 /// Algorithms that can be used to scale the game's screen.

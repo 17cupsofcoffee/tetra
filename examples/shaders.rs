@@ -65,9 +65,8 @@ impl State for GameState {
         self.shader.set_uniform(ctx, "u_green", self.green);
         self.shader.set_uniform(ctx, "u_blue", self.blue);
 
-        graphics::draw(
+        self.texture.draw(
             ctx,
-            &self.texture,
             DrawParams::new()
                 .position(Vec2::new(640.0, 360.0))
                 .origin(Vec2::new(8.0, 8.0))
@@ -76,7 +75,7 @@ impl State for GameState {
 
         graphics::reset_shader(ctx);
 
-        graphics::draw(ctx, &self.text, Vec2::new(16.0, 16.0));
+        self.text.draw(ctx, Vec2::new(16.0, 16.0));
 
         Ok(())
     }

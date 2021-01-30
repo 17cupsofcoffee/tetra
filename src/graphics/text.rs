@@ -16,7 +16,7 @@ use std::rc::Rc;
 
 use crate::error::Result;
 use crate::graphics::text::cache::{FontCache, TextGeometry};
-use crate::graphics::{self, DrawParams, Drawable, Rectangle};
+use crate::graphics::{self, DrawParams, Rectangle};
 use crate::Context;
 
 #[cfg(feature = "font_ttf")]
@@ -131,6 +131,34 @@ impl Text {
         }
     }
 
+    /// Draws the text to the screen (or to a canvas, if one is enabled).
+    pub fn draw<P>(&self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
+        let params = params.into();
+
+        let geometry = self.get_latest_geometry(ctx);
+
+        let data = self.font.data.borrow();
+        graphics::set_texture(ctx, data.texture());
+
+        for quad in &geometry.quads {
+            graphics::push_quad(
+                ctx,
+                quad.position.x,
+                quad.position.y,
+                quad.position.right(),
+                quad.position.bottom(),
+                quad.uv.x,
+                quad.uv.y,
+                quad.uv.right(),
+                quad.uv.bottom(),
+                &params,
+            );
+        }
+    }
+
     /// Returns a reference to the content of the text.
     pub fn content(&self) -> &str {
         &self.content
@@ -220,34 +248,5 @@ impl Text {
             g.as_mut()
                 .expect("Geometry should have already been generated")
         })
-    }
-}
-
-impl Drawable for Text {
-    fn draw<P>(&self, ctx: &mut Context, params: P)
-    where
-        P: Into<DrawParams>,
-    {
-        let params = params.into();
-
-        let geometry = self.get_latest_geometry(ctx);
-
-        let data = self.font.data.borrow();
-        graphics::set_texture(ctx, data.texture());
-
-        for quad in &geometry.quads {
-            graphics::push_quad(
-                ctx,
-                quad.position.x,
-                quad.position.y,
-                quad.position.right(),
-                quad.position.bottom(),
-                quad.uv.x,
-                quad.uv.y,
-                quad.uv.right(),
-                quad.uv.bottom(),
-                &params,
-            );
-        }
     }
 }

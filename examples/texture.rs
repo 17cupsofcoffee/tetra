@@ -18,9 +18,8 @@ impl State for GameState {
     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(0.769, 0.812, 0.631));
 
-        graphics::draw(
+        self.texture.draw(
             ctx,
-            &self.texture,
             DrawParams::new()
                 .position(Vec2::new(32.0, 32.0))
                 .origin(Vec2::new(8.0, 8.0))

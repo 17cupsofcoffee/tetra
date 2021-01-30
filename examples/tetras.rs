@@ -151,7 +151,8 @@ impl State for GameState {
 
         graphics::reset_canvas(ctx);
         graphics::clear(ctx, Color::BLACK);
-        graphics::draw(ctx, &self.scaler, Vec2::new(0.0, 0.0));
+
+        self.scaler.draw(ctx);
 
         Ok(())
     }
@@ -198,8 +199,8 @@ impl Scene for TitleScene {
     fn draw(&mut self, ctx: &mut Context, _: &Assets) -> tetra::Result<Transition> {
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
-        graphics::draw(ctx, &self.title_text, Vec2::new(16.0, 16.0));
-        graphics::draw(ctx, &self.help_text, Vec2::new(16.0, 56.0));
+        self.title_text.draw(ctx, Vec2::new(16.0, 16.0));
+        self.help_text.draw(ctx, Vec2::new(16.0, 56.0));
 
         Ok(Transition::None)
     }
@@ -578,22 +579,16 @@ impl Scene for GameScene {
     fn draw(&mut self, ctx: &mut Context, assets: &Assets) -> tetra::Result<Transition> {
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
-        graphics::draw(
-            ctx,
-            &assets.backdrop,
-            Vec2::new(BOARD_OFFSET_X as f32, BOARD_OFFSET_Y as f32),
-        );
+        assets
+            .backdrop
+            .draw(ctx, Vec2::new(BOARD_OFFSET_X as f32, BOARD_OFFSET_Y as f32));
 
-        graphics::draw(
-            ctx,
-            &self.score_text,
-            Vec2::new(BOARD_OFFSET_X as f32, SCORE_OFFSET_Y as f32),
-        );
+        self.score_text
+            .draw(ctx, Vec2::new(BOARD_OFFSET_X as f32, SCORE_OFFSET_Y as f32));
 
         for (x, y, color) in self.board_blocks() {
-            graphics::draw(
+            assets.block.draw(
                 ctx,
-                &assets.block,
                 DrawParams::new()
                     .position(Vec2::new(
                         (BOARD_OFFSET_X + BORDER_SIZE + x * BLOCK_SIZE) as f32,
@@ -606,9 +601,8 @@ impl Scene for GameScene {
         let block_color = self.block.color();
 
         for (x, y) in self.block.segments() {
-            graphics::draw(
+            assets.block.draw(
                 ctx,
-                &assets.block,
                 DrawParams::new()
                     .position(Vec2::new(
                         (BOARD_OFFSET_X + BORDER_SIZE + x * BLOCK_SIZE) as f32,

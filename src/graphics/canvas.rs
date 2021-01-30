@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use crate::error::Result;
-use crate::graphics::{DrawParams, Drawable, FilterMode, Texture};
+use crate::graphics::{DrawParams, FilterMode, Texture};
 use crate::platform::{GraphicsDevice, RawFramebuffer};
 use crate::Context;
 
@@ -64,6 +64,14 @@ impl Canvas {
             texture,
             framebuffer: Rc::new(framebuffer),
         })
+    }
+
+    /// Draws the canvas to the screen (or to another canvas, if one is enabled).
+    pub fn draw<P>(&self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
+        self.texture.draw(ctx, params)
     }
 
     /// Returns the width of the canvas.
@@ -142,14 +150,5 @@ impl Canvas {
     /// Returns a reference to the canvas' underlying texture.
     pub fn texture(&self) -> &Texture {
         &self.texture
-    }
-}
-
-impl Drawable for Canvas {
-    fn draw<P>(&self, ctx: &mut Context, params: P)
-    where
-        P: Into<DrawParams>,
-    {
-        self.texture.draw(ctx, params)
     }
 }

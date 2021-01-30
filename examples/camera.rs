@@ -80,9 +80,8 @@ impl State for GameState {
         graphics::set_transform_matrix(ctx, self.camera.as_matrix());
 
         // Now all drawing operations will be transformed:
-        graphics::draw(
+        self.texture.draw(
             ctx,
-            &self.texture,
             DrawParams::new()
                 .origin(Vec2::new(8.0, 8.0))
                 .scale(Vec2::new(2.0, 2.0)),
@@ -95,7 +94,8 @@ impl State for GameState {
 
         graphics::reset_canvas(ctx);
         graphics::clear(ctx, Color::BLACK);
-        graphics::draw(ctx, &self.scaler, Vec2::zero());
+
+        self.scaler.draw(ctx);
 
         Ok(())
     }

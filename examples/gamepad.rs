@@ -119,32 +119,30 @@ impl GameState {
     }
 
     fn draw_button(&self, ctx: &mut Context, x: f32, y: f32, sprite: Sprite, active: bool) {
-        graphics::draw(
+        self.texture.draw_region(
             ctx,
-            &self.texture,
+            sprite.into(),
             DrawParams::new()
                 .position(Vec2::new(x, y))
                 .color(if active {
                     self.active_color
                 } else {
                     Color::WHITE
-                })
-                .clip(sprite.into()),
+                }),
         );
     }
 
     fn draw_stick(&self, ctx: &mut Context, x: f32, y: f32, sprite: Sprite, value: Vec2<f32>) {
-        graphics::draw(
+        self.texture.draw_region(
             ctx,
-            &self.texture,
+            sprite.into(),
             DrawParams::new()
                 .position(Vec2::new(x, y) + (value * 32.0))
                 .color(if value.magnitude().abs() > 0.08 {
                     self.active_color
                 } else {
                     Color::WHITE
-                })
-                .clip(sprite.into()),
+                }),
         );
     }
 }
@@ -219,7 +217,7 @@ impl State for GameState {
             self.draw_stick(ctx, 300.0, 500.0, Sprite::LS, self.left_stick);
             self.draw_stick(ctx, 880.0, 500.0, Sprite::RS, self.right_stick);
 
-            graphics::draw(ctx, &self.axis_info, Vec2::new(16.0, 720.0 - 48.0));
+            self.axis_info.draw(ctx, Vec2::new(16.0, 720.0 - 48.0));
         } else {
             self.draw_button(ctx, 16.0, 16.0, Sprite::Disconnected, false);
         }

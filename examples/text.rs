@@ -27,7 +27,8 @@ impl GameState {
 impl State for GameState {
     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
-        graphics::draw(ctx, &self.text, self.pos);
+
+        self.text.draw(ctx, self.pos);
 
         Ok(())
     }

@@ -112,7 +112,7 @@ impl State for GameState {
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
 
         for bunny in &self.bunnies {
-            graphics::draw(ctx, &self.texture, bunny.position);
+            self.texture.draw(ctx, bunny.position);
         }
 
         window::set_title(

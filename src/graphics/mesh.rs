@@ -14,9 +14,7 @@ use lyon_tessellation::{
     StrokeTessellator, StrokeVertex, StrokeVertexConstructor, VertexBuffers,
 };
 
-use crate::graphics::{
-    self, ActiveCanvas, ActiveShader, Color, DrawParams, Drawable, Rectangle, Texture,
-};
+use crate::graphics::{self, ActiveCanvas, ActiveShader, Color, DrawParams, Rectangle, Texture};
 use crate::math::Vec2;
 use crate::platform::{RawIndexBuffer, RawVertexBuffer};
 use crate::Context;
@@ -441,6 +439,71 @@ impl Mesh {
             .build_mesh(ctx)
     }
 
+    /// Draws the mesh to the screen (or to a canvas, if one is enabled).
+    pub fn draw<P>(&self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
+        graphics::flush(ctx);
+
+        let texture = match &self.texture {
+            Some(t) => t,
+            None => &ctx.graphics.default_texture,
+        };
+
+        let shader = match &ctx.graphics.shader {
+            ActiveShader::Default => &ctx.graphics.default_shader,
+            ActiveShader::User(s) => s,
+        };
+
+        let params = params.into();
+        let model_matrix = params.to_matrix();
+
+        // TODO: Failing to apply the defaults should be handled more gracefully than this,
+        // but we can't do that without breaking changes.
+        let _ = shader.set_default_uniforms(
+            &mut ctx.device,
+            ctx.graphics.projection_matrix * ctx.graphics.transform_matrix * model_matrix,
+            params.color,
+        );
+
+        // Because canvas rendering is effectively done upside-down, the winding order is the opposite
+        // of what you'd expect in that case.
+        ctx.device.front_face(match &ctx.graphics.canvas {
+            ActiveCanvas::Window => self.winding,
+            ActiveCanvas::User(_) => self.winding.flipped(),
+        });
+
+        let draw_range = self.draw_range.map(|r| (r.start, r.count));
+
+        match &self.index_buffer {
+            Some(index_buffer) => {
+                let (start, count) = draw_range.unwrap_or_else(|| (0, index_buffer.handle.count()));
+
+                ctx.device.draw_elements(
+                    &self.vertex_buffer.handle,
+                    &index_buffer.handle,
+                    &texture.data.handle,
+                    &shader.data.handle,
+                    start,
+                    count,
+                );
+            }
+            None => {
+                let (start, count) =
+                    draw_range.unwrap_or_else(|| (0, self.vertex_buffer.handle.count()));
+
+                ctx.device.draw_arrays(
+                    &self.vertex_buffer.handle,
+                    &texture.data.handle,
+                    &shader.data.handle,
+                    start,
+                    count,
+                );
+            }
+        }
+    }
+
     /// Gets a reference to the vertex buffer contained within this mesh.
     pub fn vertex_buffer(&self) -> &VertexBuffer {
         &self.vertex_buffer
@@ -521,72 +584,6 @@ impl Mesh {
 impl From<VertexBuffer> for Mesh {
     fn from(buffer: VertexBuffer) -> Self {
         Mesh::new(buffer)
-    }
-}
-
-impl Drawable for Mesh {
-    fn draw<P>(&self, ctx: &mut Context, params: P)
-    where
-        P: Into<DrawParams>,
-    {
-        graphics::flush(ctx);
-
-        let texture = match &self.texture {
-            Some(t) => t,
-            None => &ctx.graphics.default_texture,
-        };
-
-        let shader = match &ctx.graphics.shader {
-            ActiveShader::Default => &ctx.graphics.default_shader,
-            ActiveShader::User(s) => s,
-        };
-
-        let params = params.into();
-        let model_matrix = params.to_matrix();
-
-        // TODO: Failing to apply the defaults should be handled more gracefully than this,
-        // but we can't do that without breaking changes.
-        let _ = shader.set_default_uniforms(
-            &mut ctx.device,
-            ctx.graphics.projection_matrix * ctx.graphics.transform_matrix * model_matrix,
-            params.color,
-        );
-
-        // Because canvas rendering is effectively done upside-down, the winding order is the opposite
-        // of what you'd expect in that case.
-        ctx.device.front_face(match &ctx.graphics.canvas {
-            ActiveCanvas::Window => self.winding,
-            ActiveCanvas::User(_) => self.winding.flipped(),
-        });
-
-        let draw_range = self.draw_range.map(|r| (r.start, r.count));
-
-        match &self.index_buffer {
-            Some(index_buffer) => {
-                let (start, count) = draw_range.unwrap_or_else(|| (0, index_buffer.handle.count()));
-
-                ctx.device.draw_elements(
-                    &self.vertex_buffer.handle,
-                    &index_buffer.handle,
-                    &texture.data.handle,
-                    &shader.data.handle,
-                    start,
-                    count,
-                );
-            }
-            None => {
-                let (start, count) =
-                    draw_range.unwrap_or_else(|| (0, self.vertex_buffer.handle.count()));
-
-                ctx.device.draw_arrays(
-                    &self.vertex_buffer.handle,
-                    &texture.data.handle,
-                    &shader.data.handle,
-                    start,
-                    count,
-                );
-            }
-        }
     }
 }
 

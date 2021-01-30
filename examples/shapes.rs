@@ -35,8 +35,8 @@ impl State for GameState {
     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
 
-        graphics::draw(ctx, &self.simple, Vec2::new(64.0, 64.0));
-        graphics::draw(ctx, &self.complex, Vec2::new(256.0, 64.0));
+        self.simple.draw(ctx, Vec2::new(64.0, 64.0));
+        self.complex.draw(ctx, Vec2::new(256.0, 64.0));
 
         Ok(())
     }

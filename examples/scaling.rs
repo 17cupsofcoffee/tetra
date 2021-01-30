@@ -64,12 +64,14 @@ impl State for GameState {
     fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
         graphics::set_canvas(ctx, self.scaler.canvas());
         graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
-        graphics::draw(ctx, &self.panel, Vec2::new(PANEL_X, PANEL_Y));
-        graphics::draw(ctx, &self.text, Vec2::new(PANEL_X + 8.0, PANEL_Y + 8.0));
+
+        self.panel.draw(ctx, Vec2::new(PANEL_X, PANEL_Y));
+        self.text.draw(ctx, Vec2::new(PANEL_X + 8.0, PANEL_Y + 8.0));
 
         graphics::reset_canvas(ctx);
         graphics::clear(ctx, Color::BLACK);
-        graphics::draw(ctx, &self.scaler, Vec2::new(0.0, 0.0));
+
+        self.scaler.draw(ctx);
 
         Ok(())
     }

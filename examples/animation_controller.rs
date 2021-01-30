@@ -6,7 +6,7 @@
 use std::time::Duration;
 
 use tetra::graphics::animation::Animation;
-use tetra::graphics::{self, Color, DrawParams, Drawable, Rectangle, Texture};
+use tetra::graphics::{self, Color, DrawParams, Rectangle, Texture};
 use tetra::input::{self, Key};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
@@ -43,6 +43,13 @@ impl PlayerAnimation {
         })
     }
 
+    fn draw<P>(&self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
+        self.current().draw(ctx, params)
+    }
+
     fn current(&self) -> &Animation {
         match self.state {
             PlayerState::Idle => &self.idle,
@@ -66,15 +73,6 @@ impl PlayerAnimation {
             self.state = state;
             self.current_mut().restart();
         }
-    }
-}
-
-impl Drawable for PlayerAnimation {
-    fn draw<P>(&self, ctx: &mut Context, params: P)
-    where
-        P: Into<DrawParams>,
-    {
-        self.current().draw(ctx, params)
     }
 }
 
@@ -120,9 +118,8 @@ impl State for GameState {
 
         graphics::clear(ctx, Color::rgb(0.094, 0.11, 0.16));
 
-        graphics::draw(
+        self.animation.draw(
             ctx,
-            &self.animation,
             DrawParams::new()
                 .position(self.position)
                 .origin(Vec2::new(8.0, 8.0))

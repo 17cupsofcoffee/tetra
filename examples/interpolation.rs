@@ -82,21 +82,17 @@ impl State for GameState {
         let blend_factor = time::get_blend_factor(ctx);
 
         // No special handling - looks choppy!
-        graphics::draw(ctx, &self.texture, self.position_none);
+        self.texture.draw(ctx, self.position_none);
 
         // With extrapolation - just guess where the position should be
         // based on the object's velocity.
-        graphics::draw(
-            ctx,
-            &self.texture,
-            self.position_ex + (self.velocity * blend_factor),
-        );
+        self.texture
+            .draw(ctx, self.position_ex + (self.velocity * blend_factor));
 
         // With interpolation - we draw at a fixed point between the
         // two stored states.
-        graphics::draw(
+        self.texture.draw(
             ctx,
-            &self.texture,
             Vec2::lerp(self.position_in_prev, self.position_in_curr, blend_factor),
         );
 
