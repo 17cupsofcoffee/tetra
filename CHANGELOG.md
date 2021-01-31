@@ -28,6 +28,9 @@ This project adheres to Semantic Versioning.
 * **Breaking:** `NineSlice` is now a config object for `Texture::draw_nine_slice`, rather than a wrapper for a texture.
 * **Breaking:** Updated `vek` to 0.13.
     * As Vek is exposed via Tetra's API in the form of the `tetra::math` module, this is potentially a breaking change.
+* `time::get_delta_time` now returns a fixed value when called from `update` in fixed timestep mode.
+    * Using delta time in fixed timestep mode is not required, but can be useful if you want to measure things in 'per second' terms rather than 'per frame'.
+    * Previously, trying to use delta time in this way could introduce floating point error/non-determinism into your game logic, and would break in the case of a double update.
 * The audio files for the `tetras` example are no longer ridiculously big.
 
 ### Removed

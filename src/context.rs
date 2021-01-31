@@ -1,6 +1,6 @@
 use std::result;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use crate::graphics::{self, GraphicsContext};
 use crate::input::{self, InputContext};
@@ -116,47 +116,66 @@ impl Context {
 
         let mut output = Ok(());
 
-        while self.running {
-            if let Err(e) = self.tick(state) {
-                output = Err(e);
-                self.running = false;
-            }
+        if let Err(e) = self.game_loop(state) {
+            output = Err(e);
         }
 
+        self.running = false;
         self.window.set_visible(false);
 
         output
     }
 
-    pub(crate) fn tick<S, E>(&mut self, state: &mut S) -> result::Result<(), E>
+    pub(crate) fn game_loop<S, E>(&mut self, state: &mut S) -> result::Result<(), E>
     where
         S: State<E>,
         E: From<TetraError>,
     {
-        time::tick(self);
+        let mut last_time = Instant::now();
 
-        platform::handle_events(self, state)?;
+        while self.running {
+            let curr_time = Instant::now();
+            let diff_time = curr_time - last_time;
+            last_time = curr_time;
 
-        match time::get_timestep(self) {
-            Timestep::Fixed(_) => {
-                while time::is_fixed_update_ready(self) {
+            // Since we fill the buffer when we create the context, we can cycle it
+            // here and it shouldn't reallocate.
+            self.time.fps_tracker.pop_front();
+            self.time.fps_tracker.push_back(diff_time.as_secs_f64());
+
+            platform::handle_events(self, state)?;
+
+            match self.time.tick_rate {
+                Some(tick_rate) => {
+                    self.time.delta_time = tick_rate;
+                    self.time.accumulator = (self.time.accumulator + diff_time).min(tick_rate * 8);
+
+                    while self.time.accumulator >= tick_rate {
+                        state.update(self)?;
+                        input::clear(self);
+
+                        self.time.accumulator -= tick_rate;
+                    }
+
+                    self.time.delta_time = diff_time;
+                }
+
+                None => {
+                    self.time.delta_time = diff_time;
+
                     state.update(self)?;
                     input::clear(self);
                 }
             }
-            Timestep::Variable => {
-                state.update(self)?;
-                input::clear(self);
-            }
+
+            state.draw(self)?;
+
+            graphics::present(self);
+
+            // This provides a sensible FPS limit when running without vsync, and
+            // avoids CPU usage skyrocketing on some systems.
+            thread::sleep(Duration::from_millis(1));
         }
-
-        state.draw(self)?;
-
-        graphics::present(self);
-
-        // This provides a sensible FPS limit when running without vsync, and
-        // avoids CPU usage skyrocketing on some systems.
-        thread::sleep(Duration::from_millis(1));
 
         Ok(())
     }

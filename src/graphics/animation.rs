@@ -72,12 +72,7 @@ impl Animation {
     /// Advances the animation's timer, switching the texture region if required.
     ///
     /// This method uses the current [delta time](crate::time::get_delta_time)
-    /// to calculate how much time has passed - as such, you should call it in
-    /// [`State::draw`](crate::State::draw) method for accurate results.
-    ///
-    /// If you need greater control over the timing of your animation (e.g. if you
-    /// want to update it deterministically via [`State::update`](crate::State::update)),
-    /// consider using the [`advance`](Self::advance_by) method instead.
+    /// to calculate how much time has passed.
     pub fn advance(&mut self, ctx: &Context) {
         self.advance_by(time::get_delta_time(ctx));
     }

@@ -2,11 +2,9 @@
 
 use std::collections::VecDeque;
 
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use crate::Context;
-
-const MAX_DURATION: Duration = Duration::from_millis(150);
 
 /// The different timestep modes that a game can have.
 ///
@@ -25,10 +23,9 @@ pub enum Timestep {
     /// the hardware (and vsync settings) will allow.
     ///
     /// This has the advantage of making your game's updates deterministic, so they will act the same
-    /// on hardware of different speeds. It also means that your update code does not need to use
-    /// [`get_delta_time`] to integrate the amount of time passed into your calculations. However,
-    /// it can lead to some slight stutter if your rendering code does not account for the possibility
-    /// of updating and rendering to be out of sync with each other.
+    /// on hardware of different speeds. However, it can lead to some slight stutter if your
+    /// rendering code does not account for the possibility for updating and rendering to be
+    /// out of sync with each other.
     ///
     /// To avoid stutter, you should interpolate your rendering using [`get_blend_factor`]. The
     /// [`interpolation`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/interpolation.rs)
@@ -49,17 +46,12 @@ pub enum Timestep {
     Variable,
 }
 
-struct FixedTimeStepState {
-    ticks_per_second: f64,
-    tick_rate: Duration,
-    accumulator: Duration,
-}
-
 pub(crate) struct TimeContext {
-    timestep: Option<FixedTimeStepState>,
-    fps_tracker: VecDeque<f64>,
-    last_time: Instant,
-    elapsed: Duration,
+    pub(crate) fps_tracker: VecDeque<f64>,
+    pub(crate) ticks_per_second: Option<f64>,
+    pub(crate) tick_rate: Option<Duration>,
+    pub(crate) delta_time: Duration,
+    pub(crate) accumulator: Duration,
 }
 
 impl TimeContext {
@@ -69,61 +61,43 @@ impl TimeContext {
         let mut fps_tracker = VecDeque::with_capacity(200);
         fps_tracker.resize(200, 1.0 / 60.0);
 
+        let ticks_per_second = match timestep {
+            Timestep::Fixed(tps) => Some(tps),
+            Timestep::Variable => None,
+        };
+
+        let tick_rate = match timestep {
+            Timestep::Fixed(tps) => Some(Duration::from_secs_f64(1.0 / tps)),
+            Timestep::Variable => None,
+        };
+
         TimeContext {
-            timestep: create_timestep_state(timestep),
             fps_tracker,
-            last_time: Instant::now(),
-            elapsed: Duration::from_secs(0),
+            ticks_per_second,
+            tick_rate,
+            delta_time: Duration::from_secs(0),
+            accumulator: Duration::from_secs(0),
         }
     }
 }
 
 pub(crate) fn reset(ctx: &mut Context) {
-    ctx.time.last_time = Instant::now();
-
-    if let Some(fixed) = &mut ctx.time.timestep {
-        fixed.accumulator = Duration::from_secs(0);
-    }
+    ctx.time.delta_time = Duration::from_secs(0);
+    ctx.time.accumulator = Duration::from_secs(0);
 }
 
-pub(crate) fn tick(ctx: &mut Context) {
-    let current_time = Instant::now();
-    ctx.time.elapsed = current_time - ctx.time.last_time;
-    ctx.time.last_time = current_time;
-
-    if let Some(fixed) = &mut ctx.time.timestep {
-        fixed.accumulator = (fixed.accumulator + ctx.time.elapsed).min(MAX_DURATION);
-    }
-
-    // Since we fill the buffer when we create the context, we can cycle it
-    // here and it shouldn't reallocate.
-    ctx.time.fps_tracker.pop_front();
-    ctx.time
-        .fps_tracker
-        .push_back(ctx.time.elapsed.as_secs_f64());
-}
-
-pub(crate) fn is_fixed_update_ready(ctx: &mut Context) -> bool {
-    match &mut ctx.time.timestep {
-        Some(fixed) if fixed.accumulator >= fixed.tick_rate => {
-            fixed.accumulator -= fixed.tick_rate;
-            true
-        }
-        _ => false,
-    }
-}
-
-/// Returns the amount of time that has passed since the last frame was rendered.
+/// Returns the amount of time that has passed since the last update or draw.
 ///
-/// When using a variable time step, you should use this to integrate the amount of time that
-/// has passed into your game's calculations. For example, if you wanted to move a
-/// [`Vec2`](crate::math::Vec2) 32 units to the right per second, you would do
-/// `foo.y += 32.0 * time::get_delta_time(ctx).as_secs_f32()`
+/// This can be used to integrate the amount of time that has passed into your game's
+/// calculations. For example, if you wanted to move a [`Vec2`](crate::math::Vec2) 32
+/// units to the right per second, you could do
+/// `foo.y += 32.0 * time::get_delta_time(ctx).as_secs_f32()`.
 ///
-/// When using a fixed time step, the above still applies, but only to rendering - you should
-/// not integrate the delta time into your update calculations.
+/// When using a fixed time step, calling this function during an update will always
+/// return the configured update rate. This is to prevent floating point error/non-determinism
+/// from creeping into your game's calculations!
 pub fn get_delta_time(ctx: &Context) -> Duration {
-    ctx.time.elapsed
+    ctx.time.delta_time
 }
 
 /// Returns the amount of time that has accumulated between updates.
@@ -133,10 +107,7 @@ pub fn get_delta_time(ctx: &Context) -> Duration {
 ///
 /// When using a variable time step, this function always returns `Duration::from_secs(0)`.
 pub fn get_accumulator(ctx: &Context) -> Duration {
-    match &ctx.time.timestep {
-        Some(fixed) => fixed.accumulator,
-        None => Duration::from_secs(0),
-    }
+    ctx.time.accumulator
 }
 
 /// Returns a value between 0.0 and 1.0, representing how far between updates the game loop
@@ -151,8 +122,8 @@ pub fn get_accumulator(ctx: &Context) -> Duration {
 /// if you need a more precise representation of the blend factor, you can call
 /// [`get_blend_factor_precise`].
 pub fn get_blend_factor(ctx: &Context) -> f32 {
-    match &ctx.time.timestep {
-        Some(fixed) => fixed.accumulator.as_secs_f32() / fixed.tick_rate.as_secs_f32(),
+    match ctx.time.tick_rate {
+        Some(tick_rate) => ctx.time.accumulator.as_secs_f32() / tick_rate.as_secs_f32(),
         None => 0.0,
     }
 }
@@ -169,34 +140,31 @@ pub fn get_blend_factor(ctx: &Context) -> f32 {
 /// but often difficult to use in game logic without casting. If you need an [`f32`], call
 /// [`get_blend_factor`] instead.
 pub fn get_blend_factor_precise(ctx: &Context) -> f64 {
-    match &ctx.time.timestep {
-        Some(fixed) => fixed.accumulator.as_secs_f64() / fixed.tick_rate.as_secs_f64(),
+    match ctx.time.tick_rate {
+        Some(tick_rate) => ctx.time.accumulator.as_secs_f64() / tick_rate.as_secs_f64(),
         None => 0.0,
     }
 }
 
 /// Gets the current timestep of the application.
 pub fn get_timestep(ctx: &Context) -> Timestep {
-    match &ctx.time.timestep {
-        Some(fixed) => Timestep::Fixed(fixed.ticks_per_second),
+    match ctx.time.ticks_per_second {
+        Some(tps) => Timestep::Fixed(tps),
         None => Timestep::Variable,
     }
 }
 
 /// Sets the timestep of the application.
 pub fn set_timestep(ctx: &mut Context, timestep: Timestep) {
-    ctx.time.timestep = create_timestep_state(timestep);
-}
-
-fn create_timestep_state(timestep: Timestep) -> Option<FixedTimeStepState> {
-    match timestep {
-        Timestep::Fixed(ticks_per_second) => Some(FixedTimeStepState {
-            ticks_per_second,
-            tick_rate: Duration::from_secs_f64(1.0 / ticks_per_second),
-            accumulator: Duration::from_secs(0),
-        }),
+    ctx.time.ticks_per_second = match timestep {
+        Timestep::Fixed(tps) => Some(tps),
         Timestep::Variable => None,
-    }
+    };
+
+    ctx.time.tick_rate = match timestep {
+        Timestep::Fixed(tps) => Some(Duration::from_secs_f64(1.0 / tps)),
+        Timestep::Variable => None,
+    };
 }
 
 /// Returns the current frame rate, averaged out over the last 200 frames.
