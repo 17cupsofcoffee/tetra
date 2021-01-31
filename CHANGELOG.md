@@ -12,6 +12,7 @@ This project adheres to Semantic Versioning.
 
 * All drawable objects now have an inherant `draw` method, instead of relying on `Drawable`/`graphics::draw`.
 * `Texture::draw_region` can be used to draw a sub-section of a texture.
+* `Texture::draw_nine_slice` can be used to draw UI panels.
 * `DrawParams::to_matrix` has been added, which can be used to create a transformation matrix matching the behaviour of `DrawParams`.
 * `Font` now has a `from_vector_file_data` constructor, which is a shortcut for `VectorFontBuilder::from_file_data(data)?.with_size(ctx, size)`. ([@fossegutten](https://github.com/fossegutten) in [#232](https://github.com/17cupsofcoffee/tetra/pull/232))
 * `Mesh` now has methods for getting and setting the winding order, which will automatically be applied when drawing it.
@@ -24,6 +25,7 @@ This project adheres to Semantic Versioning.
     * Note that numeric operations are implemented on `Vec2<f32>` for `f32`, so you can still add/subtract/multiply/divide both components at the same time.
 * **Breaking:** `Text::draw` and `Text::get_bounds` now take `&mut self`.
     * This better reflects the fact that they cache geometry under the hood, and avoids `RefCell` overhead.
+* **Breaking:** `NineSlice` is now a config object for `Texture::draw_nine_slice`, rather than a wrapper for a texture.
 * **Breaking:** Updated `vek` to 0.13.
     * As Vek is exposed via Tetra's API in the form of the `tetra::math` module, this is potentially a breaking change.
 * The audio files for the `tetras` example are no longer ridiculously big.
@@ -37,6 +39,8 @@ This project adheres to Semantic Versioning.
     * `Texture::draw_region` can be used instead.
 * **Breaking:** `graphics::get_front_face_winding` and `graphics::set_front_face_winding` have been removed.
     * `Mesh::front_face_winding` and `Mesh::set_front_face_winding` can be used instead.
+* **Breaking:** `graphics::ui` has been removed.
+    * `NineSlice` is now located in `graphics`.
 
 ## [0.5.8] - 2021-01-26
 

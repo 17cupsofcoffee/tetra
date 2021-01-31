@@ -16,7 +16,6 @@ pub mod scaling;
 mod shader;
 pub mod text;
 mod texture;
-pub mod ui;
 
 pub use camera::*;
 pub use canvas::*;

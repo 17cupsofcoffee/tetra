@@ -224,6 +224,71 @@ impl Texture {
         );
     }
 
+    /// Draws a region of the texture by splitting it into nine slices, allowing it to be stretched or
+    /// squashed without distorting the borders.
+    pub fn draw_nine_slice<P>(
+        &self,
+        ctx: &mut Context,
+        config: &NineSlice,
+        width: f32,
+        height: f32,
+        params: P,
+    ) where
+        P: Into<DrawParams>,
+    {
+        let params = params.into();
+
+        let texture_width = self.width() as f32;
+        let texture_height = self.height() as f32;
+
+        let x1 = 0.0;
+        let y1 = 0.0;
+        let x2 = config.left;
+        let y2 = config.top;
+        let x3 = width - config.left;
+        let y3 = height - config.top;
+        let x4 = width;
+        let y4 = height;
+
+        let u1 = config.region.x / texture_width;
+        let v1 = config.region.y / texture_height;
+        let u2 = (config.region.x + config.left) / texture_width;
+        let v2 = (config.region.y + config.top) / texture_height;
+        let u3 = (config.region.x + config.region.width - config.right) / texture_width;
+        let v3 = (config.region.y + config.region.height - config.bottom) / texture_height;
+        let u4 = (config.region.x + config.region.width) / texture_width;
+        let v4 = (config.region.y + config.region.height) / texture_height;
+
+        graphics::set_texture(ctx, self);
+
+        // Top left
+        graphics::push_quad(ctx, x1, y1, x2, y2, u1, v1, u2, v2, &params);
+
+        // Top
+        graphics::push_quad(ctx, x2, y1, x3, y2, u2, v1, u3, v2, &params);
+
+        // Top right
+        graphics::push_quad(ctx, x3, y1, x4, y2, u3, v1, u4, v2, &params);
+
+        // Left
+        graphics::push_quad(ctx, x1, y2, x2, y3, u1, v2, u2, v3, &params);
+
+        // Center
+        graphics::push_quad(ctx, x2, y2, x3, y3, u2, v2, u3, v3, &params);
+
+        // Right
+        graphics::push_quad(ctx, x3, y2, x4, y3, u3, v2, u4, v3, &params);
+
+        // Bottom left
+        graphics::push_quad(ctx, x1, y3, x2, y4, u1, v3, u2, v4, &params);
+
+        // Bottom
+        graphics::push_quad(ctx, x2, y3, x3, y4, u2, v3, u3, v4, &params);
+
+        // Bottom right
+        graphics::push_quad(ctx, x3, y3, x4, y4, u3, v3, u4, v4, &params);
+    }
+
     /// Returns the width of the texture.
     pub fn width(&self) -> i32 {
         self.data.handle.width()
@@ -314,4 +379,55 @@ pub enum FilterMode {
 
     /// Linear interpolation. This smooths images when scaling them up or down.
     Linear,
+}
+
+/// Information on how to slice a texture so that it can be stretched or squashed without
+/// distorting the borders.
+///
+/// This can be used with [`Texture::draw_nine_slice`] to easily draw things like UI panels.
+///
+/// # Examples
+///
+/// The [`nineslice`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/nineslice.rs)
+/// example demonstrates how to draw a `NineSlice` panel.
+#[derive(Debug, Clone)]
+pub struct NineSlice {
+    /// The region of the texture that should be used.
+    pub region: Rectangle,
+
+    /// The offset of the border on the left side.
+    pub left: f32,
+
+    /// The offset of the border on the right side.
+    pub right: f32,
+
+    /// The offset of the border on the top side.
+    pub top: f32,
+
+    /// The offset of the border on the bottom side.
+    pub bottom: f32,
+}
+
+impl NineSlice {
+    /// Creates a new nine slice configuration with the given offsets.
+    pub fn new(region: Rectangle, left: f32, right: f32, top: f32, bottom: f32) -> NineSlice {
+        NineSlice {
+            region,
+            left,
+            right,
+            top,
+            bottom,
+        }
+    }
+
+    /// Creates a new nine slice configuration, using the same offset for all edges.
+    pub fn with_border(region: Rectangle, border: f32) -> NineSlice {
+        NineSlice {
+            region,
+            left: border,
+            right: border,
+            top: border,
+            bottom: border,
+        }
+    }
 }
