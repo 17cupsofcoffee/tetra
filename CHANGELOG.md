@@ -24,6 +24,8 @@ This project adheres to Semantic Versioning.
     * Note that numeric operations are implemented on `Vec2<f32>` for `f32`, so you can still add/subtract/multiply/divide both components at the same time.
 * **Breaking:** `Text::draw` and `Text::get_bounds` now take `&mut self`.
     * This better reflects the fact that they cache geometry under the hood, and avoids `RefCell` overhead.
+* **Breaking:** Updated `vek` to 0.13.
+    * As Vek is exposed via Tetra's API in the form of the `tetra::math` module, this is potentially a breaking change.
 * The audio files for the `tetras` example are no longer ridiculously big.
 
 ### Removed
