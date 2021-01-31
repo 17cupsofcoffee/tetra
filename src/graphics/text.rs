@@ -9,7 +9,7 @@ mod packer;
 #[cfg(feature = "font_ttf")]
 mod vector;
 
-use std::cell::{RefCell, RefMut};
+use std::cell::RefCell;
 use std::fmt::{self, Debug, Formatter};
 use std::path::Path;
 use std::rc::Rc;
@@ -115,7 +115,7 @@ impl Debug for Font {
 pub struct Text {
     content: String,
     font: Font,
-    geometry: RefCell<Option<TextGeometry>>,
+    geometry: Option<TextGeometry>,
 }
 
 impl Text {
@@ -127,21 +127,26 @@ impl Text {
         Text {
             content: content.into(),
             font,
-            geometry: RefCell::new(None),
+            geometry: None,
         }
     }
 
     /// Draws the text to the screen (or to a canvas, if one is enabled).
-    pub fn draw<P>(&self, ctx: &mut Context, params: P)
+    pub fn draw<P>(&mut self, ctx: &mut Context, params: P)
     where
         P: Into<DrawParams>,
     {
-        let params = params.into();
+        self.update_geometry(ctx);
 
-        let geometry = self.get_latest_geometry(ctx);
+        let params = params.into();
 
         let data = self.font.data.borrow();
         graphics::set_texture(ctx, data.texture());
+
+        let geometry = self
+            .geometry
+            .as_ref()
+            .expect("geometry should have been generated");
 
         for quad in &geometry.quads {
             graphics::push_quad(
@@ -172,7 +177,7 @@ impl Text {
     where
         C: Into<String>,
     {
-        self.geometry.replace(None);
+        self.geometry.take();
         self.content = content.into();
     }
 
@@ -186,7 +191,7 @@ impl Text {
     /// Calling this function will cause a re-layout of the text the next time it
     /// is rendered.
     pub fn set_font(&mut self, font: Font) {
-        self.geometry.replace(None);
+        self.geometry.take();
         self.font = font;
     }
 
@@ -195,7 +200,7 @@ impl Text {
     /// Calling this function will cause a re-layout of the text the next time it
     /// is rendered.
     pub fn push(&mut self, ch: char) {
-        self.geometry.replace(None);
+        self.geometry.take();
         self.content.push(ch);
     }
 
@@ -204,7 +209,7 @@ impl Text {
     /// Calling this function will cause a re-layout of the text the next time it
     /// is rendered.
     pub fn push_str(&mut self, string: &str) {
-        self.geometry.replace(None);
+        self.geometry.take();
         self.content.push_str(string);
     }
 
@@ -215,7 +220,7 @@ impl Text {
     /// Calling this function will cause a re-layout of the text the next time it
     /// is rendered.
     pub fn pop(&mut self) -> Option<char> {
-        self.geometry.replace(None);
+        self.geometry.take();
         self.content.pop()
     }
 
@@ -224,29 +229,26 @@ impl Text {
     /// If the text's layout needs calculating, this method will do so.
     ///
     /// Note that this method will not take into account the positioning applied to the text via [`DrawParams`].
-    pub fn get_bounds(&self, ctx: &mut Context) -> Option<Rectangle> {
-        let geometry = self.get_latest_geometry(ctx);
+    pub fn get_bounds(&mut self, ctx: &mut Context) -> Option<Rectangle> {
+        self.update_geometry(ctx);
 
-        geometry.bounds
+        self.geometry
+            .as_ref()
+            .expect("geometry should have been generated")
+            .bounds
     }
 
-    fn get_latest_geometry(&self, ctx: &mut Context) -> RefMut<'_, TextGeometry> {
+    fn update_geometry(&mut self, ctx: &mut Context) {
         let mut data = self.font.data.borrow_mut();
-        let mut geometry = self.geometry.borrow_mut();
 
-        let needs_render = match &*geometry {
+        let needs_render = match &self.geometry {
             None => true,
             Some(g) => g.resize_count != data.resize_count(),
         };
 
         if needs_render {
             let new_geometry = data.render(&mut ctx.device, &self.content);
-            geometry.replace(new_geometry);
+            self.geometry = Some(new_geometry);
         }
-
-        RefMut::map(geometry, |g| {
-            g.as_mut()
-                .expect("Geometry should have already been generated")
-        })
     }
 }

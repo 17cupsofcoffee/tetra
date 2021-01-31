@@ -10,7 +10,7 @@ struct GameState {
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
-        let text = Text::new(
+        let mut text = Text::new(
             "Hello, world!\n\nThis is some text being rendered from a TTF font.",
             Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 16.0)?,
         );

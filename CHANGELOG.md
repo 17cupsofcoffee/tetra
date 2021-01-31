@@ -22,6 +22,8 @@ This project adheres to Semantic Versioning.
 * **Breaking:** Mesh and shape rendering types have been moved to `graphics::mesh`, to avoid cluttering the main `graphics` module.
 * **Breaking:** The `zoom` field on `Camera` has been renamed to `scale`, and is now a `Vec2<f32>`.
     * Note that numeric operations are implemented on `Vec2<f32>` for `f32`, so you can still add/subtract/multiply/divide both components at the same time.
+* **Breaking:** `Text::draw` and `Text::get_bounds` now take `&mut self`.
+    * This better reflects the fact that they cache geometry under the hood, and avoids `RefCell` overhead.
 * The audio files for the `tetras` example are no longer ridiculously big.
 
 ### Removed
