@@ -316,7 +316,8 @@ impl ContextBuilder {
     /// The number of samples that can be used varies between graphics cards - `2`, `4` and `8` are reasonably
     /// well supported. Setting the number of samples to `0` will disable multisampling.
     ///
-    /// Note that this setting only applies to the main backbuffer, not [`Canvas`](crate::graphics::Canvas)es.
+    /// Note that this setting only applies to the main backbuffer - multisampled canvases can
+    /// be created via [`Canvas::multisampled`](crate::graphics::Canvas::multisampled).
     ///
     /// Defaults to `0`.
     pub fn multisampling(&mut self, multisampling: u8) -> &mut ContextBuilder {

@@ -27,7 +27,7 @@ pub use texture::*;
 
 use crate::error::Result;
 use crate::math::{FrustumPlanes, Mat4, Vec2};
-use crate::platform::{GraphicsDevice, RawIndexBuffer, RawVertexBuffer};
+use crate::platform::{GraphicsDevice, RawFramebuffer, RawIndexBuffer, RawVertexBuffer};
 use crate::window;
 use crate::Context;
 
@@ -68,6 +68,7 @@ pub(crate) struct GraphicsContext {
     default_shader: Shader,
 
     canvas: ActiveCanvas,
+    resolve_framebuffer: Option<RawFramebuffer>,
 
     winding: VertexWinding,
     projection_matrix: Mat4<f32>,
@@ -119,6 +120,7 @@ impl GraphicsContext {
             default_shader,
 
             canvas: ActiveCanvas::Window,
+            resolve_framebuffer: None,
 
             winding: VertexWinding::CounterClockwise,
             projection_matrix: ortho(window_width as f32, window_height as f32, false),
@@ -258,6 +260,8 @@ pub fn reset_canvas(ctx: &mut Context) {
 pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
     if canvas != ctx.graphics.canvas {
         flush(ctx);
+        resolve_canvas(ctx);
+
         ctx.graphics.canvas = canvas;
 
         match &ctx.graphics.canvas {
@@ -279,6 +283,33 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.device.front_face(ctx.graphics.winding.flipped());
                 ctx.device.viewport(0, 0, width, height);
             }
+        }
+    }
+}
+
+fn resolve_canvas(ctx: &mut Context) {
+    if let ActiveCanvas::User(c) = &ctx.graphics.canvas {
+        if c.multisample.is_some() {
+            // This is lazily initialized, to avoid overhead for people not using MSAA.
+            if ctx.graphics.resolve_framebuffer.is_none() {
+                ctx.graphics.resolve_framebuffer =
+                    Some(ctx.device.new_framebuffer().expect("TODO"));
+            }
+
+            let resolve_framebuffer = ctx.graphics.resolve_framebuffer.as_ref().unwrap();
+
+            ctx.device.attach_texture_to_framebuffer(
+                &resolve_framebuffer,
+                &c.texture.data.handle,
+                false,
+            );
+
+            ctx.device.blit_framebuffer(
+                &c.framebuffer,
+                &resolve_framebuffer,
+                c.width(),
+                c.height(),
+            );
         }
     }
 }

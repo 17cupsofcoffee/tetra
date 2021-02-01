@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::error::Result;
 use crate::graphics::{DrawParams, FilterMode, Texture};
-use crate::platform::{GraphicsDevice, RawFramebuffer};
+use crate::platform::{GraphicsDevice, RawFramebuffer, RawRenderbuffer};
 use crate::Context;
 
 /// A texture that can be used for off-screen rendering.
@@ -31,8 +31,9 @@ use crate::Context;
 /// the screen.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Canvas {
-    pub(crate) texture: Texture,
     pub(crate) framebuffer: Rc<RawFramebuffer>,
+    pub(crate) texture: Texture,
+    pub(crate) multisample: Option<Rc<RawRenderbuffer>>,
 }
 
 impl Canvas {
@@ -48,6 +49,26 @@ impl Canvas {
             width,
             height,
             ctx.graphics.default_filter_mode,
+            0,
+        )
+    }
+
+    /// Creates a new canvas, with the specified level of multisample anti-aliasing.
+    ///
+    /// The number of samples that can be used varies between graphics cards - `2`, `4` and `8` are reasonably
+    /// well supported.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    pub fn multisampled(ctx: &mut Context, width: i32, height: i32, samples: u8) -> Result<Canvas> {
+        Canvas::with_device(
+            &mut ctx.device,
+            width,
+            height,
+            ctx.graphics.default_filter_mode,
+            samples,
         )
     }
 
@@ -56,13 +77,27 @@ impl Canvas {
         width: i32,
         height: i32,
         filter_mode: FilterMode,
+        samples: u8,
     ) -> Result<Canvas> {
         let texture = Texture::with_device_empty(device, width, height, filter_mode)?;
-        let framebuffer = device.new_framebuffer(&texture.data.handle, true)?;
+
+        let framebuffer = device.new_framebuffer()?;
+
+        let multisample = if samples > 0 {
+            let multisample = device.new_renderbuffer(width, height, samples)?;
+            device.attach_renderbuffer_to_framebuffer(&framebuffer, &multisample, true);
+
+            Some(Rc::new(multisample))
+        } else {
+            device.attach_texture_to_framebuffer(&framebuffer, &texture.data.handle, true);
+
+            None
+        };
 
         Ok(Canvas {
-            texture,
             framebuffer: Rc::new(framebuffer),
+            texture,
+            multisample,
         })
     }
 

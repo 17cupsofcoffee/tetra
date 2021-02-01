@@ -18,6 +18,7 @@ type BufferId = <GlowContext as HasContext>::Buffer;
 type ProgramId = <GlowContext as HasContext>::Program;
 type TextureId = <GlowContext as HasContext>::Texture;
 type FramebufferId = <GlowContext as HasContext>::Framebuffer;
+type RenderbufferId = <GlowContext as HasContext>::Renderbuffer;
 type VertexArrayId = <GlowContext as HasContext>::VertexArray;
 
 pub type UniformLocation = <GlowContext as HasContext>::UniformLocation;
@@ -30,7 +31,9 @@ struct GraphicsState {
     current_index_buffer: Cell<Option<BufferId>>,
     current_program: Cell<Option<ProgramId>>,
     current_textures: Vec<Cell<Option<TextureId>>>,
-    current_framebuffer: Cell<Option<FramebufferId>>,
+    current_read_framebuffer: Cell<Option<FramebufferId>>,
+    current_draw_framebuffer: Cell<Option<FramebufferId>>,
+    current_renderbuffer: Cell<Option<RenderbufferId>>,
     current_vertex_array: Cell<Option<VertexArrayId>>,
 }
 
@@ -74,7 +77,9 @@ impl GraphicsDevice {
                 current_index_buffer: Cell::new(None),
                 current_program: Cell::new(None),
                 current_textures: vec![Cell::new(None); texture_units],
-                current_framebuffer: Cell::new(None),
+                current_read_framebuffer: Cell::new(None),
+                current_draw_framebuffer: Cell::new(None),
+                current_renderbuffer: Cell::new(None),
                 current_vertex_array: Cell::new(Some(current_vertex_array)),
             };
 
@@ -548,11 +553,7 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn new_framebuffer(
-        &mut self,
-        texture: &RawTexture,
-        rebind_previous: bool,
-    ) -> Result<RawFramebuffer> {
+    pub fn new_framebuffer(&mut self) -> Result<RawFramebuffer> {
         unsafe {
             let id = self
                 .state
@@ -565,7 +566,19 @@ impl GraphicsDevice {
                 id,
             };
 
-            let previous_id = self.state.current_framebuffer.get();
+            Ok(framebuffer)
+        }
+    }
+
+    pub fn attach_texture_to_framebuffer(
+        &mut self,
+        framebuffer: &RawFramebuffer,
+        texture: &RawTexture,
+        rebind_previous: bool,
+    ) {
+        unsafe {
+            let previous_read = self.state.current_read_framebuffer.get();
+            let previous_draw = self.state.current_draw_framebuffer.get();
 
             self.bind_framebuffer(Some(&framebuffer));
 
@@ -580,11 +593,105 @@ impl GraphicsDevice {
             if rebind_previous {
                 self.state
                     .gl
-                    .bind_framebuffer(glow::FRAMEBUFFER, previous_id);
-                self.state.current_framebuffer.set(previous_id);
-            }
+                    .bind_framebuffer(glow::READ_FRAMEBUFFER, previous_read);
+                self.state.current_read_framebuffer.set(previous_read);
 
-            Ok(framebuffer)
+                self.state
+                    .gl
+                    .bind_framebuffer(glow::DRAW_FRAMEBUFFER, previous_draw);
+                self.state.current_draw_framebuffer.set(previous_draw);
+            }
+        }
+    }
+
+    pub fn attach_renderbuffer_to_framebuffer(
+        &mut self,
+        framebuffer: &RawFramebuffer,
+        renderbuffer: &RawRenderbuffer,
+        rebind_previous: bool,
+    ) {
+        unsafe {
+            let previous_read = self.state.current_read_framebuffer.get();
+            let previous_draw = self.state.current_draw_framebuffer.get();
+
+            self.bind_framebuffer(Some(&framebuffer));
+
+            self.state.gl.framebuffer_renderbuffer(
+                glow::FRAMEBUFFER,
+                glow::COLOR_ATTACHMENT0,
+                glow::RENDERBUFFER,
+                Some(renderbuffer.id),
+            );
+
+            if rebind_previous {
+                self.state
+                    .gl
+                    .bind_framebuffer(glow::READ_FRAMEBUFFER, previous_read);
+                self.state.current_read_framebuffer.set(previous_read);
+
+                self.state
+                    .gl
+                    .bind_framebuffer(glow::DRAW_FRAMEBUFFER, previous_draw);
+                self.state.current_draw_framebuffer.set(previous_draw);
+            }
+        }
+    }
+
+    pub fn blit_framebuffer(
+        &mut self,
+        read: &RawFramebuffer,
+        draw: &RawFramebuffer,
+        width: i32,
+        height: i32,
+    ) {
+        self.bind_read_framebuffer(Some(read));
+        self.bind_draw_framebuffer(Some(draw));
+
+        unsafe {
+            self.state.gl.blit_framebuffer(
+                0,
+                0,
+                width,
+                height,
+                0,
+                0,
+                width,
+                height,
+                glow::COLOR_BUFFER_BIT,
+                glow::NEAREST,
+            )
+        }
+    }
+
+    pub fn new_renderbuffer(
+        &mut self,
+        width: i32,
+        height: i32,
+        samples: u8,
+    ) -> Result<RawRenderbuffer> {
+        unsafe {
+            let id = self
+                .state
+                .gl
+                .create_renderbuffer()
+                .map_err(TetraError::PlatformError)?;
+
+            let renderbuffer = RawRenderbuffer {
+                state: Rc::clone(&self.state),
+                id,
+            };
+
+            self.bind_renderbuffer(Some(&renderbuffer));
+
+            self.state.gl.renderbuffer_storage_multisample(
+                glow::RENDERBUFFER,
+                samples.into(),
+                glow::RGBA,
+                width,
+                height,
+            );
+
+            Ok(renderbuffer)
         }
     }
 
@@ -752,9 +859,46 @@ impl GraphicsDevice {
         unsafe {
             let id = framebuffer.map(|x| x.id);
 
-            if self.state.current_framebuffer.get() != id {
+            if self.state.current_read_framebuffer.get() != id
+                || self.state.current_draw_framebuffer.get() != id
+            {
                 self.state.gl.bind_framebuffer(glow::FRAMEBUFFER, id);
-                self.state.current_framebuffer.set(id);
+                self.state.current_read_framebuffer.set(id);
+                self.state.current_draw_framebuffer.set(id);
+            }
+        }
+    }
+
+    fn bind_read_framebuffer(&mut self, framebuffer: Option<&RawFramebuffer>) {
+        unsafe {
+            let id = framebuffer.map(|x| x.id);
+
+            if self.state.current_read_framebuffer.get() != id {
+                self.state.gl.bind_framebuffer(glow::READ_FRAMEBUFFER, id);
+                self.state.current_read_framebuffer.set(id);
+            }
+        }
+    }
+
+    fn bind_draw_framebuffer(&mut self, framebuffer: Option<&RawFramebuffer>) {
+        unsafe {
+            let id = framebuffer.map(|x| x.id);
+
+            if self.state.current_draw_framebuffer.get() != id {
+                self.state.gl.bind_framebuffer(glow::DRAW_FRAMEBUFFER, id);
+
+                self.state.current_draw_framebuffer.set(id);
+            }
+        }
+    }
+
+    fn bind_renderbuffer(&mut self, renderbuffer: Option<&RawRenderbuffer>) {
+        unsafe {
+            let id = renderbuffer.map(|x| x.id);
+
+            if self.state.current_renderbuffer.get() != id {
+                self.state.gl.bind_renderbuffer(glow::RENDERBUFFER, id);
+                self.state.current_renderbuffer.set(id);
             }
         }
     }
@@ -942,8 +1086,12 @@ pub struct RawFramebuffer {
 impl Drop for RawFramebuffer {
     fn drop(&mut self) {
         unsafe {
-            if self.state.current_framebuffer.get() == Some(self.id) {
-                self.state.current_framebuffer.set(None);
+            if self.state.current_read_framebuffer.get() == Some(self.id) {
+                self.state.current_read_framebuffer.set(None);
+            }
+
+            if self.state.current_draw_framebuffer.get() == Some(self.id) {
+                self.state.current_draw_framebuffer.set(None);
             }
 
             self.state.gl.delete_framebuffer(self.id);
@@ -952,3 +1100,23 @@ impl Drop for RawFramebuffer {
 }
 
 handle_impls!(RawFramebuffer);
+
+#[derive(Debug)]
+pub struct RawRenderbuffer {
+    state: Rc<GraphicsState>,
+    id: RenderbufferId,
+}
+
+impl Drop for RawRenderbuffer {
+    fn drop(&mut self) {
+        unsafe {
+            if self.state.current_renderbuffer.get() == Some(self.id) {
+                self.state.current_renderbuffer.set(None);
+            }
+
+            self.state.gl.delete_renderbuffer(self.id);
+        }
+    }
+}
+
+handle_impls!(RawRenderbuffer);
