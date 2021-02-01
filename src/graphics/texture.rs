@@ -245,8 +245,8 @@ impl Texture {
         let y1 = 0.0;
         let x2 = config.left;
         let y2 = config.top;
-        let x3 = width - config.left;
-        let y3 = height - config.top;
+        let x3 = width - config.right;
+        let y3 = height - config.bottom;
         let x4 = width;
         let y4 = height;
 
