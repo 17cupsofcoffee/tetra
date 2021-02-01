@@ -143,10 +143,11 @@ impl FontCache {
         device: &mut GraphicsDevice,
         input: &str,
     ) -> std::result::Result<TextGeometry, CacheError> {
-        let line_height = self.rasterizer.line_height();
+        let line_height = self.rasterizer.line_height().round();
 
         let mut quads = Vec::new();
-        let mut cursor = Vec2::new(0.0, self.rasterizer.ascent());
+
+        let mut cursor = Vec2::new(0.0, self.rasterizer.ascent().round());
         let mut last_glyph: Option<char> = None;
         let mut text_bounds: Option<Rectangle> = None;
 
