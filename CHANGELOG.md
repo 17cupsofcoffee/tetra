@@ -16,6 +16,7 @@ This project adheres to Semantic Versioning.
 * `DrawParams::to_matrix` has been added, which can be used to create a transformation matrix matching the behaviour of `DrawParams`.
 * `Font` now has a `from_vector_file_data` constructor, which is a shortcut for `VectorFontBuilder::from_file_data(data)?.with_size(ctx, size)`. ([@fossegutten](https://github.com/fossegutten) in [#232](https://github.com/17cupsofcoffee/tetra/pull/232))
 * `Mesh` now has methods for getting and setting the winding order, which will automatically be applied when drawing it.
+* A new `Canvas::multisampled` constructor has been added, allowing for off-screen rendering with MSAA. 
 * More example links have been added to the docs, where appropriate.
 
 ### Changed
@@ -52,7 +53,7 @@ This project adheres to Semantic Versioning.
 ### Added 
 
 * Basic support for multisample anti-aliasing has been added, in the form of `ContextBuilder::multisampling`.
-    * This is currently only supported for the main backbuffer. Supporting `Canvas` multisampling requires a lot more work and raises some tricky API questions, so probably won't be added any time soon (unless someone writes a PR)!
+    * This is currently only supported for the main backbuffer.
 * `Mesh` now has constructors for various primitive shapes. ([@tesselode](https://github.com/tesselode) in [#226](https://github.com/17cupsofcoffee/tetra/pull/226))
     * There is also a new `GeometryBuilder` type, which can be used to create more complex/combined shapes.
 * `Color` now has methods (`with_red`, `with_blue`, `with_green`, `with_alpha`) for creating a new `Color` with one component changed. ([@tesselode](https://github.com/tesselode) in [#227](https://github.com/17cupsofcoffee/tetra/pull/227))
