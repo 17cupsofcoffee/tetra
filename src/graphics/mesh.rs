@@ -557,7 +557,7 @@ impl Mesh {
     /// Returns which winding order represents front-facing geometry in this mesh.
     ///
     /// Back-facing geometry will be culled (not rendered) by default, but
-    /// this can be changed via [`set_backface_culling`].
+    /// this can be changed via [`set_backface_culling`](Self::set_backface_culling).
     ///
     /// The default winding order is counter-clockwise.
     pub fn front_face_winding(&self) -> VertexWinding {
@@ -567,7 +567,7 @@ impl Mesh {
     /// Sets which winding order represents front-facing geometry in this mesh.
     ///
     /// Back-facing geometry will be culled (not rendered) by default, but
-    /// this can be changed via [`set_backface_culling`].
+    /// this can be changed via [`set_backface_culling`](Self::set_backface_culling).
     ///
     /// The default winding order is counter-clockwise.
     pub fn set_front_face_winding(&mut self, winding: VertexWinding) {
@@ -578,8 +578,8 @@ impl Mesh {
     ///
     /// By default, backface culling is enabled, counter-clockwise vertices are
     /// considered front-facing, and clockwise vertices are considered back-facing.
-    /// This can be modified via [`set_backface_culling`] and
-    /// [`set_front_face_winding`].
+    /// This can be modified via [`set_backface_culling`](Self::set_backface_culling) and
+    /// [`set_front_face_winding`](Self::set_front_face_winding).
     pub fn backface_culling(&self) -> bool {
         self.backface_culling
     }
@@ -588,7 +588,7 @@ impl Mesh {
     ///
     /// By default, backface culling is enabled, counter-clockwise vertices are
     /// considered front-facing, and clockwise vertices are considered back-facing.
-    /// This can be modified via this function and [`set_front_face_winding`].
+    /// This can be modified via this function and [`set_front_face_winding`](Self::set_front_face_winding).
     pub fn set_backface_culling(&mut self, enabled: bool) {
         self.backface_culling = enabled;
     }
