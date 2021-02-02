@@ -259,12 +259,13 @@ pub enum ShapeStyle {
 
 /// A 2D mesh that can be drawn to the screen.
 ///
-/// A `Mesh` is a wrapper for a [`VertexBuffer`], which allows it to be drawn in combination with four
+/// A `Mesh` is a wrapper for a [`VertexBuffer`], which allows it to be drawn in combination with several
 /// optional modifiers:
 ///
 /// * A [`Texture`] that individual vertices can sample from.
 /// * An [`IndexBuffer`] that can be used to modify the order/subset of vertices that are drawn.
-/// * A winding order, which determines which side of the geometry is front facing.
+/// * A winding order, which determines which side of the geometry is front-facing.
+/// * A backface culling flag, which determines whether back-facing geometry should be drawn.
 /// * A draw range, which can be used to draw subsections of the mesh.
 ///
 /// Without a texture set, the mesh will be drawn in white - the `color` attribute on the [vertex data](Vertex) or
@@ -295,8 +296,9 @@ pub struct Mesh {
     vertex_buffer: VertexBuffer,
     index_buffer: Option<IndexBuffer>,
     texture: Option<Texture>,
-    winding: VertexWinding,
     draw_range: Option<DrawRange>,
+    winding: VertexWinding,
+    backface_culling: bool,
 }
 
 impl Mesh {
@@ -306,8 +308,9 @@ impl Mesh {
             vertex_buffer,
             index_buffer: None,
             texture: None,
-            winding: VertexWinding::CounterClockwise,
             draw_range: None,
+            winding: VertexWinding::CounterClockwise,
+            backface_culling: true,
         }
     }
 
@@ -319,6 +322,7 @@ impl Mesh {
             texture: None,
             winding: VertexWinding::CounterClockwise,
             draw_range: None,
+            backface_culling: true,
         }
     }
 
@@ -467,6 +471,8 @@ impl Mesh {
             params.color,
         );
 
+        ctx.device.cull_face(self.backface_culling);
+
         // Because canvas rendering is effectively done upside-down, the winding order is the opposite
         // of what you'd expect in that case.
         ctx.device.front_face(match &ctx.graphics.canvas {
@@ -550,7 +556,8 @@ impl Mesh {
 
     /// Returns which winding order represents front-facing geometry in this mesh.
     ///
-    /// Back-facing geometry will be culled (not rendered) by default.
+    /// Back-facing geometry will be culled (not rendered) by default, but
+    /// this can be changed via [`set_backface_culling`].
     ///
     /// The default winding order is counter-clockwise.
     pub fn front_face_winding(&self) -> VertexWinding {
@@ -559,11 +566,31 @@ impl Mesh {
 
     /// Sets which winding order represents front-facing geometry in this mesh.
     ///
-    /// Back-facing geometry will be culled (not rendered) by default.
+    /// Back-facing geometry will be culled (not rendered) by default, but
+    /// this can be changed via [`set_backface_culling`].
     ///
     /// The default winding order is counter-clockwise.
     pub fn set_front_face_winding(&mut self, winding: VertexWinding) {
         self.winding = winding;
+    }
+
+    /// Returns whether or not this mesh will cull (not render) back-facing geometry.
+    ///
+    /// By default, backface culling is enabled, counter-clockwise vertices are
+    /// considered front-facing, and clockwise vertices are considered back-facing.
+    /// This can be modified via [`set_backface_culling`] and
+    /// [`set_front_face_winding`].
+    pub fn backface_culling(&self) -> bool {
+        self.backface_culling
+    }
+
+    /// Sets whether or not this mesh will cull (not render) back-facing geometry.
+    ///
+    /// By default, backface culling is enabled, counter-clockwise vertices are
+    /// considered front-facing, and clockwise vertices are considered back-facing.
+    /// This can be modified via this function and [`set_front_face_winding`].
+    pub fn set_backface_culling(&mut self, enabled: bool) {
+        self.backface_culling = enabled;
     }
 
     /// Sets the range of vertices (or indices, if the mesh is indexed) that should be included

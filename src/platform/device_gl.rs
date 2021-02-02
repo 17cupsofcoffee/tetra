@@ -122,6 +122,16 @@ impl GraphicsDevice {
         }
     }
 
+    pub fn cull_face(&mut self, cull_face: bool) {
+        unsafe {
+            if cull_face {
+                self.state.gl.enable(glow::CULL_FACE);
+            } else {
+                self.state.gl.disable(glow::CULL_FACE);
+            }
+        }
+    }
+
     pub fn new_vertex_buffer(
         &mut self,
         count: usize,

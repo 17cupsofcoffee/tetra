@@ -340,6 +340,8 @@ pub fn flush(ctx: &mut Context) {
             Color::WHITE,
         );
 
+        ctx.device.cull_face(true);
+
         // Because canvas rendering is effectively done upside-down, the winding order is the opposite
         // of what you'd expect in that case.
         ctx.device.front_face(match &ctx.graphics.canvas {
