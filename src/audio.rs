@@ -27,9 +27,9 @@ use crate::Context;
 /// | Format | Cargo feature | Enabled by default? |
 /// |-|-|-|
 /// | WAV | `audio_wav` | Yes |
-/// | OGG Vorbis | `audio_vorbis | Yes |
-/// | FLAC | `audio_flac` | Yes |
+/// | OGG Vorbis | `audio_vorbis` | Yes |
 /// | MP3 | `audio_mp3` | Yes |
+/// | FLAC | `audio_flac` | No |
 ///
 /// # Performance
 ///

@@ -30,6 +30,7 @@ This project adheres to Semantic Versioning.
 * **Breaking:** `NineSlice` is now a config object for `Texture::draw_nine_slice`, rather than a wrapper for a texture.
 * **Breaking:** `Font` are now sized and positioned more accurately, and should look the same in Tetra as in other programs. ([@fossegutten](https://github.com/fossegutten) in [#229](https://github.com/17cupsofcoffee/tetra/pull/229))
     * This is not an API breaking change, but will alter the behaviour of existing games.
+* **Breaking:** FLAC audio support has been disabled by default - use the `audio_flac` feature to re-enable it.
 * **Breaking:** Updated `vek` to 0.13.
     * As Vek is exposed via Tetra's API in the form of the `tetra::math` module, this is potentially a breaking change.
 * `time::get_delta_time` now returns a fixed value when called from `update` in fixed timestep mode.

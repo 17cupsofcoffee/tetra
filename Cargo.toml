@@ -32,7 +32,6 @@ anyhow = "1.0.33"
 [features]
 default = [
     "audio",
-    "audio_flac",
     "audio_mp3",
     "audio_vorbis",
     "audio_wav",
