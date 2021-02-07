@@ -4,10 +4,13 @@ use std::rc::Rc;
 
 use glow::{Context as GlowContext, HasContext, PixelUnpackData};
 
-use crate::error::{Result, TetraError};
 use crate::graphics::mesh::{BufferUsage, VertexWinding};
 use crate::graphics::FilterMode;
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
+use crate::{
+    error::{Result, TetraError},
+    graphics::BlendMode,
+};
 
 /// Utility function for calculating offsets/sizes.
 fn size<T>(elements: usize) -> i32 {
@@ -446,6 +449,18 @@ impl GraphicsDevice {
                 location,
                 value.gl_should_transpose(),
                 &value.into_col_array(),
+            );
+        }
+    }
+
+    pub fn set_blend_mode(&mut self, blend_mode: BlendMode) {
+        unsafe {
+            self.state.gl.blend_equation(blend_mode.equation());
+            self.state.gl.blend_func_separate(
+                blend_mode.src_rgb(),
+                blend_mode.dst_rgb(),
+                blend_mode.src_alpha(),
+                blend_mode.dst_alpha(),
             );
         }
     }

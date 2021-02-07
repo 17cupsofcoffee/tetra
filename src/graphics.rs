@@ -76,6 +76,8 @@ pub(crate) struct GraphicsContext {
 
     vertex_data: Vec<Vertex>,
     element_count: usize,
+
+    blend_mode: BlendMode,
 }
 
 impl GraphicsContext {
@@ -128,6 +130,8 @@ impl GraphicsContext {
 
             vertex_data: Vec::with_capacity(MAX_VERTICES),
             element_count: 0,
+
+            blend_mode: BlendMode::default(),
         })
     }
 }
@@ -221,6 +225,11 @@ pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
         flush(ctx);
         ctx.graphics.texture = texture;
     }
+}
+
+pub fn set_blend_mode(ctx: &mut Context, blend_mode: BlendMode) {
+    ctx.device.set_blend_mode(blend_mode);
+    ctx.graphics.blend_mode = blend_mode;
 }
 
 /// Sets the shader that is currently being used for rendering.
@@ -464,4 +473,53 @@ pub(crate) fn ortho(width: f32, height: f32, flipped: bool) -> Mat4<f32> {
         near: -1.0,
         far: 1.0,
     })
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BlendMode {
+    Alpha,
+    Add,
+}
+
+impl BlendMode {
+    pub(crate) fn equation(&self) -> u32 {
+        match self {
+            BlendMode::Alpha => glow::FUNC_ADD,
+            BlendMode::Add => glow::FUNC_ADD,
+        }
+    }
+
+    pub(crate) fn src_rgb(&self) -> u32 {
+        match self {
+            BlendMode::Alpha => glow::ONE,
+            BlendMode::Add => glow::ONE,
+        }
+    }
+
+    pub(crate) fn src_alpha(&self) -> u32 {
+        match self {
+            BlendMode::Alpha => glow::ONE,
+            BlendMode::Add => glow::ZERO,
+        }
+    }
+
+    pub(crate) fn dst_rgb(&self) -> u32 {
+        match self {
+            BlendMode::Alpha => glow::ONE_MINUS_SRC_ALPHA,
+            BlendMode::Add => glow::ONE,
+        }
+    }
+
+    pub(crate) fn dst_alpha(&self) -> u32 {
+        match self {
+            BlendMode::Alpha => glow::ONE_MINUS_SRC_ALPHA,
+            BlendMode::Add => glow::ONE,
+        }
+    }
+}
+
+impl Default for BlendMode {
+    fn default() -> Self {
+        Self::Alpha
+    }
 }
