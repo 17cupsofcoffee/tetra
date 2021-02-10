@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Unreleased]
+
+### Fixed
+
+* `Text::get_bounds` no longer returns incorrect results when a tall glyph is added after a short glyph. ([@tesselode](https://github.com/tesselode) in [#241](https://github.com/17cupsofcoffee/tetra/pull/241)) 
+
 ## [0.6.0] - 2021-02-05
 
 ### Added
