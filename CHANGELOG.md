@@ -6,7 +6,7 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
-## [Unreleased]
+## [Upcoming]
 
 ### Fixed
 
