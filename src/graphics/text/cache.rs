@@ -211,7 +211,7 @@ impl FontCache {
                         }
 
                         if bounds.y < existing.y {
-                            existing.y = bounds.x;
+                            existing.y = bounds.y;
                         }
 
                         if bounds.right() > existing.right() {
