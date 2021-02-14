@@ -201,26 +201,15 @@ impl FontCache {
             }
 
             if let Some(CachedGlyph { mut bounds, uv }) = *cached_glyph {
+                // The glyph's bounds are relative, so we need to combine them
+                // with the cursor to make them absolute.
                 bounds.x += cursor.x;
                 bounds.y += cursor.y;
 
+                // Expand the cached bounds of the text geometry:
                 match &mut text_bounds {
                     Some(existing) => {
-                        if bounds.x < existing.x {
-                            existing.x = bounds.x;
-                        }
-
-                        if bounds.y < existing.y {
-                            existing.y = bounds.y;
-                        }
-
-                        if bounds.right() > existing.right() {
-                            existing.width += bounds.right() - existing.right();
-                        }
-
-                        if bounds.bottom() > existing.bottom() {
-                            existing.height += bounds.bottom() - existing.bottom();
-                        }
+                        *existing = bounds.combine(existing);
                     }
                     None => {
                         text_bounds.replace(bounds);

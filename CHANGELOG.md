@@ -8,6 +8,10 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added
+
+* `Rectangle::combine` has been added, which can be used to get a rectangle that contains two other rectangles.
+
 ### Fixed
 
 * `Text::get_bounds` no longer returns incorrect results when a tall glyph is added after a short glyph. ([@tesselode](https://github.com/tesselode) in [#241](https://github.com/17cupsofcoffee/tetra/pull/241)) 

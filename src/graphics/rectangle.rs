@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div};
+use std::ops::{Add, AddAssign, Div, Sub};
 
 use num_traits::One;
 
@@ -122,6 +122,34 @@ where
             && point.x < self.x + self.width
             && self.y <= point.y
             && point.y < self.y + self.height
+    }
+
+    /// Returns a rectangle that contains both `self` and `other`.
+    pub fn combine(&self, other: &Rectangle<T>) -> Rectangle<T>
+    where
+        T: Add<Output = T> + Sub<Output = T> + PartialOrd,
+    {
+        let x = if self.x < other.x { self.x } else { other.x };
+        let y = if self.y < other.y { self.y } else { other.y };
+
+        let right = if self.right() > other.right() {
+            self.right()
+        } else {
+            other.right()
+        };
+
+        let bottom = if self.bottom() > other.bottom() {
+            self.bottom()
+        } else {
+            other.bottom()
+        };
+
+        Rectangle {
+            x,
+            y,
+            width: right - x,
+            height: bottom - y,
+        }
     }
 
     /// Returns the X co-ordinate of the left side of the rectangle.
@@ -289,5 +317,13 @@ mod tests {
         assert!(!base.contains_point(bottom_right));
         assert!(!base.contains_point(less_than));
         assert!(!base.contains_point(more_than));
+    }
+
+    #[test]
+    fn combine() {
+        assert_eq!(
+            Rectangle::new(16.0, 8.0, 32.0, 64.0).combine(&Rectangle::new(8.0, 0.0, 32.0, 16.0)),
+            Rectangle::new(8.0, 0.0, 40.0, 72.0),
+        )
     }
 }
