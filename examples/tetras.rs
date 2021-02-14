@@ -190,7 +190,7 @@ impl TitleScene {
 impl Scene for TitleScene {
     fn update(&mut self, ctx: &mut Context, assets: &Assets) -> tetra::Result<Transition> {
         if input::is_key_pressed(ctx, Key::Space) {
-            Ok(Transition::Push(Box::new(GameScene::new(ctx, assets)?)))
+            Ok(Transition::Push(Box::new(GameScene::new(ctx, assets))))
         } else {
             Ok(Transition::None)
         }
@@ -354,8 +354,8 @@ struct GameScene {
 }
 
 impl GameScene {
-    fn new(_: &mut Context, assets: &Assets) -> tetra::Result<GameScene> {
-        Ok(GameScene {
+    fn new(_: &mut Context, assets: &Assets) -> GameScene {
+        GameScene {
             block: Block::new(),
             drop_timer: 0,
             move_timer: 0,
@@ -363,7 +363,7 @@ impl GameScene {
             board: [[None; 10]; 22],
             score: 0,
             score_text: Text::new("Score: 0", assets.font_16.clone()),
-        })
+        }
     }
 
     fn collides(&mut self, move_x: i32, move_y: i32) -> bool {
