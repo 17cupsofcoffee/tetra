@@ -28,7 +28,7 @@ impl GameState {
             panel_config: NineSlice::with_border(Rectangle::new(0.0, 0.0, 32.0, 32.0), 4.0),
             text: Text::new(
                 format!("{}\n{:?}", LABEL, ScalingMode::Fixed),
-                Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 16.0)?,
+                Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 14.0)?,
             ),
         })
     }
