@@ -8,7 +8,7 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::Stream;
 use hound::{SampleFormat, WavReader};
 use oddio::{
-    Controlled, Filter, Frame, Frames, FramesSignal, Gain, Handle, MixerHandle, Signal, Speed,
+    Controlled, Filter, Frame, Frames, FramesSignal, Gain, Handle, Mixer, Signal, Speed, Stop,
 };
 
 use crate::error::Result;
@@ -314,7 +314,7 @@ pub fn get_master_volume(ctx: &mut Context) -> f32 {
 
 pub(crate) struct AudioDevice {
     stream: Stream,
-    mixer_handle: MixerHandle<[f32; 2]>,
+    mixer_handle: Handle<Mixer<[f32; 2]>>,
     master_volume: Arc<AtomicU32>,
 }
 
@@ -325,7 +325,7 @@ impl AudioDevice {
         let output_config = device.default_output_config().expect("TODO").config();
         let sample_rate = output_config.sample_rate.0;
 
-        let (mut mixer_handle, mut mixer) = oddio::mixer();
+        let (mut mixer_handle, mut mixer) = oddio::split(Mixer::new());
 
         let stream = device
             .build_output_stream(
@@ -376,7 +376,7 @@ impl AudioDevice {
         let source = Speed::new(source);
         let source = Pauseable::new(source, !playing);
 
-        let mut handle = self.mixer_handle.play(source);
+        let mut handle = self.mixer_handle.control::<Mixer<_>, _>().play(source);
 
         handle.control::<Gain<_>, _>().set_gain(volume);
         handle.control::<Speed<_>, _>().set_speed(speed);
@@ -385,7 +385,7 @@ impl AudioDevice {
     }
 }
 
-type TetraHandle = Handle<Pauseable<Speed<Gain<FramesSignal<[f32; 2]>>>>>;
+type TetraHandle = Handle<Stop<Pauseable<Speed<Gain<FramesSignal<[f32; 2]>>>>>>;
 
 // TODO: Everything below should be replaced with stuff built-in to Oddio, or I should get Ralith to
 // make sure it's not disgustingly broken.
@@ -410,19 +410,13 @@ where
 {
     type Frame = T::Frame;
 
-    fn sample(&self, offset: f32, sample_length: f32, out: &mut [T::Frame]) {
+    fn sample(&self, interval: f32, out: &mut [T::Frame]) {
         if self.paused.load(Ordering::Relaxed) {
             for frame in out {
                 *frame = T::Frame::ZERO;
             }
         } else {
-            self.inner.sample(offset, sample_length, out);
-        }
-    }
-
-    fn advance(&self, dt: f32) {
-        if !self.paused.load(Ordering::Relaxed) {
-            self.inner.advance(dt);
+            self.inner.sample(interval, out);
         }
     }
 
@@ -445,7 +439,7 @@ struct PauseableControl<'a, T>(&'a Pauseable<T>);
 unsafe impl<'a, T: 'a> Controlled<'a> for Pauseable<T> {
     type Control = PauseableControl<'a, T>;
 
-    fn make_control(signal: &'a Pauseable<T>) -> Self::Control {
+    unsafe fn make_control(signal: &'a Pauseable<T>) -> Self::Control {
         PauseableControl(signal)
     }
 }
