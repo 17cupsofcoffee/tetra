@@ -232,6 +232,10 @@ pub fn set_blend_mode(ctx: &mut Context, blend_mode: BlendMode) {
     ctx.graphics.blend_mode = blend_mode;
 }
 
+pub fn reset_blend_mode(ctx: &mut Context) {
+    set_blend_mode(ctx, Default::default());
+}
+
 /// Sets the shader that is currently being used for rendering.
 ///
 /// If the shader is different from the one that is currently in use, this will trigger a
@@ -476,50 +480,68 @@ pub(crate) fn ortho(width: f32, height: f32, flipped: bool) -> Mat4<f32> {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BlendAlphaMode {
+    Multiply,
+    Premultiplied,
+}
+
+impl Default for BlendAlphaMode {
+    fn default() -> Self {
+        Self::Multiply
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BlendMode {
-    Alpha,
-    Add,
+    Alpha(BlendAlphaMode),
+    Add(BlendAlphaMode),
 }
 
 impl BlendMode {
     pub(crate) fn equation(&self) -> u32 {
         match self {
-            BlendMode::Alpha => glow::FUNC_ADD,
-            BlendMode::Add => glow::FUNC_ADD,
+            BlendMode::Alpha(_) => glow::FUNC_ADD,
+            BlendMode::Add(_) => glow::FUNC_ADD,
         }
     }
 
     pub(crate) fn src_rgb(&self) -> u32 {
         match self {
-            BlendMode::Alpha => glow::ONE,
-            BlendMode::Add => glow::ONE,
+            BlendMode::Alpha(blend_alpha) => match blend_alpha {
+                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
+                BlendAlphaMode::Premultiplied => glow::ONE,
+            },
+            BlendMode::Add(blend_alpha) => match blend_alpha {
+                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
+                BlendAlphaMode::Premultiplied => glow::ONE,
+            },
         }
     }
 
     pub(crate) fn src_alpha(&self) -> u32 {
         match self {
-            BlendMode::Alpha => glow::ONE,
-            BlendMode::Add => glow::ZERO,
+            BlendMode::Alpha(_) => glow::ONE,
+            BlendMode::Add(_) => glow::ZERO,
         }
     }
 
     pub(crate) fn dst_rgb(&self) -> u32 {
         match self {
-            BlendMode::Alpha => glow::ONE_MINUS_SRC_ALPHA,
-            BlendMode::Add => glow::ONE,
+            BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
+            BlendMode::Add(_) => glow::ONE,
         }
     }
 
     pub(crate) fn dst_alpha(&self) -> u32 {
         match self {
-            BlendMode::Alpha => glow::ONE_MINUS_SRC_ALPHA,
-            BlendMode::Add => glow::ONE,
+            BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
+            BlendMode::Add(_) => glow::ONE,
         }
     }
 }
 
 impl Default for BlendMode {
     fn default() -> Self {
-        Self::Alpha
+        Self::Alpha(BlendAlphaMode::Multiply)
     }
 }
