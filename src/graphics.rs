@@ -228,8 +228,11 @@ pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
 }
 
 pub fn set_blend_mode(ctx: &mut Context, blend_mode: BlendMode) {
+    if blend_mode != ctx.graphics.blend_mode {
+        flush(ctx);
+        ctx.graphics.blend_mode = blend_mode;
+    }
     ctx.device.set_blend_mode(blend_mode);
-    ctx.graphics.blend_mode = blend_mode;
 }
 
 pub fn reset_blend_mode(ctx: &mut Context) {
