@@ -498,6 +498,8 @@ impl Default for BlendAlphaMode {
 pub enum BlendMode {
     Alpha(BlendAlphaMode),
     Add(BlendAlphaMode),
+    Subtract(BlendAlphaMode),
+    Multiply,
 }
 
 impl BlendMode {
@@ -505,6 +507,8 @@ impl BlendMode {
         match self {
             BlendMode::Alpha(_) => glow::FUNC_ADD,
             BlendMode::Add(_) => glow::FUNC_ADD,
+            BlendMode::Subtract(_) => glow::FUNC_REVERSE_SUBTRACT,
+            BlendMode::Multiply => glow::FUNC_ADD,
         }
     }
 
@@ -518,6 +522,11 @@ impl BlendMode {
                 BlendAlphaMode::Multiply => glow::SRC_ALPHA,
                 BlendAlphaMode::Premultiplied => glow::ONE,
             },
+            BlendMode::Subtract(blend_alpha) => match blend_alpha {
+                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
+                BlendAlphaMode::Premultiplied => glow::ONE,
+            },
+            BlendMode::Multiply => glow::DST_COLOR,
         }
     }
 
@@ -525,6 +534,8 @@ impl BlendMode {
         match self {
             BlendMode::Alpha(_) => glow::ONE,
             BlendMode::Add(_) => glow::ZERO,
+            BlendMode::Subtract(_) => glow::ONE,
+            BlendMode::Multiply => glow::DST_COLOR,
         }
     }
 
@@ -532,6 +543,8 @@ impl BlendMode {
         match self {
             BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
             BlendMode::Add(_) => glow::ONE,
+            BlendMode::Subtract(_) => glow::ZERO,
+            BlendMode::Multiply => glow::ZERO,
         }
     }
 
@@ -539,6 +552,8 @@ impl BlendMode {
         match self {
             BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
             BlendMode::Add(_) => glow::ONE,
+            BlendMode::Subtract(_) => glow::ZERO,
+            BlendMode::Multiply => glow::ZERO,
         }
     }
 }
