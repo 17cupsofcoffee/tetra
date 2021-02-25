@@ -227,6 +227,7 @@ pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
     }
 }
 
+/// Sets the blend mode used for future drawing operations.
 pub fn set_blend_mode(ctx: &mut Context, blend_mode: BlendMode) {
     if blend_mode != ctx.graphics.blend_mode {
         flush(ctx);
@@ -235,6 +236,7 @@ pub fn set_blend_mode(ctx: &mut Context, blend_mode: BlendMode) {
     ctx.device.set_blend_mode(blend_mode);
 }
 
+/// Resets the blend mode to the default.
 pub fn reset_blend_mode(ctx: &mut Context) {
     set_blend_mode(ctx, Default::default());
 }
@@ -482,9 +484,19 @@ pub(crate) fn ortho(width: f32, height: f32, flipped: bool) -> Mat4<f32> {
     })
 }
 
+// blend mode logic is taken from LÖVE:
+// https://github.com/love2d/love/blob/master/src/modules/graphics/opengl/Graphics.cpp#L1234
+
+/// How to treat alpha values when blending colors.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BlendAlphaMode {
+    /// The default behavior. RGB values are multiplied
+    /// by the alpha value before drawing.
     Multiply,
+    /// RGB values are not multiplied by the alpha value
+    /// before drawing. This should be used when the RGB values
+    /// have already been multiplied by the alpha value,
+    /// such as when drawing a [`Canvas`].
     Premultiplied,
 }
 
@@ -494,11 +506,18 @@ impl Default for BlendAlphaMode {
     }
 }
 
+/// Ways of blending colors.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BlendMode {
+    /// The default blending mode. The previous pixels are blended
+    /// are blended with the new pixels based on the alpha component.
     Alpha(BlendAlphaMode),
+    /// Each color component is added to the previous pixels.
     Add(BlendAlphaMode),
+    /// Each color component is subtracted from the previous pixels.
     Subtract(BlendAlphaMode),
+    /// Each component is multiplied by the corresponding component
+    /// of the previous pixels.
     Multiply,
 }
 
