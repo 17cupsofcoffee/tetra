@@ -534,7 +534,7 @@ impl BlendMode {
         match self {
             BlendMode::Alpha(_) => glow::ONE,
             BlendMode::Add(_) => glow::ZERO,
-            BlendMode::Subtract(_) => glow::ONE,
+            BlendMode::Subtract(_) => glow::ZERO,
             BlendMode::Multiply => glow::DST_COLOR,
         }
     }
@@ -543,7 +543,7 @@ impl BlendMode {
         match self {
             BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
             BlendMode::Add(_) => glow::ONE,
-            BlendMode::Subtract(_) => glow::ZERO,
+            BlendMode::Subtract(_) => glow::ONE,
             BlendMode::Multiply => glow::ZERO,
         }
     }
@@ -552,7 +552,7 @@ impl BlendMode {
         match self {
             BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
             BlendMode::Add(_) => glow::ONE,
-            BlendMode::Subtract(_) => glow::ZERO,
+            BlendMode::Subtract(_) => glow::ONE,
             BlendMode::Multiply => glow::ZERO,
         }
     }
