@@ -76,6 +76,8 @@ pub(crate) struct GraphicsContext {
 
     vertex_data: Vec<Vertex>,
     element_count: usize,
+
+    blend_mode: BlendMode,
 }
 
 impl GraphicsContext {
@@ -128,6 +130,8 @@ impl GraphicsContext {
 
             vertex_data: Vec::with_capacity(MAX_VERTICES),
             element_count: 0,
+
+            blend_mode: BlendMode::default(),
         })
     }
 }
@@ -221,6 +225,20 @@ pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
         flush(ctx);
         ctx.graphics.texture = texture;
     }
+}
+
+/// Sets the blend mode used for future drawing operations.
+pub fn set_blend_mode(ctx: &mut Context, blend_mode: BlendMode) {
+    if blend_mode != ctx.graphics.blend_mode {
+        flush(ctx);
+        ctx.graphics.blend_mode = blend_mode;
+    }
+    ctx.device.set_blend_mode(blend_mode);
+}
+
+/// Resets the blend mode to the default.
+pub fn reset_blend_mode(ctx: &mut Context) {
+    set_blend_mode(ctx, Default::default());
 }
 
 /// Sets the shader that is currently being used for rendering.
@@ -464,4 +482,103 @@ pub(crate) fn ortho(width: f32, height: f32, flipped: bool) -> Mat4<f32> {
         near: -1.0,
         far: 1.0,
     })
+}
+
+// blend mode logic is taken from LÖVE:
+// https://github.com/love2d/love/blob/master/src/modules/graphics/opengl/Graphics.cpp#L1234
+
+/// How to treat alpha values when blending colors.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BlendAlphaMode {
+    /// The default behavior. RGB values are multiplied
+    /// by the alpha value before drawing.
+    Multiply,
+    /// RGB values are not multiplied by the alpha value
+    /// before drawing. This should be used when the RGB values
+    /// have already been multiplied by the alpha value,
+    /// such as when drawing a [`Canvas`].
+    Premultiplied,
+}
+
+impl Default for BlendAlphaMode {
+    fn default() -> Self {
+        Self::Multiply
+    }
+}
+
+/// Ways of blending colors.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BlendMode {
+    /// The default blending mode. The previous pixels are blended
+    /// are blended with the new pixels based on the alpha component.
+    Alpha(BlendAlphaMode),
+    /// Each color component is added to the previous pixels.
+    Add(BlendAlphaMode),
+    /// Each color component is subtracted from the previous pixels.
+    Subtract(BlendAlphaMode),
+    /// Each component is multiplied by the corresponding component
+    /// of the previous pixels.
+    Multiply,
+}
+
+impl BlendMode {
+    pub(crate) fn equation(&self) -> u32 {
+        match self {
+            BlendMode::Alpha(_) => glow::FUNC_ADD,
+            BlendMode::Add(_) => glow::FUNC_ADD,
+            BlendMode::Subtract(_) => glow::FUNC_REVERSE_SUBTRACT,
+            BlendMode::Multiply => glow::FUNC_ADD,
+        }
+    }
+
+    pub(crate) fn src_rgb(&self) -> u32 {
+        match self {
+            BlendMode::Alpha(blend_alpha) => match blend_alpha {
+                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
+                BlendAlphaMode::Premultiplied => glow::ONE,
+            },
+            BlendMode::Add(blend_alpha) => match blend_alpha {
+                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
+                BlendAlphaMode::Premultiplied => glow::ONE,
+            },
+            BlendMode::Subtract(blend_alpha) => match blend_alpha {
+                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
+                BlendAlphaMode::Premultiplied => glow::ONE,
+            },
+            BlendMode::Multiply => glow::DST_COLOR,
+        }
+    }
+
+    pub(crate) fn src_alpha(&self) -> u32 {
+        match self {
+            BlendMode::Alpha(_) => glow::ONE,
+            BlendMode::Add(_) => glow::ZERO,
+            BlendMode::Subtract(_) => glow::ZERO,
+            BlendMode::Multiply => glow::DST_COLOR,
+        }
+    }
+
+    pub(crate) fn dst_rgb(&self) -> u32 {
+        match self {
+            BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
+            BlendMode::Add(_) => glow::ONE,
+            BlendMode::Subtract(_) => glow::ONE,
+            BlendMode::Multiply => glow::ZERO,
+        }
+    }
+
+    pub(crate) fn dst_alpha(&self) -> u32 {
+        match self {
+            BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
+            BlendMode::Add(_) => glow::ONE,
+            BlendMode::Subtract(_) => glow::ONE,
+            BlendMode::Multiply => glow::ZERO,
+        }
+    }
+}
+
+impl Default for BlendMode {
+    fn default() -> Self {
+        Self::Alpha(BlendAlphaMode::Multiply)
+    }
 }
