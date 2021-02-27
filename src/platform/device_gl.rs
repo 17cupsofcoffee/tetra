@@ -4,13 +4,10 @@ use std::rc::Rc;
 
 use glow::{Context as GlowContext, HasContext, PixelUnpackData};
 
+use crate::error::{Result, TetraError};
 use crate::graphics::mesh::{BufferUsage, VertexWinding};
-use crate::graphics::FilterMode;
+use crate::graphics::{BlendAlphaMode, BlendMode, FilterMode};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
-use crate::{
-    error::{Result, TetraError},
-    graphics::BlendMode,
-};
 
 /// Utility function for calculating offsets/sizes.
 fn size<T>(elements: usize) -> i32 {
@@ -968,6 +965,63 @@ impl From<FilterMode> for i32 {
         match filter_mode {
             FilterMode::Nearest => glow::NEAREST as i32,
             FilterMode::Linear => glow::LINEAR as i32,
+        }
+    }
+}
+
+#[doc(hidden)]
+impl BlendMode {
+    pub(crate) fn equation(&self) -> u32 {
+        match self {
+            BlendMode::Alpha(_) => glow::FUNC_ADD,
+            BlendMode::Add(_) => glow::FUNC_ADD,
+            BlendMode::Subtract(_) => glow::FUNC_REVERSE_SUBTRACT,
+            BlendMode::Multiply => glow::FUNC_ADD,
+        }
+    }
+
+    pub(crate) fn src_rgb(&self) -> u32 {
+        match self {
+            BlendMode::Alpha(blend_alpha) => match blend_alpha {
+                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
+                BlendAlphaMode::Premultiplied => glow::ONE,
+            },
+            BlendMode::Add(blend_alpha) => match blend_alpha {
+                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
+                BlendAlphaMode::Premultiplied => glow::ONE,
+            },
+            BlendMode::Subtract(blend_alpha) => match blend_alpha {
+                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
+                BlendAlphaMode::Premultiplied => glow::ONE,
+            },
+            BlendMode::Multiply => glow::DST_COLOR,
+        }
+    }
+
+    pub(crate) fn src_alpha(&self) -> u32 {
+        match self {
+            BlendMode::Alpha(_) => glow::ONE,
+            BlendMode::Add(_) => glow::ZERO,
+            BlendMode::Subtract(_) => glow::ZERO,
+            BlendMode::Multiply => glow::DST_COLOR,
+        }
+    }
+
+    pub(crate) fn dst_rgb(&self) -> u32 {
+        match self {
+            BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
+            BlendMode::Add(_) => glow::ONE,
+            BlendMode::Subtract(_) => glow::ONE,
+            BlendMode::Multiply => glow::ZERO,
+        }
+    }
+
+    pub(crate) fn dst_alpha(&self) -> u32 {
+        match self {
+            BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
+            BlendMode::Add(_) => glow::ONE,
+            BlendMode::Subtract(_) => glow::ONE,
+            BlendMode::Multiply => glow::ZERO,
         }
     }
 }

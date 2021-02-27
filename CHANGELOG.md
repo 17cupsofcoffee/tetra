@@ -10,6 +10,7 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
+* Blend modes can now be set when rendering (including variants for pre-multiplied alpha). ([@tesselode](https://github.com/tesselode) in [#244](https://github.com/17cupsofcoffee/tetra/pull/244)) 
 * `Rectangle::combine` has been added, which can be used to get a rectangle that contains two other rectangles.
 
 ### Fixed
