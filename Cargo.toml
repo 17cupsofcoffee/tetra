@@ -77,5 +77,5 @@ sdl2_bundled = ["sdl2/bundled"]
 sdl2_static_link = ["sdl2/static-link"]
 
 # Disables automatic drawing for each frame.
-# If you enable this feature, you will need to call `tetra::graphics::present` manually.
+# When this feature is enabled, draw commands will be processed, but you will need to call `tetra::graphics::present` to get the actual drawing on the screen.
 disable_auto_redraw = []
