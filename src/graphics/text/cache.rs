@@ -2,11 +2,11 @@ use hashbrown::hash_map::Entry;
 use hashbrown::HashMap;
 use unicode_normalization::UnicodeNormalization;
 
-use crate::graphics::text::packer::ShelfPacker;
 use crate::graphics::{Rectangle, Texture};
 use crate::math::Vec2;
 use crate::platform::GraphicsDevice;
 use crate::{error::Result, graphics::FilterMode};
+use crate::{graphics::text::packer::ShelfPacker, Context};
 
 /// The data produced by rasterizing a glyph from a font.
 pub(crate) struct RasterizedGlyph {
@@ -132,14 +132,8 @@ impl FontCache {
         self.packer.filter_mode()
     }
 
-    pub fn set_filter_mode(
-        &mut self,
-        device: &mut GraphicsDevice,
-        filter_mode: FilterMode,
-    ) -> Result {
-        self.packer.set_filter_mode(device, filter_mode)?;
-        self.glyphs.clear();
-        Ok(())
+    pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
+        self.packer.set_filter_mode(ctx, filter_mode);
     }
 
     /// Generates the geometry for the given string, resizing the texture atlas if needed.

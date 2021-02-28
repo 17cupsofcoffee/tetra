@@ -98,10 +98,8 @@ impl Font {
     }
 
     /// Sets the filter mode of the font.
-    pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) -> Result {
-        self.data
-            .borrow_mut()
-            .set_filter_mode(&mut ctx.device, filter_mode)
+    pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
+        self.data.borrow_mut().set_filter_mode(ctx, filter_mode);
     }
 }
 
@@ -130,7 +128,6 @@ pub struct Text {
     content: String,
     font: Font,
     geometry: Option<TextGeometry>,
-    last_filter_mode: FilterMode,
 }
 
 impl Text {
@@ -139,12 +136,10 @@ impl Text {
     where
         C: Into<String>,
     {
-        let last_filter_mode = font.filter_mode();
         Text {
             content: content.into(),
             font,
             geometry: None,
-            last_filter_mode,
         }
     }
 
@@ -256,7 +251,6 @@ impl Text {
     }
 
     fn update_geometry(&mut self, ctx: &mut Context) {
-        let filter_mode = self.font.filter_mode();
         let mut data = self.font.data.borrow_mut();
 
         let needs_render = match &self.geometry {
@@ -264,10 +258,9 @@ impl Text {
             Some(g) => g.resize_count != data.resize_count(),
         };
 
-        if needs_render || self.last_filter_mode != filter_mode {
+        if needs_render {
             let new_geometry = data.render(&mut ctx.device, &self.content);
             self.geometry = Some(new_geometry);
-            self.last_filter_mode = filter_mode;
         }
     }
 }

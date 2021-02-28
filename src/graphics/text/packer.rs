@@ -1,6 +1,6 @@
-use crate::error::Result;
 use crate::graphics::{FilterMode, Texture};
 use crate::platform::GraphicsDevice;
+use crate::{error::Result, Context};
 
 /// An individual shelf within the packed atlas, tracking how much space
 /// is currently taken up.
@@ -16,7 +16,6 @@ pub struct ShelfPacker {
     texture: Texture,
     shelves: Vec<Shelf>,
     next_y: i32,
-    filter_mode: FilterMode,
 }
 
 impl ShelfPacker {
@@ -38,7 +37,6 @@ impl ShelfPacker {
             )?,
             shelves: Vec::new(),
             next_y: Self::PADDING,
-            filter_mode,
         })
     }
 
@@ -48,27 +46,11 @@ impl ShelfPacker {
     }
 
     pub fn filter_mode(&self) -> FilterMode {
-        self.filter_mode
+        self.texture.filter_mode()
     }
 
-    pub fn set_filter_mode(
-        &mut self,
-        device: &mut GraphicsDevice,
-        filter_mode: FilterMode,
-    ) -> Result {
-        self.filter_mode = filter_mode;
-
-        self.texture = Texture::with_device_empty(
-            device,
-            self.texture.width(),
-            self.texture.height(),
-            self.filter_mode,
-        )?;
-
-        self.shelves.clear();
-        self.next_y = Self::PADDING;
-
-        Ok(())
+    pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
+        self.texture.set_filter_mode(ctx, filter_mode);
     }
 
     /// Resize the atlas texture, clearing any existing shelf data.
@@ -78,8 +60,12 @@ impl ShelfPacker {
         texture_width: i32,
         texture_height: i32,
     ) -> Result {
-        self.texture =
-            Texture::with_device_empty(device, texture_width, texture_height, self.filter_mode)?;
+        self.texture = Texture::with_device_empty(
+            device,
+            texture_width,
+            texture_height,
+            self.texture.filter_mode(),
+        )?;
 
         self.shelves.clear();
         self.next_y = Self::PADDING;
