@@ -92,10 +92,12 @@ impl Font {
         VectorFontBuilder::from_file_data(data)?.with_size(ctx, size)
     }
 
+    /// Returns the filter mode of the font.
     pub fn filter_mode(&self) -> FilterMode {
         self.data.borrow().filter_mode()
     }
 
+    /// Sets the filter mode of the font.
     pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) -> Result {
         self.data
             .borrow_mut()
