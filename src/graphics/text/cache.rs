@@ -2,11 +2,11 @@ use hashbrown::hash_map::Entry;
 use hashbrown::HashMap;
 use unicode_normalization::UnicodeNormalization;
 
-use crate::error::Result;
-use crate::graphics::text::packer::ShelfPacker;
 use crate::graphics::{Rectangle, Texture};
 use crate::math::Vec2;
 use crate::platform::GraphicsDevice;
+use crate::{error::Result, graphics::FilterMode};
+use crate::{graphics::text::packer::ShelfPacker, Context};
 
 /// The data produced by rasterizing a glyph from a font.
 pub(crate) struct RasterizedGlyph {
@@ -102,10 +102,14 @@ pub(crate) struct FontCache {
 
 impl FontCache {
     /// Creates a new cache, using the given rasterizer.
-    pub fn new(device: &mut GraphicsDevice, rasterizer: Box<dyn Rasterizer>) -> Result<FontCache> {
+    pub fn new(
+        device: &mut GraphicsDevice,
+        rasterizer: Box<dyn Rasterizer>,
+        filter_mode: FilterMode,
+    ) -> Result<FontCache> {
         Ok(FontCache {
             rasterizer,
-            packer: ShelfPacker::new(device, 128, 128)?,
+            packer: ShelfPacker::new(device, 128, 128, filter_mode)?,
             glyphs: HashMap::new(),
             resize_count: 0,
         })
@@ -122,6 +126,14 @@ impl FontCache {
     /// if that struct's data is stale.
     pub fn resize_count(&self) -> usize {
         self.resize_count
+    }
+
+    pub fn filter_mode(&self) -> FilterMode {
+        self.packer.filter_mode()
+    }
+
+    pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
+        self.packer.set_filter_mode(ctx, filter_mode);
     }
 
     /// Generates the geometry for the given string, resizing the texture atlas if needed.

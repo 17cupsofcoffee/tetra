@@ -22,6 +22,8 @@ use crate::Context;
 #[cfg(feature = "font_ttf")]
 pub use crate::graphics::text::vector::VectorFontBuilder;
 
+use super::FilterMode;
+
 /// A font with an associated size, cached on the GPU.
 ///
 /// # Performance
@@ -88,6 +90,16 @@ impl Font {
         size: f32,
     ) -> Result<Font> {
         VectorFontBuilder::from_file_data(data)?.with_size(ctx, size)
+    }
+
+    /// Returns the filter mode of the font.
+    pub fn filter_mode(&self) -> FilterMode {
+        self.data.borrow().filter_mode()
+    }
+
+    /// Sets the filter mode of the font.
+    pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
+        self.data.borrow_mut().set_filter_mode(ctx, filter_mode);
     }
 }
 
