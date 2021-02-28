@@ -172,7 +172,11 @@ impl VectorFontBuilder {
             VectorFontData::Slice(f) => Box::new(VectorRasterizer::new(Rc::clone(f), size)),
         };
 
-        let cache = FontCache::new(&mut ctx.device, rasterizer)?;
+        let cache = FontCache::new(
+            &mut ctx.device,
+            rasterizer,
+            ctx.graphics.default_filter_mode,
+        )?;
 
         Ok(Font {
             data: Rc::new(RefCell::new(cache)),

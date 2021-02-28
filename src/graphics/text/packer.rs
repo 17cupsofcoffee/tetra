@@ -16,6 +16,7 @@ pub struct ShelfPacker {
     texture: Texture,
     shelves: Vec<Shelf>,
     next_y: i32,
+    filter_mode: FilterMode,
 }
 
 impl ShelfPacker {
@@ -26,16 +27,18 @@ impl ShelfPacker {
         device: &mut GraphicsDevice,
         texture_width: i32,
         texture_height: i32,
+        filter_mode: FilterMode,
     ) -> Result<ShelfPacker> {
         Ok(ShelfPacker {
             texture: Texture::with_device_empty(
                 device,
                 texture_width,
                 texture_height,
-                FilterMode::Nearest,
+                filter_mode,
             )?,
             shelves: Vec::new(),
             next_y: Self::PADDING,
+            filter_mode,
         })
     }
 
@@ -52,7 +55,7 @@ impl ShelfPacker {
         texture_height: i32,
     ) -> Result {
         self.texture =
-            Texture::with_device_empty(device, texture_width, texture_height, FilterMode::Nearest)?;
+            Texture::with_device_empty(device, texture_width, texture_height, self.filter_mode)?;
 
         self.shelves.clear();
         self.next_y = Self::PADDING;
