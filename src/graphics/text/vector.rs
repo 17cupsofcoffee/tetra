@@ -167,14 +167,16 @@ impl VectorFontBuilder {
     /// * [`TetraError::PlatformError`] will be returned if the GPU cache for the font
     ///   could not be created.
     pub fn with_size(&self, ctx: &mut Context, size: f32) -> Result<Font> {
-        let filter_mode = ctx.graphics.default_filter_mode;
-
         let rasterizer: Box<dyn Rasterizer> = match &self.data {
             VectorFontData::Owned(f) => Box::new(VectorRasterizer::new(Rc::clone(f), size)),
             VectorFontData::Slice(f) => Box::new(VectorRasterizer::new(Rc::clone(f), size)),
         };
 
-        let cache = FontCache::new(&mut ctx.device, rasterizer, filter_mode)?;
+        let cache = FontCache::new(
+            &mut ctx.device,
+            rasterizer,
+            ctx.graphics.default_filter_mode,
+        )?;
 
         Ok(Font {
             data: Rc::new(RefCell::new(cache)),

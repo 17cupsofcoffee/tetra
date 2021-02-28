@@ -12,6 +12,9 @@ This project adheres to Semantic Versioning.
 
 * Blend modes can now be set when rendering (including variants for pre-multiplied alpha). ([@tesselode](https://github.com/tesselode) in [#244](https://github.com/17cupsofcoffee/tetra/pull/244)) 
 * `Rectangle::combine` has been added, which can be used to get a rectangle that contains two other rectangles.
+* Fonts can now have their filter mode set, instead of always using nearest neighbor filtering. ([@tesselode](https://github.com/tesselode) in [#246](https://github.com/17cupsofcoffee/tetra/pull/246)) 
+    * Fonts now also respect the default filter mode when they are created.
+
 
 ### Fixed
 

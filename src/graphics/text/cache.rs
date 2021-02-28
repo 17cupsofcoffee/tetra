@@ -2,11 +2,11 @@ use hashbrown::hash_map::Entry;
 use hashbrown::HashMap;
 use unicode_normalization::UnicodeNormalization;
 
-use crate::graphics::{Rectangle, Texture};
+use crate::graphics::text::packer::ShelfPacker;
+use crate::graphics::{FilterMode, Rectangle, Texture};
 use crate::math::Vec2;
 use crate::platform::GraphicsDevice;
-use crate::{error::Result, graphics::FilterMode};
-use crate::{graphics::text::packer::ShelfPacker, Context};
+use crate::{Context, Result};
 
 /// The data produced by rasterizing a glyph from a font.
 pub(crate) struct RasterizedGlyph {

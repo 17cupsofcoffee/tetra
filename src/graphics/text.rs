@@ -33,6 +33,8 @@ use super::FilterMode;
 ///
 /// Cloning a `Font` is a very cheap operation, as the underlying data is shared between the
 /// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
+/// This does mean, however, that updating a `Font` (for example, changing its filter mode) will also
+/// update any other clones of that `Font`.
 ///
 /// # Examples
 ///
@@ -98,6 +100,10 @@ impl Font {
     }
 
     /// Sets the filter mode of the font.
+    ///
+    /// Note that changing the filter mode of a font will affect all [`Text`] objects
+    /// that use that font, including existing ones. This is due to the fact that
+    /// each font has a shared texture atlas.
     pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) {
         self.data.borrow_mut().set_filter_mode(ctx, filter_mode);
     }

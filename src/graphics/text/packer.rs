@@ -1,6 +1,6 @@
 use crate::graphics::{FilterMode, Texture};
 use crate::platform::GraphicsDevice;
-use crate::{error::Result, Context};
+use crate::{Context, Result};
 
 /// An individual shelf within the packed atlas, tracking how much space
 /// is currently taken up.
