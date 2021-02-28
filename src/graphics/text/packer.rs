@@ -47,6 +47,30 @@ impl ShelfPacker {
         &self.texture
     }
 
+    pub fn filter_mode(&self) -> FilterMode {
+        self.filter_mode
+    }
+
+    pub fn set_filter_mode(
+        &mut self,
+        device: &mut GraphicsDevice,
+        filter_mode: FilterMode,
+    ) -> Result {
+        self.filter_mode = filter_mode;
+
+        self.texture = Texture::with_device_empty(
+            device,
+            self.texture.width(),
+            self.texture.height(),
+            self.filter_mode,
+        )?;
+
+        self.shelves.clear();
+        self.next_y = Self::PADDING;
+
+        Ok(())
+    }
+
     /// Resize the atlas texture, clearing any existing shelf data.
     pub fn resize(
         &mut self,

@@ -22,6 +22,8 @@ use crate::Context;
 #[cfg(feature = "font_ttf")]
 pub use crate::graphics::text::vector::VectorFontBuilder;
 
+use super::FilterMode;
+
 /// A font with an associated size, cached on the GPU.
 ///
 /// # Performance
@@ -89,6 +91,16 @@ impl Font {
     ) -> Result<Font> {
         VectorFontBuilder::from_file_data(data)?.with_size(ctx, size)
     }
+
+    pub fn filter_mode(&self) -> FilterMode {
+        self.data.borrow().filter_mode()
+    }
+
+    pub fn set_filter_mode(&mut self, ctx: &mut Context, filter_mode: FilterMode) -> Result {
+        self.data
+            .borrow_mut()
+            .set_filter_mode(&mut ctx.device, filter_mode)
+    }
 }
 
 impl Debug for Font {
@@ -116,6 +128,7 @@ pub struct Text {
     content: String,
     font: Font,
     geometry: Option<TextGeometry>,
+    last_filter_mode: FilterMode,
 }
 
 impl Text {
@@ -124,10 +137,12 @@ impl Text {
     where
         C: Into<String>,
     {
+        let last_filter_mode = font.filter_mode();
         Text {
             content: content.into(),
             font,
             geometry: None,
+            last_filter_mode,
         }
     }
 
@@ -239,6 +254,7 @@ impl Text {
     }
 
     fn update_geometry(&mut self, ctx: &mut Context) {
+        let filter_mode = self.font.filter_mode();
         let mut data = self.font.data.borrow_mut();
 
         let needs_render = match &self.geometry {
@@ -246,9 +262,10 @@ impl Text {
             Some(g) => g.resize_count != data.resize_count(),
         };
 
-        if needs_render {
+        if needs_render || self.last_filter_mode != filter_mode {
             let new_geometry = data.render(&mut ctx.device, &self.content);
             self.geometry = Some(new_geometry);
+            self.last_filter_mode = filter_mode;
         }
     }
 }

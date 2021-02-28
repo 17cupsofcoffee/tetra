@@ -128,6 +128,20 @@ impl FontCache {
         self.resize_count
     }
 
+    pub fn filter_mode(&self) -> FilterMode {
+        self.packer.filter_mode()
+    }
+
+    pub fn set_filter_mode(
+        &mut self,
+        device: &mut GraphicsDevice,
+        filter_mode: FilterMode,
+    ) -> Result {
+        self.packer.set_filter_mode(device, filter_mode)?;
+        self.glyphs.clear();
+        Ok(())
+    }
+
     /// Generates the geometry for the given string, resizing the texture atlas if needed.
     pub fn render(&mut self, device: &mut GraphicsDevice, input: &str) -> TextGeometry {
         loop {
