@@ -178,59 +178,18 @@ impl FontCache {
                 cursor.x += self.rasterizer.kerning(last_glyph, ch);
             }
 
-            // This is a bit of a hack to allow us to hash the subpixel offset:
-            //
-            // * Multiply by ten, so that the first decimal place becomes the integer part.
-            // * Round to the closest number.
-            //
-            // So 0.05 becomes 0, 0.57 becomes 6, 0.99 becomes 10, etc. This effectively gives us
-            // up to eleven different subpixel rendered versions of each glyph, which strikes
-            // a nice balance between prettiness and reasonable texture size.
-            //
-            // We could wrap back around to 0 instead of 10 being a valid value, which would make
-            // the distribution a bit more even, but I don't know if it's worth it.
-            let subpixel_offset = cursor.map(f32::fract);
-            let subpixel_x = (subpixel_offset.x * 10.0).round() as u32;
-            let subpixel_y = (subpixel_offset.y * 10.0).round() as u32;
-
-            let cache_key = CacheKey {
-                glyph: ch,
-                subpixel_x,
-                subpixel_y,
-            };
-
-            let cached_glyph = match self.glyphs.entry(cache_key) {
-                Entry::Occupied(e) => e.into_mut(),
-                Entry::Vacant(e) => {
-                    let outline = match self.rasterizer.rasterize(ch, cursor) {
-                        Some(r) => Some(add_glyph_to_texture(device, &mut self.packer, &r)?),
-                        None => None,
-                    };
-
-                    e.insert(outline)
-                }
-            };
-
-            if let Some(CachedGlyph { mut bounds, uv }) = *cached_glyph {
-                // The glyph's bounds are relative, so we need to combine them
-                // with the cursor to make them absolute.
-                bounds.x += cursor.x;
-                bounds.y += cursor.y;
-
+            if let Some(quad) = self.rasterize_char(device, ch, cursor)? {
                 // Expand the cached bounds of the text geometry:
                 match &mut text_bounds {
                     Some(existing) => {
-                        *existing = bounds.combine(existing);
+                        *existing = quad.position.combine(existing);
                     }
                     None => {
-                        text_bounds.replace(bounds);
+                        text_bounds.replace(quad.position);
                     }
                 }
 
-                quads.push(TextQuad {
-                    position: bounds,
-                    uv,
-                });
+                quads.push(quad);
             }
 
             cursor.x += self.rasterizer.advance(ch);
@@ -243,6 +202,60 @@ impl FontCache {
             resize_count: self.resize_count,
             bounds: text_bounds,
         })
+    }
+
+    fn rasterize_char(
+        &mut self,
+        device: &mut GraphicsDevice,
+        ch: char,
+        position: Vec2<f32>,
+    ) -> std::result::Result<Option<TextQuad>, CacheError> {
+        // This is a bit of a hack to allow us to hash the subpixel offset:
+        //
+        // * Multiply by ten, so that the first decimal place becomes the integer part.
+        // * Round to the closest number.
+        //
+        // So 0.05 becomes 0, 0.57 becomes 6, 0.99 becomes 10, etc. This effectively gives us
+        // up to eleven different subpixel rendered versions of each glyph, which strikes
+        // a nice balance between prettiness and reasonable texture size.
+        //
+        // We could wrap back around to 0 instead of 10 being a valid value, which would make
+        // the distribution a bit more even, but I don't know if it's worth it.
+        let subpixel_offset = position.map(f32::fract);
+        let subpixel_x = (subpixel_offset.x * 10.0).round() as u32;
+        let subpixel_y = (subpixel_offset.y * 10.0).round() as u32;
+
+        let cache_key = CacheKey {
+            glyph: ch,
+            subpixel_x,
+            subpixel_y,
+        };
+
+        let cached_glyph = match self.glyphs.entry(cache_key) {
+            Entry::Occupied(e) => e.into_mut(),
+            Entry::Vacant(e) => {
+                let outline = match self.rasterizer.rasterize(ch, position) {
+                    Some(r) => Some(add_glyph_to_texture(device, &mut self.packer, &r)?),
+                    None => None,
+                };
+
+                e.insert(outline)
+            }
+        };
+
+        if let Some(CachedGlyph { mut bounds, uv }) = *cached_glyph {
+            // The glyph's bounds are relative, so we need to combine them
+            // with the position to make them absolute.
+            bounds.x += position.x;
+            bounds.y += position.y;
+
+            Ok(Some(TextQuad {
+                position: bounds,
+                uv,
+            }))
+        } else {
+            Ok(None)
+        }
     }
 
     /// Resizes the texture atlas, clearing any cached data.
