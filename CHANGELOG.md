@@ -19,6 +19,7 @@ This project adheres to Semantic Versioning.
 ### Fixed
 
 * `Text::get_bounds` no longer returns incorrect results when a tall glyph is added after a short glyph. ([@tesselode](https://github.com/tesselode) in [#241](https://github.com/17cupsofcoffee/tetra/pull/241)) 
+* Kerning is now taken into account when rasterizing characters, rather than just for positioning.
 
 ## [0.6.0] - 2021-02-05
 

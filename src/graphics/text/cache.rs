@@ -174,7 +174,9 @@ impl FontCache {
                 continue;
             }
 
-            let subpixel_offset = cursor.map(f32::fract);
+            if let Some(last_glyph) = last_glyph.take() {
+                cursor.x += self.rasterizer.kerning(last_glyph, ch);
+            }
 
             // This is a bit of a hack to allow us to hash the subpixel offset:
             //
@@ -187,6 +189,7 @@ impl FontCache {
             //
             // We could wrap back around to 0 instead of 10 being a valid value, which would make
             // the distribution a bit more even, but I don't know if it's worth it.
+            let subpixel_offset = cursor.map(f32::fract);
             let subpixel_x = (subpixel_offset.x * 10.0).round() as u32;
             let subpixel_y = (subpixel_offset.y * 10.0).round() as u32;
 
@@ -207,10 +210,6 @@ impl FontCache {
                     e.insert(outline)
                 }
             };
-
-            if let Some(last_glyph) = last_glyph.take() {
-                cursor.x += self.rasterizer.kerning(last_glyph, ch);
-            }
 
             if let Some(CachedGlyph { mut bounds, uv }) = *cached_glyph {
                 // The glyph's bounds are relative, so we need to combine them
