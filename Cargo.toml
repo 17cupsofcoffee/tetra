@@ -20,7 +20,7 @@ vek = { version = "0.13.1", default-features = false }
 hashbrown = "0.9.0"
 serde = { version = "1.0.104", optional = true } 
 ab_glyph = { version = "0.2.2", optional = true }
-unicode-normalization = "0.1.12"
+xi-unicode = "0.3.0"
 bytemuck = "1.5.0"
 num-traits = "0.2.14"
 lyon_tessellation = "0.17.4"

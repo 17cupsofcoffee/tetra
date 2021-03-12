@@ -133,6 +133,7 @@ impl Debug for Font {
 pub struct Text {
     content: String,
     font: Font,
+    max_width: Option<f32>,
     geometry: Option<TextGeometry>,
 }
 
@@ -145,6 +146,25 @@ impl Text {
         Text {
             content: content.into(),
             font,
+            max_width: None,
+            geometry: None,
+        }
+    }
+
+    /// Creates a new wrapped `Text`, with the given content, font
+    /// and maximum width.
+    ///
+    /// If a word is too long to fit, it may extend beyond the max width - use
+    /// [`get_bounds`](Text::get_bounds) if you need to find the actual bounds
+    /// of the text.
+    pub fn wrapped<C>(content: C, font: Font, max_width: f32) -> Text
+    where
+        C: Into<String>,
+    {
+        Text {
+            content: content.into(),
+            font,
+            max_width: Some(max_width),
             geometry: None,
         }
     }
@@ -213,6 +233,31 @@ impl Text {
         self.font = font;
     }
 
+    /// Gets the maximum width of the text, if one is set.
+    ///
+    /// If a word is too long to fit, it may extend beyond this width - use
+    /// [`get_bounds`](Text::get_bounds) if you need to find the actual bounds
+    /// of the text.
+    pub fn max_width(&self) -> Option<f32> {
+        self.max_width
+    }
+
+    /// Sets the maximum width of the text.
+    ///
+    /// If `Some` is passed, word-wrapping will be enabled. If `None` is passed,
+    /// it will be disabled.
+    ///
+    /// If a word is too long to fit, it may extend beyond this width - use
+    /// [`get_bounds`](Text::get_bounds) if you need to find the actual bounds
+    /// of the text.
+    ///
+    /// Calling this function will cause a re-layout of the text the next time it
+    /// is rendered.
+    pub fn set_max_width(&mut self, max_width: Option<f32>) {
+        self.geometry.take();
+        self.max_width = max_width;
+    }
+
     /// Appends the given character to the end of the text.
     ///
     /// Calling this function will cause a re-layout of the text the next time it
@@ -265,7 +310,7 @@ impl Text {
         };
 
         if needs_render {
-            let new_geometry = data.render(&mut ctx.device, &self.content);
+            let new_geometry = data.render(&mut ctx.device, &self.content, self.max_width);
             self.geometry = Some(new_geometry);
         }
     }

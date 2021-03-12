@@ -1,6 +1,6 @@
 use hashbrown::hash_map::Entry;
 use hashbrown::HashMap;
-use unicode_normalization::UnicodeNormalization;
+use xi_unicode::LineBreakIterator;
 
 use crate::graphics::text::packer::ShelfPacker;
 use crate::graphics::{FilterMode, Rectangle, Texture};
@@ -137,9 +137,14 @@ impl FontCache {
     }
 
     /// Generates the geometry for the given string, resizing the texture atlas if needed.
-    pub fn render(&mut self, device: &mut GraphicsDevice, input: &str) -> TextGeometry {
+    pub fn render(
+        &mut self,
+        device: &mut GraphicsDevice,
+        input: &str,
+        max_width: Option<f32>,
+    ) -> TextGeometry {
         loop {
-            match self.try_render(device, input) {
+            match self.try_render(device, input, max_width) {
                 Ok(new_geometry) => return new_geometry,
                 Err(CacheError::OutOfSpace) => {
                     self.resize(device).expect("Failed to resize font texture");
@@ -154,6 +159,7 @@ impl FontCache {
         &mut self,
         device: &mut GraphicsDevice,
         input: &str,
+        max_width: Option<f32>,
     ) -> std::result::Result<TextGeometry, CacheError> {
         let line_height = self.rasterizer.line_height().round();
 
@@ -162,39 +168,57 @@ impl FontCache {
         let mut cursor = Vec2::new(0.0, self.rasterizer.ascent().round());
         let mut last_glyph: Option<char> = None;
         let mut text_bounds: Option<Rectangle> = None;
+        let mut words_on_line = 0;
 
-        for ch in input.nfc() {
-            if ch.is_control() {
-                if ch == '\n' {
+        for (word, _) in UnicodeLineBreaks::new(input) {
+            if let Some(max_width) = max_width {
+                // We only allow wrapping to take place after the first word on each line,
+                // to avoid extra line breaks appearing when a word is too long to fit on
+                // a single line.
+                if words_on_line > 0 && cursor.x + self.measure_word(word) > max_width {
                     cursor.x = 0.0;
                     cursor.y += line_height;
                     last_glyph = None;
+                    words_on_line = 0;
+                }
+            }
+
+            words_on_line += 1;
+
+            for ch in word.chars() {
+                if ch.is_control() {
+                    if ch == '\n' {
+                        cursor.x = 0.0;
+                        cursor.y += line_height;
+                        last_glyph = None;
+                        words_on_line = 0;
+                    }
+
+                    continue;
                 }
 
-                continue;
-            }
-
-            if let Some(last_glyph) = last_glyph.take() {
-                cursor.x += self.rasterizer.kerning(last_glyph, ch);
-            }
-
-            if let Some(quad) = self.rasterize_char(device, ch, cursor)? {
-                // Expand the cached bounds of the text geometry:
-                match &mut text_bounds {
-                    Some(existing) => {
-                        *existing = quad.position.combine(existing);
-                    }
-                    None => {
-                        text_bounds.replace(quad.position);
-                    }
+                if let Some(last_glyph) = last_glyph {
+                    cursor.x += self.rasterizer.kerning(last_glyph, ch);
                 }
 
-                quads.push(quad);
+                if let Some(quad) = self.rasterize_char(device, ch, cursor)? {
+                    // Expand the cached bounds of the text geometry:
+                    match &mut text_bounds {
+                        Some(existing) => {
+                            *existing = quad.position.combine(existing);
+                        }
+                        None => {
+                            text_bounds.replace(quad.position);
+                        }
+                    }
+
+                    quads.push(quad);
+                }
+
+                cursor.x += self.rasterizer.advance(ch);
+
+                last_glyph = Some(ch);
             }
-
-            cursor.x += self.rasterizer.advance(ch);
-
-            last_glyph = Some(ch);
         }
 
         Ok(TextGeometry {
@@ -204,6 +228,28 @@ impl FontCache {
         })
     }
 
+    /// Measures the width of a word, not including any trailing whitespace.
+    ///
+    /// This is mainly used to determine if a word needs to break onto a
+    /// new line.
+    fn measure_word(&self, word: &str) -> f32 {
+        let mut last_glyph = None;
+        let mut word_width = 0.0;
+
+        for ch in word.trim_end().chars() {
+            word_width += self.rasterizer.advance(ch);
+
+            if let Some(last) = last_glyph {
+                word_width += self.rasterizer.kerning(last, ch);
+            }
+
+            last_glyph = Some(ch);
+        }
+
+        word_width
+    }
+
+    /// Rasterizes a character with a given position, or pull it from the texture cache.
     fn rasterize_char(
         &mut self,
         device: &mut GraphicsDevice,
@@ -302,4 +348,32 @@ fn add_glyph_to_texture(
             glyph.bounds.height / texture_height as f32,
         ),
     })
+}
+
+struct UnicodeLineBreaks<'a> {
+    input: &'a str,
+    breaker: LineBreakIterator<'a>,
+    last_break: usize,
+}
+
+impl<'a> UnicodeLineBreaks<'a> {
+    fn new(input: &'a str) -> UnicodeLineBreaks<'a> {
+        UnicodeLineBreaks {
+            input,
+            breaker: LineBreakIterator::new(input),
+            last_break: 0,
+        }
+    }
+}
+
+impl<'a> Iterator for UnicodeLineBreaks<'a> {
+    type Item = (&'a str, bool);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.breaker.next().map(|(offset, hard_break)| {
+            let word = &self.input[self.last_break..offset];
+            self.last_break = offset;
+            (word, hard_break)
+        })
+    }
 }
