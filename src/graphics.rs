@@ -463,6 +463,56 @@ pub fn reset_transform_matrix(ctx: &mut Context) {
     set_transform_matrix(ctx, Mat4::identity());
 }
 
+/// Sets the scissor rectangle.
+///
+/// While the scissor is enabled, any rendering that falls outside the specified rectangle of
+/// the screen (or the current canvas, if one is active) will be be ignored. This includes
+/// calls to [`clear`]. This can be useful for things like UI rendering.
+///
+/// To disable the scissor, call [`reset_scissor`].
+///
+/// Note that the position/size of the scissor rectangle is not affected by the transform
+/// matrix - it always operates in screen/canvas co-ordinates.
+pub fn set_scissor(ctx: &mut Context, scissor_rect: Rectangle<i32>) {
+    flush(ctx);
+
+    match &ctx.graphics.canvas {
+        ActiveCanvas::Window => {
+            let viewport_height = window::get_height(ctx);
+
+            // OpenGL uses bottom-left co-ordinates, while Tetra uses
+            // top-left co-ordinates - to present a consistent API, we
+            // flip the Y component here.
+            ctx.device.scissor(
+                scissor_rect.x,
+                viewport_height - (scissor_rect.y + scissor_rect.height),
+                scissor_rect.width,
+                scissor_rect.height,
+            );
+        }
+
+        ActiveCanvas::User(_) => {
+            // Canvas rendering is effectively done upside-down, so we don't
+            // need to flip the co-ordinates here.
+            ctx.device.scissor(
+                scissor_rect.x,
+                scissor_rect.y,
+                scissor_rect.width,
+                scissor_rect.height,
+            );
+        }
+    }
+
+    ctx.device.scissor_test(true);
+}
+
+/// Disables the scissor rectangle.
+pub fn reset_scissor(ctx: &mut Context) {
+    flush(ctx);
+
+    ctx.device.scissor_test(false);
+}
+
 pub(crate) fn set_viewport_size(
     ctx: &mut Context,
     width: i32,

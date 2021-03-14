@@ -132,6 +132,20 @@ impl GraphicsDevice {
         }
     }
 
+    pub fn scissor(&mut self, x: i32, y: i32, width: i32, height: i32) {
+        unsafe { self.state.gl.scissor(x, y, width, height) }
+    }
+
+    pub fn scissor_test(&mut self, scissor_test: bool) {
+        unsafe {
+            if scissor_test {
+                self.state.gl.enable(glow::SCISSOR_TEST);
+            } else {
+                self.state.gl.disable(glow::SCISSOR_TEST);
+            }
+        }
+    }
+
     pub fn new_vertex_buffer(
         &mut self,
         count: usize,
