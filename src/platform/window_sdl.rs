@@ -46,6 +46,7 @@ pub struct Window {
 
     window_width: i32,
     window_height: i32,
+    window_visible: bool,
 
     key_repeat: bool,
 }
@@ -179,6 +180,7 @@ impl Window {
 
             window_width,
             window_height,
+            window_visible: false,
 
             key_repeat: settings.key_repeat,
         };
@@ -218,12 +220,18 @@ impl Window {
             .map_err(|e| TetraError::FailedToChangeDisplayMode(e.to_string()))
     }
 
+    pub fn is_visible(&self) -> bool {
+        self.window_visible
+    }
+
     pub fn set_visible(&mut self, visible: bool) {
         if visible {
-            self.sdl_window.show()
+            self.sdl_window.show();
         } else {
             self.sdl_window.hide()
         }
+
+        self.window_visible = visible;
     }
 
     pub fn get_monitor_count(&self) -> Result<i32> {

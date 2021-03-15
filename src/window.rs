@@ -68,6 +68,19 @@ pub fn set_size(ctx: &mut Context, width: i32, height: i32) -> Result {
     ctx.window.set_window_size(width, height)
 }
 
+/// Returns whether the window is currently visible, or whether it has been hidden.
+///
+/// Note that a minimized window is still considered 'visible', as the user is able
+/// to restore it if they want to.
+pub fn is_visible(ctx: &mut Context) -> bool {
+    ctx.window.is_visible()
+}
+
+/// Sets whether or not the window should be visible to the user.
+pub fn set_visible(ctx: &mut Context, visible: bool) {
+    ctx.window.set_visible(visible);
+}
+
 /// Sets whether the window should be vsynced.
 ///
 /// # Errors
@@ -78,7 +91,7 @@ pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
     ctx.window.set_vsync(vsync)
 }
 
-/// Returns whethere or not vsync is enabled.
+/// Returns whether or not vsync is enabled.
 pub fn is_vsync_enabled(ctx: &Context) -> bool {
     ctx.window.is_vsync_enabled()
 }

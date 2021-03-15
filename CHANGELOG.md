@@ -16,6 +16,8 @@ This project adheres to Semantic Versioning.
 * Fonts can now have their filter mode set, instead of always using nearest neighbor filtering. ([@tesselode](https://github.com/tesselode) in [#246](https://github.com/17cupsofcoffee/tetra/pull/246)) 
     * Fonts now also respect the default filter mode when they are created.
 * Text now supports word-wrapping, via the `Text::wrapped` constructor or the `Text::set_max_width` method.
+* More events have been added for window state changes, such as minimizing and maximizing. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#248](https://github.com/17cupsofcoffee/tetra/pull/248)
+* `window::set_visible` and `window::is_visible` can be used to get and set whether or not the window is currently hidden to the user.
 
 ### Fixed
 

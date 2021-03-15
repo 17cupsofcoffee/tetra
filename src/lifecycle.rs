@@ -6,7 +6,7 @@ use crate::{Context, TetraError};
 
 /// Implemented by types that contain game state and provide logic for updating it
 /// and drawing it to the screen.
-/// 
+///
 /// # Error Handling
 ///
 /// The methods on `State` allow you to return a [`Result`], either explicitly or via the `?`
@@ -16,12 +16,12 @@ use crate::{Context, TetraError};
 ///
 /// The error type defaults to [`TetraError`], but this can be overridden by adding a type parameter
 /// to your `State` implementation (e.g. `State<MyError>`).
-/// 
+///
 /// # Examples
-/// 
+///
 /// The [`hello_world`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/hello_world.rs) example
 /// demonstrates a minimal implementation of the `State` trait.
-/// 
+///
 /// The [`error_handling`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/error_handling.rs)
 /// example demonstrates how custom error types can be used to implement more robust error handling.
 #[allow(unused_variables)]
@@ -62,13 +62,21 @@ pub enum Event {
         height: i32,
     },
 
-    /// The game window was shown by the user.
+    /// The game window was shown.
+    ///
+    /// This event will fire once at startup. It will not be fired again
+    /// subsequently unless [`window::set_visible`](crate::window::set_visible)
+    /// is called.
     Shown,
 
-    /// The game window was hidden by the user.
+    /// The game window was hidden.
+    ///
+    /// This event will only fire if [`window::set_visible`](crate::window::set_visible)
+    /// is called.
     Hidden,
 
-    /// The game window was restored to normal size and position by the user.
+    /// The game window was restored to normal size and position by the user, either by
+    /// un-minimizing or un-maximizing.
     Restored,
 
     /// The game window was minimized by the user.
