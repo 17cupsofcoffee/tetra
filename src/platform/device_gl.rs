@@ -739,7 +739,7 @@ impl GraphicsDevice {
         self.bind_default_texture(Some(texture));
         self.bind_program(Some(program));
 
-        let max_count = vertex_buffer.size() / vertex_buffer.stride();
+        let max_count = vertex_buffer.count();
 
         let offset = usize::min(offset, max_count.saturating_sub(1));
         let count = usize::min(count, max_count.saturating_sub(offset));

@@ -372,7 +372,7 @@ pub fn flush(ctx: &mut Context) {
 
         ctx.device.set_vertex_buffer_data(
             &ctx.graphics.vertex_buffer,
-            bytemuck::cast_slice(&ctx.graphics.vertex_data),
+            &ctx.graphics.vertex_data,
             0,
         );
 
