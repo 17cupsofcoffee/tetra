@@ -62,6 +62,21 @@ pub enum Event {
         height: i32,
     },
 
+    /// The game window was shown by the user.
+    Shown,
+
+    /// The game window was hidden by the user.
+    Hidden,
+
+    /// The game window was restored to normal size and position by the user.
+    Restored,
+
+    /// The game window was minimized by the user.
+    Minimized,
+
+    /// The game window was maximized by the user.
+    Maximized,
+
     /// The game window was focused by the user.
     FocusGained,
 
