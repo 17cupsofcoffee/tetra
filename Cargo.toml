@@ -1,7 +1,7 @@
 [package]
 name = "tetra"
 description = "A simple 2D game framework written in Rust"
-version = "0.6.0"
+version = "0.6.1"
 edition = "2018"
 authors = ["Joe Clay <27cupsofcoffee@gmail.com>"]
 license = "MIT"
@@ -14,10 +14,10 @@ categories = ["game-engines"]
 [dependencies]
 sdl2 = "0.34.0"
 rodio = { version = "0.11.0", optional = true, default-features = false }
-glow = "0.7.1"
+glow = "0.8.1"
 image = { version = "0.23.12", default-features = false }
 vek = { version = "0.13.1", default-features = false }
-hashbrown = "0.9.0"
+hashbrown = "0.11.0"
 serde = { version = "1.0.104", optional = true } 
 ab_glyph = { version = "0.2.2", optional = true }
 xi-unicode = "0.3.0"

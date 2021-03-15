@@ -6,7 +6,7 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
-## [Upcoming]
+## [0.6.1] - 2021-03-15
 
 ### Added
 
@@ -18,6 +18,11 @@ This project adheres to Semantic Versioning.
 * Text now supports word-wrapping, via the `Text::wrapped` constructor or the `Text::set_max_width` method.
 * More events have been added for window state changes, such as minimizing and maximizing. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#248](https://github.com/17cupsofcoffee/tetra/pull/248)
 * `window::set_visible` and `window::is_visible` can be used to get and set whether or not the window is currently hidden to the user.
+
+### Changed
+
+* Updated `hashbrown` to 0.11.
+* Updated `glow` to 0.8.
 
 ### Fixed
 
@@ -732,7 +737,8 @@ for. This can be useful when implementing more complex animation behaviors. ([@V
 
 * Initial release!
 
-[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.6.0..HEAD
+[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.6.1..HEAD
+[0.6.1]: https://github.com/17cupsofcoffee/tetra/compare/0.6.0..0.6.1
 [0.6.0]: https://github.com/17cupsofcoffee/tetra/compare/0.5.8..0.6.0
 [0.5.8]: https://github.com/17cupsofcoffee/tetra/compare/0.5.7..0.5.8
 [0.5.7]: https://github.com/17cupsofcoffee/tetra/compare/0.5.6..0.5.7
