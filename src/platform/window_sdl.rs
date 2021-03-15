@@ -427,14 +427,6 @@ where
                     state.event(ctx, Event::Resized { width, height })?;
                 }
 
-                WindowEvent::Shown => {
-                    state.event(ctx, Event::Shown)?;
-                }
-
-                WindowEvent::Hidden => {
-                    state.event(ctx, Event::Hidden)?;
-                }
-
                 WindowEvent::Restored => {
                     state.event(ctx, Event::Restored)?;
                 }

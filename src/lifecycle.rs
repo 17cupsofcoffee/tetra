@@ -62,19 +62,6 @@ pub enum Event {
         height: i32,
     },
 
-    /// The game window was shown.
-    ///
-    /// This event will fire once at startup. It will not be fired again
-    /// subsequently unless [`window::set_visible`](crate::window::set_visible)
-    /// is called.
-    Shown,
-
-    /// The game window was hidden.
-    ///
-    /// This event will only fire if [`window::set_visible`](crate::window::set_visible)
-    /// is called.
-    Hidden,
-
     /// The game window was restored to normal size and position by the user, either by
     /// un-minimizing or un-maximizing.
     Restored,
