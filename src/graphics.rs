@@ -86,7 +86,7 @@ impl GraphicsContext {
         window_width: i32,
         window_height: i32,
     ) -> Result<GraphicsContext> {
-        let vertex_buffer = device.new_vertex_buffer(MAX_VERTICES, 8, BufferUsage::Dynamic)?;
+        let vertex_buffer = device.new_vertex_buffer(MAX_VERTICES, BufferUsage::Dynamic)?;
         let index_buffer = device.new_index_buffer(MAX_INDICES, BufferUsage::Static)?;
 
         let indices: Vec<u32> = INDEX_ARRAY

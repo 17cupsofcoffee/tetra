@@ -139,10 +139,9 @@ impl VertexBuffer {
         vertices: &[Vertex],
         usage: BufferUsage,
     ) -> Result<VertexBuffer> {
-        let buffer = ctx.device.new_vertex_buffer(vertices.len(), 8, usage)?;
+        let buffer = ctx.device.new_vertex_buffer(vertices.len(), usage)?;
 
-        ctx.device
-            .set_vertex_buffer_data(&buffer, bytemuck::cast_slice(vertices), 0);
+        ctx.device.set_vertex_buffer_data(&buffer, vertices, 0);
 
         Ok(VertexBuffer {
             handle: Rc::new(buffer),
@@ -156,7 +155,7 @@ impl VertexBuffer {
     /// Panics if the offset is out of bounds.
     pub fn set_data(&self, ctx: &mut Context, vertices: &[Vertex], offset: usize) {
         ctx.device
-            .set_vertex_buffer_data(&self.handle, bytemuck::cast_slice(vertices), offset);
+            .set_vertex_buffer_data(&self.handle, vertices, offset);
     }
 
     /// Creates a mesh using this buffer.

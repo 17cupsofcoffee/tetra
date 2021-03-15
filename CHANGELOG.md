@@ -6,6 +6,13 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [0.6.2] - 2021-03-15
+
+### Fixed
+
+* `VertexBuffer::set_data` was mistakenly measuring its offset in individual floats, rather than vertices. This was inconsistent with `IndexBuffer`, and could potentially lead to corrupted data.
+    * I do not believe this was a memory safety issue, as all writes were still valid and aligned - they were just in the wrong place!
+
 ## [0.6.1] - 2021-03-15
 
 ### Added
@@ -737,7 +744,8 @@ for. This can be useful when implementing more complex animation behaviors. ([@V
 
 * Initial release!
 
-[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.6.1..HEAD
+[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.6.2..HEAD
+[0.6.2]: https://github.com/17cupsofcoffee/tetra/compare/0.6.1..0.6.2
 [0.6.1]: https://github.com/17cupsofcoffee/tetra/compare/0.6.0..0.6.1
 [0.6.0]: https://github.com/17cupsofcoffee/tetra/compare/0.5.8..0.6.0
 [0.5.8]: https://github.com/17cupsofcoffee/tetra/compare/0.5.7..0.5.8

@@ -1,18 +1,12 @@
 use std::cell::Cell;
-use std::mem;
 use std::rc::Rc;
 
 use glow::{Context as GlowContext, HasContext, PixelUnpackData};
 
 use crate::error::{Result, TetraError};
-use crate::graphics::mesh::{BufferUsage, VertexWinding};
+use crate::graphics::mesh::{BufferUsage, Vertex, VertexWinding};
 use crate::graphics::{BlendAlphaMode, BlendMode, FilterMode};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
-
-/// Utility function for calculating offsets/sizes.
-fn size<T>(elements: usize) -> i32 {
-    (elements * mem::size_of::<T>()) as i32
-}
 
 type BufferId = <GlowContext as HasContext>::Buffer;
 type ProgramId = <GlowContext as HasContext>::Program;
@@ -149,7 +143,6 @@ impl GraphicsDevice {
     pub fn new_vertex_buffer(
         &mut self,
         count: usize,
-        stride: usize,
         usage: BufferUsage,
     ) -> Result<RawVertexBuffer> {
         unsafe {
@@ -163,16 +156,13 @@ impl GraphicsDevice {
                 state: Rc::clone(&self.state),
                 id,
                 count,
-                stride,
             };
 
             self.bind_vertex_buffer(Some(&buffer));
 
-            self.state.gl.buffer_data_size(
-                glow::ARRAY_BUFFER,
-                size::<f32>(buffer.size()),
-                usage.into(),
-            );
+            self.state
+                .gl
+                .buffer_data_size(glow::ARRAY_BUFFER, buffer.size() as i32, usage.into());
 
             Ok(buffer)
         }
@@ -181,13 +171,13 @@ impl GraphicsDevice {
     pub fn set_vertex_buffer_data(
         &mut self,
         buffer: &RawVertexBuffer,
-        data: &[f32],
+        data: &[Vertex],
         offset: usize,
     ) {
         self.bind_vertex_buffer(Some(buffer));
 
         assert!(
-            data.len() + offset <= buffer.size(),
+            data.len() + offset <= buffer.count(),
             "tried to write out of bounds buffer data"
         );
 
@@ -196,7 +186,7 @@ impl GraphicsDevice {
 
             self.state.gl.buffer_sub_data_u8_slice(
                 glow::ARRAY_BUFFER,
-                size::<f32>(offset),
+                (buffer.stride() * offset) as i32,
                 bytemuck::cast_slice(data),
             );
         }
@@ -220,7 +210,7 @@ impl GraphicsDevice {
 
             self.state.gl.buffer_data_size(
                 glow::ELEMENT_ARRAY_BUFFER,
-                size::<u32>(count),
+                buffer.size() as i32,
                 usage.into(),
             );
 
@@ -241,7 +231,7 @@ impl GraphicsDevice {
 
             self.state.gl.buffer_sub_data_u8_slice(
                 glow::ELEMENT_ARRAY_BUFFER,
-                size::<u32>(offset),
+                (buffer.stride() * offset) as i32,
                 bytemuck::cast_slice(data),
             );
         }
@@ -785,7 +775,7 @@ impl GraphicsDevice {
                 glow::TRIANGLES,
                 count as i32,
                 glow::UNSIGNED_INT,
-                size::<u32>(offset),
+                (index_buffer.stride() * offset) as i32,
             );
         }
     }
@@ -806,7 +796,7 @@ impl GraphicsDevice {
                             2,
                             glow::FLOAT,
                             false,
-                            size::<f32>(b.stride),
+                            b.stride() as i32,
                             0,
                         );
 
@@ -815,8 +805,8 @@ impl GraphicsDevice {
                             2,
                             glow::FLOAT,
                             false,
-                            size::<f32>(b.stride),
-                            size::<f32>(2),
+                            b.stride() as i32,
+                            8,
                         );
 
                         self.state.gl.vertex_attrib_pointer_f32(
@@ -824,8 +814,8 @@ impl GraphicsDevice {
                             4,
                             glow::FLOAT,
                             false,
-                            size::<f32>(b.stride),
-                            size::<f32>(4),
+                            b.stride() as i32,
+                            16,
                         );
 
                         self.state.gl.enable_vertex_attrib_array(0);
@@ -1056,20 +1046,22 @@ pub struct RawVertexBuffer {
     id: BufferId,
 
     count: usize,
-    stride: usize,
 }
 
 impl RawVertexBuffer {
+    /// The number of vertices in the buffer.
     pub fn count(&self) -> usize {
         self.count
     }
 
+    // The size of each vertex, in bytes.
     pub fn stride(&self) -> usize {
-        self.stride
+        std::mem::size_of::<Vertex>()
     }
 
+    /// The size of the buffer, in bytes.
     pub fn size(&self) -> usize {
-        self.count * self.stride
+        self.count * self.stride()
     }
 }
 
@@ -1096,8 +1088,19 @@ pub struct RawIndexBuffer {
 }
 
 impl RawIndexBuffer {
+    /// The number of indices in the buffer.
     pub fn count(&self) -> usize {
         self.count
+    }
+
+    /// The size of each index, in bytes.
+    pub fn stride(&self) -> usize {
+        std::mem::size_of::<u32>()
+    }
+
+    /// The size of the buffer, in bytes.
+    pub fn size(&self) -> usize {
+        self.count * self.stride()
     }
 }
 
