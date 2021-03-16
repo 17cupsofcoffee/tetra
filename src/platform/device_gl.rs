@@ -41,8 +41,6 @@ impl GraphicsDevice {
             gl.enable(glow::CULL_FACE);
             gl.enable(glow::BLEND);
 
-            // This default might want to change if we introduce
-            // custom blending modes.
             gl.blend_func_separate(
                 glow::SRC_ALPHA,
                 glow::ONE_MINUS_SRC_ALPHA,
