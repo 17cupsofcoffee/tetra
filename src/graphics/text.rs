@@ -16,13 +16,14 @@ use std::path::Path;
 use std::rc::Rc;
 
 use crate::error::Result;
-use crate::graphics::text::bmfont::BMFontRasterizer;
-use crate::graphics::text::cache::{FontCache, Rasterizer, TextGeometry};
+use crate::graphics::text::cache::{FontCache, TextGeometry};
 use crate::graphics::{self, DrawParams, Rectangle};
 use crate::Context;
 
 #[cfg(feature = "font_ttf")]
 pub use crate::graphics::text::vector::VectorFontBuilder;
+
+pub use crate::graphics::text::bmfont::BMFontBuilder;
 
 use super::FilterMode;
 
@@ -98,6 +99,10 @@ impl Font {
 
     /// Creates a `Font` from an AngelCode BMFont file.
     ///
+    /// By default, Tetra will search for the font's images relative to the font itself.
+    /// If you need more control over the search path, or want to override the paths
+    /// entirely, this can be done via [`BMFontBuilder`].
+    ///
     /// Currently, only the text format is supported. Support for the binary file
     /// format may be added in the future.
     ///
@@ -128,17 +133,7 @@ impl Font {
     where
         P: AsRef<Path>,
     {
-        let rasterizer: Box<dyn Rasterizer> = Box::new(BMFontRasterizer::new(path)?);
-
-        let cache = FontCache::new(
-            &mut ctx.device,
-            rasterizer,
-            ctx.graphics.default_filter_mode,
-        )?;
-
-        Ok(Font {
-            data: Rc::new(RefCell::new(cache)),
-        })
+        BMFontBuilder::new(path)?.build(ctx)
     }
 
     /// Returns the filter mode of the font.
