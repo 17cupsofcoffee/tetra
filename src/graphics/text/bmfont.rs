@@ -94,9 +94,7 @@ impl BMFontBuilder {
     /// Loads a BMFont from a string.
     ///
     /// As a BMFont only contains relative paths, you will need to specify an image
-    /// directory (via [`with_image_dir`](Self::with_image_dir)) and/or page data
-    /// (via [`with_page`](Self::with_page) and [`with_page_file_data`](Self::with_page_file_data))
-    /// in order for the font to successfully build.
+    /// directory and/or page data in order for the font to successfully build.
     pub fn from_file_data<D>(data: D) -> BMFontBuilder
     where
         D: Into<String>,
@@ -113,9 +111,8 @@ impl BMFontBuilder {
     /// This will automatically be set if the builder was created via [`new`](Self::new),
     /// but can be overridden.
     ///
-    /// If all of the font's pages are manually specified via
-    /// [`with_page`](Self::with_page) and/or [`with_page_file_data`](Self::with_page_file_data),
-    /// this will be ignored.
+    /// If all of the font's pages are manually loaded via the other builder methods,
+    /// this path will be ignored.
     pub fn with_image_dir<P>(mut self, path: P) -> BMFontBuilder
     where
         P: Into<PathBuf>,
