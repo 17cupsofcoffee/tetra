@@ -26,11 +26,6 @@ struct BMFontGlyph {
     page: u32,
 }
 
-enum PageData {
-    Path(PathBuf),
-    FileData(&'static [u8]),
-}
-
 /// A builder for fonts stored in the AngelCode BMFont format.
 ///
 /// Currently, only the text format is supported. Support for the binary file
@@ -56,12 +51,18 @@ enum PageData {
 ///
 /// # Performance
 ///
-/// Creating a `BMFontBuilder` is a relatively expensive operation, but you will usually only
-/// need to do it once, when loading your font for the first time.
+/// Creating or cloning a `BMFontBuilder` can be expensive, depending on how many images you
+/// load into it.
+///
+/// The data is not internally reference-counted (unlike some other Tetra structs like
+/// [`VectorFontBuilder`](super::VectorFontBuilder)), as you'll generally only use a
+/// `BMFontBuilder` once. This allows the builder's buffers to be re-used by the
+/// created [`Font`].
+#[derive(Debug, Clone)]
 pub struct BMFontBuilder {
     font: String,
     image_dir: Option<PathBuf>,
-    pages: HashMap<u32, PageData>,
+    pages: HashMap<u32, RgbaImage>,
 }
 
 impl BMFontBuilder {
@@ -115,7 +116,7 @@ impl BMFontBuilder {
     /// If all of the font's pages are manually specified via
     /// [`with_page`](Self::with_page) and/or [`with_page_file_data`](Self::with_page_file_data),
     /// this will be ignored.
-    pub fn with_image_dir<P>(&mut self, path: P) -> &mut BMFontBuilder
+    pub fn with_image_dir<P>(mut self, path: P) -> BMFontBuilder
     where
         P: Into<PathBuf>,
     {
@@ -123,31 +124,84 @@ impl BMFontBuilder {
         self
     }
 
-    /// Sets the image path for the specified page of the font.
+    /// Loads an image for the specified page of the font.
     ///
     /// This will override the path specified in the font itself.
-    pub fn with_page<P>(&mut self, id: u32, path: P) -> &mut BMFontBuilder
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::FailedToLoadAsset`] will be returned if a file could not be loaded.
+    /// * [`TetraError::InvalidTexture`] will be returned if some of the image data was invalid.
+    pub fn with_page<P>(mut self, id: u32, path: P) -> Result<BMFontBuilder>
     where
-        P: Into<PathBuf>,
+        P: AsRef<Path>,
     {
-        self.pages.insert(id, PageData::Path(path.into()));
-        self
+        let image = fs::read_to_image(path)?.into_rgba8();
+        self.pages.insert(id, image);
+
+        Ok(self)
     }
 
-    /// Sets the image data for the specified page of the font.
+    /// Sets the image for the specified page of the font, using data encoded in
+    /// one of Tetra's supported image file formats.
     ///
-    /// The data must be encoded in one of Tetra's supported image file formats.
     /// The format of the data will be determined based on the 'magic bytes' at the
     /// beginning of the data. Note that TGA files do not have recognizable magic
     /// bytes, so this function will not recognize them.
     ///
     /// This will override the path specified in the font itself.
-    pub fn with_page_file_data(&mut self, id: u32, data: &'static [u8]) -> &mut BMFontBuilder {
-        self.pages.insert(id, PageData::FileData(data));
-        self
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::InvalidTexture`] will be returned if the image data was invalid.
+    pub fn with_page_file_data(mut self, id: u32, data: &[u8]) -> Result<BMFontBuilder> {
+        let image = image::load_from_memory(data)
+            .map_err(TetraError::InvalidTexture)?
+            .into_rgba8();
+
+        self.pages.insert(id, image);
+
+        Ok(self)
+    }
+
+    /// Sets the image for the specified page of the font, using RGBA data.
+    ///
+    /// This will override the path specified in the font itself.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
+    ///   the texture.
+    pub fn with_page_rgba<D>(
+        mut self,
+        id: u32,
+        width: i32,
+        height: i32,
+        data: D,
+    ) -> Result<BMFontBuilder>
+    where
+        D: Into<Vec<u8>>,
+    {
+        let data = data.into();
+        let len = data.len();
+
+        let image = RgbaImage::from_vec(width as u32, height as u32, data).ok_or_else(|| {
+            let expected = (width * height * 4) as usize;
+            TetraError::NotEnoughData {
+                expected,
+                actual: len,
+            }
+        })?;
+
+        self.pages.insert(id, image);
+
+        Ok(self)
     }
 
     /// Builds the font.
+    ///
+    /// Any pages that have not had their images manually set will be loaded from the path
+    /// specified by [`with_image_dir`](Self::with_image_dir).
     ///
     /// # Errors
     ///
@@ -157,11 +211,11 @@ impl BMFontBuilder {
     ///   or if there was no path specified for one of the image files.
     /// * [`TetraError::PlatformError`] will be returned if the GPU cache for the font
     ///   could not be created.
-    pub fn build(&mut self, ctx: &mut Context) -> Result<Font> {
+    pub fn build(self, ctx: &mut Context) -> Result<Font> {
         let rasterizer: Box<dyn Rasterizer> = Box::new(BMFontRasterizer::new(
             &self.font,
-            self.image_dir.as_ref(),
-            &self.pages,
+            self.image_dir,
+            self.pages,
         )?);
 
         let cache = FontCache::new(
@@ -188,25 +242,13 @@ pub struct BMFontRasterizer {
 impl BMFontRasterizer {
     fn new(
         font: &str,
-        image_path: Option<&PathBuf>,
-        page_data: &HashMap<u32, PageData>,
+        image_path: Option<PathBuf>,
+        mut pages: HashMap<u32, RgbaImage>,
     ) -> Result<BMFontRasterizer> {
         let mut line_height = None;
         let mut base = None;
-        let mut pages = HashMap::new();
         let mut glyphs = HashMap::new();
         let mut kerning = HashMap::new();
-
-        for (&id, page) in page_data {
-            let image = match page {
-                PageData::Path(p) => fs::read_to_image(p)?.into_rgba8(),
-                PageData::FileData(d) => image::load_from_memory(d)
-                    .map_err(TetraError::InvalidTexture)?
-                    .into_rgba8(),
-            };
-
-            pages.insert(id, image);
-        }
 
         for line in font.lines() {
             let (tag, attributes) = parse_tag(line)?;
@@ -226,7 +268,11 @@ impl BMFontRasterizer {
 
                     if !pages.contains_key(&id) {
                         let file = attributes.get("file")?;
-                        let file_path = image_path.ok_or(TetraError::InvalidFont)?.join(file);
+
+                        let file_path = image_path
+                            .as_ref()
+                            .ok_or(TetraError::InvalidFont)?
+                            .join(file);
 
                         let image = fs::read_to_image(&file_path)?.into_rgba8();
 
