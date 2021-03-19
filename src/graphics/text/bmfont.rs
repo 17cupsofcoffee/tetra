@@ -199,10 +199,10 @@ impl BMFontRasterizer {
 
         for (&id, page) in page_data {
             let image = match page {
-                PageData::Path(p) => fs::read_to_image(p)?.to_rgba8(),
+                PageData::Path(p) => fs::read_to_image(p)?.into_rgba8(),
                 PageData::FileData(d) => image::load_from_memory(d)
                     .map_err(TetraError::InvalidTexture)?
-                    .to_rgba8(),
+                    .into_rgba8(),
             };
 
             pages.insert(id, image);
@@ -228,7 +228,7 @@ impl BMFontRasterizer {
                         let file = attributes.get("file")?;
                         let file_path = image_path.ok_or(TetraError::InvalidFont)?.join(file);
 
-                        let image = fs::read_to_image(&file_path)?.to_rgba8();
+                        let image = fs::read_to_image(&file_path)?.into_rgba8();
 
                         pages.insert(id, image);
                     }
