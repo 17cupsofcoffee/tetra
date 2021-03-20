@@ -141,6 +141,21 @@ impl Color {
         Self { a, ..self }
     }
 
+    /// Returns the color with the RGB components multiplied by the alpha component.
+    ///
+    /// This can be useful when working with
+    /// [premultiplied alpha blending](super::BlendModeAlpha::Premultiplied), if
+    /// you want to convert a non-premultiplied color into its premultiplied
+    /// version.
+    pub fn to_premultiplied(self) -> Color {
+        Color {
+            r: self.r * self.a,
+            g: self.g * self.a,
+            b: self.b * self.a,
+            a: self.a,
+        }
+    }
+
     // These constants should remain at the bottom of the impl block to keep
     // the docs readable - don't want to have to scroll through a load of colors
     // to get to the methods!
@@ -385,6 +400,14 @@ mod tests {
         assert!(same_color(expected, Color::try_hex("#336699FF").unwrap()));
 
         assert!(Color::try_hex("ZZZZZZ").is_err());
+    }
+
+    #[test]
+    fn to_premultiplied() {
+        assert_eq!(
+            Color::rgba(0.5, 0.5, 0.5, 0.5),
+            Color::rgba(1.0, 1.0, 1.0, 0.5).to_premultiplied()
+        );
     }
 
     #[test]
