@@ -186,12 +186,34 @@ impl Add for Color {
     }
 }
 
+impl Add<f32> for Color {
+    type Output = Color;
+
+    fn add(mut self, rhs: f32) -> Self::Output {
+        self.r = clamp(self.r + rhs);
+        self.g = clamp(self.g + rhs);
+        self.b = clamp(self.b + rhs);
+        self.a = clamp(self.a + rhs);
+
+        self
+    }
+}
+
 impl AddAssign for Color {
     fn add_assign(&mut self, rhs: Self) {
         self.r = clamp(self.r + rhs.r);
         self.g = clamp(self.g + rhs.g);
         self.b = clamp(self.b + rhs.b);
         self.a = clamp(self.a + rhs.a);
+    }
+}
+
+impl AddAssign<f32> for Color {
+    fn add_assign(&mut self, rhs: f32) {
+        self.r = clamp(self.r + rhs);
+        self.g = clamp(self.g + rhs);
+        self.b = clamp(self.b + rhs);
+        self.a = clamp(self.a + rhs);
     }
 }
 
@@ -208,12 +230,34 @@ impl Sub for Color {
     }
 }
 
+impl Sub<f32> for Color {
+    type Output = Color;
+
+    fn sub(mut self, rhs: f32) -> Self::Output {
+        self.r = clamp(self.r - rhs);
+        self.g = clamp(self.g - rhs);
+        self.b = clamp(self.b - rhs);
+        self.a = clamp(self.a - rhs);
+
+        self
+    }
+}
+
 impl SubAssign for Color {
     fn sub_assign(&mut self, rhs: Self) {
         self.r = clamp(self.r - rhs.r);
         self.g = clamp(self.g - rhs.g);
         self.b = clamp(self.b - rhs.b);
         self.a = clamp(self.a - rhs.a);
+    }
+}
+
+impl SubAssign<f32> for Color {
+    fn sub_assign(&mut self, rhs: f32) {
+        self.r = clamp(self.r - rhs);
+        self.g = clamp(self.g - rhs);
+        self.b = clamp(self.b - rhs);
+        self.a = clamp(self.a - rhs);
     }
 }
 
@@ -230,12 +274,34 @@ impl Mul for Color {
     }
 }
 
+impl Mul<f32> for Color {
+    type Output = Color;
+
+    fn mul(mut self, rhs: f32) -> Self::Output {
+        self.r = clamp(self.r * rhs);
+        self.g = clamp(self.g * rhs);
+        self.b = clamp(self.b * rhs);
+        self.a = clamp(self.a * rhs);
+
+        self
+    }
+}
+
 impl MulAssign for Color {
     fn mul_assign(&mut self, rhs: Self) {
         self.r = clamp(self.r * rhs.r);
         self.g = clamp(self.g * rhs.g);
         self.b = clamp(self.b * rhs.b);
         self.a = clamp(self.a * rhs.a);
+    }
+}
+
+impl MulAssign<f32> for Color {
+    fn mul_assign(&mut self, rhs: f32) {
+        self.r = clamp(self.r * rhs);
+        self.g = clamp(self.g * rhs);
+        self.b = clamp(self.b * rhs);
+        self.a = clamp(self.a * rhs);
     }
 }
 
@@ -252,12 +318,34 @@ impl Div for Color {
     }
 }
 
+impl Div<f32> for Color {
+    type Output = Color;
+
+    fn div(mut self, rhs: f32) -> Self::Output {
+        self.r = clamp(self.r / rhs);
+        self.g = clamp(self.g / rhs);
+        self.b = clamp(self.b / rhs);
+        self.a = clamp(self.a / rhs);
+
+        self
+    }
+}
+
 impl DivAssign for Color {
     fn div_assign(&mut self, rhs: Self) {
         self.r = clamp(self.r / rhs.r);
         self.g = clamp(self.g / rhs.g);
         self.b = clamp(self.b / rhs.b);
         self.a = clamp(self.a / rhs.a);
+    }
+}
+
+impl DivAssign<f32> for Color {
+    fn div_assign(&mut self, rhs: f32) {
+        self.r = clamp(self.r / rhs);
+        self.g = clamp(self.g / rhs);
+        self.b = clamp(self.b / rhs);
+        self.a = clamp(self.a / rhs);
     }
 }
 
@@ -306,9 +394,20 @@ mod tests {
             Color::rgba(0.1, 0.2, 0.3, 0.4) + Color::rgba(0.9, 0.8, 0.7, 0.6)
         );
 
+        assert_eq!(
+            Color::rgba(1.0, 1.0, 1.0, 1.0),
+            Color::rgba(0.5, 0.5, 0.5, 0.5) + 0.5
+        );
+
         assert_eq!(Color::rgba(1.0, 1.0, 1.0, 1.0), {
             let mut add_assign = Color::rgba(0.1, 0.2, 0.3, 0.4);
             add_assign += Color::rgba(0.9, 0.8, 0.7, 0.6);
+            add_assign
+        });
+
+        assert_eq!(Color::rgba(1.0, 1.0, 1.0, 1.0), {
+            let mut add_assign = Color::rgba(0.5, 0.5, 0.5, 0.5);
+            add_assign += 0.5;
             add_assign
         });
 
@@ -317,9 +416,20 @@ mod tests {
             Color::rgba(0.5, 0.5, 0.5, 0.5) - Color::rgba(0.5, 0.5, 0.5, 0.5)
         );
 
+        assert_eq!(
+            Color::rgba(0.0, 0.0, 0.0, 0.0),
+            Color::rgba(0.5, 0.5, 0.5, 0.5) - 0.5
+        );
+
         assert_eq!(Color::rgba(0.0, 0.0, 0.0, 0.0), {
             let mut sub_assign = Color::rgba(0.5, 0.5, 0.5, 0.5);
             sub_assign -= Color::rgba(0.5, 0.5, 0.5, 0.5);
+            sub_assign
+        });
+
+        assert_eq!(Color::rgba(0.0, 0.0, 0.0, 0.0), {
+            let mut sub_assign = Color::rgba(0.5, 0.5, 0.5, 0.5);
+            sub_assign -= 0.5;
             sub_assign
         });
 
@@ -328,9 +438,20 @@ mod tests {
             Color::rgba(0.5, 0.5, 0.5, 0.5) * Color::rgba(2.0, 2.0, 2.0, 2.0)
         );
 
+        assert_eq!(
+            Color::rgba(1.0, 1.0, 1.0, 1.0),
+            Color::rgba(0.5, 0.5, 0.5, 0.5) * 2.0
+        );
+
         assert_eq!(Color::rgba(1.0, 1.0, 1.0, 1.0), {
             let mut mul_assign = Color::rgba(0.5, 0.5, 0.5, 0.5);
             mul_assign *= Color::rgba(2.0, 2.0, 2.0, 2.0);
+            mul_assign
+        });
+
+        assert_eq!(Color::rgba(1.0, 1.0, 1.0, 1.0), {
+            let mut mul_assign = Color::rgba(0.5, 0.5, 0.5, 0.5);
+            mul_assign *= 2.0;
             mul_assign
         });
 
@@ -339,9 +460,20 @@ mod tests {
             Color::rgba(1.0, 1.0, 1.0, 1.0) / Color::rgba(2.0, 2.0, 2.0, 2.0)
         );
 
+        assert_eq!(
+            Color::rgba(0.5, 0.5, 0.5, 0.5),
+            Color::rgba(1.0, 1.0, 1.0, 1.0) / 2.0
+        );
+
         assert_eq!(Color::rgba(0.5, 0.5, 0.5, 0.5), {
             let mut div_assign = Color::rgba(1.0, 1.0, 1.0, 1.0);
             div_assign /= Color::rgba(2.0, 2.0, 2.0, 2.0);
+            div_assign
+        });
+
+        assert_eq!(Color::rgba(0.5, 0.5, 0.5, 0.5), {
+            let mut div_assign = Color::rgba(1.0, 1.0, 1.0, 1.0);
+            div_assign /= 2.0;
             div_assign
         });
     }

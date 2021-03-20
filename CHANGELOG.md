@@ -10,7 +10,9 @@ This project adheres to Semantic Versioning.
 
 ### Added 
 
-* BMFont-formatted fonts are now supported, via `Font::bmfont`.
+* BMFont-formatted fonts are now supported, via `Font::bmfont` and `BMFontBuilder`.
+* Various `std` operator traits have been implemented for the combination of `Color` and `f32`, allowing for all four components to be operated on at once.
+    * This can be especially useful when working with premultiplied alpha - to set the opacity of a opaque color, you can now just multiply it by an `f32`. 
 
 ## [0.6.2] - 2021-03-15
 
