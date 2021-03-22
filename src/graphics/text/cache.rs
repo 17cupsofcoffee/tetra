@@ -10,30 +10,37 @@ use crate::{Context, Result};
 
 /// The data produced by rasterizing a glyph from a font.
 pub(crate) struct RasterizedGlyph {
+    /// The bounds of the glyph.
+    ///
+    /// The X and Y are relative to the cursor's position on the baseline, and can be
+    /// positive or negative, depending on the design of the font. The Y will almost
+    /// always be negative, as this is how the glyph is raised up to sit above the
+    /// baseline.
+    pub bounds: Rectangle,
+
     /// The rasterized RGBA data.
     pub data: Vec<u8>,
-
-    /// How the glyph should be positioned, relative to the cursor's
-    /// position on the baseline.
-    ///
-    /// The X and Y can be positive or negative, depending on the design of the font.
-    /// The Y will almost always be negative though, as this is how the glyph is raised up
-    /// to sit above the baseline.
-    pub bounds: Rectangle,
 }
 
-/// The data produced by caching a glyph to the texture atlas.
-struct CachedGlyph {
-    /// The position of the glyph in the texture, in UV co-ordinates.
-    uv: Rectangle,
+/// An individual quad within a `TextGeometry`.
+#[derive(Debug, Copy, Clone)]
+pub struct TextQuad {
+    /// The position of the glyph, relative to the text's origin.
+    pub position: Vec2<f32>,
 
-    /// How the glyph should be positioned, relative to the cursor's
-    /// position on the baseline.
-    ///
-    /// The X and Y can be positive or negative, depending on the design of the font.
-    /// The Y will almost always be negative though, as this is how the glyph is raised up
-    /// to sit above the baseline.
-    bounds: Rectangle,
+    /// The location of the glyph in the font's texture.
+    pub region: Rectangle,
+}
+
+impl TextQuad {
+    fn bounds(&self) -> Rectangle {
+        Rectangle::new(
+            self.position.x,
+            self.position.y,
+            self.region.width,
+            self.region.height,
+        )
+    }
 }
 
 /// Errors that can occur when caching a glyph.
@@ -77,13 +84,6 @@ pub(crate) trait Rasterizer {
     fn kerning(&self, previous: char, current: char) -> f32;
 }
 
-/// An individual quad within a `TextGeometry`.
-#[derive(Debug, Clone)]
-pub(crate) struct TextQuad {
-    pub position: Rectangle,
-    pub uv: Rectangle,
-}
-
 /// The geometry that can be used to render a piece of text.
 #[derive(Debug, Clone)]
 pub(crate) struct TextGeometry {
@@ -96,7 +96,7 @@ pub(crate) struct TextGeometry {
 pub(crate) struct FontCache {
     rasterizer: Box<dyn Rasterizer>,
     packer: ShelfPacker,
-    glyphs: HashMap<CacheKey, Option<CachedGlyph>>,
+    glyphs: HashMap<CacheKey, Option<TextQuad>>,
     resize_count: usize,
 }
 
@@ -204,11 +204,9 @@ impl FontCache {
                 if let Some(quad) = self.rasterize_char(device, ch, cursor)? {
                     // Expand the cached bounds of the text geometry:
                     match &mut text_bounds {
-                        Some(existing) => {
-                            *existing = quad.position.combine(existing);
-                        }
+                        Some(existing) => *existing = quad.bounds().combine(&existing),
                         None => {
-                            text_bounds.replace(quad.position);
+                            text_bounds.replace(quad.bounds());
                         }
                     }
 
@@ -277,7 +275,7 @@ impl FontCache {
             subpixel_y,
         };
 
-        let cached_glyph = match self.glyphs.entry(cache_key) {
+        let cached_quad = match self.glyphs.entry(cache_key) {
             Entry::Occupied(e) => e.into_mut(),
             Entry::Vacant(e) => {
                 let outline = match self.rasterizer.rasterize(ch, position) {
@@ -289,16 +287,12 @@ impl FontCache {
             }
         };
 
-        if let Some(CachedGlyph { mut bounds, uv }) = *cached_glyph {
-            // The glyph's bounds are relative, so we need to combine them
+        if let Some(mut quad) = *cached_quad {
+            // The cached quad's bounds are relative, so we need to combine them
             // with the position to make them absolute.
-            bounds.x += position.x;
-            bounds.y += position.y;
+            quad.position += position;
 
-            Ok(Some(TextQuad {
-                position: bounds,
-                uv,
-            }))
+            Ok(Some(quad))
         } else {
             Ok(None)
         }
@@ -327,7 +321,7 @@ fn add_glyph_to_texture(
     device: &mut GraphicsDevice,
     packer: &mut ShelfPacker,
     glyph: &RasterizedGlyph,
-) -> std::result::Result<CachedGlyph, CacheError> {
+) -> std::result::Result<TextQuad, CacheError> {
     let (x, y) = packer
         .insert(
             device,
@@ -337,16 +331,9 @@ fn add_glyph_to_texture(
         )
         .ok_or(CacheError::OutOfSpace)?;
 
-    let (texture_width, texture_height) = packer.texture().size();
-
-    Ok(CachedGlyph {
-        bounds: glyph.bounds,
-        uv: Rectangle::new(
-            x as f32 / texture_width as f32,
-            y as f32 / texture_height as f32,
-            glyph.bounds.width / texture_width as f32,
-            glyph.bounds.height / texture_height as f32,
-        ),
+    Ok(TextQuad {
+        position: Vec2::new(glyph.bounds.x, glyph.bounds.y),
+        region: Rectangle::new(x as f32, y as f32, glyph.bounds.width, glyph.bounds.height),
     })
 }
 

@@ -221,24 +221,26 @@ impl Text {
         let params = params.into();
 
         let data = self.font.data.borrow();
-        graphics::set_texture(ctx, data.texture());
-
+        let texture = data.texture();
         let geometry = self
             .geometry
             .as_ref()
             .expect("geometry should have been generated");
+
+        graphics::set_texture(ctx, texture);
+        let (texture_width, texture_height) = texture.size();
 
         for quad in &geometry.quads {
             graphics::push_quad(
                 ctx,
                 quad.position.x,
                 quad.position.y,
-                quad.position.right(),
-                quad.position.bottom(),
-                quad.uv.x,
-                quad.uv.y,
-                quad.uv.right(),
-                quad.uv.bottom(),
+                quad.position.x + quad.region.width,
+                quad.position.y + quad.region.height,
+                quad.region.x / (texture_width as f32),
+                quad.region.y / (texture_height as f32),
+                quad.region.right() / (texture_width as f32),
+                quad.region.bottom() / (texture_height as f32),
                 &params,
             );
         }
