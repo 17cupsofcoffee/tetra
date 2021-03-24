@@ -144,7 +144,7 @@ impl Color {
     /// Returns the color with the RGB components multiplied by the alpha component.
     ///
     /// This can be useful when working with
-    /// [premultiplied alpha blending](super::BlendModeAlpha::Premultiplied), if
+    /// [premultiplied alpha blending](super::BlendAlphaMode::Premultiplied), if
     /// you want to convert a non-premultiplied color into its premultiplied
     /// version.
     pub fn to_premultiplied(self) -> Color {
