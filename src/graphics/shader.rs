@@ -74,7 +74,7 @@ impl PartialEq for ShaderSharedData {
 ///   pass through the [`DrawParams::color`](super::DrawParams::color) for a [`Mesh`](super::mesh::Mesh), and will
 ///   otherwise be set to [`Color::WHITE`].
 ///
-/// You can also set data into your own uniform variables via the `set_uniform` method.
+/// You can also set data into your own uniform variables via the [`set_uniform`](Shader::set_uniform) method.
 ///
 /// # Performance
 ///
@@ -225,6 +225,9 @@ impl Shader {
     }
 
     /// Sets the value of the specifed uniform parameter.
+    ///
+    /// See the [`UniformValue`] trait's docs for a list of which types can be used as a uniform,
+    /// and what their corresponding GLSL types are.
     pub fn set_uniform<V>(&self, ctx: &mut Context, name: &str, value: V)
     where
         V: UniformValue,
@@ -266,8 +269,9 @@ pub trait UniformValue {
 }
 
 macro_rules! simple_uniforms {
-    ($($t:ty => $f:ident),* $(,)?) => {
+    ($($t:ty => $f:ident $doc:expr),* $(,)?) => {
         $(
+            #[doc = $doc]
             impl UniformValue for $t {
                 #[doc(hidden)]
                  fn set_uniform(
@@ -285,17 +289,18 @@ macro_rules! simple_uniforms {
 }
 
 simple_uniforms! {
-    i32 => set_uniform_i32,
-    u32 => set_uniform_u32,
-    f32 => set_uniform_f32,
-    Vec2<f32> => set_uniform_vec2,
-    Vec3<f32> => set_uniform_vec3,
-    Vec4<f32> => set_uniform_vec4,
-    Mat2<f32> => set_uniform_mat2,
-    Mat3<f32> => set_uniform_mat3,
-    Mat4<f32> => set_uniform_mat4,
+    i32 => set_uniform_i32 "Can be accessed as an `int` in your shader.",
+    u32 => set_uniform_u32 "Can be accessed as a `uint` in your shader.",
+    f32 => set_uniform_f32 "Can be accessed as a `float` in your shader.",
+    Vec2<f32> => set_uniform_vec2 "Can be accessed as a `vec2` in your shader.",
+    Vec3<f32> => set_uniform_vec3 "Can be accessed as a `vec3` in your shader.",
+    Vec4<f32> => set_uniform_vec4 "Can be accessed as a `vec4` in your shader.",
+    Mat2<f32> => set_uniform_mat2 "Can be accessed as a `mat2` in your shader.",
+    Mat3<f32> => set_uniform_mat3 "Can be accessed as a `mat3` in your shader.",
+    Mat4<f32> => set_uniform_mat4 "Can be accessed as a `mat4` in your shader.",
 }
 
+/// Can be accessed as a `vec4` in your shader.
 impl UniformValue for Color {
     #[doc(hidden)]
     fn set_uniform(&self, ctx: &mut Context, shader: &Shader, name: &str) {
@@ -304,6 +309,7 @@ impl UniformValue for Color {
     }
 }
 
+/// Can be accessed via a `sampler2D` in your shader.
 impl UniformValue for Texture {
     #[doc(hidden)]
     fn set_uniform(&self, ctx: &mut Context, shader: &Shader, name: &str) {
@@ -332,6 +338,7 @@ impl UniformValue for Texture {
     }
 }
 
+/// Any type that can be passed by value to a shader can also be passed by reference.
 impl<'a, T> UniformValue for &'a T
 where
     T: UniformValue,

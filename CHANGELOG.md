@@ -15,6 +15,10 @@ This project adheres to Semantic Versioning.
     * This can be especially useful when working with premultiplied alpha - to set the opacity of a opaque color, you can now just multiply it by an `f32`.
 * `Color` now has a `to_premultiplied` method, which can be used to convert a color into its premultiplied version.
 
+### Changed
+
+* Improved docs for the `UniformValue` trait.
+
 ## [0.6.2] - 2021-03-15
 
 ### Fixed
