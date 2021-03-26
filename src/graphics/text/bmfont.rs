@@ -15,7 +15,7 @@ use crate::{Result, TetraError};
 use super::cache::FontCache;
 use super::Font;
 
-struct BMFontGlyph {
+struct BmFontGlyph {
     x: u32,
     y: u32,
     width: u32,
@@ -51,21 +51,21 @@ struct BMFontGlyph {
 ///
 /// # Performance
 ///
-/// Creating or cloning a `BMFontBuilder` can be expensive, depending on how many images you
+/// Creating or cloning a `BmFontBuilder` can be expensive, depending on how many images you
 /// load into it.
 ///
 /// The data is not internally reference-counted (unlike some other Tetra structs like
 /// [`VectorFontBuilder`](super::VectorFontBuilder)), as you'll generally only use a
-/// `BMFontBuilder` once. This allows the builder's buffers to be re-used by the
+/// `BmFontBuilder` once. This allows the builder's buffers to be re-used by the
 /// created [`Font`].
 #[derive(Debug, Clone)]
-pub struct BMFontBuilder {
+pub struct BmFontBuilder {
     font: String,
     image_dir: Option<PathBuf>,
     pages: HashMap<u32, RgbaImage>,
 }
 
-impl BMFontBuilder {
+impl BmFontBuilder {
     /// Loads a BMFont from the given file.
     ///
     /// By default, the image directory will be set to the same directory as the
@@ -74,7 +74,7 @@ impl BMFontBuilder {
     /// # Errors
     ///
     /// * [`TetraError::FailedToLoadAsset`] will be returned if the file could not be loaded.
-    pub fn new<P>(path: P) -> Result<BMFontBuilder>
+    pub fn new<P>(path: P) -> Result<BmFontBuilder>
     where
         P: AsRef<Path>,
     {
@@ -84,7 +84,7 @@ impl BMFontBuilder {
         // This should be okay to unwrap, if the font itself loaded...
         let image_dir = path.parent().unwrap().to_owned();
 
-        Ok(BMFontBuilder {
+        Ok(BmFontBuilder {
             font,
             image_dir: Some(image_dir),
             pages: HashMap::new(),
@@ -95,11 +95,11 @@ impl BMFontBuilder {
     ///
     /// As a BMFont only contains relative paths, you will need to specify an image
     /// directory and/or page data in order for the font to successfully build.
-    pub fn from_file_data<D>(data: D) -> BMFontBuilder
+    pub fn from_file_data<D>(data: D) -> BmFontBuilder
     where
         D: Into<String>,
     {
-        BMFontBuilder {
+        BmFontBuilder {
             font: data.into(),
             image_dir: None,
             pages: HashMap::new(),
@@ -113,7 +113,7 @@ impl BMFontBuilder {
     ///
     /// If all of the font's pages are manually loaded via the other builder methods,
     /// this path will be ignored.
-    pub fn with_image_dir<P>(mut self, path: P) -> BMFontBuilder
+    pub fn with_image_dir<P>(mut self, path: P) -> BmFontBuilder
     where
         P: Into<PathBuf>,
     {
@@ -129,7 +129,7 @@ impl BMFontBuilder {
     ///
     /// * [`TetraError::FailedToLoadAsset`] will be returned if a file could not be loaded.
     /// * [`TetraError::InvalidTexture`] will be returned if some of the image data was invalid.
-    pub fn with_page<P>(mut self, id: u32, path: P) -> Result<BMFontBuilder>
+    pub fn with_page<P>(mut self, id: u32, path: P) -> Result<BmFontBuilder>
     where
         P: AsRef<Path>,
     {
@@ -151,7 +151,7 @@ impl BMFontBuilder {
     /// # Errors
     ///
     /// * [`TetraError::InvalidTexture`] will be returned if the image data was invalid.
-    pub fn with_page_file_data(mut self, id: u32, data: &[u8]) -> Result<BMFontBuilder> {
+    pub fn with_page_file_data(mut self, id: u32, data: &[u8]) -> Result<BmFontBuilder> {
         let image = image::load_from_memory(data)
             .map_err(TetraError::InvalidTexture)?
             .into_rgba8();
@@ -175,7 +175,7 @@ impl BMFontBuilder {
         width: i32,
         height: i32,
         data: D,
-    ) -> Result<BMFontBuilder>
+    ) -> Result<BmFontBuilder>
     where
         D: Into<Vec<u8>>,
     {
@@ -209,7 +209,7 @@ impl BMFontBuilder {
     /// * [`TetraError::PlatformError`] will be returned if the GPU cache for the font
     ///   could not be created.
     pub fn build(self, ctx: &mut Context) -> Result<Font> {
-        let rasterizer: Box<dyn Rasterizer> = Box::new(BMFontRasterizer::new(
+        let rasterizer: Box<dyn Rasterizer> = Box::new(BmFontRasterizer::new(
             &self.font,
             self.image_dir,
             self.pages,
@@ -227,21 +227,21 @@ impl BMFontBuilder {
     }
 }
 
-pub struct BMFontRasterizer {
+pub struct BmFontRasterizer {
     line_height: u32,
     base: u32,
 
     pages: HashMap<u32, RgbaImage>,
-    glyphs: HashMap<u32, BMFontGlyph>,
+    glyphs: HashMap<u32, BmFontGlyph>,
     kerning: HashMap<(u32, u32), i32>,
 }
 
-impl BMFontRasterizer {
+impl BmFontRasterizer {
     fn new(
         font: &str,
         image_path: Option<PathBuf>,
         mut pages: HashMap<u32, RgbaImage>,
-    ) -> Result<BMFontRasterizer> {
+    ) -> Result<BmFontRasterizer> {
         let mut line_height = None;
         let mut base = None;
         let mut glyphs = HashMap::new();
@@ -282,7 +282,7 @@ impl BMFontRasterizer {
 
                     let id = attributes.parse("id")?;
 
-                    let glyph = BMFontGlyph {
+                    let glyph = BmFontGlyph {
                         x: attributes.parse("x")?,
                         y: attributes.parse("y")?,
                         width: attributes.parse("width")?,
@@ -310,7 +310,7 @@ impl BMFontRasterizer {
             }
         }
 
-        Ok(BMFontRasterizer {
+        Ok(BmFontRasterizer {
             line_height: line_height.ok_or(TetraError::InvalidFont)?,
             base: base.ok_or(TetraError::InvalidFont)?,
             pages,
@@ -320,7 +320,7 @@ impl BMFontRasterizer {
     }
 }
 
-impl Rasterizer for BMFontRasterizer {
+impl Rasterizer for BmFontRasterizer {
     fn rasterize(&self, glyph: char, _: Vec2<f32>) -> Option<RasterizedGlyph> {
         if let Some(bmglyph) = self.glyphs.get(&(glyph as u32)) {
             let page = self.pages.get(&bmglyph.page)?;
@@ -369,11 +369,11 @@ impl Rasterizer for BMFontRasterizer {
     }
 }
 
-struct BMFontAttributes<'a> {
+struct BmFontAttributes<'a> {
     attributes: HashMap<&'a str, &'a str>,
 }
 
-impl BMFontAttributes<'_> {
+impl BmFontAttributes<'_> {
     fn get(&self, key: &str) -> Result<&str> {
         self.attributes
             .get(key)
@@ -396,7 +396,7 @@ fn parse_tag(input: &str) -> Result<(&str, &str)> {
     Ok(trimmed.split_at(tag_end))
 }
 
-fn parse_attributes(input: &str) -> Result<BMFontAttributes<'_>> {
+fn parse_attributes(input: &str) -> Result<BmFontAttributes<'_>> {
     let mut remaining = input.trim_start();
     let mut attributes = HashMap::new();
 
@@ -434,5 +434,5 @@ fn parse_attributes(input: &str) -> Result<BMFontAttributes<'_>> {
         }
     }
 
-    Ok(BMFontAttributes { attributes })
+    Ok(BmFontAttributes { attributes })
 }

@@ -15,20 +15,20 @@ enum Sprite {
     Down,
     Left,
     Right,
-    LB,
-    LT,
-    RB,
-    RT,
-    LS,
-    RS,
+    LeftBumper,
+    LeftTrigger,
+    RightBumper,
+    RightTrigger,
+    LeftStick,
+    RightStick,
     Start,
     Back,
     Disconnected,
 }
 
-impl Into<Rectangle> for Sprite {
-    fn into(self) -> Rectangle {
-        let (u, v) = match self {
+impl From<Sprite> for Rectangle {
+    fn from(sprite: Sprite) -> Rectangle {
+        let (u, v) = match sprite {
             Sprite::A => (0.0, 0.0),
             Sprite::B => (100.0, 0.0),
             Sprite::X => (200.0, 0.0),
@@ -37,12 +37,12 @@ impl Into<Rectangle> for Sprite {
             Sprite::Down => (100.0, 100.0),
             Sprite::Left => (200.0, 100.0),
             Sprite::Right => (300.0, 100.0),
-            Sprite::LB => (0.0, 200.0),
-            Sprite::LT => (100.0, 200.0),
-            Sprite::RB => (200.0, 200.0),
-            Sprite::RT => (300.0, 200.0),
-            Sprite::LS => (0.0, 300.0),
-            Sprite::RS => (100.0, 300.0),
+            Sprite::LeftBumper => (0.0, 200.0),
+            Sprite::LeftTrigger => (100.0, 200.0),
+            Sprite::RightBumper => (200.0, 200.0),
+            Sprite::RightTrigger => (300.0, 200.0),
+            Sprite::LeftStick => (0.0, 300.0),
+            Sprite::RightStick => (100.0, 300.0),
             Sprite::Start => (200.0, 300.0),
             Sprite::Back => (300.0, 300.0),
             Sprite::Disconnected => (0.0, 400.0),
@@ -206,16 +206,16 @@ impl State for GameState {
             self.draw_button(ctx, 0.0, 300.0, Sprite::Left, self.left);
             self.draw_button(ctx, 200.0, 300.0, Sprite::Right, self.right);
 
-            self.draw_button(ctx, 100.0, 100.0, Sprite::LB, self.lb);
-            self.draw_button(ctx, 100.0, 0.0, Sprite::LT, self.lt);
-            self.draw_button(ctx, 1080.0, 100.0, Sprite::RB, self.rb);
-            self.draw_button(ctx, 1080.0, 0.0, Sprite::RT, self.rt);
+            self.draw_button(ctx, 100.0, 100.0, Sprite::LeftBumper, self.lb);
+            self.draw_button(ctx, 100.0, 0.0, Sprite::LeftTrigger, self.lt);
+            self.draw_button(ctx, 1080.0, 100.0, Sprite::RightBumper, self.rb);
+            self.draw_button(ctx, 1080.0, 0.0, Sprite::RightTrigger, self.rt);
 
             self.draw_button(ctx, 680.0, 500.0, Sprite::Start, self.start);
             self.draw_button(ctx, 500.0, 500.0, Sprite::Back, self.back);
 
-            self.draw_stick(ctx, 300.0, 500.0, Sprite::LS, self.left_stick);
-            self.draw_stick(ctx, 880.0, 500.0, Sprite::RS, self.right_stick);
+            self.draw_stick(ctx, 300.0, 500.0, Sprite::LeftStick, self.left_stick);
+            self.draw_stick(ctx, 880.0, 500.0, Sprite::RightStick, self.right_stick);
 
             self.axis_info.draw(ctx, Vec2::new(16.0, 720.0 - 48.0));
         } else {

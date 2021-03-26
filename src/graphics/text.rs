@@ -23,7 +23,7 @@ use crate::Context;
 #[cfg(feature = "font_ttf")]
 pub use crate::graphics::text::vector::VectorFontBuilder;
 
-pub use crate::graphics::text::bmfont::BMFontBuilder;
+pub use crate::graphics::text::bmfont::BmFontBuilder;
 
 use super::FilterMode;
 
@@ -101,7 +101,7 @@ impl Font {
     ///
     /// By default, Tetra will search for the font's images relative to the font itself.
     /// If you need more control over the search path, or want to override the paths
-    /// entirely, this can be done via [`BMFontBuilder`].
+    /// entirely, this can be done via [`BmFontBuilder`].
     ///
     /// Currently, only the text format is supported. Support for the binary file
     /// format may be added in the future.
@@ -133,7 +133,7 @@ impl Font {
     where
         P: AsRef<Path>,
     {
-        BMFontBuilder::new(path)?.build(ctx)
+        BmFontBuilder::new(path)?.build(ctx)
     }
 
     /// Returns the filter mode of the font.
