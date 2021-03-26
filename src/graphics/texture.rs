@@ -4,11 +4,12 @@ use std::cell::Cell;
 use std::path::Path;
 use std::rc::Rc;
 
-use image::{EncodableLayout, RgbaImage, SubImage};
+use image::{EncodableLayout, Rgba, RgbaImage, SubImage};
 
 use crate::error::{Result, TetraError};
 use crate::fs;
-use crate::graphics::{self, DrawParams, Rectangle};
+use crate::graphics::{self, Color, DrawParams, Rectangle};
+use crate::math::Vec2;
 use crate::platform::{GraphicsDevice, RawTexture};
 use crate::Context;
 
@@ -430,7 +431,9 @@ impl NineSlice {
 /// Raw image data.
 ///
 /// Currently, the image data is always internally represented as RGBA8.
-/// This may change in the future.
+/// This may change, however, so this API intentionally does not expose the
+/// internal representation at the moment. Lower level access to the raw
+/// pixel data may be added in a future version.
 ///
 /// # Supported Formats
 ///
@@ -546,7 +549,10 @@ impl ImageData {
     }
 
     /// Returns the image's data, as a slice of raw bytes.
-    pub fn as_bytes(&self) -> &[u8] {
+    ///
+    /// This is not currently exposed publicly, as I don't know how I want to handle different
+    /// pixel formats.
+    pub(crate) fn as_bytes(&self) -> &[u8] {
         self.data.as_bytes()
     }
 
@@ -575,5 +581,44 @@ impl ImageData {
     /// * [`TetraError::PlatformError`] will be returned if the underlying graphics API encounters an error.
     pub fn to_texture(&self, ctx: &mut Context) -> Result<Texture> {
         Texture::from_image_data(ctx, self)
+    }
+
+    /// Gets the color of the pixel at the specified location.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the location is outside the bounds of the image.
+    pub fn get_pixel_color(&self, position: Vec2<i32>) -> Color {
+        let pixel = self.data.get_pixel(position.x as u32, position.y as u32).0;
+        pixel.into()
+    }
+
+    /// Sets the color of the pixel at the specified location.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the location is outside the bounds of the image.
+    pub fn set_pixel_color(&mut self, position: Vec2<i32>, color: Color) {
+        self.data
+            .put_pixel(position.x as u32, position.y as u32, Rgba(color.into()));
+    }
+
+    /// Transforms the image data by applying a function to each pixel.
+    pub fn transform<F>(&mut self, mut func: F)
+    where
+        F: FnMut(Vec2<i32>, Color) -> Color,
+    {
+        for (x, y, pixel) in self.data.enumerate_pixels_mut() {
+            let output = func(Vec2::new(x as i32, y as i32), pixel.0.into());
+            *pixel = Rgba(output.into());
+        }
+    }
+
+    /// Multiplies the RGB components of each pixel by the alpha component.
+    ///
+    /// This can be useful when working with
+    /// [premultiplied alpha blending](super::BlendAlphaMode::Premultiplied).
+    pub fn premultiply(&mut self) {
+        self.transform(|_, color| color.to_premultiplied())
     }
 }

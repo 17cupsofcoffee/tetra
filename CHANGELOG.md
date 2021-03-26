@@ -14,8 +14,10 @@ This project adheres to Semantic Versioning.
 * Various `std` operator traits have been implemented for the combination of `Color` and `f32`, allowing for all four components to be operated on at once.
     * This can be especially useful when working with premultiplied alpha - to set the opacity of a opaque color, you can now just multiply it by an `f32`.
 * `Color` now has a `to_premultiplied` method, which can be used to convert a color into its premultiplied version.
+* `Color` can now be converted to and from `[f32; 4]` and `[u8; 4]` via `From` and `Into`.
 * The `ImageData` struct can be used to load and manipulate image data on the CPU, without the need for a `Context`.
     * This can be useful for asset loading/pre-processing.
+    * To avoid future breaking changes if/when Tetra gains support for multiple pixel formats, the API doesn't currently give access to the underlying raw pixel data. It instead operates purely on `Color`s, automatically converting to and from as needed.
 
 ### Changed
 

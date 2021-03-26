@@ -188,6 +188,35 @@ impl From<Vec4<f32>> for Color {
     }
 }
 
+impl From<Color> for [f32; 4] {
+    fn from(color: Color) -> Self {
+        [color.r, color.g, color.b, color.a]
+    }
+}
+
+impl From<[f32; 4]> for Color {
+    fn from(v: [f32; 4]) -> Self {
+        Color::rgba(v[0], v[1], v[2], v[3])
+    }
+}
+
+impl From<Color> for [u8; 4] {
+    fn from(color: Color) -> Self {
+        [
+            (color.r * 255.0) as u8,
+            (color.g * 255.0) as u8,
+            (color.b * 255.0) as u8,
+            (color.a * 255.0) as u8,
+        ]
+    }
+}
+
+impl From<[u8; 4]> for Color {
+    fn from(v: [u8; 4]) -> Self {
+        Color::rgba8(v[0], v[1], v[2], v[3])
+    }
+}
+
 impl Add for Color {
     type Output = Color;
 
