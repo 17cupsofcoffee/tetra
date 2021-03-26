@@ -14,6 +14,8 @@ This project adheres to Semantic Versioning.
 * Various `std` operator traits have been implemented for the combination of `Color` and `f32`, allowing for all four components to be operated on at once.
     * This can be especially useful when working with premultiplied alpha - to set the opacity of a opaque color, you can now just multiply it by an `f32`.
 * `Color` now has a `to_premultiplied` method, which can be used to convert a color into its premultiplied version.
+* The `ImageData` struct can be used to load and manipulate image data on the CPU, without the need for a `Context`.
+    * This can be useful for asset loading/pre-processing.
 
 ### Changed
 

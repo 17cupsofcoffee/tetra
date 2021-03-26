@@ -4,10 +4,9 @@ use std::rc::Rc;
 use std::str::FromStr;
 
 use hashbrown::HashMap;
-use image::{EncodableLayout, RgbaImage, SubImage};
 
 use crate::graphics::text::cache::{RasterizedGlyph, Rasterizer};
-use crate::graphics::Rectangle;
+use crate::graphics::{ImageData, Rectangle};
 use crate::math::Vec2;
 use crate::{fs, Context};
 use crate::{Result, TetraError};
@@ -62,7 +61,7 @@ struct BmFontGlyph {
 pub struct BmFontBuilder {
     font: String,
     image_dir: Option<PathBuf>,
-    pages: HashMap<u32, RgbaImage>,
+    pages: HashMap<u32, ImageData>,
 }
 
 impl BmFontBuilder {
@@ -133,8 +132,7 @@ impl BmFontBuilder {
     where
         P: AsRef<Path>,
     {
-        let image = fs::read_to_image(path)?.into_rgba8();
-        self.pages.insert(id, image);
+        self.pages.insert(id, ImageData::from_file(path)?);
 
         Ok(self)
     }
@@ -152,11 +150,7 @@ impl BmFontBuilder {
     ///
     /// * [`TetraError::InvalidTexture`] will be returned if the image data was invalid.
     pub fn with_page_file_data(mut self, id: u32, data: &[u8]) -> Result<BmFontBuilder> {
-        let image = image::load_from_memory(data)
-            .map_err(TetraError::InvalidTexture)?
-            .into_rgba8();
-
-        self.pages.insert(id, image);
+        self.pages.insert(id, ImageData::from_file_data(data)?);
 
         Ok(self)
     }
@@ -179,18 +173,8 @@ impl BmFontBuilder {
     where
         D: Into<Vec<u8>>,
     {
-        let data = data.into();
-        let len = data.len();
-
-        let image = RgbaImage::from_vec(width as u32, height as u32, data).ok_or_else(|| {
-            let expected = (width * height * 4) as usize;
-            TetraError::NotEnoughData {
-                expected,
-                actual: len,
-            }
-        })?;
-
-        self.pages.insert(id, image);
+        self.pages
+            .insert(id, ImageData::from_rgba(width, height, data)?);
 
         Ok(self)
     }
@@ -231,7 +215,7 @@ pub struct BmFontRasterizer {
     line_height: u32,
     base: u32,
 
-    pages: HashMap<u32, RgbaImage>,
+    pages: HashMap<u32, ImageData>,
     glyphs: HashMap<u32, BmFontGlyph>,
     kerning: HashMap<(u32, u32), i32>,
 }
@@ -240,7 +224,7 @@ impl BmFontRasterizer {
     fn new(
         font: &str,
         image_path: Option<PathBuf>,
-        mut pages: HashMap<u32, RgbaImage>,
+        mut pages: HashMap<u32, ImageData>,
     ) -> Result<BmFontRasterizer> {
         let mut line_height = None;
         let mut base = None;
@@ -271,9 +255,7 @@ impl BmFontRasterizer {
                             .ok_or(TetraError::InvalidFont)?
                             .join(file);
 
-                        let image = fs::read_to_image(&file_path)?.into_rgba8();
-
-                        pages.insert(id, image);
+                        pages.insert(id, ImageData::from_file(file_path)?);
                     }
                 }
 
@@ -325,12 +307,15 @@ impl Rasterizer for BmFontRasterizer {
         if let Some(bmglyph) = self.glyphs.get(&(glyph as u32)) {
             let page = self.pages.get(&bmglyph.page)?;
 
-            let subimage = SubImage::new(page, bmglyph.x, bmglyph.y, bmglyph.width, bmglyph.height);
-
-            let buffer = subimage.to_image();
+            let region = page.region(Rectangle::new(
+                bmglyph.x as i32,
+                bmglyph.y as i32,
+                bmglyph.width as i32,
+                bmglyph.height as i32,
+            ));
 
             Some(RasterizedGlyph {
-                data: buffer.as_bytes().into(),
+                data: region.as_bytes().into(),
                 bounds: Rectangle::new(
                     bmglyph.x_offset as f32,
                     // This is done for consistency with the TTF rasterizer,
