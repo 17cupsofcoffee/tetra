@@ -22,7 +22,7 @@ use crate::{Result, TetraError};
 
 /// An individual piece of vertex data.
 #[repr(C)]
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, PartialEq)]
 pub struct Vertex {
     /// The position of the vertex, in screen co-ordinates.
     ///

@@ -18,6 +18,7 @@ This project adheres to Semantic Versioning.
 * The `ImageData` struct can be used to load and manipulate image data on the CPU, without the need for a `Context`.
     * This can be useful for asset loading/pre-processing.
     * To avoid future breaking changes if/when Tetra gains support for multiple pixel formats, the API doesn't currently give access to the underlying raw pixel data. It instead operates purely on `Color`s, automatically converting to and from as needed.
+* `Color` and `Vertex` now implement `Default`, with the default values being all zeroes (for consistency with the vector types, and to make them more useful for zeroing out buffers).
 
 ### Changed
 
