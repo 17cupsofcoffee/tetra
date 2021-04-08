@@ -1028,16 +1028,6 @@ impl BlendMode {
     }
 }
 
-macro_rules! handle_impls {
-    ($name:ty) => {
-        impl PartialEq for $name {
-            fn eq(&self, other: &$name) -> bool {
-                self.id == other.id
-            }
-        }
-    };
-}
-
 #[derive(Debug)]
 pub struct RawVertexBuffer {
     state: Rc<GraphicsState>,
@@ -1063,6 +1053,12 @@ impl RawVertexBuffer {
     }
 }
 
+impl PartialEq for RawVertexBuffer {
+    fn eq(&self, other: &RawVertexBuffer) -> bool {
+        self.id == other.id
+    }
+}
+
 impl Drop for RawVertexBuffer {
     fn drop(&mut self) {
         unsafe {
@@ -1074,8 +1070,6 @@ impl Drop for RawVertexBuffer {
         }
     }
 }
-
-handle_impls!(RawVertexBuffer);
 
 #[derive(Debug)]
 pub struct RawIndexBuffer {
@@ -1102,6 +1096,12 @@ impl RawIndexBuffer {
     }
 }
 
+impl PartialEq for RawIndexBuffer {
+    fn eq(&self, other: &RawIndexBuffer) -> bool {
+        self.id == other.id
+    }
+}
+
 impl Drop for RawIndexBuffer {
     fn drop(&mut self) {
         unsafe {
@@ -1114,12 +1114,16 @@ impl Drop for RawIndexBuffer {
     }
 }
 
-handle_impls!(RawIndexBuffer);
-
 #[derive(Debug)]
 pub struct RawProgram {
     state: Rc<GraphicsState>,
     id: ProgramId,
+}
+
+impl PartialEq for RawProgram {
+    fn eq(&self, other: &RawProgram) -> bool {
+        self.id == other.id
+    }
 }
 
 impl Drop for RawProgram {
@@ -1133,8 +1137,6 @@ impl Drop for RawProgram {
         }
     }
 }
-
-handle_impls!(RawProgram);
 
 #[derive(Debug)]
 pub struct RawTexture {
@@ -1155,6 +1157,12 @@ impl RawTexture {
     }
 }
 
+impl PartialEq for RawTexture {
+    fn eq(&self, other: &RawTexture) -> bool {
+        self.id == other.id
+    }
+}
+
 impl Drop for RawTexture {
     fn drop(&mut self) {
         unsafe {
@@ -1169,12 +1177,16 @@ impl Drop for RawTexture {
     }
 }
 
-handle_impls!(RawTexture);
-
 #[derive(Debug)]
 pub struct RawFramebuffer {
     state: Rc<GraphicsState>,
     id: FramebufferId,
+}
+
+impl PartialEq for RawFramebuffer {
+    fn eq(&self, other: &RawFramebuffer) -> bool {
+        self.id == other.id
+    }
 }
 
 impl Drop for RawFramebuffer {
@@ -1193,12 +1205,16 @@ impl Drop for RawFramebuffer {
     }
 }
 
-handle_impls!(RawFramebuffer);
-
 #[derive(Debug)]
 pub struct RawRenderbuffer {
     state: Rc<GraphicsState>,
     id: RenderbufferId,
+}
+
+impl PartialEq for RawRenderbuffer {
+    fn eq(&self, other: &RawRenderbuffer) -> bool {
+        self.id == other.id
+    }
 }
 
 impl Drop for RawRenderbuffer {
@@ -1212,5 +1228,3 @@ impl Drop for RawRenderbuffer {
         }
     }
 }
-
-handle_impls!(RawRenderbuffer);
