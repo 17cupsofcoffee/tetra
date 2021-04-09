@@ -155,6 +155,15 @@ impl BmFontBuilder {
         Ok(self)
     }
 
+    /// Sets the image for the specified page of the font, using decoded image data.
+    ///
+    /// This will override the path specified in the font itself.
+    pub fn with_page_image_data(mut self, id: u32, data: ImageData) -> BmFontBuilder {
+        self.pages.insert(id, data);
+
+        self
+    }
+
     /// Sets the image for the specified page of the font, using RGBA data.
     ///
     /// This will override the path specified in the font itself.
