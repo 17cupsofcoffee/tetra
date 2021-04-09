@@ -241,7 +241,7 @@ impl BmFontRasterizer {
         let mut kerning = HashMap::new();
 
         for line in font.lines() {
-            let (tag, attributes) = parse_tag(line)?;
+            let (tag, attributes) = parse_tag(line);
 
             match tag {
                 "common" => {
@@ -384,10 +384,10 @@ impl BmFontAttributes<'_> {
     }
 }
 
-fn parse_tag(input: &str) -> Result<(&str, &str)> {
+fn parse_tag(input: &str) -> (&str, &str) {
     let trimmed = input.trim_start();
-    let tag_end = trimmed.find(' ').ok_or(TetraError::InvalidFont)?;
-    Ok(trimmed.split_at(tag_end))
+    let tag_end = trimmed.find(' ').unwrap_or_else(|| trimmed.len());
+    trimmed.split_at(tag_end)
 }
 
 fn parse_attributes(input: &str) -> Result<BmFontAttributes<'_>> {
@@ -429,4 +429,68 @@ fn parse_attributes(input: &str) -> Result<BmFontAttributes<'_>> {
     }
 
     Ok(BmFontAttributes { attributes })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_valid_line() {
+        let (tag, rest) = parse_tag("tag keyA=123 keyB=\"string\" keyC=1,2,3,4");
+
+        assert_eq!("tag", tag);
+        assert_eq!(" keyA=123 keyB=\"string\" keyC=1,2,3,4", rest);
+
+        let attributes = parse_attributes(rest).unwrap();
+
+        assert_eq!(attributes.get("keyA").unwrap(), "123");
+        assert_eq!(attributes.get("keyB").unwrap(), "string");
+        assert_eq!(attributes.get("keyC").unwrap(), "1,2,3,4");
+    }
+
+    #[test]
+    fn parse_valid_line_with_whitespace() {
+        let (tag, rest) = parse_tag("   tag    keyA=123   ");
+
+        assert_eq!("tag", tag);
+        assert_eq!("    keyA=123   ", rest);
+
+        let attributes = parse_attributes(rest).unwrap();
+
+        assert_eq!(attributes.get("keyA").unwrap(), "123");
+    }
+
+    #[test]
+    fn parse_valid_line_with_no_data() {
+        let (tag, rest) = parse_tag("   tag");
+
+        assert_eq!("tag", tag);
+        assert_eq!("", rest);
+
+        let attributes = parse_attributes(rest).unwrap();
+        assert!(attributes.attributes.is_empty());
+    }
+
+    #[test]
+    #[should_panic]
+    fn parse_invalid_line_with_missing_equals() {
+        let (tag, rest) = parse_tag("   tag keyA");
+
+        assert_eq!("tag", tag);
+        assert_eq!(" keyA", rest);
+
+        parse_attributes(rest).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn parse_invalid_line_with_missing_string_terminator() {
+        let (tag, rest) = parse_tag("   tag keyA=\"string");
+
+        assert_eq!("tag", tag);
+        assert_eq!(" keyA=\"string", rest);
+
+        parse_attributes(rest).unwrap();
+    }
 }
