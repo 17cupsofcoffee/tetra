@@ -58,6 +58,11 @@ pub fn get_size(ctx: &Context) -> (i32, i32) {
     ctx.window.get_window_size()
 }
 
+/// Returns the ratio of the logical resolution to the physical resolution of the current display on which the window is being displayed.
+pub fn get_device_pixel_ratio(ctx: &Context) -> (f32, f32) {
+    ctx.window.get_device_pixel_ratio()
+}
+
 /// Sets the size of the window.
 ///
 /// # Errors
