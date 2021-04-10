@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+# [Upcoming]
+
+### Added
+
+* `window::get_dpi_scale` has been added, allowing the window/monitor's pixel density to be queried. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#249](https://github.com/17cupsofcoffee/tetra/pull/249)
+
 ## [0.6.3] - 2021-04-09
 
 ### Added 

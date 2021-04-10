@@ -170,9 +170,14 @@ pub fn is_relative_mouse_mode(ctx: &Context) -> bool {
     ctx.window.is_relative_mouse_mode()
 }
 
-/// Returns the ratio of the logical resolution to the physical resolution of the current display on which the window is being displayed.
-pub fn get_device_pixel_ratio(ctx: &Context) -> f32 {
-    ctx.window.get_device_pixel_ratio()
+/// Returns the ratio of the logical resolution to the physical resolution of the current
+/// display on which the window is being displayed.
+///
+/// This will usually be `1.0`, but if [high DPI support](crate::ContextBuilder::high_dpi)
+/// is enabled and the monitor is high DPI, it may be higher. For example, on a Mac with
+/// a retina display, this can return `2.0`.
+pub fn get_dpi_scale(ctx: &Context) -> f32 {
+    ctx.window.get_dpi_scale()
 }
 
 /// Gets the number of monitors connected to the device.
