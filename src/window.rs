@@ -58,11 +58,6 @@ pub fn get_size(ctx: &Context) -> (i32, i32) {
     ctx.window.get_window_size()
 }
 
-/// Returns the ratio of the logical resolution to the physical resolution of the current display on which the window is being displayed.
-pub fn get_device_pixel_ratio(ctx: &Context) -> (f32, f32) {
-    ctx.window.get_device_pixel_ratio()
-}
-
 /// Sets the size of the window.
 ///
 /// # Errors
@@ -173,6 +168,11 @@ pub fn set_relative_mouse_mode(ctx: &mut Context, relative_mouse_mode: bool) {
 /// as such, you should not rely on it.
 pub fn is_relative_mouse_mode(ctx: &Context) -> bool {
     ctx.window.is_relative_mouse_mode()
+}
+
+/// Returns the ratio of the logical resolution to the physical resolution of the current display on which the window is being displayed.
+pub fn get_device_pixel_ratio(ctx: &Context) -> f32 {
+    ctx.window.get_device_pixel_ratio()
 }
 
 /// Gets the number of monitors connected to the device.

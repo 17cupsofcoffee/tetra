@@ -234,10 +234,8 @@ impl Window {
         self.window_visible = visible;
     }
 
-    pub fn get_device_pixel_ratio(&self) -> (f32, f32) {
-        let (dw, dh) = self.sdl_window.drawable_size();
-        let (sw, sh) = self.sdl_window.size();
-        (dw as f32 / sw as f32, dh as f32 / sh as f32)
+    pub fn get_device_pixel_ratio(&self) -> f32 {
+        self.sdl_window.drawable_size().0 as f32 / self.sdl_window.size().0 as f32
     }
 
     pub fn get_monitor_count(&self) -> Result<i32> {
