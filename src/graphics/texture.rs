@@ -295,7 +295,7 @@ impl Texture {
         self.data.handle.height()
     }
 
-    /// Returns the size of the canvas.
+    /// Returns the size of the texture.
     pub fn size(&self) -> (i32, i32) {
         (self.data.handle.width(), self.data.handle.height())
     }
