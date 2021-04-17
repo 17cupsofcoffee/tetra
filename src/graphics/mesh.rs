@@ -325,123 +325,6 @@ impl Mesh {
         }
     }
 
-    /// Creates a new rectangle mesh.
-    ///
-    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
-    /// instead.
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
-    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
-    pub fn rectangle(ctx: &mut Context, style: ShapeStyle, rectangle: Rectangle) -> Result<Mesh> {
-        GeometryBuilder::new()
-            .rectangle(style, rectangle)?
-            .build_mesh(ctx)
-    }
-
-    /// Creates a new rounded rectangle mesh.
-    ///
-    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
-    /// instead.
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
-    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
-    pub fn rounded_rectangle(
-        ctx: &mut Context,
-        style: ShapeStyle,
-        rectangle: Rectangle,
-        radii: BorderRadii,
-    ) -> Result<Mesh> {
-        GeometryBuilder::new()
-            .rounded_rectangle(style, rectangle, radii)?
-            .build_mesh(ctx)
-    }
-
-    /// Creates a new circle mesh.
-    ///
-    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
-    /// instead.
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
-    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
-    pub fn circle(
-        ctx: &mut Context,
-        style: ShapeStyle,
-        center: Vec2<f32>,
-        radius: f32,
-    ) -> Result<Mesh> {
-        GeometryBuilder::new()
-            .circle(style, center, radius)?
-            .build_mesh(ctx)
-    }
-
-    /// Creates a new ellipse mesh.
-    ///
-    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
-    /// instead.
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
-    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
-    pub fn ellipse(
-        ctx: &mut Context,
-        style: ShapeStyle,
-        center: Vec2<f32>,
-        radii: Vec2<f32>,
-    ) -> Result<Mesh> {
-        GeometryBuilder::new()
-            .ellipse(style, center, radii)?
-            .build_mesh(ctx)
-    }
-
-    /// Creates a new polygon mesh.
-    ///
-    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
-    /// instead.
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
-    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
-    pub fn polygon(ctx: &mut Context, style: ShapeStyle, points: &[Vec2<f32>]) -> Result<Mesh> {
-        GeometryBuilder::new()
-            .polygon(style, points)?
-            .build_mesh(ctx)
-    }
-
-    /// Creates a new polyline mesh.
-    ///
-    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
-    /// instead.
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
-    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
-    pub fn polyline(ctx: &mut Context, stroke_width: f32, points: &[Vec2<f32>]) -> Result<Mesh> {
-        GeometryBuilder::new()
-            .polyline(stroke_width, points)?
-            .build_mesh(ctx)
-    }
-
     /// Draws the mesh to the screen (or to a canvas, if one is enabled).
     pub fn draw<P>(&self, ctx: &mut Context, params: P)
     where
@@ -607,6 +490,126 @@ impl Mesh {
     }
 }
 
+/// # Shape constructors
+impl Mesh {
+    /// Creates a new rectangle mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    pub fn rectangle(ctx: &mut Context, style: ShapeStyle, rectangle: Rectangle) -> Result<Mesh> {
+        GeometryBuilder::new()
+            .rectangle(style, rectangle)?
+            .build_mesh(ctx)
+    }
+
+    /// Creates a new rounded rectangle mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    pub fn rounded_rectangle(
+        ctx: &mut Context,
+        style: ShapeStyle,
+        rectangle: Rectangle,
+        radii: BorderRadii,
+    ) -> Result<Mesh> {
+        GeometryBuilder::new()
+            .rounded_rectangle(style, rectangle, radii)?
+            .build_mesh(ctx)
+    }
+
+    /// Creates a new circle mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    pub fn circle(
+        ctx: &mut Context,
+        style: ShapeStyle,
+        center: Vec2<f32>,
+        radius: f32,
+    ) -> Result<Mesh> {
+        GeometryBuilder::new()
+            .circle(style, center, radius)?
+            .build_mesh(ctx)
+    }
+
+    /// Creates a new ellipse mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    pub fn ellipse(
+        ctx: &mut Context,
+        style: ShapeStyle,
+        center: Vec2<f32>,
+        radii: Vec2<f32>,
+    ) -> Result<Mesh> {
+        GeometryBuilder::new()
+            .ellipse(style, center, radii)?
+            .build_mesh(ctx)
+    }
+
+    /// Creates a new polygon mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    pub fn polygon(ctx: &mut Context, style: ShapeStyle, points: &[Vec2<f32>]) -> Result<Mesh> {
+        GeometryBuilder::new()
+            .polygon(style, points)?
+            .build_mesh(ctx)
+    }
+
+    /// Creates a new polyline mesh.
+    ///
+    /// If you need to draw multiple shapes, consider using [`GeometryBuilder`] to generate a combined mesh
+    /// instead.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
+    /// could not be turned into vertex data.
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    pub fn polyline(ctx: &mut Context, stroke_width: f32, points: &[Vec2<f32>]) -> Result<Mesh> {
+        GeometryBuilder::new()
+            .polyline(stroke_width, points)?
+            .build_mesh(ctx)
+    }
+}
+
 impl From<VertexBuffer> for Mesh {
     fn from(buffer: VertexBuffer) -> Self {
         Mesh::new(buffer)
@@ -645,6 +648,10 @@ impl StrokeVertexConstructor<Vertex> for TetraVertexConstructor {
 /// `GeometryBuilder` stores the generated vertex and index data in a pair of `Vec`s. This means that creating
 /// a new builder (as well as cloning an existing one) will allocate memory. Consider reusing a `GeometryBuilder`
 /// if you need to reuse the generated data, or if you need to create new data every frame.
+///
+/// Creating buffers/meshes from the generated geometry is a fairly expensive operation. Try to avoid creating
+/// lots of seperate buffers/meshes, and pack multiple shapes into the same buffers/mesh if
+/// they don't move relative to each other.
 ///
 /// # Examples
 ///
@@ -947,6 +954,8 @@ impl GeometryBuilder {
 
     /// Builds a vertex and index buffer from the generated geometry.
     ///
+    /// This involves uploading the geometry to the GPU, and is a fairly expensive operation.
+    ///
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
@@ -959,6 +968,8 @@ impl GeometryBuilder {
     }
 
     /// Builds a mesh from the generated geometry.
+    ///
+    /// This involves uploading the geometry to the GPU, and is a fairly expensive operation.
     ///
     /// # Errors
     ///
