@@ -26,6 +26,7 @@ lyon_tessellation = "0.17.4"
 cpal = { version = "0.13.1", optional = true }
 oddio = { git = "https://github.com/Ralith/oddio", branch = "main", optional = true }
 hound = { version = "*", optional = true }
+lewton = { version = "*", optional = true }
 
 [dev-dependencies]
 rand = "0.8.0"
@@ -49,10 +50,10 @@ default = [
 audio = ["cpal", "oddio"]
 
 # Enables support for audio formats.
-audio_flac = ["audio", "hound"]
+audio_flac = ["audio"]
 audio_mp3 = ["audio"]
-audio_vorbis = ["audio"]
-audio_wav = ["audio"]
+audio_vorbis = ["audio", "lewton"]
+audio_wav = ["audio", "hound"]
 
 # Enables support for font formats.
 font_ttf = ["ab_glyph"]

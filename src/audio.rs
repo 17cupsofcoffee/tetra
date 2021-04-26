@@ -1,12 +1,15 @@
 //! Functions and types relating to audio playback.
 
+use std::fs::File;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::Stream;
-use hound::{SampleFormat, WavReader};
+use lewton::inside_ogg::OggStreamReader;
+use lewton::samples::InterleavedSamples;
+// use hound::{SampleFormat, WavReader};
 use oddio::{
     Controlled, Filter, Frame, Frames, FramesSignal, Gain, Handle, Mixer, Signal, Speed, Stop,
 };
@@ -61,43 +64,67 @@ impl Sound {
     where
         P: AsRef<Path>,
     {
-        let mut reader = WavReader::open(path).expect("TODO");
-        let spec = reader.spec();
+        let file = File::open(path).expect("TODO");
+        let mut stream = OggStreamReader::new(file).unwrap();
+        let mut samples = vec![];
 
-        let data = match spec.sample_format {
-            SampleFormat::Float => {
-                let samples = reader.samples::<f32>().map(|s| s.unwrap_or(0.0));
+        while let Some(packet) = stream
+            .read_dec_packet_generic::<InterleavedSamples<f32>>()
+            .expect("TODO")
+        {
+            // TODO: Check for mixed channel counts
+            samples.extend(packet.samples);
+        }
 
-                match spec.channels {
-                    1 => Frames::from_iter(spec.sample_rate, samples.map(|s| [s, s])),
-                    2 => {
-                        let mut buffer = samples.collect::<Vec<_>>();
-                        let stereo = oddio::frame_stereo(&mut buffer);
-                        Frames::from_slice(spec.sample_rate, stereo)
-                    }
-                    _ => todo!(),
-                }
+        let data = match stream.ident_hdr.audio_channels {
+            1 => Frames::from_iter(
+                stream.ident_hdr.audio_sample_rate,
+                samples.into_iter().map(|s| [s, s]),
+            ),
+            2 => {
+                let stereo = oddio::frame_stereo(&mut samples);
+                Frames::from_slice(stream.ident_hdr.audio_sample_rate, stereo)
             }
-
-            SampleFormat::Int => {
-                let max_int = (1 << spec.bits_per_sample) / 2;
-                let scale = 1.0 / max_int as f32;
-
-                let samples = reader
-                    .samples::<i32>()
-                    .map(|s| s.unwrap_or(0) as f32 * scale);
-
-                match spec.channels {
-                    1 => Frames::from_iter(spec.sample_rate, samples.map(|s| [s, s])),
-                    2 => {
-                        let mut buffer = samples.collect::<Vec<_>>();
-                        let stereo = oddio::frame_stereo(&mut buffer);
-                        Frames::from_slice(spec.sample_rate, stereo)
-                    }
-                    _ => todo!(),
-                }
-            }
+            _ => todo!(),
         };
+
+        // let mut reader = WavReader::open(path).expect("TODO");
+        // let spec = reader.spec();
+
+        // let data = match spec.sample_format {
+        //     SampleFormat::Float => {
+        //         let samples = reader.samples::<f32>().map(|s| s.unwrap_or(0.0));
+
+        //         match spec.channels {
+        //             1 => Frames::from_iter(spec.sample_rate, samples.map(|s| [s, s])),
+        //             2 => {
+        //                 let mut buffer = samples.collect::<Vec<_>>();
+        //                 let stereo = oddio::frame_stereo(&mut buffer);
+        //                 Frames::from_slice(spec.sample_rate, stereo)
+        //             }
+        //             _ => todo!(),
+        //         }
+        //     }
+
+        //     SampleFormat::Int => {
+        //         let max_int = (1 << spec.bits_per_sample) / 2;
+        //         let scale = 1.0 / max_int as f32;
+
+        //         let samples = reader
+        //             .samples::<i32>()
+        //             .map(|s| s.unwrap_or(0) as f32 * scale);
+
+        //         match spec.channels {
+        //             1 => Frames::from_iter(spec.sample_rate, samples.map(|s| [s, s])),
+        //             2 => {
+        //                 let mut buffer = samples.collect::<Vec<_>>();
+        //                 let stereo = oddio::frame_stereo(&mut buffer);
+        //                 Frames::from_slice(spec.sample_rate, stereo)
+        //             }
+        //             _ => todo!(),
+        //         }
+        //     }
+        // };
 
         Ok(Sound { data })
     }
