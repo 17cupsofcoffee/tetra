@@ -1,7 +1,7 @@
 use std::cell::Cell;
 use std::rc::Rc;
 
-use glow::{Context as GlowContext, HasContext, PixelUnpackData};
+use glow::{Context as GlowContext, HasContext, PixelPackData, PixelUnpackData};
 
 use crate::error::{Result, TetraError};
 use crate::graphics::mesh::{BufferUsage, Vertex, VertexWinding};
@@ -568,6 +568,24 @@ impl GraphicsDevice {
         }
 
         Ok(())
+    }
+
+    pub fn get_texture_data(&mut self, texture: &RawTexture) -> Vec<u8> {
+        self.bind_default_texture(Some(texture));
+
+        let mut buffer = vec![0; (texture.width * texture.height * 4) as usize];
+
+        unsafe {
+            self.state.gl.get_tex_image(
+                glow::TEXTURE_2D,
+                0,
+                glow::RGBA,
+                glow::UNSIGNED_BYTE,
+                PixelPackData::Slice(&mut buffer),
+            );
+        }
+
+        buffer
     }
 
     pub fn set_texture_filter_mode(&mut self, texture: &RawTexture, filter_mode: FilterMode) {

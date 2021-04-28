@@ -164,7 +164,7 @@ impl BmFontBuilder {
         self
     }
 
-    /// Sets the image for the specified page of the font, using RGBA data.
+    /// Sets the image for the specified page of the font, using RGBA8 data.
     ///
     /// This will override the path specified in the font itself.
     ///
@@ -172,7 +172,7 @@ impl BmFontBuilder {
     ///
     /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
     ///   the texture.
-    pub fn with_page_rgba<D>(
+    pub fn with_page_rgba8<D>(
         mut self,
         id: u32,
         width: i32,
@@ -183,9 +183,24 @@ impl BmFontBuilder {
         D: Into<Vec<u8>>,
     {
         self.pages
-            .insert(id, ImageData::from_rgba(width, height, data)?);
+            .insert(id, ImageData::from_rgba8(width, height, data)?);
 
         Ok(self)
+    }
+
+    #[allow(missing_docs)]
+    #[deprecated(since = "0.6.4", note = "renamed to with_page_rgba8 for consistency")]
+    pub fn with_page_rgba<D>(
+        self,
+        id: u32,
+        width: i32,
+        height: i32,
+        data: D,
+    ) -> Result<BmFontBuilder>
+    where
+        D: Into<Vec<u8>>,
+    {
+        self.with_page_rgba8(id, width, height, data)
     }
 
     /// Builds the font.

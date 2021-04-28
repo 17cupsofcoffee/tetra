@@ -5,6 +5,8 @@ use crate::graphics::{DrawParams, FilterMode, Texture};
 use crate::platform::{GraphicsDevice, RawFramebuffer, RawRenderbuffer};
 use crate::Context;
 
+use super::ImageData;
+
 /// A texture that can be used for off-screen rendering.
 ///
 /// This is sometimes referred to as a 'render texture' or 'render target' in other
@@ -57,6 +59,13 @@ impl Canvas {
     ///
     /// The number of samples that can be used varies between graphics cards - `2`, `4` and `8` are reasonably
     /// well supported.
+    ///
+    /// # Resolving
+    ///
+    /// In order to actually display a multisampled canvas, it first has to be downsampled (or 'resolved'). This is
+    /// done automatically once you switch to a different canvas/the backbuffer. Until this step takes place,
+    /// your rendering will *not* be reflected in the canvas' underlying [`texture`](Self::texture) (and by
+    /// extension, in the output of [`draw`](Self::draw) and [`get_data`](Self::get_data)).
     ///
     /// # Errors
     ///
@@ -133,6 +142,21 @@ impl Canvas {
         self.texture.set_filter_mode(ctx, filter_mode);
     }
 
+    /// Gets the canvas' data from the GPU.
+    ///
+    /// This can be useful if you need to do some image processing on the CPU,
+    /// or if you want to output the image data somewhere. This is a fairly
+    /// slow operation, so avoid doing it too often!
+    ///
+    /// If this is the currently active canvas, you should unbind it or call
+    /// [`graphics::flush`](super::flush) before calling this method, to ensure all
+    /// pending draw calls are reflected in the output. Similarly, if the canvas is
+    /// multisampled, it must be [resolved](#resolving) before
+    /// changes will be reflected in this method's output.
+    pub fn get_data(&self, ctx: &mut Context) -> ImageData {
+        self.texture.get_data(ctx)
+    }
+
     /// Writes RGBA pixel data to a specified region of the canvas.
     ///
     /// This method requires you to provide enough data to fill the target rectangle.
@@ -182,6 +206,12 @@ impl Canvas {
     }
 
     /// Returns a reference to the canvas' underlying texture.
+    ///
+    /// If this is the currently active canvas, you may want to unbind it or call
+    /// [`graphics::flush`](super::flush) before trying to access the underlying
+    /// texture data, to ensure all pending draw calls are completed. Similarly,
+    /// if the canvas is multisampled, it must be [resolved](#resolving)
+    /// before changes will be reflected in the texture.
     pub fn texture(&self) -> &Texture {
         &self.texture
     }

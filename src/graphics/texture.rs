@@ -317,6 +317,18 @@ impl Texture {
         self.data.filter_mode.set(filter_mode);
     }
 
+    /// Gets the texture's data from the GPU.
+    ///
+    /// This can be useful if you need to do some image processing on the CPU,
+    /// or if you want to output the image data somewhere. This is a fairly
+    /// slow operation, so avoid doing it too often!
+    pub fn get_data(&self, ctx: &mut Context) -> ImageData {
+        let (width, height) = self.size();
+        let buffer = ctx.device.get_texture_data(&self.data.handle);
+
+        ImageData::from_rgba8(width, height, buffer).expect("buffer should be exact size for image")
+    }
+
     /// Writes RGBA pixel data to a specified region of the texture.
     ///
     /// This method requires you to provide enough data to fill the target rectangle.
@@ -504,7 +516,7 @@ impl ImageData {
         Ok(ImageData { data: image })
     }
 
-    /// Creates an `ImageData` from raw RGBA data.
+    /// Creates an `ImageData` from raw RGBA8 data.
     ///
     /// This function takes `Into<Vec<u8>>`. If you pass a `Vec<u8>`, that `Vec` will
     /// be reused for the created `ImageData` without reallocating. Otherwise, the data
@@ -518,7 +530,7 @@ impl ImageData {
     ///
     /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
     /// the image.
-    pub fn from_rgba<D>(width: i32, height: i32, data: D) -> Result<ImageData>
+    pub fn from_rgba8<D>(width: i32, height: i32, data: D) -> Result<ImageData>
     where
         D: Into<Vec<u8>>,
     {
@@ -536,6 +548,15 @@ impl ImageData {
         Ok(ImageData { data: image })
     }
 
+    #[allow(missing_docs)]
+    #[deprecated(since = "0.6.4", note = "renamed to from_rgba8 for consistency")]
+    pub fn from_rgba<D>(width: i32, height: i32, data: D) -> Result<ImageData>
+    where
+        D: Into<Vec<u8>>,
+    {
+        ImageData::from_rgba8(width, height, data)
+    }
+
     /// Returns the width of the image.
     pub fn width(&self) -> i32 {
         self.data.width() as i32
@@ -550,6 +571,11 @@ impl ImageData {
     pub fn size(&self) -> (i32, i32) {
         let (width, height) = self.data.dimensions();
         (width as i32, height as i32)
+    }
+
+    /// Returns the image's data, as a vector of RGBA8 data.
+    pub fn into_rgba8(self) -> Vec<u8> {
+        self.data.into_raw()
     }
 
     /// Returns the image's data, as a slice of raw bytes.
