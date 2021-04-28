@@ -594,10 +594,13 @@ impl GraphicsDevice {
         }
     }
 
+    // TODO: The 'rebind_previous' stuff feels hacky
+
     pub fn attach_texture_to_framebuffer(
         &mut self,
         framebuffer: &RawFramebuffer,
         texture: &RawTexture,
+        clear: bool,
         rebind_previous: bool,
     ) {
         unsafe {
@@ -613,6 +616,10 @@ impl GraphicsDevice {
                 Some(texture.id),
                 0,
             );
+
+            if clear {
+                self.clear(0.0, 0.0, 0.0, 0.0);
+            }
 
             if rebind_previous {
                 self.state
@@ -632,6 +639,7 @@ impl GraphicsDevice {
         &mut self,
         framebuffer: &RawFramebuffer,
         renderbuffer: &RawRenderbuffer,
+        clear: bool,
         rebind_previous: bool,
     ) {
         unsafe {
@@ -646,6 +654,10 @@ impl GraphicsDevice {
                 glow::RENDERBUFFER,
                 Some(renderbuffer.id),
             );
+
+            if clear {
+                self.clear(0.0, 0.0, 0.0, 0.0);
+            }
 
             if rebind_previous {
                 self.state

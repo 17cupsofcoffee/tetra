@@ -323,6 +323,7 @@ fn resolve_canvas(ctx: &mut Context) {
                 &resolve_framebuffer,
                 &c.texture.data.handle,
                 false,
+                false,
             );
 
             ctx.device.blit_framebuffer(

@@ -79,24 +79,24 @@ impl Canvas {
         filter_mode: FilterMode,
         samples: u8,
     ) -> Result<Canvas> {
-        let texture = Texture::with_device_empty(device, width, height, filter_mode)?;
+        let texture = device.new_texture(width, height)?;
+        device.set_texture_filter_mode(&texture, filter_mode);
 
         let framebuffer = device.new_framebuffer()?;
+        device.attach_texture_to_framebuffer(&framebuffer, &texture, true, true);
 
         let multisample = if samples > 0 {
             let multisample = device.new_renderbuffer(width, height, samples)?;
-            device.attach_renderbuffer_to_framebuffer(&framebuffer, &multisample, true);
+            device.attach_renderbuffer_to_framebuffer(&framebuffer, &multisample, true, true);
 
             Some(Rc::new(multisample))
         } else {
-            device.attach_texture_to_framebuffer(&framebuffer, &texture.data.handle, true);
-
             None
         };
 
         Ok(Canvas {
             framebuffer: Rc::new(framebuffer),
-            texture,
+            texture: Texture::from_raw(texture, filter_mode),
             multisample,
         })
     }

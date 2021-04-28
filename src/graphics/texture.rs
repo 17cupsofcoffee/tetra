@@ -136,6 +136,15 @@ impl Texture {
         )
     }
 
+    pub(crate) fn from_raw(handle: RawTexture, filter_mode: FilterMode) -> Texture {
+        Texture {
+            data: Rc::new(TextureSharedData {
+                handle,
+                filter_mode: Cell::new(filter_mode),
+            }),
+        }
+    }
+
     pub(crate) fn with_device(
         device: &mut GraphicsDevice,
         width: i32,
