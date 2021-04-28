@@ -24,8 +24,12 @@ where
 }
 
 /// Gets the width of the window.
+///
+/// This function will return a consistent value regardless of whether
+/// [high DPI support](crate::ContextBuilder::high_dpi) is enabled. To find
+/// the physical width of the window, call [`get_physical_width`].
 pub fn get_width(ctx: &Context) -> i32 {
-    ctx.window.get_window_width()
+    ctx.window.get_window_size().0
 }
 
 /// Sets the width of the window.
@@ -35,12 +39,16 @@ pub fn get_width(ctx: &Context) -> i32 {
 /// * [`TetraError::FailedToChangeDisplayMode`](crate::TetraError::FailedToChangeDisplayMode)
 /// will be returned if the game was unable to change the window size.
 pub fn set_width(ctx: &mut Context, width: i32) -> Result {
-    set_size(ctx, width, ctx.window.get_window_height())
+    set_size(ctx, width, ctx.window.get_window_size().1)
 }
 
 /// Gets the height of the window.
+///
+/// This function will return a consistent value regardless of whether
+/// [high DPI support](crate::ContextBuilder::high_dpi) is enabled. To find
+/// the physical height of the window, call [`get_physical_height`].
 pub fn get_height(ctx: &Context) -> i32 {
-    ctx.window.get_window_height()
+    ctx.window.get_window_size().1
 }
 
 /// Sets the height of the window.
@@ -50,10 +58,14 @@ pub fn get_height(ctx: &Context) -> i32 {
 /// * [`TetraError::FailedToChangeDisplayMode`](crate::TetraError::FailedToChangeDisplayMode)
 /// will be returned if the game was unable to change the window size.
 pub fn set_height(ctx: &mut Context, height: i32) -> Result {
-    set_size(ctx, ctx.window.get_window_width(), height)
+    set_size(ctx, ctx.window.get_window_size().0, height)
 }
 
 /// Gets the size of the window.
+///
+/// This function will return a consistent value regardless of whether
+/// [high DPI support](crate::ContextBuilder::high_dpi) is enabled. To find
+/// the physical size of the window, call [`get_physical_size`].
 pub fn get_size(ctx: &Context) -> (i32, i32) {
     ctx.window.get_window_size()
 }
@@ -66,6 +78,40 @@ pub fn get_size(ctx: &Context) -> (i32, i32) {
 /// will be returned if the game was unable to change the window size.
 pub fn set_size(ctx: &mut Context, width: i32, height: i32) -> Result {
     ctx.window.set_window_size(width, height)
+}
+
+/// Returns the width of the window in physical pixels.
+///
+/// The output of this function may differ from the output of [`get_width`] if
+/// [high DPI support](crate::ContextBuilder::high_dpi) is enabled.
+pub fn get_physical_width(ctx: &Context) -> i32 {
+    ctx.window.get_physical_size().0
+}
+
+/// Returns the height of the window in physical pixels.
+///
+/// The output of this function may differ from the output of [`get_height`] if
+/// [high DPI support](crate::ContextBuilder::high_dpi) is enabled.
+pub fn get_physical_height(ctx: &Context) -> i32 {
+    ctx.window.get_physical_size().1
+}
+
+/// Returns the size of the window in physical pixels.
+///
+/// The output of this function may differ from the output of [`get_size`] if
+/// [high DPI support](crate::ContextBuilder::high_dpi) is enabled.
+pub fn get_physical_size(ctx: &Context) -> (i32, i32) {
+    ctx.window.get_physical_size()
+}
+
+/// Returns the ratio of the logical resolution to the physical resolution of the current
+/// display on which the window is being displayed.
+///
+/// This will usually be `1.0`, but if [high DPI support](crate::ContextBuilder::high_dpi)
+/// is enabled and the monitor is high DPI, it may be higher. For example, on a Mac with
+/// a retina display, this can return `2.0`.
+pub fn get_dpi_scale(ctx: &Context) -> f32 {
+    ctx.window.get_dpi_scale()
 }
 
 /// Returns whether the window is currently visible, or whether it has been hidden.
@@ -168,16 +214,6 @@ pub fn set_relative_mouse_mode(ctx: &mut Context, relative_mouse_mode: bool) {
 /// as such, you should not rely on it.
 pub fn is_relative_mouse_mode(ctx: &Context) -> bool {
     ctx.window.is_relative_mouse_mode()
-}
-
-/// Returns the ratio of the logical resolution to the physical resolution of the current
-/// display on which the window is being displayed.
-///
-/// This will usually be `1.0`, but if [high DPI support](crate::ContextBuilder::high_dpi)
-/// is enabled and the monitor is high DPI, it may be higher. For example, on a Mac with
-/// a retina display, this can return `2.0`.
-pub fn get_dpi_scale(ctx: &Context) -> f32 {
-    ctx.window.get_dpi_scale()
 }
 
 /// Gets the number of monitors connected to the device.

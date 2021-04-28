@@ -286,19 +286,20 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
         match &ctx.graphics.canvas {
             ActiveCanvas::Window => {
                 let (width, height) = window::get_size(ctx);
+                let (physical_width, physical_height) = window::get_physical_size(ctx);
 
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
+                ctx.device.viewport(0, 0, physical_width, physical_height);
 
                 ctx.device.bind_framebuffer(None);
-                ctx.device.viewport(0, 0, width, height);
             }
             ActiveCanvas::User(r) => {
                 let (width, height) = r.size();
 
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, true);
+                ctx.device.viewport(0, 0, width, height);
 
                 ctx.device.bind_framebuffer(Some(&r.framebuffer));
-                ctx.device.viewport(0, 0, width, height);
             }
         }
     }
@@ -477,14 +478,14 @@ pub fn set_scissor(ctx: &mut Context, scissor_rect: Rectangle<i32>) {
 
     match &ctx.graphics.canvas {
         ActiveCanvas::Window => {
-            let viewport_height = window::get_height(ctx);
+            let physical_height = window::get_physical_height(ctx);
 
             // OpenGL uses bottom-left co-ordinates, while Tetra uses
             // top-left co-ordinates - to present a consistent API, we
             // flip the Y component here.
             ctx.device.scissor(
                 scissor_rect.x,
-                viewport_height - (scissor_rect.y + scissor_rect.height),
+                physical_height - (scissor_rect.y + scissor_rect.height),
                 scissor_rect.width,
                 scissor_rect.height,
             );
@@ -512,16 +513,13 @@ pub fn reset_scissor(ctx: &mut Context) {
     ctx.device.scissor_test(false);
 }
 
-pub(crate) fn set_viewport_size(
-    ctx: &mut Context,
-    width: i32,
-    height: i32,
-    pixel_width: i32,
-    pixel_height: i32,
-) {
+pub(crate) fn set_viewport_size(ctx: &mut Context) {
     if let ActiveCanvas::Window = ctx.graphics.canvas {
+        let (width, height) = window::get_size(ctx);
+        let (physical_width, physical_height) = window::get_physical_size(ctx);
+
         ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
-        ctx.device.viewport(0, 0, pixel_width, pixel_height);
+        ctx.device.viewport(0, 0, physical_width, physical_height);
     }
 }
 

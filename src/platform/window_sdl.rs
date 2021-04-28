@@ -44,8 +44,6 @@ pub struct Window {
 
     controllers: HashMap<u32, SdlController>,
 
-    window_width: i32,
-    window_height: i32,
     window_visible: bool,
 
     key_repeat: bool,
@@ -178,8 +176,6 @@ impl Window {
 
             controllers: HashMap::new(),
 
-            window_width,
-            window_height,
             window_visible: false,
 
             key_repeat: settings.key_repeat,
@@ -199,22 +195,17 @@ impl Window {
         self.sdl_window.set_title(title.as_ref()).unwrap();
     }
 
-    pub fn get_window_width(&self) -> i32 {
-        self.window_width
-    }
-
-    pub fn get_window_height(&self) -> i32 {
-        self.window_height
-    }
-
     pub fn get_window_size(&self) -> (i32, i32) {
-        (self.window_width, self.window_height)
+        let (width, height) = self.sdl_window.size();
+        (width as i32, height as i32)
+    }
+
+    pub fn get_physical_size(&self) -> (i32, i32) {
+        let (width, height) = self.sdl_window.drawable_size();
+        (width as i32, height as i32)
     }
 
     pub fn set_window_size(&mut self, width: i32, height: i32) -> Result {
-        self.window_width = width;
-        self.window_height = height;
-
         self.sdl_window
             .set_size(width as u32, height as u32)
             .map_err(|e| TetraError::FailedToChangeDisplayMode(e.to_string()))
@@ -415,19 +406,7 @@ where
 
             SdlEvent::Window { win_event, .. } => match win_event {
                 WindowEvent::SizeChanged(width, height) => {
-                    ctx.window.window_width = width;
-                    ctx.window.window_height = height;
-
-                    let (pixel_width, pixel_height) = ctx.window.sdl_window.drawable_size();
-
-                    graphics::set_viewport_size(
-                        ctx,
-                        width,
-                        height,
-                        pixel_width as i32,
-                        pixel_height as i32,
-                    );
-
+                    graphics::set_viewport_size(ctx);
                     state.event(ctx, Event::Resized { width, height })?;
                 }
 

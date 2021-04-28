@@ -10,11 +10,14 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
+* `window::get_physical_size` has been added, making it possible to find out the size of the window in unscaled, physical pixels.
 * `window::get_dpi_scale` has been added, allowing the window/monitor's pixel density to be queried. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#249](https://github.com/17cupsofcoffee/tetra/pull/249)
 
 ### Fixed
 
 * `Texture::filter_mode` and `Canvas::filter_mode` now return the correct initial value. Previously, they would always return `FilterMode::Linear` until `set_filter_mode` was called. 
+* DPI scaling should now continue to work after calling `graphics::reset_canvas`.
+* `graphics::set_scissor` is now properly aware of DPI scaling.
 
 ## [0.6.3] - 2021-04-09
 
