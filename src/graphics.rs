@@ -435,12 +435,7 @@ pub struct GraphicsDeviceInfo {
 ///
 /// This may be useful for debugging/logging purposes.
 pub fn get_device_info(ctx: &Context) -> GraphicsDeviceInfo {
-    GraphicsDeviceInfo {
-        vendor: ctx.device.get_vendor(),
-        renderer: ctx.device.get_renderer(),
-        opengl_version: ctx.device.get_version(),
-        glsl_version: ctx.device.get_shading_language_version(),
-    }
+    ctx.device.get_info()
 }
 
 /// Returns the current transform matrix.

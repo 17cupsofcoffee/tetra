@@ -152,10 +152,9 @@ impl Texture {
         data: &[u8],
         filter_mode: FilterMode,
     ) -> Result<Texture> {
-        let handle = device.new_texture(width, height)?;
+        let handle = device.new_texture(width, height, filter_mode)?;
 
         device.set_texture_data(&handle, &data, 0, 0, width, height)?;
-        device.set_texture_filter_mode(&handle, filter_mode);
 
         Ok(Texture {
             data: Rc::new(TextureSharedData {

@@ -5,7 +5,7 @@ use glow::{Context as GlowContext, HasContext, PixelUnpackData};
 
 use crate::error::{Result, TetraError};
 use crate::graphics::mesh::{BufferUsage, Vertex, VertexWinding};
-use crate::graphics::{BlendAlphaMode, BlendMode, FilterMode};
+use crate::graphics::{BlendAlphaMode, BlendMode, FilterMode, GraphicsDeviceInfo};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
 type BufferId = <GlowContext as HasContext>::Buffer;
@@ -81,23 +81,17 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn get_renderer(&self) -> String {
-        unsafe { self.state.gl.get_parameter_string(glow::RENDERER) }
-    }
-
-    pub fn get_version(&self) -> String {
-        unsafe { self.state.gl.get_parameter_string(glow::VERSION) }
-    }
-
-    pub fn get_vendor(&self) -> String {
-        unsafe { self.state.gl.get_parameter_string(glow::VENDOR) }
-    }
-
-    pub fn get_shading_language_version(&self) -> String {
+    pub fn get_info(&self) -> GraphicsDeviceInfo {
         unsafe {
-            self.state
-                .gl
-                .get_parameter_string(glow::SHADING_LANGUAGE_VERSION)
+            GraphicsDeviceInfo {
+                vendor: self.state.gl.get_parameter_string(glow::VENDOR),
+                renderer: self.state.gl.get_parameter_string(glow::RENDERER),
+                opengl_version: self.state.gl.get_parameter_string(glow::VERSION),
+                glsl_version: self
+                    .state
+                    .gl
+                    .get_parameter_string(glow::SHADING_LANGUAGE_VERSION),
+            }
         }
     }
 
@@ -464,7 +458,12 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn new_texture(&mut self, width: i32, height: i32) -> Result<RawTexture> {
+    pub fn new_texture(
+        &mut self,
+        width: i32,
+        height: i32,
+        filter_mode: FilterMode,
+    ) -> Result<RawTexture> {
         // TODO: I don't think we need mipmaps?
         unsafe {
             let id = self
@@ -482,6 +481,18 @@ impl GraphicsDevice {
             };
 
             self.bind_default_texture(Some(&texture));
+
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MIN_FILTER,
+                filter_mode.into(),
+            );
+
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MAG_FILTER,
+                filter_mode.into(),
+            );
 
             self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,

@@ -79,8 +79,7 @@ impl Canvas {
         filter_mode: FilterMode,
         samples: u8,
     ) -> Result<Canvas> {
-        let texture = device.new_texture(width, height)?;
-        device.set_texture_filter_mode(&texture, filter_mode);
+        let texture = device.new_texture(width, height, filter_mode)?;
 
         let framebuffer = device.new_framebuffer()?;
         device.attach_texture_to_framebuffer(&framebuffer, &texture, true, true);

@@ -35,10 +35,12 @@ impl Context {
         let mut device = GraphicsDevice::new(gl_context)?;
 
         if settings.debug_info {
-            println!("OpenGL Vendor: {}", device.get_vendor());
-            println!("OpenGL Renderer: {}", device.get_renderer());
-            println!("OpenGL Version: {}", device.get_version());
-            println!("GLSL Version: {}", device.get_shading_language_version());
+            let device_info = device.get_info();
+
+            println!("OpenGL Vendor: {}", device_info.vendor);
+            println!("OpenGL Renderer: {}", device_info.renderer);
+            println!("OpenGL Version: {}", device_info.opengl_version);
+            println!("GLSL Version: {}", device_info.glsl_version);
         }
 
         let graphics = GraphicsContext::new(&mut device, window_width, window_height)?;
