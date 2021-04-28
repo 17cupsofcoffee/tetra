@@ -313,8 +313,11 @@ fn resolve_canvas(ctx: &mut Context) {
         if c.multisample.is_some() {
             // This is lazily initialized, to avoid overhead for people not using MSAA.
             if ctx.graphics.resolve_framebuffer.is_none() {
-                ctx.graphics.resolve_framebuffer =
-                    Some(ctx.device.new_framebuffer().expect("TODO"));
+                ctx.graphics.resolve_framebuffer = Some(
+                    ctx.device
+                        .new_framebuffer()
+                        .expect("failed to create resolve framebuffer"),
+                );
             }
 
             let resolve_framebuffer = ctx.graphics.resolve_framebuffer.as_ref().unwrap();
