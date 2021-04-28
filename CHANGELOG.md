@@ -12,6 +12,10 @@ This project adheres to Semantic Versioning.
 
 * `window::get_dpi_scale` has been added, allowing the window/monitor's pixel density to be queried. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#249](https://github.com/17cupsofcoffee/tetra/pull/249)
 
+### Fixed
+
+* `Texture::filter_mode` and `Canvas::filter_mode` now return the correct initial value. Previously, they would always return `FilterMode::Linear` until `set_filter_mode` was called. 
+
 ## [0.6.3] - 2021-04-09
 
 ### Added 

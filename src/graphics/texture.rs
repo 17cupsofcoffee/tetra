@@ -151,7 +151,7 @@ impl Texture {
         Ok(Texture {
             data: Rc::new(TextureSharedData {
                 handle,
-                filter_mode: Cell::new(FilterMode::Linear),
+                filter_mode: Cell::new(filter_mode),
             }),
         })
     }
