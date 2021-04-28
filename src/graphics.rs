@@ -70,7 +70,6 @@ pub(crate) struct GraphicsContext {
     canvas: ActiveCanvas,
     resolve_framebuffer: Option<RawFramebuffer>,
 
-    winding: VertexWinding,
     projection_matrix: Mat4<f32>,
     transform_matrix: Mat4<f32>,
 
@@ -124,7 +123,6 @@ impl GraphicsContext {
             canvas: ActiveCanvas::Window,
             resolve_framebuffer: None,
 
-            winding: VertexWinding::CounterClockwise,
             projection_matrix: ortho(window_width as f32, window_height as f32, false),
             transform_matrix: Mat4::identity(),
 
@@ -292,7 +290,6 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
 
                 ctx.device.bind_framebuffer(None);
-                ctx.device.front_face(ctx.graphics.winding);
                 ctx.device.viewport(0, 0, width, height);
             }
             ActiveCanvas::User(r) => {
@@ -301,7 +298,6 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, true);
 
                 ctx.device.bind_framebuffer(Some(&r.framebuffer));
-                ctx.device.front_face(ctx.graphics.winding.flipped());
                 ctx.device.viewport(0, 0, width, height);
             }
         }
