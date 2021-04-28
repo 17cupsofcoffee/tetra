@@ -162,15 +162,11 @@ impl Texture {
         height: i32,
         filter_mode: FilterMode,
     ) -> Result<Texture> {
-        let handle = device.new_texture(width, height)?;
-        device.set_texture_filter_mode(&handle, filter_mode);
+        // TODO: There's probably more efficient ways of doing this, but it seems fast enough
+        // for now.
+        let data = vec![0; (width * height * 4) as usize];
 
-        Ok(Texture {
-            data: Rc::new(TextureSharedData {
-                handle,
-                filter_mode: Cell::new(filter_mode),
-            }),
-        })
+        Texture::with_device(device, width, height, &data, filter_mode)
     }
 
     /// Draws the texture to the screen (or to a canvas, if one is enabled).
