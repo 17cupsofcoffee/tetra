@@ -573,7 +573,7 @@ impl ImageData {
         (width as i32, height as i32)
     }
 
-    /// Returns the image's data, as a vector of RGBA8 data.
+    /// Returns the image as a vector of RGBA8 data.
     pub fn into_rgba8(self) -> Vec<u8> {
         self.data.into_raw()
     }
