@@ -7,7 +7,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use rodio::source::{Buffered, Empty};
-use rodio::{Decoder, Device as RodioDevice, Sample, Source};
+use rodio::{Decoder, OutputStream, OutputStreamHandle, Sample, Source};
 
 use crate::error::{Result, TetraError};
 use crate::fs;
@@ -318,16 +318,16 @@ impl AudioControls {
 }
 
 pub(crate) struct AudioDevice {
-    device: Option<RodioDevice>,
+    device: Option<(OutputStream, OutputStreamHandle)>,
     master_volume: Arc<AtomicU32>,
 }
 
 impl AudioDevice {
     pub(crate) fn new() -> AudioDevice {
-        let device = rodio::default_output_device();
+        let device = rodio::OutputStream::try_default().ok();
 
-        if let Some(active_device) = &device {
-            rodio::play_raw(&active_device, Empty::new());
+        if let Some((_stream, handle)) = &device {
+            let _ = handle.play_raw(Empty::new());
         }
 
         AudioDevice {
@@ -383,10 +383,10 @@ impl AudioDevice {
             speed,
         };
 
-        rodio::play_raw(
-            self.device.as_ref().ok_or(TetraError::NoAudioDevice)?,
-            source.convert_samples(),
-        );
+        let (_stream, handle) = self.device.as_ref().ok_or(TetraError::NoAudioDevice)?;
+        handle
+            .play_raw(source.convert_samples())
+            .map_err(TetraError::AudioPlayError)?;
 
         Ok(controls)
     }

@@ -11,7 +11,7 @@ use image::ImageError;
 use lyon_tessellation::TessellationError;
 
 #[cfg(feature = "audio")]
-use rodio::decoder::DecoderError;
+use rodio::{decoder::DecoderError, PlayError};
 
 /// A specialized [`Result`](std::result::Result) type for Tetra.
 ///
@@ -53,6 +53,10 @@ pub enum TetraError {
     #[cfg(feature = "audio")]
     InvalidSound(DecoderError),
 
+    /// Returned when a sound cannot be decoded.
+    #[cfg(feature = "audio")]
+    AudioPlayError(PlayError),
+
     /// Returned when not enough data is provided to fill a buffer.
     /// This may happen if you're creating a texture from raw data and you don't provide
     /// enough data.
@@ -88,6 +92,8 @@ impl Display for TetraError {
             TetraError::InvalidFont => write!(f, "Invalid font data"),
             #[cfg(feature = "audio")]
             TetraError::InvalidSound(_) => write!(f, "Invalid sound data"),
+            #[cfg(feature = "audio")]
+            TetraError::AudioPlayError(_) => write!(f, "Could not play audio"),
             TetraError::NotEnoughData { expected, actual } => write!(
                 f,
                 "Not enough data was provided to fill a buffer - expected {}, found {}.",
@@ -113,6 +119,8 @@ impl Error for TetraError {
             TetraError::InvalidFont => None,
             #[cfg(feature = "audio")]
             TetraError::InvalidSound(reason) => Some(reason),
+            #[cfg(feature = "audio")]
+            TetraError::AudioPlayError(reason) => Some(reason),
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,
             TetraError::FailedToChangeDisplayMode(_) => None,

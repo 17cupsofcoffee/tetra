@@ -29,7 +29,7 @@ impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         audio::set_master_volume(ctx, 0.4);
 
-        let sound = Sound::new("./examples/resources/powerup.wav")?;
+        let sound = Sound::new("./examples/resources/powerup.ogg")?;
         let channel1 = sound.spawn(ctx)?;
         let channel2 = sound.spawn(ctx)?;
         let channel3 = sound.spawn(ctx)?;
