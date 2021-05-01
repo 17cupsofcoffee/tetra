@@ -152,9 +152,18 @@ impl GraphicsDevice {
 
             self.bind_vertex_buffer(Some(&buffer));
 
+            self.clear_errors();
+
             self.state
                 .gl
                 .buffer_data_size(glow::ARRAY_BUFFER, buffer.size() as i32, usage.into());
+
+            if let Some(e) = self.get_error() {
+                return Err(TetraError::PlatformError(format_gl_error(
+                    "failed to create vertex buffer",
+                    e,
+                )));
+            }
 
             Ok(buffer)
         }
@@ -200,11 +209,20 @@ impl GraphicsDevice {
 
             self.bind_index_buffer(Some(&buffer));
 
+            self.clear_errors();
+
             self.state.gl.buffer_data_size(
                 glow::ELEMENT_ARRAY_BUFFER,
                 buffer.size() as i32,
                 usage.into(),
             );
+
+            if let Some(e) = self.get_error() {
+                return Err(TetraError::PlatformError(format_gl_error(
+                    "failed to create index buffer",
+                    e,
+                )));
+            }
 
             Ok(buffer)
         }
@@ -514,6 +532,8 @@ impl GraphicsDevice {
                 .gl
                 .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_MAX_LEVEL, 0);
 
+            self.clear_errors();
+
             self.state.gl.tex_image_2d(
                 glow::TEXTURE_2D,
                 0,
@@ -525,6 +545,13 @@ impl GraphicsDevice {
                 glow::UNSIGNED_BYTE,
                 None,
             );
+
+            if let Some(e) = self.get_error() {
+                return Err(TetraError::PlatformError(format_gl_error(
+                    "failed to create texture",
+                    e,
+                )));
+            }
 
             Ok(texture)
         }
@@ -967,6 +994,22 @@ impl GraphicsDevice {
             }
         }
     }
+
+    fn get_error(&mut self) -> Option<u32> {
+        unsafe {
+            let error = self.state.gl.get_error();
+
+            if error != glow::NO_ERROR {
+                Some(error)
+            } else {
+                None
+            }
+        }
+    }
+
+    fn clear_errors(&mut self) {
+        unsafe { while self.state.gl.get_error() != glow::NO_ERROR {} }
+    }
 }
 
 impl Drop for GraphicsDevice {
@@ -1267,5 +1310,19 @@ impl Drop for RawRenderbuffer {
 
             self.state.gl.delete_renderbuffer(self.id);
         }
+    }
+}
+
+fn format_gl_error(prefix: &str, value: u32) -> String {
+    match value {
+        glow::INVALID_ENUM => format!("{} (OpenGL error: invalid enum)", prefix),
+        glow::INVALID_VALUE => format!("{} (OpenGL error: invalid value)", prefix),
+        glow::INVALID_OPERATION => format!("{} (OpenGL error: invalid operation)", prefix),
+        glow::OUT_OF_MEMORY => format!("{} (OpenGL error: out of memory)", prefix),
+        glow::INVALID_FRAMEBUFFER_OPERATION => {
+            format!("{} (OpenGL error: invalid framebuffer operation)", prefix)
+        }
+        glow::CONTEXT_LOST => format!("{} (OpenGL error: context lost)", prefix),
+        _ => format!("{} (OpenGL error: {:#4X})", prefix, value),
     }
 }
