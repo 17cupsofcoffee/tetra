@@ -22,6 +22,7 @@ This project adheres to Semantic Versioning.
     * This is for consistency with existing methods (e.g. on `Color`).
     * The old names have been deprecated, and will be removed in 0.7.
 * Updated `glow` to 0.9.
+* Updated `vek` dependency from 0.13.1 to 0.15.0
 
 ### Fixed
 
