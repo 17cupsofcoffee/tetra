@@ -21,6 +21,7 @@ This project adheres to Semantic Versioning.
 * `ImageData::from_rgba` has been replaced with `ImageData::from_rgba8`, and `BmFontBuilder::with_page_rgba` has been replaced with `BmFontBuilder::with_page_rgba8`.
     * This is for consistency with existing methods (e.g. on `Color`).
     * The old names have been deprecated, and will be removed in 0.7.
+* Updated `glow` to 0.9.
 
 ### Fixed
 
