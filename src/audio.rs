@@ -323,12 +323,15 @@ pub enum SoundState {
 /// The parameter is used as a multiplier - for example, `1.0` would result in
 /// sounds being played back at their original volume.
 pub fn set_master_volume(ctx: &mut Context, volume: f32) {
-    ctx.audio.set_master_volume(volume);
+    ctx.window
+        .mixer_handle
+        .control::<Gain<_>, _>()
+        .set_gain(volume);
 }
 
 /// Gets the master volume for the game.
 pub fn get_master_volume(ctx: &mut Context) -> f32 {
-    ctx.audio.master_volume()
+    ctx.window.mixer_handle.control::<Gain<_>, _>().gain()
 }
 
 fn play_sound(
