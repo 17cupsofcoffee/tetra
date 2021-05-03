@@ -5,8 +5,6 @@ use std::path::Path;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
 
-use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::Stream;
 use lewton::inside_ogg::OggStreamReader;
 use lewton::samples::InterleavedSamples;
 // use hound::{SampleFormat, WavReader};
@@ -148,8 +146,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn play(&self, ctx: &mut Context) -> Result<SoundInstance> {
-        ctx.audio
-            .play_sound(Arc::clone(&self.data), true, false, 1.0, 1.0)
+        play_sound(ctx, Arc::clone(&self.data), true, false, 1.0, 1.0)
             .map(|handle| SoundInstance { handle })
     }
 
@@ -160,8 +157,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn repeat(&self, ctx: &mut Context) -> Result<SoundInstance> {
-        ctx.audio
-            .play_sound(Arc::clone(&self.data), true, true, 1.0, 1.0)
+        play_sound(ctx, Arc::clone(&self.data), true, true, 1.0, 1.0)
             .map(|handle| SoundInstance { handle })
     }
 
@@ -172,8 +168,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn spawn(&self, ctx: &mut Context) -> Result<SoundInstance> {
-        ctx.audio
-            .play_sound(Arc::clone(&self.data), false, false, 1.0, 1.0)
+        play_sound(ctx, Arc::clone(&self.data), false, false, 1.0, 1.0)
             .map(|handle| SoundInstance { handle })
     }
 
@@ -184,8 +179,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn play_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
-        ctx.audio
-            .play_sound(Arc::clone(&self.data), true, false, volume, speed)
+        play_sound(ctx, Arc::clone(&self.data), true, false, volume, speed)
             .map(|handle| SoundInstance { handle })
     }
 
@@ -196,8 +190,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn repeat_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
-        ctx.audio
-            .play_sound(Arc::clone(&self.data), true, true, volume, speed)
+        play_sound(ctx, Arc::clone(&self.data), true, true, volume, speed)
             .map(|handle| SoundInstance { handle })
     }
 
@@ -208,8 +201,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn spawn_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
-        ctx.audio
-            .play_sound(Arc::clone(&self.data), false, false, volume, speed)
+        play_sound(ctx, Arc::clone(&self.data), false, false, volume, speed)
             .map(|handle| SoundInstance { handle })
     }
 }
@@ -339,44 +331,39 @@ pub fn get_master_volume(ctx: &mut Context) -> f32 {
     ctx.audio.master_volume()
 }
 
+fn play_sound(
+    ctx: &mut Context,
+    data: Arc<Frames<[f32; 2]>>,
+    playing: bool,
+    repeating: bool,
+    volume: f32,
+    speed: f32,
+) -> Result<TetraHandle> {
+    let source = FramesSignal::new(data, 0.0);
+
+    let source = Gain::new(source);
+    let source = Speed::new(source);
+    let source = Pauseable::new(source, !playing);
+
+    let mut handle = ctx
+        .window
+        .mixer_handle
+        .control::<Mixer<_>, _>()
+        .play(source);
+
+    handle.control::<Gain<_>, _>().set_gain(volume);
+    handle.control::<Speed<_>, _>().set_speed(speed);
+
+    Ok(handle)
+}
+
 pub(crate) struct AudioDevice {
-    stream: Stream,
-    mixer_handle: Handle<Mixer<[f32; 2]>>,
     master_volume: Arc<AtomicU32>,
 }
 
 impl AudioDevice {
     pub(crate) fn new() -> AudioDevice {
-        let host = cpal::default_host();
-        let device = host.default_output_device().expect("TODO");
-        let output_config = device.default_output_config().expect("TODO").config();
-        let sample_rate = output_config.sample_rate.0;
-
-        let (mut mixer_handle, mut mixer) = oddio::split(Mixer::new());
-
-        let stream = device
-            .build_output_stream(
-                &output_config,
-                move |data: &mut [f32], _| {
-                    let samples = oddio::frame_stereo(data);
-
-                    for s in &mut samples[..] {
-                        *s = [0.0, 0.0];
-                    }
-
-                    oddio::run(&mixer, sample_rate, samples);
-                },
-                move |err| {
-                    eprintln!("{}", err);
-                },
-            )
-            .expect("TODO");
-
-        stream.play().expect("TODO");
-
         AudioDevice {
-            stream,
-            mixer_handle,
             master_volume: Arc::new(AtomicU32::new(1.0f32.to_bits())),
         }
     }
@@ -387,28 +374,6 @@ impl AudioDevice {
 
     fn set_master_volume(&self, volume: f32) {
         self.master_volume.store(volume.to_bits(), Ordering::SeqCst);
-    }
-
-    fn play_sound(
-        &mut self,
-        data: Arc<Frames<[f32; 2]>>,
-        playing: bool,
-        repeating: bool,
-        volume: f32,
-        speed: f32,
-    ) -> Result<TetraHandle> {
-        let source = FramesSignal::new(data, 0.0);
-
-        let source = Gain::new(source);
-        let source = Speed::new(source);
-        let source = Pauseable::new(source, !playing);
-
-        let mut handle = self.mixer_handle.control::<Mixer<_>, _>().play(source);
-
-        handle.control::<Gain<_>, _>().set_gain(volume);
-        handle.control::<Speed<_>, _>().set_speed(speed);
-
-        Ok(handle)
     }
 }
 

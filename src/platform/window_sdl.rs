@@ -4,6 +4,8 @@ use std::result;
 
 use glow::Context as GlowContext;
 use hashbrown::HashMap;
+use oddio::{Handle, Mixer, SplitSignal};
+use sdl2::audio::{AudioCallback, AudioDevice, AudioSpecDesired};
 use sdl2::controller::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, GameController};
 use sdl2::event::{Event as SdlEvent, WindowEvent};
 use sdl2::haptic::Haptic;
@@ -14,7 +16,8 @@ use sdl2::video::{
     FullscreenType, GLContext as SdlGlContext, GLProfile, SwapInterval, Window as SdlWindow,
 };
 use sdl2::{
-    EventPump, GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem,
+    AudioSubsystem, EventPump, GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl,
+    VideoSubsystem,
 };
 
 use crate::error::{Result, TetraError};
@@ -22,6 +25,25 @@ use crate::graphics;
 use crate::input::{self, GamepadAxis, GamepadButton, GamepadStick, Key, MouseButton};
 use crate::math::Vec2;
 use crate::{Context, ContextBuilder, Event, State};
+
+struct SdlAudioCallback {
+    mixer: SplitSignal<Mixer<[f32; 2]>>,
+    sample_rate: u32,
+}
+
+impl AudioCallback for SdlAudioCallback {
+    type Channel = f32;
+
+    fn callback(&mut self, data: &mut [f32]) {
+        let samples = oddio::frame_stereo(data);
+
+        for s in &mut samples[..] {
+            *s = [0.0, 0.0];
+        }
+
+        oddio::run(&self.mixer, self.sample_rate, samples);
+    }
+}
 
 struct SdlController {
     // NOTE: The SDL docs say to close the haptic device before the joystick, so
@@ -37,6 +59,11 @@ pub struct Window {
 
     event_pump: EventPump,
     video_sys: VideoSubsystem,
+
+    _audio_sys: AudioSubsystem,
+    _audio_device: AudioDevice<SdlAudioCallback>,
+    pub(crate) mixer_handle: Handle<Mixer<[f32; 2]>>,
+
     controller_sys: GameControllerSubsystem,
     _joystick_sys: JoystickSubsystem,
     haptic_sys: HapticSubsystem,
@@ -54,6 +81,7 @@ impl Window {
         let sdl = sdl2::init().map_err(TetraError::PlatformError)?;
         let event_pump = sdl.event_pump().map_err(TetraError::PlatformError)?;
         let video_sys = sdl.video().map_err(TetraError::PlatformError)?;
+        let audio_sys = sdl.audio().map_err(TetraError::PlatformError)?;
         let joystick_sys = sdl.joystick().map_err(TetraError::PlatformError)?;
         let controller_sys = sdl.game_controller().map_err(TetraError::PlatformError)?;
         let haptic_sys = sdl.haptic().map_err(TetraError::PlatformError)?;
@@ -166,12 +194,38 @@ impl Window {
             })
             .map_err(TetraError::FailedToChangeDisplayMode)?;
 
+        let (mixer_handle, mixer) = oddio::split(Mixer::new());
+
+        let audio_device = audio_sys
+            .open_playback(
+                None,
+                &AudioSpecDesired {
+                    freq: Some(44100),
+                    channels: Some(2),
+                    samples: Some(2048),
+                },
+                |spec| {
+                    assert_eq!(spec.channels, 2);
+
+                    SdlAudioCallback {
+                        mixer,
+                        sample_rate: spec.freq as u32, // TODO: is this safe
+                    }
+                },
+            )
+            .map_err(TetraError::PlatformError)?;
+
+        audio_device.resume();
+
         let window = Window {
             sdl,
             sdl_window,
 
             event_pump,
             video_sys,
+            _audio_sys: audio_sys,
+            _audio_device: audio_device,
+            mixer_handle,
             controller_sys,
             _joystick_sys: joystick_sys,
             haptic_sys,

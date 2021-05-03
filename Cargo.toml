@@ -23,7 +23,6 @@ xi-unicode = "0.3.0"
 bytemuck = "1.5.0"
 num-traits = "0.2.14"
 lyon_tessellation = "0.17.4"
-cpal = { version = "0.13.1", optional = true }
 oddio = { git = "https://github.com/Ralith/oddio", branch = "main", optional = true }
 hound = { version = "*", optional = true }
 lewton = { version = "*", optional = true }
@@ -47,7 +46,7 @@ default = [
 
 # Enables the `tetra::audio` API. This feature can be disabled if you want to use a different
 # audio API in your game (e.g. FMod or WWise).
-audio = ["cpal", "oddio"]
+audio = ["oddio"]
 
 # Enables support for audio formats.
 audio_flac = ["audio"]
