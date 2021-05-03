@@ -1,9 +1,5 @@
 //! Functions and types relating to text rendering.
 
-// Without this, we'd have conditionally compile a ton more stuff to
-// avoid warnings when fonts are disabled:
-#![cfg_attr(not(feature = "font_ttf"), allow(unused))]
-
 mod bmfont;
 mod cache;
 mod packer;
