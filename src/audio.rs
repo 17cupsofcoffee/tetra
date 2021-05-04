@@ -9,11 +9,18 @@ use lewton::inside_ogg::OggStreamReader;
 use lewton::samples::InterleavedSamples;
 // use hound::{SampleFormat, WavReader};
 use oddio::{
-    Controlled, Filter, Frame, Frames, FramesSignal, Gain, Handle, Mixer, Signal, Speed, Stop,
+    Controlled, Filter, Frame, Frames, FramesSignal, Gain, Handle, Mixer, MonoToStereo, Signal,
+    Speed, Stop,
 };
 
 use crate::error::Result;
 use crate::Context;
+
+#[derive(Debug, Clone)]
+pub(crate) enum SoundData {
+    Mono(Arc<Frames<f32>>),
+    Stereo(Arc<Frames<[f32; 2]>>),
+}
 
 /// Sound data that can be played back.
 ///
@@ -46,7 +53,7 @@ use crate::Context;
 /// example demonstrates how to play several different kinds of sound.
 #[derive(Debug, Clone)] // TODO: This used to impl PartialEq, do we still want that?
 pub struct Sound {
-    pub(crate) data: Arc<Frames<[f32; 2]>>,
+    pub(crate) data: SoundData,
 }
 
 impl Sound {
@@ -75,13 +82,16 @@ impl Sound {
         }
 
         let data = match stream.ident_hdr.audio_channels {
-            1 => Frames::from_iter(
+            1 => SoundData::Mono(Frames::from_slice(
                 stream.ident_hdr.audio_sample_rate,
-                samples.into_iter().map(|s| [s, s]),
-            ),
+                &samples,
+            )),
             2 => {
                 let stereo = oddio::frame_stereo(&mut samples);
-                Frames::from_slice(stream.ident_hdr.audio_sample_rate, stereo)
+                SoundData::Stereo(Frames::from_slice(
+                    stream.ident_hdr.audio_sample_rate,
+                    stereo,
+                ))
             }
             _ => todo!(),
         };
@@ -146,8 +156,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn play(&self, ctx: &mut Context) -> Result<SoundInstance> {
-        play_sound(ctx, Arc::clone(&self.data), true, false, 1.0, 1.0)
-            .map(|handle| SoundInstance { handle })
+        play_sound(ctx, &self.data, true, false, 1.0, 1.0).map(|handle| SoundInstance { handle })
     }
 
     /// Plays the sound repeatedly.
@@ -157,8 +166,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn repeat(&self, ctx: &mut Context) -> Result<SoundInstance> {
-        play_sound(ctx, Arc::clone(&self.data), true, true, 1.0, 1.0)
-            .map(|handle| SoundInstance { handle })
+        play_sound(ctx, &self.data, true, true, 1.0, 1.0).map(|handle| SoundInstance { handle })
     }
 
     /// Spawns a new instance of the sound that is not playing yet.
@@ -168,8 +176,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn spawn(&self, ctx: &mut Context) -> Result<SoundInstance> {
-        play_sound(ctx, Arc::clone(&self.data), false, false, 1.0, 1.0)
-            .map(|handle| SoundInstance { handle })
+        play_sound(ctx, &self.data, false, false, 1.0, 1.0).map(|handle| SoundInstance { handle })
     }
 
     /// Plays the sound, with the provided settings.
@@ -179,7 +186,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn play_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
-        play_sound(ctx, Arc::clone(&self.data), true, false, volume, speed)
+        play_sound(ctx, &self.data, true, false, volume, speed)
             .map(|handle| SoundInstance { handle })
     }
 
@@ -190,7 +197,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn repeat_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
-        play_sound(ctx, Arc::clone(&self.data), true, true, volume, speed)
+        play_sound(ctx, &self.data, true, true, volume, speed)
             .map(|handle| SoundInstance { handle })
     }
 
@@ -201,7 +208,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn spawn_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
-        play_sound(ctx, Arc::clone(&self.data), false, false, volume, speed)
+        play_sound(ctx, &self.data, false, false, volume, speed)
             .map(|handle| SoundInstance { handle })
     }
 }
@@ -336,13 +343,18 @@ pub fn get_master_volume(ctx: &mut Context) -> f32 {
 
 fn play_sound(
     ctx: &mut Context,
-    data: Arc<Frames<[f32; 2]>>,
+    data: &SoundData,
     playing: bool,
     repeating: bool,
     volume: f32,
     speed: f32,
 ) -> Result<TetraHandle> {
-    let source = FramesSignal::new(data, 0.0);
+    let source = match data {
+        SoundData::Mono(s) => {
+            TetraSignal::Mono(MonoToStereo::new(FramesSignal::new(Arc::clone(&s), 0.0)))
+        }
+        SoundData::Stereo(s) => TetraSignal::Stereo(FramesSignal::new(Arc::clone(&s), 0.0)),
+    };
 
     let source = Gain::new(source);
     let source = Speed::new(source);
@@ -380,7 +392,23 @@ impl AudioDevice {
     }
 }
 
-type TetraHandle = Handle<Stop<Pauseable<Speed<Gain<FramesSignal<[f32; 2]>>>>>>;
+enum TetraSignal {
+    Mono(MonoToStereo<FramesSignal<f32>>),
+    Stereo(FramesSignal<[f32; 2]>),
+}
+
+impl Signal for TetraSignal {
+    type Frame = [f32; 2];
+
+    fn sample(&self, interval: f32, out: &mut [Self::Frame]) {
+        match self {
+            TetraSignal::Mono(s) => s.sample(interval, out),
+            TetraSignal::Stereo(s) => s.sample(interval, out),
+        }
+    }
+}
+
+type TetraHandle = Handle<Stop<Pauseable<Speed<Gain<TetraSignal>>>>>;
 
 // TODO: Everything below should be replaced with stuff built-in to Oddio, or I should get Ralith to
 // make sure it's not disgustingly broken.
