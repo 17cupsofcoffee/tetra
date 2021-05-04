@@ -613,6 +613,87 @@ impl GraphicsDevice {
         }
     }
 
+    pub fn new_stencil_buffer(
+        &mut self,
+        width: i32,
+        height: i32,
+        filter_mode: FilterMode,
+    ) -> Result<RawTexture> {
+        // TODO: I don't think we need mipmaps?
+        unsafe {
+            let id = self
+                .state
+                .gl
+                .create_texture()
+                .map_err(TetraError::PlatformError)?;
+
+            let texture = RawTexture {
+                state: Rc::clone(&self.state),
+
+                id,
+                width,
+                height,
+            };
+
+            self.bind_default_texture(Some(&texture));
+
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MIN_FILTER,
+                filter_mode.into(),
+            );
+
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MAG_FILTER,
+                filter_mode.into(),
+            );
+
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_WRAP_S,
+                glow::CLAMP_TO_EDGE as i32,
+            );
+
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_WRAP_T,
+                glow::CLAMP_TO_EDGE as i32,
+            );
+
+            self.state
+                .gl
+                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_BASE_LEVEL, 0);
+
+            self.state
+                .gl
+                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_MAX_LEVEL, 0);
+
+            self.clear_errors();
+
+            self.state.gl.tex_image_2d(
+                glow::TEXTURE_2D,
+                0,
+                glow::DEPTH24_STENCIL8 as i32, // love 2 deal with legacy apis
+                width,
+                height,
+                0,
+                glow::DEPTH_STENCIL,
+                glow::UNSIGNED_INT_24_8,
+                None,
+            );
+
+            if let Some(e) = self.get_error() {
+                return Err(TetraError::PlatformError(format_gl_error(
+                    "failed to create texture",
+                    e,
+                )));
+            }
+
+            Ok(texture)
+        }
+    }
+
     pub fn set_texture_data(
         &mut self,
         texture: &RawTexture,
@@ -724,6 +805,45 @@ impl GraphicsDevice {
             self.state.gl.framebuffer_texture_2d(
                 glow::FRAMEBUFFER,
                 glow::COLOR_ATTACHMENT0,
+                glow::TEXTURE_2D,
+                Some(texture.id),
+                0,
+            );
+
+            if clear {
+                self.clear(0.0, 0.0, 0.0, 0.0);
+            }
+
+            if rebind_previous {
+                self.state
+                    .gl
+                    .bind_framebuffer(glow::READ_FRAMEBUFFER, previous_read);
+                self.state.current_read_framebuffer.set(previous_read);
+
+                self.state
+                    .gl
+                    .bind_framebuffer(glow::DRAW_FRAMEBUFFER, previous_draw);
+                self.state.current_draw_framebuffer.set(previous_draw);
+            }
+        }
+    }
+
+    pub fn attach_stencil_buffer_to_framebuffer(
+        &mut self,
+        framebuffer: &RawFramebuffer,
+        texture: &RawTexture,
+        clear: bool,
+        rebind_previous: bool,
+    ) {
+        unsafe {
+            let previous_read = self.state.current_read_framebuffer.get();
+            let previous_draw = self.state.current_draw_framebuffer.get();
+
+            self.bind_framebuffer(Some(&framebuffer));
+
+            self.state.gl.framebuffer_texture_2d(
+                glow::FRAMEBUFFER,
+                glow::DEPTH_STENCIL_ATTACHMENT,
                 glow::TEXTURE_2D,
                 Some(texture.id),
                 0,
