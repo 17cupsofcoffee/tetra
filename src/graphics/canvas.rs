@@ -7,6 +7,21 @@ use crate::Context;
 
 use super::ImageData;
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub struct CanvasSettings {
+    pub samples: u8,
+    pub enable_stencil_buffer: bool,
+}
+
+impl Default for CanvasSettings {
+    fn default() -> Self {
+        Self {
+            samples: 0,
+            enable_stencil_buffer: false,
+        }
+    }
+}
+
 /// A texture that can be used for off-screen rendering.
 ///
 /// This is sometimes referred to as a 'render texture' or 'render target' in other
@@ -35,6 +50,7 @@ use super::ImageData;
 pub struct Canvas {
     pub(crate) framebuffer: Rc<RawFramebuffer>,
     pub(crate) texture: Texture,
+    pub(crate) stencil_buffer: Option<Texture>,
     pub(crate) multisample: Option<Rc<RawRenderbuffer>>,
 }
 
@@ -45,39 +61,18 @@ impl Canvas {
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
     /// graphics API encounters an error.
-    pub fn new(ctx: &mut Context, width: i32, height: i32) -> Result<Canvas> {
+    pub fn new(
+        ctx: &mut Context,
+        width: i32,
+        height: i32,
+        settings: CanvasSettings,
+    ) -> Result<Canvas> {
         Canvas::with_device(
             &mut ctx.device,
             width,
             height,
             ctx.graphics.default_filter_mode,
-            0,
-        )
-    }
-
-    /// Creates a new canvas, with the specified level of multisample anti-aliasing.
-    ///
-    /// The number of samples that can be used varies between graphics cards - `2`, `4` and `8` are reasonably
-    /// well supported.
-    ///
-    /// # Resolving
-    ///
-    /// In order to actually display a multisampled canvas, it first has to be downsampled (or 'resolved'). This is
-    /// done automatically once you switch to a different canvas/the backbuffer. Until this step takes place,
-    /// your rendering will *not* be reflected in the canvas' underlying [`texture`](Self::texture) (and by
-    /// extension, in the output of [`draw`](Self::draw) and [`get_data`](Self::get_data)).
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
-    pub fn multisampled(ctx: &mut Context, width: i32, height: i32, samples: u8) -> Result<Canvas> {
-        Canvas::with_device(
-            &mut ctx.device,
-            width,
-            height,
-            ctx.graphics.default_filter_mode,
-            samples,
+            settings,
         )
     }
 
@@ -86,15 +81,23 @@ impl Canvas {
         width: i32,
         height: i32,
         filter_mode: FilterMode,
-        samples: u8,
+        settings: CanvasSettings,
     ) -> Result<Canvas> {
         let texture = device.new_texture(width, height, filter_mode)?;
 
         let framebuffer = device.new_framebuffer()?;
         device.attach_texture_to_framebuffer(&framebuffer, &texture, true, true);
 
-        let multisample = if samples > 0 {
-            let multisample = device.new_renderbuffer(width, height, samples)?;
+        let stencil_buffer = if settings.enable_stencil_buffer {
+            let stencil_buffer = device.new_stencil_buffer(width, height, filter_mode)?;
+            device.attach_stencil_buffer_to_framebuffer(&framebuffer, &stencil_buffer, true, true);
+            Some(Texture::from_raw(stencil_buffer, filter_mode))
+        } else {
+            None
+        };
+
+        let multisample = if settings.samples > 0 {
+            let multisample = device.new_renderbuffer(width, height, settings.samples)?;
             device.attach_renderbuffer_to_framebuffer(&framebuffer, &multisample, true, true);
 
             Some(Rc::new(multisample))
@@ -105,6 +108,7 @@ impl Canvas {
         Ok(Canvas {
             framebuffer: Rc::new(framebuffer),
             texture: Texture::from_raw(texture, filter_mode),
+            stencil_buffer,
             multisample,
         })
     }
