@@ -509,6 +509,42 @@ pub fn reset_scissor(ctx: &mut Context) {
     ctx.device.scissor_test(false);
 }
 
+pub fn set_stencil_testing_enabled(ctx: &mut Context, enabled: bool) {
+    flush(ctx);
+    ctx.device.set_stencil_testing_enabled(enabled);
+}
+
+pub fn set_stencil_function(
+    ctx: &mut Context,
+    function: StencilFunction,
+    reference_value: u8,
+    mask: u8,
+) {
+    flush(ctx);
+    ctx.device
+        .set_stencil_function(function, reference_value, mask);
+}
+
+pub fn set_stencil_operation(ctx: &mut Context, action: StencilAction) {
+    flush(ctx);
+    ctx.device.set_stencil_operation(action);
+}
+
+pub fn set_stencil_mask(ctx: &mut Context, mask: u8) {
+    flush(ctx);
+    ctx.device.set_stencil_mask(mask);
+}
+
+pub fn set_color_mask(ctx: &mut Context, red: bool, green: bool, blue: bool, alpha: bool) {
+    flush(ctx);
+    ctx.device.set_color_mask(red, green, blue, alpha);
+}
+
+pub fn clear_stencil(ctx: &mut Context, value: u8) {
+    flush(ctx);
+    ctx.device.clear_stencil(value);
+}
+
 pub(crate) fn set_viewport_size(ctx: &mut Context) {
     if let ActiveCanvas::Window = ctx.graphics.canvas {
         let (width, height) = window::get_size(ctx);

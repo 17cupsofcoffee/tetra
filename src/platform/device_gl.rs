@@ -138,6 +138,56 @@ impl GraphicsDevice {
         }
     }
 
+    pub fn set_stencil_testing_enabled(&mut self, enabled: bool) {
+        unsafe {
+            if enabled {
+                self.state.gl.enable(glow::STENCIL_TEST);
+            } else {
+                self.state.gl.disable(glow::STENCIL_TEST);
+            }
+        }
+    }
+
+    pub fn set_stencil_function(
+        &mut self,
+        function: StencilFunction,
+        reference_value: u8,
+        mask: u8,
+    ) {
+        unsafe {
+            self.state
+                .gl
+                .stencil_func(function.as_gl_enum(), reference_value.into(), mask.into());
+        }
+    }
+
+    pub fn set_stencil_operation(&mut self, action: StencilAction) {
+        unsafe {
+            self.state
+                .gl
+                .stencil_op(glow::KEEP, glow::KEEP, action.as_gl_enum());
+        }
+    }
+
+    pub fn set_stencil_mask(&mut self, mask: u8) {
+        unsafe {
+            self.state.gl.stencil_mask(mask.into());
+        }
+    }
+
+    pub fn set_color_mask(&mut self, red: bool, green: bool, blue: bool, alpha: bool) {
+        unsafe {
+            self.state.gl.color_mask(red, green, blue, alpha);
+        }
+    }
+
+    pub fn clear_stencil(&mut self, value: u8) {
+        unsafe {
+            self.state.gl.clear_stencil(value.into());
+            self.state.gl.clear(glow::STENCIL_BUFFER_BIT);
+        }
+    }
+
     pub fn new_vertex_buffer(
         &mut self,
         count: usize,

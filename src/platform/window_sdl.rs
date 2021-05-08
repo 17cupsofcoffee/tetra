@@ -69,6 +69,7 @@ impl Window {
         gl_attr.set_green_size(8);
         gl_attr.set_blue_size(8);
         gl_attr.set_alpha_size(8);
+        gl_attr.set_stencil_size(8);
         gl_attr.set_double_buffer(true);
 
         if settings.multisampling > 0 {
