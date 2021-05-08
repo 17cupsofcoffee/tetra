@@ -509,16 +509,33 @@ pub fn reset_scissor(ctx: &mut Context) {
     ctx.device.scissor_test(false);
 }
 
+/// Sets the global stencil behavior.
+///
+/// The stencil buffer is an invisible drawing target that you can
+/// use as a mask for other drawing operations. For example, you
+/// might want to crop an image to a circle. You can do this by
+/// drawing a circle to the stencil buffer, then using that buffer
+/// as a mask while drawing the image.
+///
+/// Stencils can be used with both the main framebuffer and canvases.
+/// However, to use stencils with a canvas, you must initialize the canvas
+/// with [`CanvasSettings::enable_stencil_buffer`](CanvasSettings) set to `true`.
 pub fn set_stencil_state(ctx: &mut Context, state: StencilState) {
     flush(ctx);
     ctx.device.set_stencil_state(state);
 }
 
+/// Clears the stencil buffer to the specified value.
 pub fn clear_stencil(ctx: &mut Context, value: u8) {
     flush(ctx);
     ctx.device.clear_stencil(value);
 }
 
+/// Sets which color components are drawn to the screen.
+///
+/// This is useful in conjunction with [`set_stencil_state`]
+/// to draw to the stencil buffer without also drawing to the
+/// visible pixels on screen.
 pub fn set_color_mask(ctx: &mut Context, red: bool, green: bool, blue: bool, alpha: bool) {
     flush(ctx);
     ctx.device.set_color_mask(red, green, blue, alpha);
@@ -606,40 +623,95 @@ impl Default for BlendAlphaMode {
     }
 }
 
+/// The test for whether a pixel is visible when using
+/// a stencil.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum StencilTest {
+    /// The pixel is never visible.
     Never,
+    /// The pixel is visible if the reference value is
+    /// less than the value in the stencil buffer.
     LessThan,
+    //// The pixel is visible if the reference value is
+    /// less than or equal to the value in the stencil
+    /// buffer.
     LessThanOrEqualTo,
+    /// The pixel is visible if the reference value is
+    /// equal to the value in the stencil buffer.
     EqualTo,
+    /// The pixel is visible if the reference value is
+    /// not equal to the value in the stencil buffer.
     NotEqualTo,
+    /// The pixel is visible if the reference value is
+    /// greater than the value in the stencil buffer.
     GreaterThan,
+    /// The pixel is visible if the reference value is
+    /// greater than or equal to the value in the stencil
+    /// buffer.
     GreaterThanOrEqualTo,
+    /// The pixel is always visible.
     Always,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// How drawing operations should modify the stencil buffer.
 pub enum StencilAction {
+    /// Drawing operations will not modify the stencil buffer.
     Keep,
+    /// Drawing operations will set the corresponding values
+    /// in the stencil buffer to 0.
     Zero,
+    /// Drawing operations will replace the corresponding stencil
+    /// values with the reference value.
     Replace,
+    /// Drawing operations will increment the corresponding stencil
+    /// values by 1.
     Increment,
+    /// Drawing operations will increment the corresponding stencil
+    /// values by 1. If a value of 255 is incremented, it will wrap
+    /// back around to 0.
     IncrementWrap,
+    /// Drawing operations will decrement the corresponding stencil
+    /// values by 1.
     Decrement,
+    /// Drawing operations will decrement the corresponding stencil
+    /// values by 1. If a value of 0 is decremented, it will wrap
+    /// back around to 255.
     DecrementWrap,
+    /// Drawing operations will bitwise invert the corresponding
+    /// stencil values.
     Invert,
 }
 
+/// Represents a global stencil configuration.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct StencilState {
+    /// Whether stencil testing is enabled.
+    ///
+    /// When set to `true`, pixels drawn will be hidden
+    /// or visible depending on the stencil test and the
+    /// contents of the stencil buffer.
     pub enabled: bool,
+    /// How drawing operations will affect the stencil buffer.
     pub action: StencilAction,
+    /// How drawn pixels will be compared to the contents
+    /// of the stencil buffer to determine if they're visible.
     pub test: StencilTest,
+    /// The value used for most [`StencilTest`]s and
+    /// [`StencilAction::Replace`].
     pub reference_value: u8,
+    /// A bitmask that will be ANDed with stencil values
+    /// before they're written to the buffer.
     pub write_mask: u8,
+    /// A bitmask that will be ANDed with both the reference
+    /// value and the stencil value before a stencil test
+    /// occurs.
     pub read_mask: u8,
 }
 
 impl StencilState {
+    /// Creates a stencil configuration that will disable the use
+    /// of stencils.
     pub fn disabled() -> Self {
         Self {
             enabled: false,
@@ -651,6 +723,8 @@ impl StencilState {
         }
     }
 
+    /// Creates a stencil configuration that will write pixels
+    /// to the stencil buffer.
     pub fn write(action: StencilAction, reference_value: u8) -> Self {
         Self {
             enabled: true,
@@ -662,6 +736,9 @@ impl StencilState {
         }
     }
 
+    /// Creates a stencil configuration that will compare drawn
+    /// pixels to the contents of the stencil buffer to determine
+    /// which pixels are visible.
     pub fn read(test: StencilTest, reference_value: u8) -> Self {
         Self {
             enabled: true,

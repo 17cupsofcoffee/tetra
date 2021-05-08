@@ -7,9 +7,23 @@ use crate::Context;
 
 use super::ImageData;
 
+/// Settings for a [`Canvas`].
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub struct CanvasSettings {
+    /// The level of multisample anti-aliasing to use.
+    ///
+    /// The number of samples that can be used varies between graphics cards - `2`, `4` and `8` are reasonably
+    /// well supported.
+    ///
+    /// In order to actually display a multisampled canvas, it first has to be downsampled (or 'resolved'). This is
+    /// done automatically once you switch to a different canvas/the backbuffer. Until this step takes place,
+    /// your rendering will *not* be reflected in the canvas' underlying [`texture`](Canvas::texture) (and by
+    /// extension, in the output of [`draw`](Canvas::draw) and [`get_data`](Canvas::get_data)).
     pub samples: u8,
+    /// Whether the canvas has a stencil buffer.
+    ///
+    /// Setting this to `true` allows you to use stencils while rendering to this canvas at the cost
+    /// of some extra video RAM usage.
     pub enable_stencil_buffer: bool,
 }
 
