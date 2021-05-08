@@ -1,5 +1,8 @@
-use tetra::graphics::text::{Font, Text};
-use tetra::graphics::{self, Canvas, Color, DrawParams, Shader, Texture};
+use tetra::graphics::{
+    self,
+    text::{Font, Text},
+    Canvas, CanvasSettings, Color, DrawParams, Shader, Texture,
+};
 use tetra::math::Vec2;
 use tetra::{Context, ContextBuilder, State};
 
@@ -19,7 +22,7 @@ struct GameState {
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
         Ok(GameState {
-            canvas: Canvas::new(ctx, 1280, 720)?,
+            canvas: Canvas::new(ctx, 1280, 720, CanvasSettings::default())?,
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
             shader: Shader::from_fragment_file(ctx, "./examples/resources/disco.frag")?,
             text: Text::new(
