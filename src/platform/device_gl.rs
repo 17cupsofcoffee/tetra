@@ -5,7 +5,7 @@ use glow::{Context as GlowContext, HasContext, PixelPackData, PixelUnpackData};
 
 use crate::graphics::{
     mesh::{BufferUsage, Vertex, VertexWinding},
-    StencilFunction,
+    StencilFunction, StencilState,
 };
 use crate::graphics::{BlendAlphaMode, BlendMode, FilterMode, GraphicsDeviceInfo};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
@@ -138,46 +138,22 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn set_stencil_testing_enabled(&mut self, enabled: bool) {
+    pub fn set_stencil_state(&mut self, state: StencilState) {
         unsafe {
-            if enabled {
+            if state.enabled {
                 self.state.gl.enable(glow::STENCIL_TEST);
             } else {
                 self.state.gl.disable(glow::STENCIL_TEST);
             }
-        }
-    }
-
-    pub fn set_stencil_function(
-        &mut self,
-        function: StencilFunction,
-        reference_value: u8,
-        mask: u8,
-    ) {
-        unsafe {
             self.state
                 .gl
-                .stencil_func(function.as_gl_enum(), reference_value.into(), mask.into());
-        }
-    }
-
-    pub fn set_stencil_operation(&mut self, action: StencilAction) {
-        unsafe {
-            self.state
-                .gl
-                .stencil_op(glow::KEEP, glow::KEEP, action.as_gl_enum());
-        }
-    }
-
-    pub fn set_stencil_mask(&mut self, mask: u8) {
-        unsafe {
-            self.state.gl.stencil_mask(mask.into());
-        }
-    }
-
-    pub fn set_color_mask(&mut self, red: bool, green: bool, blue: bool, alpha: bool) {
-        unsafe {
-            self.state.gl.color_mask(red, green, blue, alpha);
+                .stencil_op(glow::KEEP, glow::KEEP, state.action.as_gl_enum());
+            self.state.gl.stencil_func(
+                state.function.as_gl_enum(),
+                state.reference_value.into(),
+                state.read_mask.into(),
+            );
+            self.state.gl.stencil_mask(state.write_mask.into());
         }
     }
 
@@ -185,6 +161,12 @@ impl GraphicsDevice {
         unsafe {
             self.state.gl.clear_stencil(value.into());
             self.state.gl.clear(glow::STENCIL_BUFFER_BIT);
+        }
+    }
+
+    pub fn set_color_mask(&mut self, red: bool, green: bool, blue: bool, alpha: bool) {
+        unsafe {
+            self.state.gl.color_mask(red, green, blue, alpha);
         }
     }
 

@@ -509,40 +509,19 @@ pub fn reset_scissor(ctx: &mut Context) {
     ctx.device.scissor_test(false);
 }
 
-pub fn set_stencil_testing_enabled(ctx: &mut Context, enabled: bool) {
+pub fn set_stencil_state(ctx: &mut Context, state: StencilState) {
     flush(ctx);
-    ctx.device.set_stencil_testing_enabled(enabled);
-}
-
-pub fn set_stencil_function(
-    ctx: &mut Context,
-    function: StencilFunction,
-    reference_value: u8,
-    mask: u8,
-) {
-    flush(ctx);
-    ctx.device
-        .set_stencil_function(function, reference_value, mask);
-}
-
-pub fn set_stencil_operation(ctx: &mut Context, action: StencilAction) {
-    flush(ctx);
-    ctx.device.set_stencil_operation(action);
-}
-
-pub fn set_stencil_mask(ctx: &mut Context, mask: u8) {
-    flush(ctx);
-    ctx.device.set_stencil_mask(mask);
-}
-
-pub fn set_color_mask(ctx: &mut Context, red: bool, green: bool, blue: bool, alpha: bool) {
-    flush(ctx);
-    ctx.device.set_color_mask(red, green, blue, alpha);
+    ctx.device.set_stencil_state(state);
 }
 
 pub fn clear_stencil(ctx: &mut Context, value: u8) {
     flush(ctx);
     ctx.device.clear_stencil(value);
+}
+
+pub fn set_color_mask(ctx: &mut Context, red: bool, green: bool, blue: bool, alpha: bool) {
+    flush(ctx);
+    ctx.device.set_color_mask(red, green, blue, alpha);
 }
 
 pub(crate) fn set_viewport_size(ctx: &mut Context) {
@@ -649,4 +628,48 @@ pub enum StencilAction {
     Decrement,
     DecrementWrap,
     Invert,
+}
+
+pub struct StencilState {
+    pub enabled: bool,
+    pub action: StencilAction,
+    pub function: StencilFunction,
+    pub reference_value: u8,
+    pub write_mask: u8,
+    pub read_mask: u8,
+}
+
+impl StencilState {
+    pub fn disabled() -> Self {
+        Self {
+            enabled: false,
+            action: StencilAction::Keep,
+            function: StencilFunction::Always,
+            reference_value: 0,
+            write_mask: 0x00,
+            read_mask: 0x00,
+        }
+    }
+
+    pub fn write(action: StencilAction, reference_value: u8) -> Self {
+        Self {
+            enabled: true,
+            action,
+            function: StencilFunction::Always,
+            reference_value: reference_value,
+            write_mask: 0xFF,
+            read_mask: 0xFF,
+        }
+    }
+
+    pub fn read(function: StencilFunction, reference_value: u8) -> Self {
+        Self {
+            enabled: true,
+            action: StencilAction::Keep,
+            function,
+            reference_value,
+            write_mask: 0xFF,
+            read_mask: 0xFF,
+        }
+    }
 }
