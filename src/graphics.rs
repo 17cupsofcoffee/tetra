@@ -607,7 +607,7 @@ impl Default for BlendAlphaMode {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum StencilFunction {
+pub enum StencilTest {
     Never,
     LessThan,
     LessThanOrEqualTo,
@@ -633,7 +633,7 @@ pub enum StencilAction {
 pub struct StencilState {
     pub enabled: bool,
     pub action: StencilAction,
-    pub function: StencilFunction,
+    pub test: StencilTest,
     pub reference_value: u8,
     pub write_mask: u8,
     pub read_mask: u8,
@@ -644,7 +644,7 @@ impl StencilState {
         Self {
             enabled: false,
             action: StencilAction::Keep,
-            function: StencilFunction::Always,
+            test: StencilTest::Always,
             reference_value: 0,
             write_mask: 0x00,
             read_mask: 0x00,
@@ -655,18 +655,18 @@ impl StencilState {
         Self {
             enabled: true,
             action,
-            function: StencilFunction::Always,
+            test: StencilTest::Always,
             reference_value: reference_value,
             write_mask: 0xFF,
             read_mask: 0xFF,
         }
     }
 
-    pub fn read(function: StencilFunction, reference_value: u8) -> Self {
+    pub fn read(test: StencilTest, reference_value: u8) -> Self {
         Self {
             enabled: true,
             action: StencilAction::Keep,
-            function,
+            test,
             reference_value,
             write_mask: 0xFF,
             read_mask: 0xFF,

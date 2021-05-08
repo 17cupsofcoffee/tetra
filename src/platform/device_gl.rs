@@ -5,7 +5,7 @@ use glow::{Context as GlowContext, HasContext, PixelPackData, PixelUnpackData};
 
 use crate::graphics::{
     mesh::{BufferUsage, Vertex, VertexWinding},
-    StencilFunction, StencilState,
+    StencilState, StencilTest,
 };
 use crate::graphics::{BlendAlphaMode, BlendMode, FilterMode, GraphicsDeviceInfo};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
@@ -149,7 +149,7 @@ impl GraphicsDevice {
                 .gl
                 .stencil_op(glow::KEEP, glow::KEEP, state.action.as_gl_enum());
             self.state.gl.stencil_func(
-                state.function.as_gl_enum(),
+                state.test.as_gl_enum(),
                 state.reference_value.into(),
                 state.read_mask.into(),
             );
@@ -1271,17 +1271,17 @@ impl BlendMode {
 }
 
 #[doc(hidden)]
-impl StencilFunction {
+impl StencilTest {
     pub(crate) fn as_gl_enum(self) -> u32 {
         match self {
-            StencilFunction::Never => glow::NEVER,
-            StencilFunction::LessThan => glow::LESS,
-            StencilFunction::LessThanOrEqualTo => glow::LEQUAL,
-            StencilFunction::EqualTo => glow::EQUAL,
-            StencilFunction::NotEqualTo => glow::NOTEQUAL,
-            StencilFunction::GreaterThan => glow::GREATER,
-            StencilFunction::GreaterThanOrEqualTo => glow::GEQUAL,
-            StencilFunction::Always => glow::ALWAYS,
+            StencilTest::Never => glow::NEVER,
+            StencilTest::LessThan => glow::LESS,
+            StencilTest::LessThanOrEqualTo => glow::LEQUAL,
+            StencilTest::EqualTo => glow::EQUAL,
+            StencilTest::NotEqualTo => glow::NOTEQUAL,
+            StencilTest::GreaterThan => glow::GREATER,
+            StencilTest::GreaterThanOrEqualTo => glow::GEQUAL,
+            StencilTest::Always => glow::ALWAYS,
         }
     }
 }
