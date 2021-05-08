@@ -3,10 +3,16 @@ use std::rc::Rc;
 
 use glow::{Context as GlowContext, HasContext, PixelPackData, PixelUnpackData};
 
-use crate::error::{Result, TetraError};
-use crate::graphics::mesh::{BufferUsage, Vertex, VertexWinding};
+use crate::graphics::{
+    mesh::{BufferUsage, Vertex, VertexWinding},
+    StencilFunction,
+};
 use crate::graphics::{BlendAlphaMode, BlendMode, FilterMode, GraphicsDeviceInfo};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
+use crate::{
+    error::{Result, TetraError},
+    graphics::StencilAction,
+};
 
 type BufferId = <GlowContext as HasContext>::Buffer;
 type ProgramId = <GlowContext as HasContext>::Program;
@@ -1108,6 +1114,38 @@ impl BlendMode {
             BlendMode::Add(_) => glow::ONE,
             BlendMode::Subtract(_) => glow::ONE,
             BlendMode::Multiply => glow::ZERO,
+        }
+    }
+}
+
+#[doc(hidden)]
+impl StencilFunction {
+    pub(crate) fn as_gl_enum(self) -> u32 {
+        match self {
+            StencilFunction::Never => glow::NEVER,
+            StencilFunction::LessThan => glow::LESS,
+            StencilFunction::LessThanOrEqualTo => glow::LEQUAL,
+            StencilFunction::EqualTo => glow::EQUAL,
+            StencilFunction::NotEqualTo => glow::NOTEQUAL,
+            StencilFunction::GreaterThan => glow::GREATER,
+            StencilFunction::GreaterThanOrEqualTo => glow::GEQUAL,
+            StencilFunction::Always => glow::ALWAYS,
+        }
+    }
+}
+
+#[doc(hidden)]
+impl StencilAction {
+    pub(crate) fn as_gl_enum(self) -> u32 {
+        match self {
+            StencilAction::Keep => glow::KEEP,
+            StencilAction::Zero => glow::ZERO,
+            StencilAction::Replace => glow::REPLACE,
+            StencilAction::Increment => glow::INCR,
+            StencilAction::IncrementWrap => glow::INCR_WRAP,
+            StencilAction::Decrement => glow::DECR,
+            StencilAction::DecrementWrap => glow::DECR_WRAP,
+            StencilAction::Invert => glow::INVERT,
         }
     }
 }

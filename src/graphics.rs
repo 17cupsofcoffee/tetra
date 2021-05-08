@@ -590,3 +590,27 @@ impl Default for BlendAlphaMode {
         BlendAlphaMode::Multiply
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StencilFunction {
+    Never,
+    LessThan,
+    LessThanOrEqualTo,
+    EqualTo,
+    NotEqualTo,
+    GreaterThan,
+    GreaterThanOrEqualTo,
+    Always,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StencilAction {
+    Keep,
+    Zero,
+    Replace,
+    Increment,
+    IncrementWrap,
+    Decrement,
+    DecrementWrap,
+    Invert,
+}
