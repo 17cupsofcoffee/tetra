@@ -31,6 +31,11 @@ This project adheres to Semantic Versioning.
 * `graphics::set_scissor` is now properly aware of DPI scaling.
 * When a texture or buffer fails to be created by the GPU (e.g. due to being out of memory or going over the max size), an error will now be returned, instead of unspecified behaviour occurring.
 
+### Deprecated
+
+* `ImageData::from_rgba` and `BmFontBuilder::with_page_rgba` has been deprecated in favour of more consistently named functions (see above).
+* `Canvas::multisampled` has been deprecated in favour of `Canvas::with_settings`.
+
 ## [0.6.3] - 2021-04-09
 
 ### Added 
