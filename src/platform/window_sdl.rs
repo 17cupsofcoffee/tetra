@@ -62,13 +62,13 @@ impl Window {
 
         let gl_attr = video_sys.gl_attr();
 
-        // TODO: Will need to add some more here if we start using the depth/stencil buffers
         gl_attr.set_context_profile(GLProfile::Core);
         gl_attr.set_context_version(3, 2);
         gl_attr.set_red_size(8);
         gl_attr.set_green_size(8);
         gl_attr.set_blue_size(8);
         gl_attr.set_alpha_size(8);
+        gl_attr.set_stencil_size(8);
         gl_attr.set_double_buffer(true);
 
         if settings.multisampling > 0 {

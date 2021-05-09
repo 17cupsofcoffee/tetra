@@ -3,10 +3,16 @@ use std::rc::Rc;
 
 use glow::{Context as GlowContext, HasContext, PixelPackData, PixelUnpackData};
 
-use crate::error::{Result, TetraError};
-use crate::graphics::mesh::{BufferUsage, Vertex, VertexWinding};
+use crate::graphics::{
+    mesh::{BufferUsage, Vertex, VertexWinding},
+    StencilState, StencilTest,
+};
 use crate::graphics::{BlendAlphaMode, BlendMode, FilterMode, GraphicsDeviceInfo};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
+use crate::{
+    error::{Result, TetraError},
+    graphics::StencilAction,
+};
 
 type BufferId = <GlowContext as HasContext>::Buffer;
 type ProgramId = <GlowContext as HasContext>::Program;
@@ -129,6 +135,41 @@ impl GraphicsDevice {
             } else {
                 self.state.gl.disable(glow::SCISSOR_TEST);
             }
+        }
+    }
+
+    pub fn set_stencil_state(&mut self, state: StencilState) {
+        unsafe {
+            if state.enabled {
+                self.state.gl.enable(glow::STENCIL_TEST);
+            } else {
+                self.state.gl.disable(glow::STENCIL_TEST);
+            }
+
+            self.state
+                .gl
+                .stencil_op(glow::KEEP, glow::KEEP, state.action.as_gl_enum());
+
+            self.state.gl.stencil_func(
+                state.test.as_gl_enum(),
+                state.reference_value.into(),
+                state.read_mask.into(),
+            );
+
+            self.state.gl.stencil_mask(state.write_mask.into());
+        }
+    }
+
+    pub fn clear_stencil(&mut self, value: u8) {
+        unsafe {
+            self.state.gl.clear_stencil(value.into());
+            self.state.gl.clear(glow::STENCIL_BUFFER_BIT);
+        }
+    }
+
+    pub fn set_color_mask(&mut self, red: bool, green: bool, blue: bool, alpha: bool) {
+        unsafe {
+            self.state.gl.color_mask(red, green, blue, alpha);
         }
     }
 
@@ -557,6 +598,87 @@ impl GraphicsDevice {
         }
     }
 
+    pub fn new_depth_stencil_buffer(
+        &mut self,
+        width: i32,
+        height: i32,
+        filter_mode: FilterMode,
+    ) -> Result<RawTexture> {
+        // TODO: I don't think we need mipmaps?
+        unsafe {
+            let id = self
+                .state
+                .gl
+                .create_texture()
+                .map_err(TetraError::PlatformError)?;
+
+            let texture = RawTexture {
+                state: Rc::clone(&self.state),
+
+                id,
+                width,
+                height,
+            };
+
+            self.bind_default_texture(Some(&texture));
+
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MIN_FILTER,
+                filter_mode.into(),
+            );
+
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_MAG_FILTER,
+                filter_mode.into(),
+            );
+
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_WRAP_S,
+                glow::CLAMP_TO_EDGE as i32,
+            );
+
+            self.state.gl.tex_parameter_i32(
+                glow::TEXTURE_2D,
+                glow::TEXTURE_WRAP_T,
+                glow::CLAMP_TO_EDGE as i32,
+            );
+
+            self.state
+                .gl
+                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_BASE_LEVEL, 0);
+
+            self.state
+                .gl
+                .tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_MAX_LEVEL, 0);
+
+            self.clear_errors();
+
+            self.state.gl.tex_image_2d(
+                glow::TEXTURE_2D,
+                0,
+                glow::DEPTH24_STENCIL8 as i32, // love 2 deal with legacy apis
+                width,
+                height,
+                0,
+                glow::DEPTH_STENCIL,
+                glow::UNSIGNED_INT_24_8,
+                None,
+            );
+
+            if let Some(e) = self.get_error() {
+                return Err(TetraError::PlatformError(format_gl_error(
+                    "failed to create texture",
+                    e,
+                )));
+            }
+
+            Ok(texture)
+        }
+    }
+
     pub fn set_texture_data(
         &mut self,
         texture: &RawTexture,
@@ -668,6 +790,45 @@ impl GraphicsDevice {
             self.state.gl.framebuffer_texture_2d(
                 glow::FRAMEBUFFER,
                 glow::COLOR_ATTACHMENT0,
+                glow::TEXTURE_2D,
+                Some(texture.id),
+                0,
+            );
+
+            if clear {
+                self.clear(0.0, 0.0, 0.0, 0.0);
+            }
+
+            if rebind_previous {
+                self.state
+                    .gl
+                    .bind_framebuffer(glow::READ_FRAMEBUFFER, previous_read);
+                self.state.current_read_framebuffer.set(previous_read);
+
+                self.state
+                    .gl
+                    .bind_framebuffer(glow::DRAW_FRAMEBUFFER, previous_draw);
+                self.state.current_draw_framebuffer.set(previous_draw);
+            }
+        }
+    }
+
+    pub fn attach_depth_stencil_to_framebuffer(
+        &mut self,
+        framebuffer: &RawFramebuffer,
+        texture: &RawTexture,
+        clear: bool,
+        rebind_previous: bool,
+    ) {
+        unsafe {
+            let previous_read = self.state.current_read_framebuffer.get();
+            let previous_draw = self.state.current_draw_framebuffer.get();
+
+            self.bind_framebuffer(Some(&framebuffer));
+
+            self.state.gl.framebuffer_texture_2d(
+                glow::FRAMEBUFFER,
+                glow::DEPTH_STENCIL_ATTACHMENT,
                 glow::TEXTURE_2D,
                 Some(texture.id),
                 0,
@@ -1108,6 +1269,38 @@ impl BlendMode {
             BlendMode::Add(_) => glow::ONE,
             BlendMode::Subtract(_) => glow::ONE,
             BlendMode::Multiply => glow::ZERO,
+        }
+    }
+}
+
+#[doc(hidden)]
+impl StencilTest {
+    pub(crate) fn as_gl_enum(self) -> u32 {
+        match self {
+            StencilTest::Never => glow::NEVER,
+            StencilTest::LessThan => glow::LESS,
+            StencilTest::LessThanOrEqualTo => glow::LEQUAL,
+            StencilTest::EqualTo => glow::EQUAL,
+            StencilTest::NotEqualTo => glow::NOTEQUAL,
+            StencilTest::GreaterThan => glow::GREATER,
+            StencilTest::GreaterThanOrEqualTo => glow::GEQUAL,
+            StencilTest::Always => glow::ALWAYS,
+        }
+    }
+}
+
+#[doc(hidden)]
+impl StencilAction {
+    pub(crate) fn as_gl_enum(self) -> u32 {
+        match self {
+            StencilAction::Keep => glow::KEEP,
+            StencilAction::Zero => glow::ZERO,
+            StencilAction::Replace => glow::REPLACE,
+            StencilAction::Increment => glow::INCR,
+            StencilAction::IncrementWrap => glow::INCR_WRAP,
+            StencilAction::Decrement => glow::DECR,
+            StencilAction::DecrementWrap => glow::DECR_WRAP,
+            StencilAction::Invert => glow::INVERT,
         }
     }
 }

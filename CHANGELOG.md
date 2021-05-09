@@ -10,6 +10,7 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
+* Stencil buffers can now be used, both with the main framebuffer and with `Canvas` rendering. ([@tesselode](https://github.com/tesselode) in [#261](https://github.com/17cupsofcoffee/tetra/pull/261))
 * `window::get_physical_size` has been added, making it possible to find out the size of the window in unscaled, physical pixels.
 * `window::get_dpi_scale` has been added, allowing the window/monitor's pixel density to be queried. ([@sumibi-yakitori](https://github.com/sumibi-yakitori) in [#249](https://github.com/17cupsofcoffee/tetra/pull/249))
 * `Texture` and `Canvas` now have a `get_data` method, allowing their texture data to be copied from the GPU into an `ImageData`.
