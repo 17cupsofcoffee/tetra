@@ -693,7 +693,7 @@ impl GraphicsDevice {
 
     // TODO: The 'rebind_previous' stuff feels hacky
 
-    pub fn attach_texture_to_framebuffer(
+    pub fn attach_color_texture(
         &mut self,
         framebuffer: &RawFramebuffer,
         texture: &RawTexture,
@@ -732,7 +732,45 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn attach_depth_stencil_to_framebuffer(
+    pub fn attach_color_renderbuffer(
+        &mut self,
+        framebuffer: &RawFramebuffer,
+        renderbuffer: &RawRenderbuffer,
+        clear: bool,
+        rebind_previous: bool,
+    ) {
+        unsafe {
+            let previous_read = self.state.current_read_framebuffer.get();
+            let previous_draw = self.state.current_draw_framebuffer.get();
+
+            self.bind_framebuffer(Some(&framebuffer));
+
+            self.state.gl.framebuffer_renderbuffer(
+                glow::FRAMEBUFFER,
+                glow::COLOR_ATTACHMENT0,
+                glow::RENDERBUFFER,
+                Some(renderbuffer.id),
+            );
+
+            if clear {
+                self.clear(0.0, 0.0, 0.0, 0.0);
+            }
+
+            if rebind_previous {
+                self.state
+                    .gl
+                    .bind_framebuffer(glow::READ_FRAMEBUFFER, previous_read);
+                self.state.current_read_framebuffer.set(previous_read);
+
+                self.state
+                    .gl
+                    .bind_framebuffer(glow::DRAW_FRAMEBUFFER, previous_draw);
+                self.state.current_draw_framebuffer.set(previous_draw);
+            }
+        }
+    }
+
+    pub fn attach_depth_stencil_renderbuffer(
         &mut self,
         framebuffer: &RawFramebuffer,
         renderbuffer: &RawRenderbuffer,
@@ -755,44 +793,6 @@ impl GraphicsDevice {
             if clear {
                 self.clear_stencil(0);
                 // TODO: Clear the depth buffer, if we start using it
-            }
-
-            if rebind_previous {
-                self.state
-                    .gl
-                    .bind_framebuffer(glow::READ_FRAMEBUFFER, previous_read);
-                self.state.current_read_framebuffer.set(previous_read);
-
-                self.state
-                    .gl
-                    .bind_framebuffer(glow::DRAW_FRAMEBUFFER, previous_draw);
-                self.state.current_draw_framebuffer.set(previous_draw);
-            }
-        }
-    }
-
-    pub fn attach_renderbuffer_to_framebuffer(
-        &mut self,
-        framebuffer: &RawFramebuffer,
-        renderbuffer: &RawRenderbuffer,
-        clear: bool,
-        rebind_previous: bool,
-    ) {
-        unsafe {
-            let previous_read = self.state.current_read_framebuffer.get();
-            let previous_draw = self.state.current_draw_framebuffer.get();
-
-            self.bind_framebuffer(Some(&framebuffer));
-
-            self.state.gl.framebuffer_renderbuffer(
-                glow::FRAMEBUFFER,
-                glow::COLOR_ATTACHMENT0,
-                glow::RENDERBUFFER,
-                Some(renderbuffer.id),
-            );
-
-            if clear {
-                self.clear(0.0, 0.0, 0.0, 0.0);
             }
 
             if rebind_previous {

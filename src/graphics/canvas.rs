@@ -147,12 +147,12 @@ impl Canvas {
         let framebuffer = device.new_framebuffer()?;
 
         let texture = device.new_texture(width, height, filter_mode)?;
-        device.attach_texture_to_framebuffer(&framebuffer, &texture, true, true);
+        device.attach_color_texture(&framebuffer, &texture, true, true);
 
         let stencil_buffer = if settings.enable_stencil_buffer {
             let stencil_buffer =
                 device.new_depth_stencil_renderbuffer(width, height, settings.samples)?;
-            device.attach_depth_stencil_to_framebuffer(&framebuffer, &stencil_buffer, true, true);
+            device.attach_depth_stencil_renderbuffer(&framebuffer, &stencil_buffer, true, true);
             Some(Rc::new(stencil_buffer))
         } else {
             None
@@ -160,7 +160,7 @@ impl Canvas {
 
         let multisample = if settings.samples > 0 {
             let multisample = device.new_color_renderbuffer(width, height, settings.samples)?;
-            device.attach_renderbuffer_to_framebuffer(&framebuffer, &multisample, true, true);
+            device.attach_color_renderbuffer(&framebuffer, &multisample, true, true);
 
             Some(Rc::new(multisample))
         } else {

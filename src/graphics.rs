@@ -319,7 +319,7 @@ fn resolve_canvas(ctx: &mut Context) {
 
             let resolve_framebuffer = ctx.graphics.resolve_framebuffer.as_ref().unwrap();
 
-            ctx.device.attach_texture_to_framebuffer(
+            ctx.device.attach_color_texture(
                 &resolve_framebuffer,
                 &c.texture.data.handle,
                 false,
