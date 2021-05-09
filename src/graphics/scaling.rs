@@ -34,7 +34,7 @@ impl ScreenScaler {
         outer_height: i32,
         mode: ScalingMode,
     ) -> Result<ScreenScaler> {
-        let canvas = Canvas::new(ctx, inner_width, inner_height, Default::default())?;
+        let canvas = Canvas::new(ctx, inner_width, inner_height)?;
         let screen_rect =
             get_screen_rect(mode, inner_width, inner_height, outer_width, outer_height);
 

@@ -145,14 +145,17 @@ impl GraphicsDevice {
             } else {
                 self.state.gl.disable(glow::STENCIL_TEST);
             }
+
             self.state
                 .gl
                 .stencil_op(glow::KEEP, glow::KEEP, state.action.as_gl_enum());
+
             self.state.gl.stencil_func(
                 state.test.as_gl_enum(),
                 state.reference_value.into(),
                 state.read_mask.into(),
             );
+
             self.state.gl.stencil_mask(state.write_mask.into());
         }
     }
@@ -595,7 +598,7 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn new_stencil_buffer(
+    pub fn new_depth_stencil_buffer(
         &mut self,
         width: i32,
         height: i32,
@@ -810,7 +813,7 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn attach_stencil_buffer_to_framebuffer(
+    pub fn attach_depth_stencil_to_framebuffer(
         &mut self,
         framebuffer: &RawFramebuffer,
         texture: &RawTexture,

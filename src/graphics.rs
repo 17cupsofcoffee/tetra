@@ -519,7 +519,8 @@ pub fn reset_scissor(ctx: &mut Context) {
 ///
 /// Stencils can be used with both the main framebuffer and canvases.
 /// However, to use stencils with a canvas, you must initialize the canvas
-/// with [`CanvasSettings::enable_stencil_buffer`](CanvasSettings) set to `true`.
+/// with [`CanvasSettings::enable_stencil_buffer`](CanvasSettings::enable_stencil_buffer)
+/// set to `true`.
 pub fn set_stencil_state(ctx: &mut Context, state: StencilState) {
     flush(ctx);
     ctx.device.set_stencil_state(state);
@@ -629,55 +630,75 @@ impl Default for BlendAlphaMode {
 pub enum StencilTest {
     /// The pixel is never visible.
     Never,
-    /// The pixel is visible if the reference value is
+
+    /// The pixel is visible if the
+    /// [reference value](StencilState::reference_value) is
     /// less than the value in the stencil buffer.
     LessThan,
-    //// The pixel is visible if the reference value is
+
+    /// The pixel is visible if the
+    /// [reference value](StencilState::reference_value) is
     /// less than or equal to the value in the stencil
     /// buffer.
     LessThanOrEqualTo,
-    /// The pixel is visible if the reference value is
+
+    /// The pixel is visible if the
+    /// [reference value](StencilState::reference_value) is
     /// equal to the value in the stencil buffer.
     EqualTo,
-    /// The pixel is visible if the reference value is
+
+    /// The pixel is visible if the
+    /// [reference value](StencilState::reference_value) is
     /// not equal to the value in the stencil buffer.
     NotEqualTo,
-    /// The pixel is visible if the reference value is
+
+    /// The pixel is visible if the
+    /// [reference value](StencilState::reference_value) is
     /// greater than the value in the stencil buffer.
     GreaterThan,
-    /// The pixel is visible if the reference value is
+
+    /// The pixel is visible if the
+    /// [reference value](StencilState::reference_value) is
     /// greater than or equal to the value in the stencil
     /// buffer.
     GreaterThanOrEqualTo,
+
     /// The pixel is always visible.
     Always,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 /// How drawing operations should modify the stencil buffer.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum StencilAction {
     /// Drawing operations will not modify the stencil buffer.
     Keep,
+
     /// Drawing operations will set the corresponding values
     /// in the stencil buffer to 0.
     Zero,
+
     /// Drawing operations will replace the corresponding stencil
-    /// values with the reference value.
+    /// values with the [reference value](StencilState::reference_value).
     Replace,
+
     /// Drawing operations will increment the corresponding stencil
     /// values by 1.
     Increment,
+
     /// Drawing operations will increment the corresponding stencil
     /// values by 1. If a value of 255 is incremented, it will wrap
     /// back around to 0.
     IncrementWrap,
+
     /// Drawing operations will decrement the corresponding stencil
     /// values by 1.
     Decrement,
+
     /// Drawing operations will decrement the corresponding stencil
     /// values by 1. If a value of 0 is decremented, it will wrap
     /// back around to 255.
     DecrementWrap,
+
     /// Drawing operations will bitwise invert the corresponding
     /// stencil values.
     Invert,
@@ -692,17 +713,22 @@ pub struct StencilState {
     /// or visible depending on the stencil test and the
     /// contents of the stencil buffer.
     pub enabled: bool,
+
     /// How drawing operations will affect the stencil buffer.
     pub action: StencilAction,
+
     /// How drawn pixels will be compared to the contents
     /// of the stencil buffer to determine if they're visible.
     pub test: StencilTest,
+
     /// The value used for most [`StencilTest`]s and
     /// [`StencilAction::Replace`].
     pub reference_value: u8,
+
     /// A bitmask that will be ANDed with stencil values
     /// before they're written to the buffer.
     pub write_mask: u8,
+
     /// A bitmask that will be ANDed with both the reference
     /// value and the stencil value before a stencil test
     /// occurs.
@@ -710,8 +736,8 @@ pub struct StencilState {
 }
 
 impl StencilState {
-    /// Creates a stencil configuration that will disable the use
-    /// of stencils.
+    /// Creates a stencil configuration that will disable use
+    /// of the stencil buffer.
     pub fn disabled() -> Self {
         Self {
             enabled: false,
@@ -730,7 +756,7 @@ impl StencilState {
             enabled: true,
             action,
             test: StencilTest::Always,
-            reference_value: reference_value,
+            reference_value,
             write_mask: 0xFF,
             read_mask: 0xFF,
         }

@@ -13,13 +13,14 @@ pub struct CanvasSettings {
     /// The level of multisample anti-aliasing to use.
     ///
     /// The number of samples that can be used varies between graphics cards - `2`, `4` and `8` are reasonably
-    /// well supported.
+    /// well supported. When set to `0` (the default), no multisampling will be used.
     ///
     /// In order to actually display a multisampled canvas, it first has to be downsampled (or 'resolved'). This is
     /// done automatically once you switch to a different canvas/the backbuffer. Until this step takes place,
     /// your rendering will *not* be reflected in the canvas' underlying [`texture`](Canvas::texture) (and by
     /// extension, in the output of [`draw`](Canvas::draw) and [`get_data`](Canvas::get_data)).
     pub samples: u8,
+
     /// Whether the canvas has a stencil buffer.
     ///
     /// Setting this to `true` allows you to use stencils while rendering to this canvas at the cost
@@ -69,13 +70,29 @@ pub struct Canvas {
 }
 
 impl Canvas {
-    /// Creates a new canvas.
+    /// Creates a new canvas, with the default settings (no multisampling, no additional buffers).
     ///
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
     /// graphics API encounters an error.
-    pub fn new(
+    pub fn new(ctx: &mut Context, width: i32, height: i32) -> Result<Canvas> {
+        Canvas::with_device(
+            &mut ctx.device,
+            width,
+            height,
+            ctx.graphics.default_filter_mode,
+            CanvasSettings::default(),
+        )
+    }
+
+    /// Creates a new canvas, with the specified settings.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    pub fn with_settings(
         ctx: &mut Context,
         width: i32,
         height: i32,
@@ -87,6 +104,36 @@ impl Canvas {
             height,
             ctx.graphics.default_filter_mode,
             settings,
+        )
+    }
+
+    /// Creates a new canvas, with the specified level of multisample anti-aliasing.
+    ///
+    /// The number of samples that can be used varies between graphics cards - `2`, `4` and `8` are reasonably
+    /// well supported. When set to `0` (the default), no multisampling will be used.
+    ///
+    /// # Resolving
+    ///
+    /// In order to actually display a multisampled canvas, it first has to be downsampled (or 'resolved'). This is
+    /// done automatically once you switch to a different canvas/the backbuffer. Until this step takes place,
+    /// your rendering will *not* be reflected in the canvas' underlying [`texture`](Self::texture) (and by
+    /// extension, in the output of [`draw`](Self::draw) and [`get_data`](Self::get_data)).
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    #[deprecated(since = "0.6.4", note = "use Canvas::with_settings instead")]
+    pub fn multisampled(ctx: &mut Context, width: i32, height: i32, samples: u8) -> Result<Canvas> {
+        Canvas::with_device(
+            &mut ctx.device,
+            width,
+            height,
+            ctx.graphics.default_filter_mode,
+            CanvasSettings {
+                samples,
+                ..CanvasSettings::default()
+            },
         )
     }
 
@@ -103,8 +150,8 @@ impl Canvas {
         device.attach_texture_to_framebuffer(&framebuffer, &texture, true, true);
 
         let stencil_buffer = if settings.enable_stencil_buffer {
-            let stencil_buffer = device.new_stencil_buffer(width, height, filter_mode)?;
-            device.attach_stencil_buffer_to_framebuffer(&framebuffer, &stencil_buffer, true, true);
+            let stencil_buffer = device.new_depth_stencil_buffer(width, height, filter_mode)?;
+            device.attach_depth_stencil_to_framebuffer(&framebuffer, &stencil_buffer, true, true);
             Some(Texture::from_raw(stencil_buffer, filter_mode))
         } else {
             None
