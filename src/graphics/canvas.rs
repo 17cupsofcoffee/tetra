@@ -65,7 +65,7 @@ impl Default for CanvasSettings {
 pub struct Canvas {
     pub(crate) framebuffer: Rc<RawFramebuffer>,
     pub(crate) texture: Texture,
-    pub(crate) stencil_buffer: Option<Texture>,
+    pub(crate) stencil_buffer: Option<Rc<RawRenderbuffer>>,
     pub(crate) multisample: Option<Rc<RawRenderbuffer>>,
 }
 
@@ -144,21 +144,22 @@ impl Canvas {
         filter_mode: FilterMode,
         settings: CanvasSettings,
     ) -> Result<Canvas> {
-        let texture = device.new_texture(width, height, filter_mode)?;
-
         let framebuffer = device.new_framebuffer()?;
+
+        let texture = device.new_texture(width, height, filter_mode)?;
         device.attach_texture_to_framebuffer(&framebuffer, &texture, true, true);
 
         let stencil_buffer = if settings.enable_stencil_buffer {
-            let stencil_buffer = device.new_depth_stencil_buffer(width, height, filter_mode)?;
+            let stencil_buffer =
+                device.new_depth_stencil_renderbuffer(width, height, settings.samples)?;
             device.attach_depth_stencil_to_framebuffer(&framebuffer, &stencil_buffer, true, true);
-            Some(Texture::from_raw(stencil_buffer, filter_mode))
+            Some(Rc::new(stencil_buffer))
         } else {
             None
         };
 
         let multisample = if settings.samples > 0 {
-            let multisample = device.new_renderbuffer(width, height, settings.samples)?;
+            let multisample = device.new_color_renderbuffer(width, height, settings.samples)?;
             device.attach_renderbuffer_to_framebuffer(&framebuffer, &multisample, true, true);
 
             Some(Rc::new(multisample))
