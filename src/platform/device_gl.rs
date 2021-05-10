@@ -1047,7 +1047,7 @@ impl GraphicsDevice {
         Ok(())
     }
 
-    pub fn bind_default_texture(&mut self, texture: Option<&RawTexture>) {
+    fn bind_default_texture(&mut self, texture: Option<&RawTexture>) {
         self.bind_texture(texture, 0)
             .expect("texture unit 0 should always be available");
     }
