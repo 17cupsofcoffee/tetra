@@ -289,7 +289,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
                 ctx.device.viewport(0, 0, physical_width, physical_height);
 
-                ctx.device.set_framebuffer(None);
+                ctx.device.set_canvas(None);
             }
             ActiveCanvas::User(r) => {
                 let (width, height) = r.size();
@@ -297,7 +297,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, true);
                 ctx.device.viewport(0, 0, width, height);
 
-                ctx.device.set_framebuffer(Some(&r.framebuffer));
+                ctx.device.set_canvas(Some(&r.framebuffer));
             }
         }
     }

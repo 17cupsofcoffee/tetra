@@ -809,16 +809,16 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn set_framebuffer(&mut self, framebuffer: Option<&RawCanvas>) {
-        self.bind_framebuffer(framebuffer.map(|f| f.id));
+    pub fn set_canvas(&mut self, canvas: Option<&RawCanvas>) {
+        self.bind_framebuffer(canvas.map(|f| f.id));
     }
 
-    pub fn resolve(&mut self, framebuffer: &RawCanvas, texture: &RawTexture) {
+    pub fn resolve(&mut self, canvas: &RawCanvas, texture: &RawTexture) {
         unsafe {
             let previous_read = self.state.current_read_framebuffer.get();
             let previous_draw = self.state.current_draw_framebuffer.get();
 
-            self.bind_read_framebuffer(Some(framebuffer.id));
+            self.bind_read_framebuffer(Some(canvas.id));
             self.bind_draw_framebuffer(Some(self.state.resolve_framebuffer));
 
             self.state.gl.framebuffer_texture_2d(
