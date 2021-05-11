@@ -29,7 +29,7 @@ This project adheres to Semantic Versioning.
 * `Texture::filter_mode` and `Canvas::filter_mode` now return the correct initial value. Previously, they would always return `FilterMode::Linear` until `set_filter_mode` was called. 
 * DPI scaling should now continue to work after calling `graphics::reset_canvas`.
 * `graphics::set_scissor` is now properly aware of DPI scaling.
-* When a texture or buffer fails to be created by the GPU (e.g. due to being out of memory or going over the max size), an error will now be returned, instead of unspecified behaviour occurring.
+* When a texture, canvas or buffer fails to be created by the GPU (e.g. due to being out of memory or going over the max size), an error will now be returned, instead of unspecified behaviour occurring.
 
 ### Deprecated
 

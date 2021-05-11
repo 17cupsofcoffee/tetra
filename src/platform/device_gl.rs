@@ -786,8 +786,19 @@ impl GraphicsDevice {
                 None
             };
 
+            let status = self.state.gl.check_framebuffer_status(glow::FRAMEBUFFER);
+
+            // Revert the bindings before checking the status, so we don't end up
+            // in a weird state if there's an error:
             self.bind_read_framebuffer(previous_read);
             self.bind_draw_framebuffer(previous_draw);
+
+            if status != glow::FRAMEBUFFER_COMPLETE {
+                return Err(TetraError::PlatformError(format_gl_framebuffer_status(
+                    "failed to create canvas",
+                    status,
+                )));
+            }
 
             Ok(RawCanvasWithAttachments {
                 canvas: framebuffer,
@@ -1413,6 +1424,27 @@ fn format_gl_error(prefix: &str, value: u32) -> String {
             format!("{} (OpenGL error: invalid framebuffer operation)", prefix)
         }
         glow::CONTEXT_LOST => format!("{} (OpenGL error: context lost)", prefix),
+        _ => format!("{} (OpenGL error: {:#4X})", prefix, value),
+    }
+}
+
+fn format_gl_framebuffer_status(prefix: &str, value: u32) -> String {
+    match value {
+        glow::FRAMEBUFFER_INCOMPLETE_ATTACHMENT => format!(
+            "{} (OpenGL error: framebuffer incomplete attachment)",
+            prefix
+        ),
+        glow::FRAMEBUFFER_INCOMPLETE_DIMENSIONS => format!(
+            "{} (OpenGL error: framebuffer incomplete dimensions)",
+            prefix
+        ),
+        glow::FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT => format!(
+            "{} (OpenGL error: framebuffer incomplete missing attachment)",
+            prefix
+        ),
+        glow::FRAMEBUFFER_UNSUPPORTED => {
+            format!("{} (OpenGL error: framebuffer unsupported)", prefix)
+        }
         _ => format!("{} (OpenGL error: {:#4X})", prefix, value),
     }
 }
