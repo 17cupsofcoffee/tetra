@@ -2,38 +2,69 @@ use std::rc::Rc;
 
 use crate::error::Result;
 use crate::graphics::{DrawParams, FilterMode, Texture};
-use crate::platform::{GraphicsDevice, RawCanvas, RawRenderbuffer};
+use crate::platform::{RawCanvas, RawRenderbuffer};
 use crate::Context;
 
 use super::ImageData;
 
-/// Settings for a [`Canvas`].
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub struct CanvasSettings {
-    /// The level of multisample anti-aliasing to use.
+/// A builder for creating advanced canvas configurations.
+///
+/// This can be created via [`Canvas::builder`].
+#[derive(Debug, Clone)]
+pub struct CanvasBuilder {
+    width: i32,
+    height: i32,
+    samples: u8,
+    stencil_buffer: bool,
+}
+
+impl CanvasBuilder {
+    /// Sets the level of multisample anti-aliasing to use.
     ///
     /// The number of samples that can be used varies between graphics cards - `2`, `4` and `8` are reasonably
     /// well supported. When set to `0` (the default), no multisampling will be used.
+    ///
+    /// # Resolving
     ///
     /// In order to actually display a multisampled canvas, it first has to be downsampled (or 'resolved'). This is
     /// done automatically once you switch to a different canvas/the backbuffer. Until this step takes place,
     /// your rendering will *not* be reflected in the canvas' underlying [`texture`](Canvas::texture) (and by
     /// extension, in the output of [`draw`](Canvas::draw) and [`get_data`](Canvas::get_data)).
-    pub samples: u8,
+    pub fn samples(&mut self, samples: u8) -> &mut CanvasBuilder {
+        self.samples = samples;
+        self
+    }
 
-    /// Whether the canvas has a stencil buffer.
+    /// Sets whether the canvas should have a stencil buffer.
     ///
-    /// Setting this to `true` allows you to use stencils while rendering to this canvas at the cost
+    /// Setting this to `true` allows you to use stencils while rendering to the canvas, at the cost
     /// of some extra video RAM usage.
-    pub enable_stencil_buffer: bool,
-}
+    pub fn stencil_buffer(&mut self, enabled: bool) -> &mut CanvasBuilder {
+        self.stencil_buffer = enabled;
+        self
+    }
 
-impl Default for CanvasSettings {
-    fn default() -> Self {
-        Self {
-            samples: 0,
-            enable_stencil_buffer: false,
-        }
+    /// Builds the canvas.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
+    /// graphics API encounters an error.
+    pub fn build(&self, ctx: &mut Context) -> Result<Canvas> {
+        let attachments = ctx.device.new_canvas(
+            self.width,
+            self.height,
+            ctx.graphics.default_filter_mode,
+            self.samples,
+            self.stencil_buffer,
+        )?;
+
+        Ok(Canvas {
+            handle: Rc::new(attachments.canvas),
+            texture: Texture::from_raw(attachments.color, ctx.graphics.default_filter_mode),
+            stencil_buffer: attachments.depth_stencil.map(Rc::new),
+            multisample: attachments.multisample_color.map(Rc::new),
+        })
     }
 }
 
@@ -77,34 +108,18 @@ impl Canvas {
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
     /// graphics API encounters an error.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Result<Canvas> {
-        Canvas::with_device(
-            &mut ctx.device,
-            width,
-            height,
-            ctx.graphics.default_filter_mode,
-            CanvasSettings::default(),
-        )
+        Canvas::builder(width, height).build(ctx)
     }
 
-    /// Creates a new canvas, with the specified settings.
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
-    pub fn with_settings(
-        ctx: &mut Context,
-        width: i32,
-        height: i32,
-        settings: CanvasSettings,
-    ) -> Result<Canvas> {
-        Canvas::with_device(
-            &mut ctx.device,
+    /// Creates a new canvas builder, which can be used to create a canvas with multisampling and/or
+    /// additional buffers.
+    pub fn builder(width: i32, height: i32) -> CanvasBuilder {
+        CanvasBuilder {
             width,
             height,
-            ctx.graphics.default_filter_mode,
-            settings,
-        )
+            samples: 0,
+            stencil_buffer: false,
+        }
     }
 
     /// Creates a new canvas, with the specified level of multisample anti-aliasing.
@@ -123,35 +138,9 @@ impl Canvas {
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
     /// graphics API encounters an error.
-    #[deprecated(since = "0.6.4", note = "use Canvas::with_settings instead")]
+    #[deprecated(since = "0.6.4", note = "use Canvas::builder instead")]
     pub fn multisampled(ctx: &mut Context, width: i32, height: i32, samples: u8) -> Result<Canvas> {
-        Canvas::with_device(
-            &mut ctx.device,
-            width,
-            height,
-            ctx.graphics.default_filter_mode,
-            CanvasSettings {
-                samples,
-                ..CanvasSettings::default()
-            },
-        )
-    }
-
-    pub(crate) fn with_device(
-        device: &mut GraphicsDevice,
-        width: i32,
-        height: i32,
-        filter_mode: FilterMode,
-        settings: CanvasSettings,
-    ) -> Result<Canvas> {
-        let attachments = device.new_canvas(width, height, filter_mode, settings)?;
-
-        Ok(Canvas {
-            handle: Rc::new(attachments.canvas),
-            texture: Texture::from_raw(attachments.color, filter_mode),
-            stencil_buffer: attachments.depth_stencil.map(Rc::new),
-            multisample: attachments.multisample_color.map(Rc::new),
-        })
+        Canvas::builder(width, height).samples(samples).build(ctx)
     }
 
     /// Draws the canvas to the screen (or to another canvas, if one is enabled).

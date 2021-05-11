@@ -319,7 +319,7 @@ impl ContextBuilder {
     /// well supported. Setting the number of samples to `0` will disable multisampling.
     ///
     /// Note that this setting only applies to the main backbuffer - multisampled canvases can
-    /// be created by setting [`CanvasSettings::samples`](crate::graphics::CanvasSettings).
+    /// be created via [`Canvas::builder`](crate::graphics::Canvas::builder).
     ///
     /// Defaults to `0`.
     pub fn multisampling(&mut self, multisampling: u8) -> &mut ContextBuilder {

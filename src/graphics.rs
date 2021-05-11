@@ -492,8 +492,8 @@ pub fn reset_scissor(ctx: &mut Context) {
 ///
 /// Stencils can be used with both the main framebuffer and canvases.
 /// However, to use stencils with a canvas, you must initialize the canvas
-/// with [`CanvasSettings::enable_stencil_buffer`](CanvasSettings::enable_stencil_buffer)
-/// set to `true`.
+/// via [`Canvas::builder`] with [`stencil_buffer`](CanvasBuilder::stencil_buffer)
+/// set to true.
 pub fn set_stencil_state(ctx: &mut Context, state: StencilState) {
     flush(ctx);
     ctx.device.set_stencil_state(state);

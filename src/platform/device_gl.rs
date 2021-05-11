@@ -8,9 +8,7 @@ use crate::graphics::{
     mesh::{BufferUsage, Vertex, VertexWinding},
     StencilState, StencilTest,
 };
-use crate::graphics::{
-    BlendAlphaMode, BlendMode, CanvasSettings, FilterMode, GraphicsDeviceInfo, StencilAction,
-};
+use crate::graphics::{BlendAlphaMode, BlendMode, FilterMode, GraphicsDeviceInfo, StencilAction};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
 type BufferId = <GlowContext as HasContext>::Buffer;
@@ -725,7 +723,8 @@ impl GraphicsDevice {
         width: i32,
         height: i32,
         filter_mode: FilterMode,
-        settings: CanvasSettings,
+        samples: u8,
+        with_stencil_buffer: bool,
     ) -> Result<RawCanvasWithAttachments> {
         unsafe {
             let previous_read = self.state.current_read_framebuffer.get();
@@ -756,7 +755,7 @@ impl GraphicsDevice {
 
             self.clear(0.0, 0.0, 0.0, 0.0);
 
-            let actual_samples = u8::min(settings.samples, self.state.max_samples);
+            let actual_samples = u8::min(samples, self.state.max_samples);
 
             let multisample_color = if actual_samples > 0 {
                 let renderbuffer = self.new_color_renderbuffer(width, height, actual_samples)?;
@@ -775,7 +774,7 @@ impl GraphicsDevice {
                 None
             };
 
-            let depth_stencil = if settings.enable_stencil_buffer {
+            let depth_stencil = if with_stencil_buffer {
                 let renderbuffer =
                     self.new_depth_stencil_renderbuffer(width, height, actual_samples)?;
 
