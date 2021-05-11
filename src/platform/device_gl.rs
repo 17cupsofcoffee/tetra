@@ -36,6 +36,8 @@ struct GraphicsState {
 
     vertex_array: VertexArrayId,
     resolve_framebuffer: FramebufferId,
+
+    max_samples: u8,
 }
 
 pub struct GraphicsDevice {
@@ -71,6 +73,8 @@ impl GraphicsDevice {
 
             let resolve_framebuffer = gl.create_framebuffer().map_err(TetraError::PlatformError)?;
 
+            let max_samples = gl.get_parameter_i32(glow::MAX_SAMPLES) as u8;
+
             let state = GraphicsState {
                 gl,
 
@@ -84,6 +88,8 @@ impl GraphicsDevice {
 
                 vertex_array,
                 resolve_framebuffer,
+
+                max_samples,
             };
 
             Ok(GraphicsDevice {
@@ -750,8 +756,10 @@ impl GraphicsDevice {
 
             self.clear(0.0, 0.0, 0.0, 0.0);
 
-            let multisample_color = if settings.samples > 0 {
-                let renderbuffer = self.new_color_renderbuffer(width, height, settings.samples)?;
+            let actual_samples = u8::min(settings.samples, self.state.max_samples);
+
+            let multisample_color = if actual_samples > 0 {
+                let renderbuffer = self.new_color_renderbuffer(width, height, actual_samples)?;
 
                 self.state.gl.framebuffer_renderbuffer(
                     glow::FRAMEBUFFER,
@@ -769,7 +777,7 @@ impl GraphicsDevice {
 
             let depth_stencil = if settings.enable_stencil_buffer {
                 let renderbuffer =
-                    self.new_depth_stencil_renderbuffer(width, height, settings.samples)?;
+                    self.new_depth_stencil_renderbuffer(width, height, actual_samples)?;
 
                 self.state.gl.framebuffer_renderbuffer(
                     glow::FRAMEBUFFER,
