@@ -27,7 +27,7 @@ pub use texture::*;
 
 use crate::error::Result;
 use crate::math::{FrustumPlanes, Mat4, Vec2};
-use crate::platform::{GraphicsDevice, RawFramebuffer, RawIndexBuffer, RawVertexBuffer};
+use crate::platform::{GraphicsDevice, RawIndexBuffer, RawVertexBuffer};
 use crate::window;
 use crate::Context;
 
@@ -68,7 +68,6 @@ pub(crate) struct GraphicsContext {
     default_shader: Shader,
 
     canvas: ActiveCanvas,
-    resolve_framebuffer: Option<RawFramebuffer>,
 
     projection_matrix: Mat4<f32>,
     transform_matrix: Mat4<f32>,
@@ -121,7 +120,6 @@ impl GraphicsContext {
             default_shader,
 
             canvas: ActiveCanvas::Window,
-            resolve_framebuffer: None,
 
             projection_matrix: ortho(window_width as f32, window_height as f32, false),
             transform_matrix: Mat4::identity(),
@@ -291,7 +289,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
                 ctx.device.viewport(0, 0, physical_width, physical_height);
 
-                ctx.device.bind_framebuffer(None);
+                ctx.device.set_framebuffer(None);
             }
             ActiveCanvas::User(r) => {
                 let (width, height) = r.size();
@@ -299,7 +297,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, true);
                 ctx.device.viewport(0, 0, width, height);
 
-                ctx.device.bind_framebuffer(Some(&r.framebuffer));
+                ctx.device.set_framebuffer(Some(&r.framebuffer));
             }
         }
     }
@@ -307,32 +305,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 
 fn resolve_canvas(ctx: &mut Context) {
     if let ActiveCanvas::User(c) = &ctx.graphics.canvas {
-        if c.multisample.is_some() {
-            // This is lazily initialized, to avoid overhead for people not using MSAA.
-            if ctx.graphics.resolve_framebuffer.is_none() {
-                ctx.graphics.resolve_framebuffer = Some(
-                    ctx.device
-                        .new_framebuffer()
-                        .expect("failed to create resolve framebuffer"),
-                );
-            }
-
-            let resolve_framebuffer = ctx.graphics.resolve_framebuffer.as_ref().unwrap();
-
-            ctx.device.attach_color_texture(
-                &resolve_framebuffer,
-                &c.texture.data.handle,
-                false,
-                false,
-            );
-
-            ctx.device.blit_framebuffer(
-                &c.framebuffer,
-                &resolve_framebuffer,
-                c.width(),
-                c.height(),
-            );
-        }
+        ctx.device.resolve(&c.framebuffer, &c.texture.data.handle);
     }
 }
 

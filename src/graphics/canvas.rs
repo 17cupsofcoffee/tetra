@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::error::Result;
 use crate::graphics::{DrawParams, FilterMode, Texture};
-use crate::platform::{GraphicsDevice, RawFramebuffer, RawRenderbuffer};
+use crate::platform::{GraphicsDevice, RawCanvas, RawRenderbuffer};
 use crate::Context;
 
 use super::ImageData;
@@ -63,7 +63,7 @@ impl Default for CanvasSettings {
 /// the screen.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Canvas {
-    pub(crate) framebuffer: Rc<RawFramebuffer>,
+    pub(crate) framebuffer: Rc<RawCanvas>,
     pub(crate) texture: Texture,
     pub(crate) stencil_buffer: Option<Rc<RawRenderbuffer>>,
     pub(crate) multisample: Option<Rc<RawRenderbuffer>>,
@@ -144,34 +144,13 @@ impl Canvas {
         filter_mode: FilterMode,
         settings: CanvasSettings,
     ) -> Result<Canvas> {
-        let framebuffer = device.new_framebuffer()?;
-
-        let texture = device.new_texture(width, height, filter_mode)?;
-        device.attach_color_texture(&framebuffer, &texture, true, true);
-
-        let stencil_buffer = if settings.enable_stencil_buffer {
-            let stencil_buffer =
-                device.new_depth_stencil_renderbuffer(width, height, settings.samples)?;
-            device.attach_depth_stencil_renderbuffer(&framebuffer, &stencil_buffer, true, true);
-            Some(Rc::new(stencil_buffer))
-        } else {
-            None
-        };
-
-        let multisample = if settings.samples > 0 {
-            let multisample = device.new_color_renderbuffer(width, height, settings.samples)?;
-            device.attach_color_renderbuffer(&framebuffer, &multisample, true, true);
-
-            Some(Rc::new(multisample))
-        } else {
-            None
-        };
+        let attachments = device.new_framebuffer(width, height, filter_mode, settings)?;
 
         Ok(Canvas {
-            framebuffer: Rc::new(framebuffer),
-            texture: Texture::from_raw(texture, filter_mode),
-            stencil_buffer,
-            multisample,
+            framebuffer: Rc::new(attachments.canvas),
+            texture: Texture::from_raw(attachments.color, filter_mode),
+            stencil_buffer: attachments.depth_stencil.map(Rc::new),
+            multisample: attachments.multisample_color.map(Rc::new),
         })
     }
 

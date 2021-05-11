@@ -3,16 +3,15 @@ use std::rc::Rc;
 
 use glow::{Context as GlowContext, HasContext, PixelPackData, PixelUnpackData};
 
+use crate::error::{Result, TetraError};
 use crate::graphics::{
     mesh::{BufferUsage, Vertex, VertexWinding},
     StencilState, StencilTest,
 };
-use crate::graphics::{BlendAlphaMode, BlendMode, FilterMode, GraphicsDeviceInfo};
-use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
-use crate::{
-    error::{Result, TetraError},
-    graphics::StencilAction,
+use crate::graphics::{
+    BlendAlphaMode, BlendMode, CanvasSettings, FilterMode, GraphicsDeviceInfo, StencilAction,
 };
+use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
 type BufferId = <GlowContext as HasContext>::Buffer;
 type ProgramId = <GlowContext as HasContext>::Program;
@@ -35,6 +34,8 @@ struct GraphicsState {
     current_draw_framebuffer: Cell<Option<FramebufferId>>,
     current_renderbuffer: Cell<Option<RenderbufferId>>,
     current_vertex_array: Cell<Option<VertexArrayId>>,
+
+    resolve_framebuffer: FramebufferId,
 }
 
 pub struct GraphicsDevice {
@@ -68,6 +69,8 @@ impl GraphicsDevice {
             let texture_units =
                 gl.get_parameter_i32(glow::MAX_COMBINED_TEXTURE_IMAGE_UNITS) as usize;
 
+            let resolve_framebuffer = gl.create_framebuffer().map_err(TetraError::PlatformError)?;
+
             let state = GraphicsState {
                 gl,
 
@@ -79,6 +82,8 @@ impl GraphicsDevice {
                 current_draw_framebuffer: Cell::new(None),
                 current_renderbuffer: Cell::new(None),
                 current_vertex_array: Cell::new(Some(current_vertex_array)),
+
+                resolve_framebuffer,
             };
 
             Ok(GraphicsDevice {
@@ -191,7 +196,7 @@ impl GraphicsDevice {
                 count,
             };
 
-            self.bind_vertex_buffer(Some(&buffer));
+            self.bind_vertex_buffer(Some(buffer.id));
 
             self.clear_errors();
 
@@ -216,7 +221,7 @@ impl GraphicsDevice {
         data: &[Vertex],
         offset: usize,
     ) {
-        self.bind_vertex_buffer(Some(buffer));
+        self.bind_vertex_buffer(Some(buffer.id));
 
         assert!(
             data.len() + offset <= buffer.count(),
@@ -234,6 +239,45 @@ impl GraphicsDevice {
         }
     }
 
+    fn set_vertex_attributes(&mut self, buffer: &RawVertexBuffer) {
+        // TODO: This only works because we don't let the user set custom
+        // attribute bindings - will need a rethink at that point!
+        unsafe {
+            self.bind_vertex_buffer(Some(buffer.id));
+
+            self.state.gl.vertex_attrib_pointer_f32(
+                0,
+                2,
+                glow::FLOAT,
+                false,
+                buffer.stride() as i32,
+                0,
+            );
+
+            self.state.gl.vertex_attrib_pointer_f32(
+                1,
+                2,
+                glow::FLOAT,
+                false,
+                buffer.stride() as i32,
+                8,
+            );
+
+            self.state.gl.vertex_attrib_pointer_f32(
+                2,
+                4,
+                glow::FLOAT,
+                false,
+                buffer.stride() as i32,
+                16,
+            );
+
+            self.state.gl.enable_vertex_attrib_array(0);
+            self.state.gl.enable_vertex_attrib_array(1);
+            self.state.gl.enable_vertex_attrib_array(2);
+        }
+    }
+
     pub fn new_index_buffer(&mut self, count: usize, usage: BufferUsage) -> Result<RawIndexBuffer> {
         unsafe {
             let id = self
@@ -248,7 +292,7 @@ impl GraphicsDevice {
                 count,
             };
 
-            self.bind_index_buffer(Some(&buffer));
+            self.bind_index_buffer(Some(buffer.id));
 
             self.clear_errors();
 
@@ -270,7 +314,7 @@ impl GraphicsDevice {
     }
 
     pub fn set_index_buffer_data(&mut self, buffer: &RawIndexBuffer, data: &[u32], offset: usize) {
-        self.bind_index_buffer(Some(buffer));
+        self.bind_index_buffer(Some(buffer.id));
 
         assert!(
             data.len() + offset <= buffer.count(),
@@ -288,11 +332,7 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn new_program(
-        &mut self,
-        vertex_shader: &str,
-        fragment_shader: &str,
-    ) -> Result<RawProgram> {
+    pub fn new_program(&mut self, vertex_shader: &str, fragment_shader: &str) -> Result<RawShader> {
         unsafe {
             let program_id = self
                 .state
@@ -350,7 +390,7 @@ impl GraphicsDevice {
             self.state.gl.delete_shader(vertex_id);
             self.state.gl.delete_shader(fragment_id);
 
-            let program = RawProgram {
+            let program = RawShader {
                 state: Rc::clone(&self.state),
                 id: program_id,
             };
@@ -362,21 +402,17 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn get_uniform_location(
-        &self,
-        program: &RawProgram,
-        name: &str,
-    ) -> Option<UniformLocation> {
+    pub fn get_uniform_location(&self, program: &RawShader, name: &str) -> Option<UniformLocation> {
         unsafe { self.state.gl.get_uniform_location(program.id, name) }
     }
 
     pub fn set_uniform_i32(
         &mut self,
-        program: &RawProgram,
+        program: &RawShader,
         location: Option<&UniformLocation>,
         value: i32,
     ) {
-        self.bind_program(Some(program));
+        self.bind_program(Some(program.id));
 
         unsafe {
             self.state.gl.uniform_1_i32(location, value);
@@ -385,11 +421,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_u32(
         &mut self,
-        program: &RawProgram,
+        program: &RawShader,
         location: Option<&UniformLocation>,
         value: u32,
     ) {
-        self.bind_program(Some(program));
+        self.bind_program(Some(program.id));
 
         unsafe {
             self.state.gl.uniform_1_u32(location, value);
@@ -398,11 +434,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_f32(
         &mut self,
-        program: &RawProgram,
+        program: &RawShader,
         location: Option<&UniformLocation>,
         value: f32,
     ) {
-        self.bind_program(Some(program));
+        self.bind_program(Some(program.id));
 
         unsafe {
             self.state.gl.uniform_1_f32(location, value);
@@ -411,11 +447,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_vec2(
         &mut self,
-        program: &RawProgram,
+        program: &RawShader,
         location: Option<&UniformLocation>,
         value: Vec2<f32>,
     ) {
-        self.bind_program(Some(program));
+        self.bind_program(Some(program.id));
 
         unsafe {
             self.state
@@ -426,11 +462,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_vec3(
         &mut self,
-        program: &RawProgram,
+        program: &RawShader,
         location: Option<&UniformLocation>,
         value: Vec3<f32>,
     ) {
-        self.bind_program(Some(program));
+        self.bind_program(Some(program.id));
 
         unsafe {
             self.state
@@ -441,11 +477,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_vec4(
         &mut self,
-        program: &RawProgram,
+        program: &RawShader,
         location: Option<&UniformLocation>,
         value: Vec4<f32>,
     ) {
-        self.bind_program(Some(program));
+        self.bind_program(Some(program.id));
 
         unsafe {
             self.state
@@ -456,11 +492,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_mat2(
         &mut self,
-        program: &RawProgram,
+        program: &RawShader,
         location: Option<&UniformLocation>,
         value: Mat2<f32>,
     ) {
-        self.bind_program(Some(program));
+        self.bind_program(Some(program.id));
 
         unsafe {
             self.state.gl.uniform_matrix_2_f32_slice(
@@ -473,11 +509,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_mat3(
         &mut self,
-        program: &RawProgram,
+        program: &RawShader,
         location: Option<&UniformLocation>,
         value: Mat3<f32>,
     ) {
-        self.bind_program(Some(program));
+        self.bind_program(Some(program.id));
 
         unsafe {
             self.state.gl.uniform_matrix_3_f32_slice(
@@ -490,11 +526,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_mat4(
         &mut self,
-        program: &RawProgram,
+        program: &RawShader,
         location: Option<&UniformLocation>,
         value: Mat4<f32>,
     ) {
-        self.bind_program(Some(program));
+        self.bind_program(Some(program.id));
 
         unsafe {
             self.state.gl.uniform_matrix_4_f32_slice(
@@ -539,7 +575,7 @@ impl GraphicsDevice {
                 height,
             };
 
-            self.bind_default_texture(Some(&texture));
+            self.bind_default_texture(Some(texture.id));
 
             self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,
@@ -619,7 +655,7 @@ impl GraphicsDevice {
             return Err(TetraError::NotEnoughData { expected, actual });
         }
 
-        self.bind_default_texture(Some(texture));
+        self.bind_default_texture(Some(texture.id));
 
         unsafe {
             self.state.gl.tex_sub_image_2d(
@@ -639,7 +675,7 @@ impl GraphicsDevice {
     }
 
     pub fn get_texture_data(&mut self, texture: &RawTexture) -> Vec<u8> {
-        self.bind_default_texture(Some(texture));
+        self.bind_default_texture(Some(texture.id));
 
         let mut buffer = vec![0; (texture.width * texture.height * 4) as usize];
 
@@ -657,7 +693,7 @@ impl GraphicsDevice {
     }
 
     pub fn set_texture_filter_mode(&mut self, texture: &RawTexture, filter_mode: FilterMode) {
-        self.bind_default_texture(Some(texture));
+        self.bind_default_texture(Some(texture.id));
 
         unsafe {
             self.state.gl.tex_parameter_i32(
@@ -674,164 +710,129 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn new_framebuffer(&mut self) -> Result<RawFramebuffer> {
+    pub fn attach_texture_to_sampler(&mut self, texture: &RawTexture, unit: u32) -> Result {
+        self.bind_texture(Some(texture.id), unit)
+    }
+
+    pub fn new_framebuffer(
+        &mut self,
+        width: i32,
+        height: i32,
+        filter_mode: FilterMode,
+        settings: CanvasSettings,
+    ) -> Result<RawCanvasWithAttachments> {
         unsafe {
+            let previous_read = self.state.current_read_framebuffer.get();
+            let previous_draw = self.state.current_draw_framebuffer.get();
+
             let id = self
                 .state
                 .gl
                 .create_framebuffer()
                 .map_err(TetraError::PlatformError)?;
 
-            let framebuffer = RawFramebuffer {
+            let framebuffer = RawCanvas {
                 state: Rc::clone(&self.state),
                 id,
             };
 
-            Ok(framebuffer)
+            self.bind_framebuffer(Some(framebuffer.id));
+
+            let color = self.new_texture(width, height, filter_mode)?;
+
+            self.state.gl.framebuffer_texture_2d(
+                glow::FRAMEBUFFER,
+                glow::COLOR_ATTACHMENT0,
+                glow::TEXTURE_2D,
+                Some(color.id),
+                0,
+            );
+
+            self.clear(0.0, 0.0, 0.0, 0.0);
+
+            let multisample_color = if settings.samples > 0 {
+                let renderbuffer = self.new_color_renderbuffer(width, height, settings.samples)?;
+
+                self.state.gl.framebuffer_renderbuffer(
+                    glow::FRAMEBUFFER,
+                    glow::COLOR_ATTACHMENT0,
+                    glow::RENDERBUFFER,
+                    Some(renderbuffer.id),
+                );
+
+                self.clear(0.0, 0.0, 0.0, 0.0);
+
+                Some(renderbuffer)
+            } else {
+                None
+            };
+
+            let depth_stencil = if settings.enable_stencil_buffer {
+                let renderbuffer =
+                    self.new_depth_stencil_renderbuffer(width, height, settings.samples)?;
+
+                self.state.gl.framebuffer_renderbuffer(
+                    glow::FRAMEBUFFER,
+                    glow::DEPTH_STENCIL_ATTACHMENT,
+                    glow::RENDERBUFFER,
+                    Some(renderbuffer.id),
+                );
+
+                self.clear_stencil(0);
+                // TODO: Clear the depth buffer, if we start using it
+
+                Some(renderbuffer)
+            } else {
+                None
+            };
+
+            self.bind_read_framebuffer(previous_read);
+            self.bind_draw_framebuffer(previous_draw);
+
+            Ok(RawCanvasWithAttachments {
+                canvas: framebuffer,
+                color,
+                multisample_color,
+                depth_stencil,
+            })
         }
     }
 
-    // TODO: The 'rebind_previous' stuff feels hacky
+    pub fn set_framebuffer(&mut self, framebuffer: Option<&RawCanvas>) {
+        self.bind_framebuffer(framebuffer.map(|f| f.id));
+    }
 
-    pub fn attach_color_texture(
-        &mut self,
-        framebuffer: &RawFramebuffer,
-        texture: &RawTexture,
-        clear: bool,
-        rebind_previous: bool,
-    ) {
+    pub fn resolve(&mut self, framebuffer: &RawCanvas, texture: &RawTexture) {
         unsafe {
             let previous_read = self.state.current_read_framebuffer.get();
             let previous_draw = self.state.current_draw_framebuffer.get();
 
-            self.bind_framebuffer(Some(&framebuffer));
+            self.bind_read_framebuffer(Some(framebuffer.id));
+            self.bind_draw_framebuffer(Some(self.state.resolve_framebuffer));
 
             self.state.gl.framebuffer_texture_2d(
-                glow::FRAMEBUFFER,
+                glow::DRAW_FRAMEBUFFER,
                 glow::COLOR_ATTACHMENT0,
                 glow::TEXTURE_2D,
                 Some(texture.id),
                 0,
             );
 
-            if clear {
-                self.clear(0.0, 0.0, 0.0, 0.0);
-            }
-
-            if rebind_previous {
-                self.state
-                    .gl
-                    .bind_framebuffer(glow::READ_FRAMEBUFFER, previous_read);
-                self.state.current_read_framebuffer.set(previous_read);
-
-                self.state
-                    .gl
-                    .bind_framebuffer(glow::DRAW_FRAMEBUFFER, previous_draw);
-                self.state.current_draw_framebuffer.set(previous_draw);
-            }
-        }
-    }
-
-    pub fn attach_color_renderbuffer(
-        &mut self,
-        framebuffer: &RawFramebuffer,
-        renderbuffer: &RawRenderbuffer,
-        clear: bool,
-        rebind_previous: bool,
-    ) {
-        unsafe {
-            let previous_read = self.state.current_read_framebuffer.get();
-            let previous_draw = self.state.current_draw_framebuffer.get();
-
-            self.bind_framebuffer(Some(&framebuffer));
-
-            self.state.gl.framebuffer_renderbuffer(
-                glow::FRAMEBUFFER,
-                glow::COLOR_ATTACHMENT0,
-                glow::RENDERBUFFER,
-                Some(renderbuffer.id),
-            );
-
-            if clear {
-                self.clear(0.0, 0.0, 0.0, 0.0);
-            }
-
-            if rebind_previous {
-                self.state
-                    .gl
-                    .bind_framebuffer(glow::READ_FRAMEBUFFER, previous_read);
-                self.state.current_read_framebuffer.set(previous_read);
-
-                self.state
-                    .gl
-                    .bind_framebuffer(glow::DRAW_FRAMEBUFFER, previous_draw);
-                self.state.current_draw_framebuffer.set(previous_draw);
-            }
-        }
-    }
-
-    pub fn attach_depth_stencil_renderbuffer(
-        &mut self,
-        framebuffer: &RawFramebuffer,
-        renderbuffer: &RawRenderbuffer,
-        clear: bool,
-        rebind_previous: bool,
-    ) {
-        unsafe {
-            let previous_read = self.state.current_read_framebuffer.get();
-            let previous_draw = self.state.current_draw_framebuffer.get();
-
-            self.bind_framebuffer(Some(&framebuffer));
-
-            self.state.gl.framebuffer_renderbuffer(
-                glow::FRAMEBUFFER,
-                glow::DEPTH_STENCIL_ATTACHMENT,
-                glow::RENDERBUFFER,
-                Some(renderbuffer.id),
-            );
-
-            if clear {
-                self.clear_stencil(0);
-                // TODO: Clear the depth buffer, if we start using it
-            }
-
-            if rebind_previous {
-                self.state
-                    .gl
-                    .bind_framebuffer(glow::READ_FRAMEBUFFER, previous_read);
-                self.state.current_read_framebuffer.set(previous_read);
-
-                self.state
-                    .gl
-                    .bind_framebuffer(glow::DRAW_FRAMEBUFFER, previous_draw);
-                self.state.current_draw_framebuffer.set(previous_draw);
-            }
-        }
-    }
-
-    pub fn blit_framebuffer(
-        &mut self,
-        read: &RawFramebuffer,
-        draw: &RawFramebuffer,
-        width: i32,
-        height: i32,
-    ) {
-        self.bind_read_framebuffer(Some(read));
-        self.bind_draw_framebuffer(Some(draw));
-
-        unsafe {
             self.state.gl.blit_framebuffer(
                 0,
                 0,
-                width,
-                height,
+                texture.width,
+                texture.height,
                 0,
                 0,
-                width,
-                height,
+                texture.width,
+                texture.height,
                 glow::COLOR_BUFFER_BIT,
                 glow::NEAREST,
-            )
+            );
+
+            self.bind_read_framebuffer(previous_read);
+            self.bind_draw_framebuffer(previous_draw);
         }
     }
 
@@ -872,7 +873,7 @@ impl GraphicsDevice {
                 id,
             };
 
-            self.bind_renderbuffer(Some(&renderbuffer));
+            self.bind_renderbuffer(Some(renderbuffer.id));
 
             if samples > 0 {
                 self.state.gl.renderbuffer_storage_multisample(
@@ -902,13 +903,15 @@ impl GraphicsDevice {
         &mut self,
         vertex_buffer: &RawVertexBuffer,
         texture: &RawTexture,
-        program: &RawProgram,
+        program: &RawShader,
         offset: usize,
         count: usize,
     ) {
-        self.bind_vertex_buffer(Some(vertex_buffer));
-        self.bind_default_texture(Some(texture));
-        self.bind_program(Some(program));
+        self.bind_vertex_buffer(Some(vertex_buffer.id));
+        self.bind_default_texture(Some(texture.id));
+        self.bind_program(Some(program.id));
+
+        self.set_vertex_attributes(vertex_buffer);
 
         let max_count = vertex_buffer.count();
 
@@ -927,14 +930,16 @@ impl GraphicsDevice {
         vertex_buffer: &RawVertexBuffer,
         index_buffer: &RawIndexBuffer,
         texture: &RawTexture,
-        program: &RawProgram,
+        program: &RawShader,
         offset: usize,
         count: usize,
     ) {
-        self.bind_vertex_buffer(Some(vertex_buffer));
-        self.bind_index_buffer(Some(index_buffer));
-        self.bind_default_texture(Some(texture));
-        self.bind_program(Some(program));
+        self.bind_vertex_buffer(Some(vertex_buffer.id));
+        self.bind_index_buffer(Some(index_buffer.id));
+        self.bind_default_texture(Some(texture.id));
+        self.bind_program(Some(program.id));
+
+        self.set_vertex_attributes(vertex_buffer);
 
         let max_count = index_buffer.count();
 
@@ -951,64 +956,17 @@ impl GraphicsDevice {
         }
     }
 
-    fn bind_vertex_buffer(&mut self, buffer: Option<&RawVertexBuffer>) {
+    fn bind_vertex_buffer(&mut self, id: Option<BufferId>) {
         unsafe {
-            let id = buffer.map(|x| x.id);
-
             if self.state.current_vertex_buffer.get() != id {
                 self.state.gl.bind_buffer(glow::ARRAY_BUFFER, id);
-
-                // TODO: This only works because we don't let the user set custom
-                // attribute bindings - will need a rethink at that point!
-                match buffer {
-                    Some(b) => {
-                        self.state.gl.vertex_attrib_pointer_f32(
-                            0,
-                            2,
-                            glow::FLOAT,
-                            false,
-                            b.stride() as i32,
-                            0,
-                        );
-
-                        self.state.gl.vertex_attrib_pointer_f32(
-                            1,
-                            2,
-                            glow::FLOAT,
-                            false,
-                            b.stride() as i32,
-                            8,
-                        );
-
-                        self.state.gl.vertex_attrib_pointer_f32(
-                            2,
-                            4,
-                            glow::FLOAT,
-                            false,
-                            b.stride() as i32,
-                            16,
-                        );
-
-                        self.state.gl.enable_vertex_attrib_array(0);
-                        self.state.gl.enable_vertex_attrib_array(1);
-                        self.state.gl.enable_vertex_attrib_array(2);
-                    }
-                    None => {
-                        self.state.gl.disable_vertex_attrib_array(0);
-                        self.state.gl.disable_vertex_attrib_array(1);
-                        self.state.gl.disable_vertex_attrib_array(2);
-                    }
-                }
-
                 self.state.current_vertex_buffer.set(id);
             }
         }
     }
 
-    fn bind_index_buffer(&mut self, buffer: Option<&RawIndexBuffer>) {
+    fn bind_index_buffer(&mut self, id: Option<BufferId>) {
         unsafe {
-            let id = buffer.map(|x| x.id);
-
             if self.state.current_index_buffer.get() != id {
                 self.state.gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, id);
                 self.state.current_index_buffer.set(id);
@@ -1016,10 +974,8 @@ impl GraphicsDevice {
         }
     }
 
-    fn bind_program(&mut self, program: Option<&RawProgram>) {
+    fn bind_program(&mut self, id: Option<ProgramId>) {
         unsafe {
-            let id = program.map(|x| x.id);
-
             if self.state.current_program.get() != id {
                 self.state.gl.use_program(id);
                 self.state.current_program.set(id);
@@ -1027,10 +983,8 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn bind_texture(&mut self, texture: Option<&RawTexture>, unit: u32) -> Result {
+    fn bind_texture(&mut self, id: Option<TextureId>, unit: u32) -> Result {
         unsafe {
-            let id = texture.map(|x| x.id);
-
             let current = &self
                 .state
                 .current_textures
@@ -1047,15 +1001,13 @@ impl GraphicsDevice {
         Ok(())
     }
 
-    fn bind_default_texture(&mut self, texture: Option<&RawTexture>) {
-        self.bind_texture(texture, 0)
+    fn bind_default_texture(&mut self, id: Option<TextureId>) {
+        self.bind_texture(id, 0)
             .expect("texture unit 0 should always be available");
     }
 
-    pub fn bind_framebuffer(&mut self, framebuffer: Option<&RawFramebuffer>) {
+    fn bind_framebuffer(&mut self, id: Option<FramebufferId>) {
         unsafe {
-            let id = framebuffer.map(|x| x.id);
-
             if self.state.current_read_framebuffer.get() != id
                 || self.state.current_draw_framebuffer.get() != id
             {
@@ -1066,10 +1018,8 @@ impl GraphicsDevice {
         }
     }
 
-    fn bind_read_framebuffer(&mut self, framebuffer: Option<&RawFramebuffer>) {
+    fn bind_read_framebuffer(&mut self, id: Option<FramebufferId>) {
         unsafe {
-            let id = framebuffer.map(|x| x.id);
-
             if self.state.current_read_framebuffer.get() != id {
                 self.state.gl.bind_framebuffer(glow::READ_FRAMEBUFFER, id);
                 self.state.current_read_framebuffer.set(id);
@@ -1077,10 +1027,8 @@ impl GraphicsDevice {
         }
     }
 
-    fn bind_draw_framebuffer(&mut self, framebuffer: Option<&RawFramebuffer>) {
+    fn bind_draw_framebuffer(&mut self, id: Option<FramebufferId>) {
         unsafe {
-            let id = framebuffer.map(|x| x.id);
-
             if self.state.current_draw_framebuffer.get() != id {
                 self.state.gl.bind_framebuffer(glow::DRAW_FRAMEBUFFER, id);
 
@@ -1089,10 +1037,8 @@ impl GraphicsDevice {
         }
     }
 
-    fn bind_renderbuffer(&mut self, renderbuffer: Option<&RawRenderbuffer>) {
+    fn bind_renderbuffer(&mut self, id: Option<RenderbufferId>) {
         unsafe {
-            let id = renderbuffer.map(|x| x.id);
-
             if self.state.current_renderbuffer.get() != id {
                 self.state.gl.bind_renderbuffer(glow::RENDERBUFFER, id);
                 self.state.current_renderbuffer.set(id);
@@ -1336,18 +1282,18 @@ impl Drop for RawIndexBuffer {
 }
 
 #[derive(Debug)]
-pub struct RawProgram {
+pub struct RawShader {
     state: Rc<GraphicsState>,
     id: ProgramId,
 }
 
-impl PartialEq for RawProgram {
-    fn eq(&self, other: &RawProgram) -> bool {
+impl PartialEq for RawShader {
+    fn eq(&self, other: &RawShader) -> bool {
         self.id == other.id
     }
 }
 
-impl Drop for RawProgram {
+impl Drop for RawShader {
     fn drop(&mut self) {
         unsafe {
             if self.state.current_program.get() == Some(self.id) {
@@ -1399,18 +1345,18 @@ impl Drop for RawTexture {
 }
 
 #[derive(Debug)]
-pub struct RawFramebuffer {
+pub struct RawCanvas {
     state: Rc<GraphicsState>,
     id: FramebufferId,
 }
 
-impl PartialEq for RawFramebuffer {
-    fn eq(&self, other: &RawFramebuffer) -> bool {
+impl PartialEq for RawCanvas {
+    fn eq(&self, other: &RawCanvas) -> bool {
         self.id == other.id
     }
 }
 
-impl Drop for RawFramebuffer {
+impl Drop for RawCanvas {
     fn drop(&mut self) {
         unsafe {
             if self.state.current_read_framebuffer.get() == Some(self.id) {
@@ -1424,6 +1370,13 @@ impl Drop for RawFramebuffer {
             self.state.gl.delete_framebuffer(self.id);
         }
     }
+}
+
+pub struct RawCanvasWithAttachments {
+    pub canvas: RawCanvas,
+    pub color: RawTexture,
+    pub multisample_color: Option<RawRenderbuffer>,
+    pub depth_stencil: Option<RawRenderbuffer>,
 }
 
 #[derive(Debug)]

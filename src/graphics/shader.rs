@@ -10,7 +10,7 @@ use crate::error::Result;
 use crate::fs;
 use crate::graphics::{Color, Texture};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
-use crate::platform::{GraphicsDevice, RawProgram};
+use crate::platform::{GraphicsDevice, RawShader};
 use crate::Context;
 
 /// The default vertex shader.
@@ -31,7 +31,7 @@ pub(crate) struct Sampler {
 
 #[derive(Debug)]
 pub(crate) struct ShaderSharedData {
-    pub(crate) handle: RawProgram,
+    pub(crate) handle: RawShader,
     pub(crate) samplers: RefCell<HashMap<String, Sampler>>,
     pub(crate) next_unit: Cell<u32>,
 }
@@ -244,7 +244,7 @@ impl Shader {
         let samplers = self.data.samplers.borrow();
 
         for sampler in samplers.values() {
-            device.bind_texture(Some(&sampler.texture.data.handle), sampler.unit)?;
+            device.attach_texture_to_sampler(&sampler.texture.data.handle, sampler.unit)?;
         }
 
         let projection_location = device.get_uniform_location(&self.data.handle, "u_projection");
