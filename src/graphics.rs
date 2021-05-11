@@ -297,7 +297,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, true);
                 ctx.device.viewport(0, 0, width, height);
 
-                ctx.device.set_canvas(Some(&r.framebuffer));
+                ctx.device.set_canvas(Some(&r.handle));
             }
         }
     }
@@ -305,7 +305,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 
 fn resolve_canvas(ctx: &mut Context) {
     if let ActiveCanvas::User(c) = &ctx.graphics.canvas {
-        ctx.device.resolve(&c.framebuffer, &c.texture.data.handle);
+        ctx.device.resolve(&c.handle, &c.texture.data.handle);
     }
 }
 

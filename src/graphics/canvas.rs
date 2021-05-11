@@ -63,7 +63,7 @@ impl Default for CanvasSettings {
 /// the screen.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Canvas {
-    pub(crate) framebuffer: Rc<RawCanvas>,
+    pub(crate) handle: Rc<RawCanvas>,
     pub(crate) texture: Texture,
     pub(crate) stencil_buffer: Option<Rc<RawRenderbuffer>>,
     pub(crate) multisample: Option<Rc<RawRenderbuffer>>,
@@ -147,7 +147,7 @@ impl Canvas {
         let attachments = device.new_canvas(width, height, filter_mode, settings)?;
 
         Ok(Canvas {
-            framebuffer: Rc::new(attachments.canvas),
+            handle: Rc::new(attachments.canvas),
             texture: Texture::from_raw(attachments.color, filter_mode),
             stencil_buffer: attachments.depth_stencil.map(Rc::new),
             multisample: attachments.multisample_color.map(Rc::new),
