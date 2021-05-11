@@ -144,7 +144,7 @@ impl Canvas {
         filter_mode: FilterMode,
         settings: CanvasSettings,
     ) -> Result<Canvas> {
-        let attachments = device.new_framebuffer(width, height, filter_mode, settings)?;
+        let attachments = device.new_canvas(width, height, filter_mode, settings)?;
 
         Ok(Canvas {
             framebuffer: Rc::new(attachments.canvas),

@@ -213,7 +213,7 @@ impl Shader {
         vertex_shader: &str,
         fragment_shader: &str,
     ) -> Result<Shader> {
-        let handle = device.new_program(vertex_shader, fragment_shader)?;
+        let handle = device.new_shader(vertex_shader, fragment_shader)?;
 
         Ok(Shader {
             data: Rc::new(ShaderSharedData {

@@ -332,7 +332,7 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn new_program(&mut self, vertex_shader: &str, fragment_shader: &str) -> Result<RawShader> {
+    pub fn new_shader(&mut self, vertex_shader: &str, fragment_shader: &str) -> Result<RawShader> {
         unsafe {
             let program_id = self
                 .state
@@ -390,29 +390,29 @@ impl GraphicsDevice {
             self.state.gl.delete_shader(vertex_id);
             self.state.gl.delete_shader(fragment_id);
 
-            let program = RawShader {
+            let shader = RawShader {
                 state: Rc::clone(&self.state),
                 id: program_id,
             };
 
-            let sampler_location = self.get_uniform_location(&program, "u_texture");
-            self.set_uniform_i32(&program, sampler_location.as_ref(), 0);
+            let sampler_location = self.get_uniform_location(&shader, "u_texture");
+            self.set_uniform_i32(&shader, sampler_location.as_ref(), 0);
 
-            Ok(program)
+            Ok(shader)
         }
     }
 
-    pub fn get_uniform_location(&self, program: &RawShader, name: &str) -> Option<UniformLocation> {
-        unsafe { self.state.gl.get_uniform_location(program.id, name) }
+    pub fn get_uniform_location(&self, shader: &RawShader, name: &str) -> Option<UniformLocation> {
+        unsafe { self.state.gl.get_uniform_location(shader.id, name) }
     }
 
     pub fn set_uniform_i32(
         &mut self,
-        program: &RawShader,
+        shader: &RawShader,
         location: Option<&UniformLocation>,
         value: i32,
     ) {
-        self.bind_program(Some(program.id));
+        self.bind_program(Some(shader.id));
 
         unsafe {
             self.state.gl.uniform_1_i32(location, value);
@@ -421,11 +421,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_u32(
         &mut self,
-        program: &RawShader,
+        shader: &RawShader,
         location: Option<&UniformLocation>,
         value: u32,
     ) {
-        self.bind_program(Some(program.id));
+        self.bind_program(Some(shader.id));
 
         unsafe {
             self.state.gl.uniform_1_u32(location, value);
@@ -434,11 +434,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_f32(
         &mut self,
-        program: &RawShader,
+        shader: &RawShader,
         location: Option<&UniformLocation>,
         value: f32,
     ) {
-        self.bind_program(Some(program.id));
+        self.bind_program(Some(shader.id));
 
         unsafe {
             self.state.gl.uniform_1_f32(location, value);
@@ -447,11 +447,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_vec2(
         &mut self,
-        program: &RawShader,
+        shader: &RawShader,
         location: Option<&UniformLocation>,
         value: Vec2<f32>,
     ) {
-        self.bind_program(Some(program.id));
+        self.bind_program(Some(shader.id));
 
         unsafe {
             self.state
@@ -462,11 +462,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_vec3(
         &mut self,
-        program: &RawShader,
+        shader: &RawShader,
         location: Option<&UniformLocation>,
         value: Vec3<f32>,
     ) {
-        self.bind_program(Some(program.id));
+        self.bind_program(Some(shader.id));
 
         unsafe {
             self.state
@@ -477,11 +477,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_vec4(
         &mut self,
-        program: &RawShader,
+        shader: &RawShader,
         location: Option<&UniformLocation>,
         value: Vec4<f32>,
     ) {
-        self.bind_program(Some(program.id));
+        self.bind_program(Some(shader.id));
 
         unsafe {
             self.state
@@ -492,11 +492,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_mat2(
         &mut self,
-        program: &RawShader,
+        shader: &RawShader,
         location: Option<&UniformLocation>,
         value: Mat2<f32>,
     ) {
-        self.bind_program(Some(program.id));
+        self.bind_program(Some(shader.id));
 
         unsafe {
             self.state.gl.uniform_matrix_2_f32_slice(
@@ -509,11 +509,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_mat3(
         &mut self,
-        program: &RawShader,
+        shader: &RawShader,
         location: Option<&UniformLocation>,
         value: Mat3<f32>,
     ) {
-        self.bind_program(Some(program.id));
+        self.bind_program(Some(shader.id));
 
         unsafe {
             self.state.gl.uniform_matrix_3_f32_slice(
@@ -526,11 +526,11 @@ impl GraphicsDevice {
 
     pub fn set_uniform_mat4(
         &mut self,
-        program: &RawShader,
+        shader: &RawShader,
         location: Option<&UniformLocation>,
         value: Mat4<f32>,
     ) {
-        self.bind_program(Some(program.id));
+        self.bind_program(Some(shader.id));
 
         unsafe {
             self.state.gl.uniform_matrix_4_f32_slice(
@@ -714,7 +714,7 @@ impl GraphicsDevice {
         self.bind_texture(Some(texture.id), unit)
     }
 
-    pub fn new_framebuffer(
+    pub fn new_canvas(
         &mut self,
         width: i32,
         height: i32,
@@ -731,12 +731,12 @@ impl GraphicsDevice {
                 .create_framebuffer()
                 .map_err(TetraError::PlatformError)?;
 
-            let framebuffer = RawCanvas {
+            let canvas = RawCanvas {
                 state: Rc::clone(&self.state),
                 id,
             };
 
-            self.bind_framebuffer(Some(framebuffer.id));
+            self.bind_framebuffer(Some(canvas.id));
 
             let color = self.new_texture(width, height, filter_mode)?;
 
@@ -801,7 +801,7 @@ impl GraphicsDevice {
             }
 
             Ok(RawCanvasWithAttachments {
-                canvas: framebuffer,
+                canvas,
                 color,
                 multisample_color,
                 depth_stencil,
@@ -914,13 +914,13 @@ impl GraphicsDevice {
         &mut self,
         vertex_buffer: &RawVertexBuffer,
         texture: &RawTexture,
-        program: &RawShader,
+        shader: &RawShader,
         offset: usize,
         count: usize,
     ) {
         self.bind_vertex_buffer(Some(vertex_buffer.id));
         self.bind_default_texture(Some(texture.id));
-        self.bind_program(Some(program.id));
+        self.bind_program(Some(shader.id));
 
         self.set_vertex_attributes(vertex_buffer);
 
@@ -941,14 +941,14 @@ impl GraphicsDevice {
         vertex_buffer: &RawVertexBuffer,
         index_buffer: &RawIndexBuffer,
         texture: &RawTexture,
-        program: &RawShader,
+        shader: &RawShader,
         offset: usize,
         count: usize,
     ) {
         self.bind_vertex_buffer(Some(vertex_buffer.id));
         self.bind_index_buffer(Some(index_buffer.id));
         self.bind_default_texture(Some(texture.id));
-        self.bind_program(Some(program.id));
+        self.bind_program(Some(shader.id));
 
         self.set_vertex_attributes(vertex_buffer);
 
