@@ -1077,6 +1077,10 @@ impl GraphicsDevice {
 impl Drop for GraphicsDevice {
     fn drop(&mut self) {
         unsafe {
+            self.state
+                .gl
+                .delete_framebuffer(self.state.resolve_framebuffer);
+
             self.state.gl.bind_vertex_array(None);
 
             if let Some(va) = self.state.current_vertex_array.get() {
