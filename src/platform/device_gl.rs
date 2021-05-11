@@ -33,8 +33,8 @@ struct GraphicsState {
     current_read_framebuffer: Cell<Option<FramebufferId>>,
     current_draw_framebuffer: Cell<Option<FramebufferId>>,
     current_renderbuffer: Cell<Option<RenderbufferId>>,
-    current_vertex_array: Cell<Option<VertexArrayId>>,
 
+    vertex_array: VertexArrayId,
     resolve_framebuffer: FramebufferId,
 }
 
@@ -57,11 +57,11 @@ impl GraphicsDevice {
 
             // This is only needed for Core GL - if we wanted to be uber compatible, we'd
             // turn it off on older versions.
-            let current_vertex_array = gl
+            let vertex_array = gl
                 .create_vertex_array()
                 .map_err(TetraError::PlatformError)?;
 
-            gl.bind_vertex_array(Some(current_vertex_array));
+            gl.bind_vertex_array(Some(vertex_array));
 
             // TODO: Find a nice way of exposing this via the platform layer
             // println!("Swap Interval: {:?}", video.gl_get_swap_interval());
@@ -81,8 +81,8 @@ impl GraphicsDevice {
                 current_read_framebuffer: Cell::new(None),
                 current_draw_framebuffer: Cell::new(None),
                 current_renderbuffer: Cell::new(None),
-                current_vertex_array: Cell::new(Some(current_vertex_array)),
 
+                vertex_array,
                 resolve_framebuffer,
             };
 
@@ -1081,11 +1081,7 @@ impl Drop for GraphicsDevice {
                 .gl
                 .delete_framebuffer(self.state.resolve_framebuffer);
 
-            self.state.gl.bind_vertex_array(None);
-
-            if let Some(va) = self.state.current_vertex_array.get() {
-                self.state.gl.delete_vertex_array(va);
-            }
+            self.state.gl.delete_vertex_array(self.state.vertex_array);
         }
     }
 }
