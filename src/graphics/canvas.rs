@@ -9,7 +9,9 @@ use super::ImageData;
 
 /// A builder for creating advanced canvas configurations.
 ///
-/// This can be created via [`Canvas::builder`].
+/// By default, Tetra's canvases are fairly simple - they just provide a [`Texture`] that you
+/// can render things to. However, they can also be configured with extra features via this
+/// builder, such as multisampling and additional buffers.
 #[derive(Debug, Clone)]
 pub struct CanvasBuilder {
     width: i32,
@@ -19,6 +21,20 @@ pub struct CanvasBuilder {
 }
 
 impl CanvasBuilder {
+    /// Creates a new canvas builder, which can be used to create a canvas with multisampling and/or
+    /// additional buffers.
+    ///
+    /// You can also use [`Canvas::builder`] as a shortcut for this, if you want
+    /// to avoid the extra import.
+    pub fn new(width: i32, height: i32) -> CanvasBuilder {
+        CanvasBuilder {
+            width,
+            height,
+            samples: 0,
+            stencil_buffer: false,
+        }
+    }
+
     /// Sets the level of multisample anti-aliasing to use.
     ///
     /// The number of samples that can be used varies between graphics cards - `2`, `4` and `8` are reasonably
@@ -108,18 +124,13 @@ impl Canvas {
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
     /// graphics API encounters an error.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Result<Canvas> {
-        Canvas::builder(width, height).build(ctx)
+        CanvasBuilder::new(width, height).build(ctx)
     }
 
     /// Creates a new canvas builder, which can be used to create a canvas with multisampling and/or
     /// additional buffers.
     pub fn builder(width: i32, height: i32) -> CanvasBuilder {
-        CanvasBuilder {
-            width,
-            height,
-            samples: 0,
-            stencil_buffer: false,
-        }
+        CanvasBuilder::new(width, height)
     }
 
     /// Creates a new canvas, with the specified level of multisample anti-aliasing.
@@ -140,7 +151,9 @@ impl Canvas {
     /// graphics API encounters an error.
     #[deprecated(since = "0.6.4", note = "use Canvas::builder instead")]
     pub fn multisampled(ctx: &mut Context, width: i32, height: i32, samples: u8) -> Result<Canvas> {
-        Canvas::builder(width, height).samples(samples).build(ctx)
+        CanvasBuilder::new(width, height)
+            .samples(samples)
+            .build(ctx)
     }
 
     /// Draws the canvas to the screen (or to another canvas, if one is enabled).
