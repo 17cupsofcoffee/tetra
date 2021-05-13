@@ -212,6 +212,7 @@ pub struct ContextBuilder {
     pub(crate) resizable: bool,
     pub(crate) borderless: bool,
     pub(crate) multisampling: u8,
+    pub(crate) stencil_buffer: bool,
     pub(crate) high_dpi: bool,
     pub(crate) screen_saver_enabled: bool,
     pub(crate) key_repeat: bool,
@@ -324,6 +325,20 @@ impl ContextBuilder {
     /// Defaults to `0`.
     pub fn multisampling(&mut self, multisampling: u8) -> &mut ContextBuilder {
         self.multisampling = multisampling;
+        self
+    }
+
+    /// Sets whether or not the window should have a stencil buffer.
+    ///
+    /// If this is enabled, you can use the stencil functions in the
+    /// [`graphics`](crate::graphics) module when rendering to the main backbuffer.
+    ///
+    /// Note that this setting only applies to the main backbuffer - to create a canvas with
+    /// a stencil buffer, use [`Canvas::builder`](crate::graphics::Canvas::builder).
+    ///
+    /// Defaults to `false`.
+    pub fn stencil_buffer(&mut self, stencil_buffer: bool) -> &mut ContextBuilder {
+        self.stencil_buffer = stencil_buffer;
         self
     }
 
@@ -445,6 +460,7 @@ impl Default for ContextBuilder {
             resizable: false,
             borderless: false,
             multisampling: 0,
+            stencil_buffer: false,
             high_dpi: false,
             screen_saver_enabled: false,
             key_repeat: false,

@@ -490,9 +490,11 @@ pub fn reset_scissor(ctx: &mut Context) {
 /// drawing a circle to the stencil buffer, then using that buffer
 /// as a mask while drawing the image.
 ///
-/// Stencils can be used with both the main framebuffer and canvases.
-/// However, to use stencils with a canvas, you must initialize the canvas
-/// via [`Canvas::builder`] with [`stencil_buffer`](CanvasBuilder::stencil_buffer)
+/// In order to use stencils, you must be rendering to a target that was
+/// created with a stencil buffer attached. To enable this for the main
+/// backbuffer, set [`ContextBuilder::stencil_buffer`](crate::ContextBuilder::stencil_buffer)
+/// to `true` when creating your context. To enable this for a canvas,
+/// initialize it via [`Canvas::builder`], with [`stencil_buffer`](CanvasBuilder::stencil_buffer)
 /// set to true.
 pub fn set_stencil_state(ctx: &mut Context, state: StencilState) {
     flush(ctx);

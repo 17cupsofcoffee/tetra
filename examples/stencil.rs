@@ -70,6 +70,7 @@ impl State for GameState {
 
 fn main() -> tetra::Result {
     ContextBuilder::new("Stencils", 800, 600)
+        .stencil_buffer(true)
         .build()?
         .run(GameState::new)
 }

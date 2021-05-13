@@ -68,12 +68,15 @@ impl Window {
         gl_attr.set_green_size(8);
         gl_attr.set_blue_size(8);
         gl_attr.set_alpha_size(8);
-        gl_attr.set_stencil_size(8);
         gl_attr.set_double_buffer(true);
 
         if settings.multisampling > 0 {
             gl_attr.set_multisample_buffers(1);
             gl_attr.set_multisample_samples(settings.multisampling);
+        }
+
+        if settings.stencil_buffer {
+            gl_attr.set_stencil_size(8);
         }
 
         if settings.screen_saver_enabled {
