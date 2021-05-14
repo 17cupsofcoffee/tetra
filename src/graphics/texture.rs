@@ -446,11 +446,6 @@ impl NineSlice {
 
 /// Raw image data.
 ///
-/// Currently, the image data is always internally represented as RGBA8.
-/// This may change, however, so this API intentionally does not expose the
-/// internal representation at the moment. Lower level access to the raw
-/// pixel data may be added in a future version.
-///
 /// # Supported Formats
 ///
 /// Various file formats are supported, and can be enabled or disabled via Cargo features:
@@ -573,17 +568,14 @@ impl ImageData {
         (width as i32, height as i32)
     }
 
-    /// Returns the image as a vector of RGBA8 data.
-    pub fn into_rgba8(self) -> Vec<u8> {
-        self.data.into_raw()
+    /// Returns the image's data, as a slice of raw bytes.
+    pub fn as_bytes(&self) -> &[u8] {
+        self.data.as_bytes()
     }
 
-    /// Returns the image's data, as a slice of raw bytes.
-    ///
-    /// This is not currently exposed publicly, as I don't know how I want to handle different
-    /// pixel formats.
-    pub(crate) fn as_bytes(&self) -> &[u8] {
-        self.data.as_bytes()
+    /// Returns the image's underlying buffer.
+    pub fn into_bytes(self) -> Vec<u8> {
+        self.data.into_raw()
     }
 
     /// Creates a new `ImageData` from a region.
