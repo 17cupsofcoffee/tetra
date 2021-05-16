@@ -1,5 +1,7 @@
 use std::cell::Cell;
+use std::mem;
 use std::rc::Rc;
+use std::slice;
 
 use glow::{Context as GlowContext, HasContext, PixelPackData, PixelUnpackData};
 
@@ -464,10 +466,9 @@ impl GraphicsDevice {
 
         unsafe {
             // SAFETY: Type is aligned and has no padding.
-            let slice: &[f32] =
-                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 2);
-
-            self.state.gl.uniform_2_f32_slice(location, slice);
+            self.state
+                .gl
+                .uniform_2_f32_slice(location, cast_slice_assume_aligned(values));
         }
     }
 
@@ -481,10 +482,9 @@ impl GraphicsDevice {
 
         unsafe {
             // SAFETY: Type is aligned and has no padding.
-            let slice: &[f32] =
-                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 3);
-
-            self.state.gl.uniform_3_f32_slice(location, slice);
+            self.state
+                .gl
+                .uniform_3_f32_slice(location, cast_slice_assume_aligned(values));
         }
     }
 
@@ -498,10 +498,9 @@ impl GraphicsDevice {
 
         unsafe {
             // SAFETY: Type is aligned and has no padding.
-            let slice: &[f32] =
-                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 4);
-
-            self.state.gl.uniform_4_f32_slice(location, slice);
+            self.state
+                .gl
+                .uniform_4_f32_slice(location, cast_slice_assume_aligned(values));
         }
     }
 
@@ -515,10 +514,9 @@ impl GraphicsDevice {
 
         unsafe {
             // SAFETY: Type is aligned and has no padding.
-            let slice: &[f32] =
-                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 4);
-
-            self.state.gl.uniform_4_f32_slice(location, slice);
+            self.state
+                .gl
+                .uniform_4_f32_slice(location, cast_slice_assume_aligned(values));
         }
     }
 
@@ -537,13 +535,10 @@ impl GraphicsDevice {
 
         unsafe {
             // SAFETY: Type is aligned and has no padding.
-            let slice: &[f32] =
-                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 4);
-
             self.state.gl.uniform_matrix_2_f32_slice(
                 location,
                 Mat2::<f32>::GL_SHOULD_TRANSPOSE,
-                slice,
+                cast_slice_assume_aligned(values),
             );
         }
     }
@@ -563,13 +558,10 @@ impl GraphicsDevice {
 
         unsafe {
             // SAFETY: Type is aligned and has no padding.
-            let slice: &[f32] =
-                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 9);
-
             self.state.gl.uniform_matrix_3_f32_slice(
                 location,
                 Mat3::<f32>::GL_SHOULD_TRANSPOSE,
-                slice,
+                cast_slice_assume_aligned(values),
             );
         }
     }
@@ -589,13 +581,10 @@ impl GraphicsDevice {
 
         unsafe {
             // SAFETY: Type is aligned and has no padding.
-            let slice: &[f32] =
-                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 16);
-
             self.state.gl.uniform_matrix_4_f32_slice(
                 location,
                 Mat4::<f32>::GL_SHOULD_TRANSPOSE,
-                slice,
+                cast_slice_assume_aligned(values),
             );
         }
     }
@@ -1510,6 +1499,18 @@ impl Drop for RawRenderbuffer {
             self.state.gl.delete_renderbuffer(self.id);
         }
     }
+}
+
+/// This function exists because Vek isn't currently compatible with Bytemuck, so
+/// there's not an easy way of converting slices of that library's types.
+///
+/// This should be replaced with `bytemuck::cast_slice` as soon as that's possible,
+/// and it should not be used for anything other than Vek interop!
+unsafe fn cast_slice_assume_aligned<A, B>(a: &[A]) -> &[B] {
+    slice::from_raw_parts(
+        a.as_ptr() as *const B,
+        a.len() * mem::size_of::<A>() / mem::size_of::<B>(),
+    )
 }
 
 fn format_gl_error(prefix: &str, value: u32) -> String {
