@@ -249,11 +249,19 @@ impl Shader {
 
         let projection_location = device.get_uniform_location(&self.data.handle, "u_projection");
 
-        device.set_uniform_mat4(&self.data.handle, projection_location.as_ref(), projection);
+        device.set_uniform_mat4(
+            &self.data.handle,
+            projection_location.as_ref(),
+            &[projection],
+        );
 
         let diffuse_location = device.get_uniform_location(&self.data.handle, "u_diffuse");
 
-        device.set_uniform_vec4(&self.data.handle, diffuse_location.as_ref(), diffuse.into());
+        device.set_uniform_vec4(
+            &self.data.handle,
+            diffuse_location.as_ref(),
+            &[diffuse.into()],
+        );
 
         Ok(())
     }
@@ -269,7 +277,7 @@ pub trait UniformValue {
 }
 
 macro_rules! simple_uniforms {
-    ($($t:ty => $f:ident $doc:expr),* $(,)?) => {
+    ($($t:ty => $f:ident, $doc:expr, $arraydoc:expr),* $(,)?) => {
         $(
             #[doc = $doc]
             impl UniformValue for $t {
@@ -281,7 +289,35 @@ macro_rules! simple_uniforms {
                     name: &str,
                 ) {
                     let location = ctx.device.get_uniform_location(&shader.data.handle, name);
+                    ctx.device.$f(&shader.data.handle, location.as_ref(), &[*self]);
+                }
+            }
+
+            #[doc = $arraydoc]
+            impl UniformValue for &[$t] {
+                #[doc(hidden)]
+                 fn set_uniform(
+                    &self,
+                    ctx: &mut Context,
+                    shader: &Shader,
+                    name: &str,
+                ) {
+                    let location = ctx.device.get_uniform_location(&shader.data.handle, name);
                     ctx.device.$f(&shader.data.handle, location.as_ref(), *self);
+                }
+            }
+
+            #[doc = $arraydoc]
+            impl<const N: usize> UniformValue for [$t; N] {
+                #[doc(hidden)]
+                 fn set_uniform(
+                    &self,
+                    ctx: &mut Context,
+                    shader: &Shader,
+                    name: &str,
+                ) {
+                    let location = ctx.device.get_uniform_location(&shader.data.handle, name);
+                    ctx.device.$f(&shader.data.handle, location.as_ref(), self);
                 }
             }
         )*
@@ -289,24 +325,16 @@ macro_rules! simple_uniforms {
 }
 
 simple_uniforms! {
-    i32 => set_uniform_i32 "Can be accessed as an `int` in your shader.",
-    u32 => set_uniform_u32 "Can be accessed as a `uint` in your shader.",
-    f32 => set_uniform_f32 "Can be accessed as a `float` in your shader.",
-    Vec2<f32> => set_uniform_vec2 "Can be accessed as a `vec2` in your shader.",
-    Vec3<f32> => set_uniform_vec3 "Can be accessed as a `vec3` in your shader.",
-    Vec4<f32> => set_uniform_vec4 "Can be accessed as a `vec4` in your shader.",
-    Mat2<f32> => set_uniform_mat2 "Can be accessed as a `mat2` in your shader.",
-    Mat3<f32> => set_uniform_mat3 "Can be accessed as a `mat3` in your shader.",
-    Mat4<f32> => set_uniform_mat4 "Can be accessed as a `mat4` in your shader.",
-}
-
-/// Can be accessed as a `vec4` in your shader.
-impl UniformValue for Color {
-    #[doc(hidden)]
-    fn set_uniform(&self, ctx: &mut Context, shader: &Shader, name: &str) {
-        let vec4: Vec4<f32> = (*self).into();
-        vec4.set_uniform(ctx, shader, name);
-    }
+    i32 => set_uniform_i32, "Can be accessed as an `int` in your shader.", "Can be accessed as an array of `int`s in your shader.",
+    u32 => set_uniform_u32, "Can be accessed as a `uint` in your shader.", "Can be accessed as an array of `uint`s in your shader.",
+    f32 => set_uniform_f32, "Can be accessed as a `float` in your shader.", "Can be accessed as an array of `float`s in your shader.",
+    Vec2<f32> => set_uniform_vec2, "Can be accessed as a `vec2` in your shader.", "Can be accessed as an array of `vec2`s in your shader.",
+    Vec3<f32> => set_uniform_vec3, "Can be accessed as a `vec3` in your shader.", "Can be accessed as an array of `vec3`s in your shader.",
+    Vec4<f32> => set_uniform_vec4, "Can be accessed as a `vec4` in your shader.", "Can be accessed as an array of `vec4`s in your shader.",
+    Mat2<f32> => set_uniform_mat2, "Can be accessed as a `mat2` in your shader.", "Can be accessed as an array of `mat2`s in your shader.",
+    Mat3<f32> => set_uniform_mat3, "Can be accessed as a `mat3` in your shader.", "Can be accessed as an array of `mat3`s in your shader.",
+    Mat4<f32> => set_uniform_mat4, "Can be accessed as a `mat4` in your shader.", "Can be accessed as an array of `mat4`s in your shader.",
+    Color => set_uniform_color, "Can be accessed as a `vec4` in your shader.", "Can be accessed as an array of `vec4`s in your shader.",
 }
 
 /// Can be accessed via a `sampler2D` in your shader.

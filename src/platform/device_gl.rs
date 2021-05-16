@@ -8,7 +8,9 @@ use crate::graphics::{
     mesh::{BufferUsage, Vertex, VertexWinding},
     StencilState, StencilTest,
 };
-use crate::graphics::{BlendAlphaMode, BlendMode, FilterMode, GraphicsDeviceInfo, StencilAction};
+use crate::graphics::{
+    BlendAlphaMode, BlendMode, Color, FilterMode, GraphicsDeviceInfo, StencilAction,
+};
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
 type BufferId = <GlowContext as HasContext>::Buffer;
@@ -110,9 +112,12 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn clear(&mut self, r: f32, g: f32, b: f32, a: f32) {
+    pub fn clear(&mut self, color: Color) {
         unsafe {
-            self.state.gl.clear_color(r, g, b, a);
+            self.state
+                .gl
+                .clear_color(color.r, color.g, color.b, color.a);
+
             self.state.gl.clear(glow::COLOR_BUFFER_BIT);
         }
     }
@@ -400,7 +405,7 @@ impl GraphicsDevice {
             };
 
             let sampler_location = self.get_uniform_location(&shader, "u_texture");
-            self.set_uniform_i32(&shader, sampler_location.as_ref(), 0);
+            self.set_uniform_i32(&shader, sampler_location.as_ref(), &[0]);
 
             Ok(shader)
         }
@@ -414,12 +419,12 @@ impl GraphicsDevice {
         &mut self,
         shader: &RawShader,
         location: Option<&UniformLocation>,
-        value: i32,
+        values: &[i32],
     ) {
         self.bind_program(Some(shader.id));
 
         unsafe {
-            self.state.gl.uniform_1_i32(location, value);
+            self.state.gl.uniform_1_i32_slice(location, values);
         }
     }
 
@@ -427,12 +432,12 @@ impl GraphicsDevice {
         &mut self,
         shader: &RawShader,
         location: Option<&UniformLocation>,
-        value: u32,
+        values: &[u32],
     ) {
         self.bind_program(Some(shader.id));
 
         unsafe {
-            self.state.gl.uniform_1_u32(location, value);
+            self.state.gl.uniform_1_u32_slice(location, values);
         }
     }
 
@@ -440,12 +445,12 @@ impl GraphicsDevice {
         &mut self,
         shader: &RawShader,
         location: Option<&UniformLocation>,
-        value: f32,
+        values: &[f32],
     ) {
         self.bind_program(Some(shader.id));
 
         unsafe {
-            self.state.gl.uniform_1_f32(location, value);
+            self.state.gl.uniform_1_f32_slice(location, values);
         }
     }
 
@@ -453,14 +458,16 @@ impl GraphicsDevice {
         &mut self,
         shader: &RawShader,
         location: Option<&UniformLocation>,
-        value: Vec2<f32>,
+        values: &[Vec2<f32>],
     ) {
         self.bind_program(Some(shader.id));
 
         unsafe {
-            self.state
-                .gl
-                .uniform_2_f32_slice(location, &value.into_array());
+            // SAFETY: Type is aligned and has no padding.
+            let slice: &[f32] =
+                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 2);
+
+            self.state.gl.uniform_2_f32_slice(location, slice);
         }
     }
 
@@ -468,14 +475,16 @@ impl GraphicsDevice {
         &mut self,
         shader: &RawShader,
         location: Option<&UniformLocation>,
-        value: Vec3<f32>,
+        values: &[Vec3<f32>],
     ) {
         self.bind_program(Some(shader.id));
 
         unsafe {
-            self.state
-                .gl
-                .uniform_3_f32_slice(location, &value.into_array());
+            // SAFETY: Type is aligned and has no padding.
+            let slice: &[f32] =
+                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 3);
+
+            self.state.gl.uniform_3_f32_slice(location, slice);
         }
     }
 
@@ -483,14 +492,33 @@ impl GraphicsDevice {
         &mut self,
         shader: &RawShader,
         location: Option<&UniformLocation>,
-        value: Vec4<f32>,
+        values: &[Vec4<f32>],
     ) {
         self.bind_program(Some(shader.id));
 
         unsafe {
-            self.state
-                .gl
-                .uniform_4_f32_slice(location, &value.into_array());
+            // SAFETY: Type is aligned and has no padding.
+            let slice: &[f32] =
+                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 4);
+
+            self.state.gl.uniform_4_f32_slice(location, slice);
+        }
+    }
+
+    pub fn set_uniform_color(
+        &mut self,
+        shader: &RawShader,
+        location: Option<&UniformLocation>,
+        values: &[Color],
+    ) {
+        self.bind_program(Some(shader.id));
+
+        unsafe {
+            // SAFETY: Type is aligned and has no padding.
+            let slice: &[f32] =
+                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 4);
+
+            self.state.gl.uniform_4_f32_slice(location, slice);
         }
     }
 
@@ -498,15 +526,24 @@ impl GraphicsDevice {
         &mut self,
         shader: &RawShader,
         location: Option<&UniformLocation>,
-        value: Mat2<f32>,
+        values: &[Mat2<f32>],
     ) {
         self.bind_program(Some(shader.id));
 
+        // This is probably overkill as Vek's repr_c matrices are always packed,
+        // but they explicitly don't guarentee this won't change, so let's be
+        // safe.
+        assert!(values.iter().all(Mat2::is_packed));
+
         unsafe {
+            // SAFETY: Type is aligned and has no padding.
+            let slice: &[f32] =
+                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 4);
+
             self.state.gl.uniform_matrix_2_f32_slice(
                 location,
-                value.gl_should_transpose(),
-                &value.into_col_array(),
+                Mat2::<f32>::GL_SHOULD_TRANSPOSE,
+                slice,
             );
         }
     }
@@ -515,15 +552,24 @@ impl GraphicsDevice {
         &mut self,
         shader: &RawShader,
         location: Option<&UniformLocation>,
-        value: Mat3<f32>,
+        values: &[Mat3<f32>],
     ) {
         self.bind_program(Some(shader.id));
 
+        // This is probably overkill as Vek's repr_c matrices are always packed,
+        // but they explicitly don't guarentee this won't change, so let's be
+        // safe.
+        assert!(values.iter().all(Mat3::is_packed));
+
         unsafe {
+            // SAFETY: Type is aligned and has no padding.
+            let slice: &[f32] =
+                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 9);
+
             self.state.gl.uniform_matrix_3_f32_slice(
                 location,
-                value.gl_should_transpose(),
-                &value.into_col_array(),
+                Mat3::<f32>::GL_SHOULD_TRANSPOSE,
+                slice,
             );
         }
     }
@@ -532,15 +578,24 @@ impl GraphicsDevice {
         &mut self,
         shader: &RawShader,
         location: Option<&UniformLocation>,
-        value: Mat4<f32>,
+        values: &[Mat4<f32>],
     ) {
         self.bind_program(Some(shader.id));
 
+        // This is probably overkill as Vek's repr_c matrices are always packed,
+        // but they explicitly don't guarentee this won't change, so let's be
+        // safe.
+        assert!(values.iter().all(Mat4::is_packed));
+
         unsafe {
+            // SAFETY: Type is aligned and has no padding.
+            let slice: &[f32] =
+                std::slice::from_raw_parts(values.as_ptr() as *const f32, values.len() * 16);
+
             self.state.gl.uniform_matrix_4_f32_slice(
                 location,
-                value.gl_should_transpose(),
-                &value.into_col_array(),
+                Mat4::<f32>::GL_SHOULD_TRANSPOSE,
+                slice,
             );
         }
     }
@@ -753,7 +808,7 @@ impl GraphicsDevice {
                 0,
             );
 
-            self.clear(0.0, 0.0, 0.0, 0.0);
+            self.clear(Color::rgba(0.0, 0.0, 0.0, 0.0));
 
             let actual_samples = u8::min(samples, self.state.max_samples);
 
@@ -767,7 +822,7 @@ impl GraphicsDevice {
                     Some(renderbuffer.id),
                 );
 
-                self.clear(0.0, 0.0, 0.0, 0.0);
+                self.clear(Color::rgba(0.0, 0.0, 0.0, 0.0));
 
                 Some(renderbuffer)
             } else {

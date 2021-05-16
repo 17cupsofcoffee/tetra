@@ -134,7 +134,7 @@ impl GraphicsContext {
 
 /// Clears the screen (or a canvas, if one is enabled) to the specified color.
 pub fn clear(ctx: &mut Context, color: Color) {
-    ctx.device.clear(color.r, color.g, color.b, color.a);
+    ctx.device.clear(color);
 }
 
 #[allow(clippy::too_many_arguments)]

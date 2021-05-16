@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+# [Upcoming]
+
+### Added 
+
+* Uniform arrays are now supported in shaders, and can be set by passing an array or a slice to `set_uniform`.
+
 # [0.6.4] - 2021-05-14
 
 ### Added
