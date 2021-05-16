@@ -350,9 +350,9 @@ pub fn flush(ctx: &mut Context) {
             0,
         );
 
-        ctx.device.draw_elements(
+        ctx.device.draw(
             &ctx.graphics.vertex_buffer,
-            &ctx.graphics.index_buffer,
+            Some(&ctx.graphics.index_buffer),
             &texture.data.handle,
             &shader.data.handle,
             0,

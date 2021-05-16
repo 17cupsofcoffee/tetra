@@ -972,60 +972,96 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn draw_arrays(
+    pub fn draw(
         &mut self,
         vertex_buffer: &RawVertexBuffer,
+        index_buffer: Option<&RawIndexBuffer>,
         texture: &RawTexture,
         shader: &RawShader,
         offset: usize,
         count: usize,
     ) {
-        self.bind_vertex_buffer(Some(vertex_buffer.id));
-        self.bind_default_texture(Some(texture.id));
-        self.bind_program(Some(shader.id));
-
-        self.set_vertex_attributes(vertex_buffer);
-
-        let max_count = vertex_buffer.count();
-
-        let offset = usize::min(offset, max_count.saturating_sub(1));
-        let count = usize::min(count, max_count.saturating_sub(offset));
-
-        unsafe {
-            self.state
-                .gl
-                .draw_arrays(glow::TRIANGLES, offset as i32, count as i32);
-        }
+        self.draw_instanced(
+            vertex_buffer,
+            index_buffer,
+            texture,
+            shader,
+            offset,
+            count,
+            1,
+        );
     }
 
-    pub fn draw_elements(
+    #[allow(clippy::too_many_arguments)]
+    pub fn draw_instanced(
         &mut self,
         vertex_buffer: &RawVertexBuffer,
-        index_buffer: &RawIndexBuffer,
+        index_buffer: Option<&RawIndexBuffer>,
         texture: &RawTexture,
         shader: &RawShader,
         offset: usize,
         count: usize,
+        instances: usize,
     ) {
         self.bind_vertex_buffer(Some(vertex_buffer.id));
-        self.bind_index_buffer(Some(index_buffer.id));
         self.bind_default_texture(Some(texture.id));
         self.bind_program(Some(shader.id));
-
         self.set_vertex_attributes(vertex_buffer);
 
-        let max_count = index_buffer.count();
+        match index_buffer {
+            Some(index_buffer) => {
+                self.bind_index_buffer(Some(index_buffer.id));
 
-        let offset = usize::min(offset, max_count.saturating_sub(1));
-        let count = usize::min(count, max_count.saturating_sub(offset));
+                let max_count = index_buffer.count();
 
-        unsafe {
-            self.state.gl.draw_elements(
-                glow::TRIANGLES,
-                count as i32,
-                glow::UNSIGNED_INT,
-                (index_buffer.stride() * offset) as i32,
-            );
+                let offset = usize::min(offset, max_count.saturating_sub(1));
+                let count = usize::min(count, max_count.saturating_sub(offset));
+
+                if instances > 1 {
+                    unsafe {
+                        self.state.gl.draw_elements_instanced(
+                            glow::TRIANGLES,
+                            count as i32,
+                            glow::UNSIGNED_INT,
+                            (index_buffer.stride() * offset) as i32,
+                            instances as i32,
+                        );
+                    }
+                } else {
+                    unsafe {
+                        self.state.gl.draw_elements(
+                            glow::TRIANGLES,
+                            count as i32,
+                            glow::UNSIGNED_INT,
+                            (index_buffer.stride() * offset) as i32,
+                        );
+                    }
+                }
+            }
+
+            None => {
+                let max_count = vertex_buffer.count();
+
+                let offset = usize::min(offset, max_count.saturating_sub(1));
+                let count = usize::min(count, max_count.saturating_sub(offset));
+
+                if instances > 1 {
+                    unsafe {
+                        self.state.gl.draw_arrays_instanced(
+                            glow::TRIANGLES,
+                            offset as i32,
+                            count as i32,
+                            instances as i32,
+                        );
+                    }
+                } else {
+                    unsafe {
+                        self.state
+                            .gl
+                            .draw_arrays(glow::TRIANGLES, offset as i32, count as i32);
+                    }
+                }
+            }
         }
     }
 

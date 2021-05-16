@@ -76,6 +76,11 @@ impl PartialEq for ShaderSharedData {
 ///
 /// You can also set data into your own uniform variables via the [`set_uniform`](Shader::set_uniform) method.
 ///
+/// Bear in mind that there is a hardware-defined limit on how many uniform locations can be used
+/// per shader. OpenGL 3.0 guarantees there will be at least 1024 of these locations available,
+/// which sounds like a lot - however, some types can use up multiple locations (e.g. a `vec2`
+/// uses 2, a `mat4` uses 16, an array of 4 `mat4`s uses 64, and so on).
+///
 /// # Performance
 ///
 /// Creating a `Shader` is a relatively expensive operation. If you can, store them in your

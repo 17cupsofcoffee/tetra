@@ -330,6 +330,25 @@ impl Mesh {
     where
         P: Into<DrawParams>,
     {
+        self.draw_instanced(ctx, 1, params);
+    }
+
+    /// Draws multiple instances of the mesh to the screen (or to a canvas,
+    /// if one is enabled).
+    ///
+    /// You will need to use a custom [`Shader`](crate::graphics::Shader) in order to pass unique
+    /// properties to each instance. Currently, the easiest way of doing this is via uniform
+    /// arrays - however, there is a hardware-determined limit on how many uniform locations
+    /// an individual shader can use, so this may not work if you're rendering a large
+    /// number of objects.
+    ///
+    /// This should usually only be used for complex meshes - instancing can be inefficient
+    /// for simple geometry (e.g. quads). That said, as with all things performance-related,
+    /// benchmark it before coming to any conclusions!
+    pub fn draw_instanced<P>(&self, ctx: &mut Context, instances: usize, params: P)
+    where
+        P: Into<DrawParams>,
+    {
         graphics::flush(ctx);
 
         let texture = match &self.texture {
@@ -362,34 +381,21 @@ impl Mesh {
             ActiveCanvas::User(_) => self.winding.flipped(),
         });
 
-        let draw_range = self.draw_range.map(|r| (r.start, r.count));
+        let (start, count) = match (self.draw_range, &self.index_buffer) {
+            (Some(d), _) => (d.start, d.count),
+            (_, Some(i)) => (0, i.handle.count()),
+            (_, None) => (0, self.vertex_buffer.handle.count()),
+        };
 
-        match &self.index_buffer {
-            Some(index_buffer) => {
-                let (start, count) = draw_range.unwrap_or_else(|| (0, index_buffer.handle.count()));
-
-                ctx.device.draw_elements(
-                    &self.vertex_buffer.handle,
-                    &index_buffer.handle,
-                    &texture.data.handle,
-                    &shader.data.handle,
-                    start,
-                    count,
-                );
-            }
-            None => {
-                let (start, count) =
-                    draw_range.unwrap_or_else(|| (0, self.vertex_buffer.handle.count()));
-
-                ctx.device.draw_arrays(
-                    &self.vertex_buffer.handle,
-                    &texture.data.handle,
-                    &shader.data.handle,
-                    start,
-                    count,
-                );
-            }
-        }
+        ctx.device.draw_instanced(
+            &self.vertex_buffer.handle,
+            self.index_buffer.as_ref().map(|i| &*i.handle),
+            &texture.data.handle,
+            &shader.data.handle,
+            start,
+            count,
+            instances,
+        );
     }
 
     /// Gets a reference to the vertex buffer contained within this mesh.

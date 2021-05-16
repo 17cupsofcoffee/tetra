@@ -11,6 +11,7 @@ This project adheres to Semantic Versioning.
 ### Added 
 
 * Uniform arrays are now supported in shaders, and can be set by passing an array or a slice to `set_uniform`.
+* Basic support for instanced mesh rendering has been added, via `Mesh::draw_instanced`.
 
 # [0.6.4] - 2021-05-14
 
