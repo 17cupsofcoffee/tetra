@@ -3,6 +3,7 @@
 use std::cell::{Cell, RefCell};
 use std::path::Path;
 use std::rc::Rc;
+use std::slice;
 
 use hashbrown::HashMap;
 
@@ -294,7 +295,7 @@ macro_rules! simple_uniforms {
                     name: &str,
                 ) {
                     let location = ctx.device.get_uniform_location(&shader.data.handle, name);
-                    ctx.device.$f(&shader.data.handle, location.as_ref(), &[*self]);
+                    ctx.device.$f(&shader.data.handle, location.as_ref(), slice::from_ref(self));
                 }
             }
 
@@ -308,7 +309,7 @@ macro_rules! simple_uniforms {
                     name: &str,
                 ) {
                     let location = ctx.device.get_uniform_location(&shader.data.handle, name);
-                    ctx.device.$f(&shader.data.handle, location.as_ref(), *self);
+                    ctx.device.$f(&shader.data.handle, location.as_ref(), self);
                 }
             }
 
