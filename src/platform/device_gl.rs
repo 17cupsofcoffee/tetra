@@ -21,8 +21,7 @@ type TextureId = <GlowContext as HasContext>::Texture;
 type FramebufferId = <GlowContext as HasContext>::Framebuffer;
 type RenderbufferId = <GlowContext as HasContext>::Renderbuffer;
 type VertexArrayId = <GlowContext as HasContext>::VertexArray;
-
-pub type UniformLocation = <GlowContext as HasContext>::UniformLocation;
+type UniformLocation = <GlowContext as HasContext>::UniformLocation;
 
 #[derive(Debug)]
 struct GraphicsState {
