@@ -13,6 +13,11 @@ This project adheres to Semantic Versioning.
 * Uniform arrays are now supported in shaders, and can be set by passing an array or a slice to `set_uniform`.
 * Basic support for instanced mesh rendering has been added, via `Mesh::draw_instanced`.
 
+### Fixed
+
+* Switching away from a non-multisampled canvas no longer resolves the canvas.
+    * This was a regression due to a refactor in 0.6.3 - it should not have caused any change to the rendered image, but may have negatively impacted performance.
+
 # [0.6.4] - 2021-05-14
 
 ### Added

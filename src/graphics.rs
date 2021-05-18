@@ -305,7 +305,9 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 
 fn resolve_canvas(ctx: &mut Context) {
     if let ActiveCanvas::User(c) = &ctx.graphics.canvas {
-        ctx.device.resolve(&c.handle, &c.texture.data.handle);
+        if c.multisample.is_some() {
+            ctx.device.resolve(&c.handle, &c.texture.data.handle);
+        }
     }
 }
 
