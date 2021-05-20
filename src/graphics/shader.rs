@@ -380,7 +380,8 @@ where
     #[doc(hidden)]
     fn set_uniform(&self, ctx: &mut Context, shader: &Shader, name: &str) {
         {
-            (**self).set_uniform(ctx, shader, name);
+            let inner = *self;
+            inner.set_uniform(ctx, shader, name);
         }
     }
 }
