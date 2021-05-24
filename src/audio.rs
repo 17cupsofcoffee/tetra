@@ -261,13 +261,13 @@ impl SoundInstance {
     pub fn set_state(&mut self, state: SoundState) {
         match state {
             SoundState::Playing => {
-                self.handle.control::<Pauseable<_>, _>().set_paused(false);
+                self.handle.control::<Stop<_>, _>().resume();
             }
             SoundState::Paused => {
-                self.handle.control::<Pauseable<_>, _>().set_paused(true);
+                self.handle.control::<Stop<_>, _>().pause();
             }
             SoundState::Stopped => {
-                todo!()
+                self.handle.control::<Stop<_>, _>().stop();
             }
         }
     }
@@ -351,14 +351,13 @@ fn play_sound(
 ) -> Result<TetraHandle> {
     let source = match data {
         SoundData::Mono(s) => {
-            TetraSignal::Mono(MonoToStereo::new(FramesSignal::new(Arc::clone(&s), 0.0)))
+            TetraSignal::Mono(FramesSignal::new(Arc::clone(&s), 0.0).into_stereo())
         }
         SoundData::Stereo(s) => TetraSignal::Stereo(FramesSignal::new(Arc::clone(&s), 0.0)),
     };
 
     let source = Gain::new(source);
     let source = Speed::new(source);
-    let source = Pauseable::new(source, !playing);
 
     let mut handle = ctx
         .window
@@ -388,67 +387,4 @@ impl Signal for TetraSignal {
     }
 }
 
-type TetraHandle = Handle<Stop<Pauseable<Speed<Gain<TetraSignal>>>>>;
-
-// TODO: Everything below should be replaced with stuff built-in to Oddio, or I should get Ralith to
-// make sure it's not disgustingly broken.
-
-struct Pauseable<T: ?Sized> {
-    paused: AtomicBool,
-    inner: T,
-}
-
-impl<T> Pauseable<T> {
-    fn new(signal: T, paused: bool) -> Self {
-        Self {
-            paused: AtomicBool::new(paused),
-            inner: signal,
-        }
-    }
-}
-
-impl<T: Signal> Signal for Pauseable<T>
-where
-    T::Frame: Frame,
-{
-    type Frame = T::Frame;
-
-    fn sample(&self, interval: f32, out: &mut [T::Frame]) {
-        if self.paused.load(Ordering::Relaxed) {
-            for frame in out {
-                *frame = T::Frame::ZERO;
-            }
-        } else {
-            self.inner.sample(interval, out);
-        }
-    }
-
-    fn remaining(&self) -> f32 {
-        // TODO: Is this right?
-        self.inner.remaining()
-    }
-}
-
-impl<T> Filter for Pauseable<T> {
-    type Inner = T;
-
-    fn inner(&self) -> &T {
-        &self.inner
-    }
-}
-
-struct PauseableControl<'a, T>(&'a Pauseable<T>);
-
-unsafe impl<'a, T: 'a> Controlled<'a> for Pauseable<T> {
-    type Control = PauseableControl<'a, T>;
-
-    unsafe fn make_control(signal: &'a Pauseable<T>) -> Self::Control {
-        PauseableControl(signal)
-    }
-}
-
-impl<'a, T> PauseableControl<'a, T> {
-    pub fn set_paused(&mut self, paused: bool) {
-        self.0.paused.store(paused, Ordering::Relaxed);
-    }
-}
+type TetraHandle = Handle<Stop<Speed<Gain<TetraSignal>>>>;
