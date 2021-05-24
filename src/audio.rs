@@ -372,26 +372,6 @@ fn play_sound(
     Ok(handle)
 }
 
-pub(crate) struct AudioDevice {
-    master_volume: Arc<AtomicU32>,
-}
-
-impl AudioDevice {
-    pub(crate) fn new() -> AudioDevice {
-        AudioDevice {
-            master_volume: Arc::new(AtomicU32::new(1.0f32.to_bits())),
-        }
-    }
-
-    fn master_volume(&self) -> f32 {
-        f32::from_bits(self.master_volume.load(Ordering::SeqCst))
-    }
-
-    fn set_master_volume(&self, volume: f32) {
-        self.master_volume.store(volume.to_bits(), Ordering::SeqCst);
-    }
-}
-
 enum TetraSignal {
     Mono(MonoToStereo<FramesSignal<f32>>),
     Stereo(FramesSignal<[f32; 2]>),

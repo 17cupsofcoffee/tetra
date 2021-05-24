@@ -8,15 +8,11 @@ use crate::platform::{self, GraphicsDevice, Window};
 use crate::time::{self, TimeContext, Timestep};
 use crate::{Result, State, TetraError};
 
-#[cfg(feature = "audio")]
-use crate::audio::AudioDevice;
-
 /// A struct containing all of the 'global' state within the framework.
 pub struct Context {
     pub(crate) window: Window,
     pub(crate) device: GraphicsDevice,
-    #[cfg(feature = "audio")]
-    pub(crate) audio: AudioDevice,
+
     pub(crate) graphics: GraphicsContext,
     pub(crate) input: InputContext,
     pub(crate) time: TimeContext,
@@ -27,10 +23,6 @@ pub struct Context {
 
 impl Context {
     pub(crate) fn new(settings: &ContextBuilder) -> Result<Context> {
-        // This needs to be initialized ASAP to avoid https://github.com/tomaka/rodio/issues/214
-        #[cfg(feature = "audio")]
-        let audio = AudioDevice::new();
-
         let (window, gl_context, window_width, window_height) = Window::new(settings)?;
         let mut device = GraphicsDevice::new(gl_context)?;
 
@@ -51,8 +43,6 @@ impl Context {
             window,
             device,
 
-            #[cfg(feature = "audio")]
-            audio,
             graphics,
             input,
             time,
