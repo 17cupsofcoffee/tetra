@@ -6,7 +6,7 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
-# [0.6.5] - 2021-05-26
+## [0.6.5] - 2021-05-26
 
 ### Added 
 
@@ -18,7 +18,7 @@ This project adheres to Semantic Versioning.
 * Switching away from a non-multisampled canvas no longer resolves the canvas.
     * This was a regression due to a refactor in 0.6.3 - it should not have caused any change to the rendered image, but may have negatively impacted performance.
 
-# [0.6.4] - 2021-05-14
+## [0.6.4] - 2021-05-14
 
 ### Added
 
