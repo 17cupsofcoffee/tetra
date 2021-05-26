@@ -1,7 +1,7 @@
 [package]
 name = "tetra"
 description = "A simple 2D game framework written in Rust"
-version = "0.6.4"
+version = "0.6.5"
 edition = "2018"
 authors = ["Joe Clay <27cupsofcoffee@gmail.com>"]
 license = "MIT"
