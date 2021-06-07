@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Changed
+
+* Updated `glow` to 0.10.
+
 ## [0.6.5] - 2021-05-26
 
 ### Added 
