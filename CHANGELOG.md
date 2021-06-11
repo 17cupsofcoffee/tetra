@@ -8,6 +8,10 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added
+
+* An example of using ECS libraries with Tetra has been added. ([@rghartmann](https://github.com/rghartmann) in [#268](https://github.com/17cupsofcoffee/tetra/pull/268))
+
 ### Changed
 
 * Updated `glow` to 0.10.
