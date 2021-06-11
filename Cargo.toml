@@ -28,6 +28,7 @@ lyon_tessellation = "0.17.4"
 [dev-dependencies]
 rand = "0.8.0"
 anyhow = "1.0.33"
+legion = "0.4.0"
 
 [features]
 default = [

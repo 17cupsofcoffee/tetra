@@ -12,8 +12,8 @@ use tetra::{Context, ContextBuilder, State};
 // NOTE: Using a high number here yields worse performance than adding more bunnies over
 // time - I think this is due to all of the RNG being run on the same tick...
 const INITIAL_BUNNIES: usize = 100;
-const WIDTH: i32 = 1280;
-const HEIGHT: i32 = 720;
+const MAX_X: f32 = 1280.0 - 26.0;
+const MAX_Y: f32 = 720.0 - 37.0;
 const GRAVITY: f32 = 0.5;
 
 struct Bunny {
@@ -37,8 +37,6 @@ struct GameState {
     rng: ThreadRng,
     texture: Texture,
     bunnies: Vec<Bunny>,
-    max_x: f32,
-    max_y: f32,
 
     click_timer: i32,
 }
@@ -48,8 +46,6 @@ impl GameState {
         let mut rng = rand::thread_rng();
         let texture = Texture::new(ctx, "./examples/resources/wabbit_alpha.png")?;
         let mut bunnies = Vec::with_capacity(INITIAL_BUNNIES);
-        let max_x = (WIDTH - texture.width()) as f32;
-        let max_y = (HEIGHT - texture.height()) as f32;
 
         for _ in 0..INITIAL_BUNNIES {
             bunnies.push(Bunny::new(&mut rng));
@@ -59,8 +55,6 @@ impl GameState {
             rng,
             texture,
             bunnies,
-            max_x,
-            max_y,
 
             click_timer: 0,
         })
@@ -84,17 +78,17 @@ impl State for GameState {
             bunny.position += bunny.velocity;
             bunny.velocity.y += GRAVITY;
 
-            if bunny.position.x > self.max_x {
+            if bunny.position.x > MAX_X {
                 bunny.velocity.x *= -1.0;
-                bunny.position.x = self.max_x;
+                bunny.position.x = MAX_X;
             } else if bunny.position.x < 0.0 {
                 bunny.velocity.x *= -1.0;
                 bunny.position.x = 0.0;
             }
 
-            if bunny.position.y > self.max_y {
+            if bunny.position.y > MAX_Y {
                 bunny.velocity.y *= -0.8;
-                bunny.position.y = self.max_y;
+                bunny.position.y = MAX_Y;
 
                 if self.rng.gen::<bool>() {
                     bunny.velocity.y -= 3.0 + (self.rng.gen::<f32>() * 4.0);
@@ -129,7 +123,7 @@ impl State for GameState {
 }
 
 fn main() -> tetra::Result {
-    ContextBuilder::new("BunnyMark", WIDTH, HEIGHT)
+    ContextBuilder::new("BunnyMark", 1280, 720)
         .quit_on_escape(true)
         .build()?
         .run(GameState::new)
