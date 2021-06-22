@@ -18,6 +18,7 @@ jobs:
     - uses: hecrj/setup-rust-action@v1
       with:
         rust-version: ${{ matrix.rust }}
+    - uses: Swatinem/rust-cache@v1
     - uses: actions/checkout@v1
     - name: Build and test (all features, all targets)
       run: cargo test
