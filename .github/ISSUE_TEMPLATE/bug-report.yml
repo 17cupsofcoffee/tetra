@@ -1,5 +1,5 @@
 name: Bug report
-about: Report an issue with the library
+description: Report an issue with the library
 labels: 'Type: Bug'
 body:
   - type: textarea
