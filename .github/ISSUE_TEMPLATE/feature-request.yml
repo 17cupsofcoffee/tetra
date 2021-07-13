@@ -1,0 +1,25 @@
+name: Feature request
+about: Suggest an idea for this project
+labels: 'Type: Feature Request'
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Please provide a clear and consise description of the feature you'd like to be added, or the change you'd like to be made.
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation/Examples
+      description: Describe why you think this change is needed, preferably with some real world use cases.
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What alternative solutions have you considered, if any?
+    validations:
+      required: false
