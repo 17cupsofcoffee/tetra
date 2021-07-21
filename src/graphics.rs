@@ -195,13 +195,13 @@ pub(crate) fn push_quad(
 }
 
 pub(crate) fn set_texture(ctx: &mut Context, texture: &Texture) {
-    set_texture_ex(ctx, Some(texture.clone()));
+    set_texture_ex(ctx, Some(texture));
 }
 
-pub(crate) fn set_texture_ex(ctx: &mut Context, texture: Option<Texture>) {
-    if texture != ctx.graphics.texture {
+pub(crate) fn set_texture_ex(ctx: &mut Context, texture: Option<&Texture>) {
+    if texture != ctx.graphics.texture.as_ref() {
         flush(ctx);
-        ctx.graphics.texture = texture;
+        ctx.graphics.texture = texture.cloned();
     }
 }
 
@@ -228,7 +228,7 @@ pub fn reset_blend_mode(ctx: &mut Context) {
 /// [`flush`] to the graphics hardware - try to avoid shader swapping as
 /// much as you can.
 pub fn set_shader(ctx: &mut Context, shader: &Shader) {
-    set_shader_ex(ctx, Some(shader.clone()));
+    set_shader_ex(ctx, Some(shader));
 }
 
 /// Sets the renderer back to using the default shader.
@@ -236,10 +236,10 @@ pub fn reset_shader(ctx: &mut Context) {
     set_shader_ex(ctx, None);
 }
 
-pub(crate) fn set_shader_ex(ctx: &mut Context, shader: Option<Shader>) {
-    if shader != ctx.graphics.shader {
+pub(crate) fn set_shader_ex(ctx: &mut Context, shader: Option<&Shader>) {
+    if shader != ctx.graphics.shader.as_ref() {
         flush(ctx);
-        ctx.graphics.shader = shader;
+        ctx.graphics.shader = shader.cloned();
     }
 }
 
@@ -248,7 +248,7 @@ pub(crate) fn set_shader_ex(ctx: &mut Context, shader: Option<Shader>) {
 /// If the canvas is different from the one that is currently in use, this will trigger a
 /// [`flush`] to the graphics hardware.
 pub fn set_canvas(ctx: &mut Context, canvas: &Canvas) {
-    set_canvas_ex(ctx, Some(canvas.clone()));
+    set_canvas_ex(ctx, Some(canvas));
 }
 
 /// Sets the renderer back to drawing to the screen directly.
@@ -256,12 +256,12 @@ pub fn reset_canvas(ctx: &mut Context) {
     set_canvas_ex(ctx, None);
 }
 
-pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: Option<Canvas>) {
-    if canvas != ctx.graphics.canvas {
+pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: Option<&Canvas>) {
+    if canvas != ctx.graphics.canvas.as_ref() {
         flush(ctx);
         resolve_canvas(ctx);
 
-        ctx.graphics.canvas = canvas;
+        ctx.graphics.canvas = canvas.cloned();
 
         match &ctx.graphics.canvas {
             None => {
