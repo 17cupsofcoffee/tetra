@@ -14,7 +14,7 @@ use lyon_tessellation::{
     StrokeTessellator, StrokeVertex, StrokeVertexConstructor, VertexBuffers,
 };
 
-use crate::graphics::{self, ActiveCanvas, ActiveShader, Color, DrawParams, Rectangle, Texture};
+use crate::graphics::{self, Color, DrawParams, Rectangle, Texture};
 use crate::math::Vec2;
 use crate::platform::{RawIndexBuffer, RawVertexBuffer};
 use crate::Context;
@@ -351,15 +351,16 @@ impl Mesh {
     {
         graphics::flush(ctx);
 
-        let texture = match &self.texture {
-            Some(t) => t,
-            None => &ctx.graphics.default_texture,
-        };
+        let texture = self
+            .texture
+            .as_ref()
+            .unwrap_or(&ctx.graphics.default_texture);
 
-        let shader = match &ctx.graphics.shader {
-            ActiveShader::Default => &ctx.graphics.default_shader,
-            ActiveShader::User(s) => s,
-        };
+        let shader = ctx
+            .graphics
+            .shader
+            .as_ref()
+            .unwrap_or(&ctx.graphics.default_shader);
 
         let params = params.into();
         let model_matrix = params.to_matrix();
@@ -377,8 +378,8 @@ impl Mesh {
         // Because canvas rendering is effectively done upside-down, the winding order is the opposite
         // of what you'd expect in that case.
         ctx.device.front_face(match &ctx.graphics.canvas {
-            ActiveCanvas::Window => self.winding,
-            ActiveCanvas::User(_) => self.winding.flipped(),
+            None => self.winding,
+            Some(_) => self.winding.flipped(),
         });
 
         let (start, count) = match (self.draw_range, &self.index_buffer) {

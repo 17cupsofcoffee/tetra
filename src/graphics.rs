@@ -38,36 +38,18 @@ const MAX_VERTICES: usize = MAX_SPRITES * 4; // Cannot be greater than 32767!
 const MAX_INDICES: usize = MAX_SPRITES * 6;
 const INDEX_ARRAY: [u32; 6] = [0, 1, 2, 2, 3, 0];
 
-#[derive(PartialEq)]
-pub(crate) enum ActiveTexture {
-    Default,
-    User(Texture),
-}
-
-#[derive(PartialEq)]
-pub(crate) enum ActiveShader {
-    Default,
-    User(Shader),
-}
-
-#[derive(PartialEq)]
-pub(crate) enum ActiveCanvas {
-    Window,
-    User(Canvas),
-}
-
 pub(crate) struct GraphicsContext {
     vertex_buffer: RawVertexBuffer,
     index_buffer: RawIndexBuffer,
 
-    texture: ActiveTexture,
+    texture: Option<Texture>,
     default_texture: Texture,
     default_filter_mode: FilterMode,
 
-    shader: ActiveShader,
+    shader: Option<Shader>,
     default_shader: Shader,
 
-    canvas: ActiveCanvas,
+    canvas: Option<Canvas>,
 
     projection_matrix: Mat4<f32>,
     transform_matrix: Mat4<f32>,
@@ -112,14 +94,14 @@ impl GraphicsContext {
             vertex_buffer,
             index_buffer,
 
-            texture: ActiveTexture::Default,
+            texture: None,
             default_texture,
             default_filter_mode,
 
-            shader: ActiveShader::Default,
+            shader: None,
             default_shader,
 
-            canvas: ActiveCanvas::Window,
+            canvas: None,
 
             projection_matrix: ortho(window_width as f32, window_height as f32, false),
             transform_matrix: Mat4::identity(),
@@ -213,10 +195,10 @@ pub(crate) fn push_quad(
 }
 
 pub(crate) fn set_texture(ctx: &mut Context, texture: &Texture) {
-    set_texture_ex(ctx, ActiveTexture::User(texture.clone()));
+    set_texture_ex(ctx, Some(texture.clone()));
 }
 
-pub(crate) fn set_texture_ex(ctx: &mut Context, texture: ActiveTexture) {
+pub(crate) fn set_texture_ex(ctx: &mut Context, texture: Option<Texture>) {
     if texture != ctx.graphics.texture {
         flush(ctx);
         ctx.graphics.texture = texture;
@@ -246,15 +228,15 @@ pub fn reset_blend_mode(ctx: &mut Context) {
 /// [`flush`] to the graphics hardware - try to avoid shader swapping as
 /// much as you can.
 pub fn set_shader(ctx: &mut Context, shader: &Shader) {
-    set_shader_ex(ctx, ActiveShader::User(shader.clone()));
+    set_shader_ex(ctx, Some(shader.clone()));
 }
 
 /// Sets the renderer back to using the default shader.
 pub fn reset_shader(ctx: &mut Context) {
-    set_shader_ex(ctx, ActiveShader::Default);
+    set_shader_ex(ctx, None);
 }
 
-pub(crate) fn set_shader_ex(ctx: &mut Context, shader: ActiveShader) {
+pub(crate) fn set_shader_ex(ctx: &mut Context, shader: Option<Shader>) {
     if shader != ctx.graphics.shader {
         flush(ctx);
         ctx.graphics.shader = shader;
@@ -266,15 +248,15 @@ pub(crate) fn set_shader_ex(ctx: &mut Context, shader: ActiveShader) {
 /// If the canvas is different from the one that is currently in use, this will trigger a
 /// [`flush`] to the graphics hardware.
 pub fn set_canvas(ctx: &mut Context, canvas: &Canvas) {
-    set_canvas_ex(ctx, ActiveCanvas::User(canvas.clone()));
+    set_canvas_ex(ctx, Some(canvas.clone()));
 }
 
 /// Sets the renderer back to drawing to the screen directly.
 pub fn reset_canvas(ctx: &mut Context) {
-    set_canvas_ex(ctx, ActiveCanvas::Window);
+    set_canvas_ex(ctx, None);
 }
 
-pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
+pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: Option<Canvas>) {
     if canvas != ctx.graphics.canvas {
         flush(ctx);
         resolve_canvas(ctx);
@@ -282,7 +264,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
         ctx.graphics.canvas = canvas;
 
         match &ctx.graphics.canvas {
-            ActiveCanvas::Window => {
+            None => {
                 let (width, height) = window::get_size(ctx);
                 let (physical_width, physical_height) = window::get_physical_size(ctx);
 
@@ -291,7 +273,8 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 
                 ctx.device.set_canvas(None);
             }
-            ActiveCanvas::User(r) => {
+
+            Some(r) => {
                 let (width, height) = r.size();
 
                 ctx.graphics.projection_matrix = ortho(width as f32, height as f32, true);
@@ -304,7 +287,7 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: ActiveCanvas) {
 }
 
 fn resolve_canvas(ctx: &mut Context) {
-    if let ActiveCanvas::User(c) = &ctx.graphics.canvas {
+    if let Some(c) = &ctx.graphics.canvas {
         if c.multisample.is_some() {
             ctx.device.resolve(&c.handle, &c.texture.data.handle);
         }
@@ -320,14 +303,15 @@ fn resolve_canvas(ctx: &mut Context) {
 pub fn flush(ctx: &mut Context) {
     if !ctx.graphics.vertex_data.is_empty() {
         let texture = match &ctx.graphics.texture {
-            ActiveTexture::Default => return,
-            ActiveTexture::User(t) => t,
+            None => return,
+            Some(t) => t,
         };
 
-        let shader = match &ctx.graphics.shader {
-            ActiveShader::Default => &ctx.graphics.default_shader,
-            ActiveShader::User(s) => s,
-        };
+        let shader = ctx
+            .graphics
+            .shader
+            .as_ref()
+            .unwrap_or(&ctx.graphics.default_shader);
 
         // TODO: Failing to apply the defaults should be handled more gracefully than this,
         // but we can't do that without breaking changes.
@@ -342,8 +326,8 @@ pub fn flush(ctx: &mut Context) {
         // Because canvas rendering is effectively done upside-down, the winding order is the opposite
         // of what you'd expect in that case.
         ctx.device.front_face(match &ctx.graphics.canvas {
-            ActiveCanvas::Window => VertexWinding::CounterClockwise,
-            ActiveCanvas::User(_) => VertexWinding::Clockwise,
+            None => VertexWinding::CounterClockwise,
+            Some(_) => VertexWinding::Clockwise,
         });
 
         ctx.device.set_vertex_buffer_data(
@@ -448,7 +432,7 @@ pub fn set_scissor(ctx: &mut Context, scissor_rect: Rectangle<i32>) {
     flush(ctx);
 
     match &ctx.graphics.canvas {
-        ActiveCanvas::Window => {
+        None => {
             let physical_height = window::get_physical_height(ctx);
 
             // OpenGL uses bottom-left co-ordinates, while Tetra uses
@@ -462,7 +446,7 @@ pub fn set_scissor(ctx: &mut Context, scissor_rect: Rectangle<i32>) {
             );
         }
 
-        ActiveCanvas::User(_) => {
+        Some(_) => {
             // Canvas rendering is effectively done upside-down, so we don't
             // need to flip the co-ordinates here.
             ctx.device.scissor(
@@ -520,7 +504,7 @@ pub fn set_color_mask(ctx: &mut Context, red: bool, green: bool, blue: bool, alp
 }
 
 pub(crate) fn set_viewport_size(ctx: &mut Context) {
-    if let ActiveCanvas::Window = ctx.graphics.canvas {
+    if ctx.graphics.canvas.is_none() {
         let (width, height) = window::get_size(ctx);
         let (physical_width, physical_height) = window::get_physical_size(ctx);
 
