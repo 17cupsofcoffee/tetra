@@ -156,7 +156,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn play(&self, ctx: &mut Context) -> Result<SoundInstance> {
-        play_sound(ctx, &self.data, true, false, 1.0, 1.0).map(|handle| SoundInstance { handle })
+        play_sound(ctx, &self.data, true, false, 1.0, 1.0)
     }
 
     /// Plays the sound repeatedly.
@@ -166,7 +166,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn repeat(&self, ctx: &mut Context) -> Result<SoundInstance> {
-        play_sound(ctx, &self.data, true, true, 1.0, 1.0).map(|handle| SoundInstance { handle })
+        play_sound(ctx, &self.data, true, true, 1.0, 1.0)
     }
 
     /// Spawns a new instance of the sound that is not playing yet.
@@ -176,7 +176,7 @@ impl Sound {
     /// * [`TetraError::NoAudioDevice`] will be returned if no audio device is active.
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn spawn(&self, ctx: &mut Context) -> Result<SoundInstance> {
-        play_sound(ctx, &self.data, false, false, 1.0, 1.0).map(|handle| SoundInstance { handle })
+        play_sound(ctx, &self.data, false, false, 1.0, 1.0)
     }
 
     /// Plays the sound, with the provided settings.
@@ -187,7 +187,6 @@ impl Sound {
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn play_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         play_sound(ctx, &self.data, true, false, volume, speed)
-            .map(|handle| SoundInstance { handle })
     }
 
     /// Plays the sound repeatedly, with the provided settings.
@@ -198,7 +197,6 @@ impl Sound {
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn repeat_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         play_sound(ctx, &self.data, true, true, volume, speed)
-            .map(|handle| SoundInstance { handle })
     }
 
     /// Spawns a new instance of the sound that is not playing yet, with the provided settings.
@@ -209,7 +207,6 @@ impl Sound {
     /// * [`TetraError::InvalidSound`] will be returned if the sound data could not be decoded.
     pub fn spawn_with(&self, ctx: &mut Context, volume: f32, speed: f32) -> Result<SoundInstance> {
         play_sound(ctx, &self.data, false, false, volume, speed)
-            .map(|handle| SoundInstance { handle })
     }
 }
 
@@ -348,7 +345,7 @@ fn play_sound(
     repeating: bool,
     volume: f32,
     speed: f32,
-) -> Result<TetraHandle> {
+) -> Result<SoundInstance> {
     let source = match data {
         SoundData::Mono(s) => {
             TetraSignal::Mono(MonoToStereo::new(FramesSignal::new(Arc::clone(&s), 0.0)))
@@ -371,7 +368,7 @@ fn play_sound(
 
     handle.control::<Speed<_>, _>().set_speed(speed);
 
-    Ok(handle)
+    Ok(SoundInstance { handle })
 }
 
 enum TetraSignal {
