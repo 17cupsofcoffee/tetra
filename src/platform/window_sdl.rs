@@ -194,7 +194,7 @@ impl Window {
             })
             .map_err(TetraError::FailedToChangeDisplayMode)?;
 
-        let (mixer_handle, mixer) = oddio::split(Gain::new(Mixer::new()));
+        let (mixer_handle, mixer) = oddio::split(Gain::new(Mixer::new(), 1.0));
 
         let audio_device = audio_sys
             .open_playback(

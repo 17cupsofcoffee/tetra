@@ -351,12 +351,12 @@ fn play_sound(
 ) -> Result<TetraHandle> {
     let source = match data {
         SoundData::Mono(s) => {
-            TetraSignal::Mono(FramesSignal::new(Arc::clone(&s), 0.0).into_stereo())
+            TetraSignal::Mono(MonoToStereo::new(FramesSignal::new(Arc::clone(&s), 0.0)))
         }
         SoundData::Stereo(s) => TetraSignal::Stereo(FramesSignal::new(Arc::clone(&s), 0.0)),
     };
 
-    let source = Gain::new(source);
+    let source = Gain::new(source, volume);
     let source = Speed::new(source);
 
     let mut handle = ctx
@@ -365,7 +365,10 @@ fn play_sound(
         .control::<Mixer<_>, _>()
         .play(source);
 
-    handle.control::<Gain<_>, _>().set_gain(volume);
+    if !playing {
+        handle.control::<Stop<_>, _>().pause();
+    }
+
     handle.control::<Speed<_>, _>().set_speed(speed);
 
     Ok(handle)
