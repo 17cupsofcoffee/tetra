@@ -18,6 +18,7 @@ pub struct CanvasBuilder {
     height: i32,
     samples: u8,
     stencil_buffer: bool,
+    hdr: bool,
 }
 
 impl CanvasBuilder {
@@ -32,6 +33,7 @@ impl CanvasBuilder {
             height,
             samples: 0,
             stencil_buffer: false,
+            hdr: false,
         }
     }
 
@@ -60,6 +62,15 @@ impl CanvasBuilder {
         self
     }
 
+    /// Sets whether the canvas should support HDR.
+    ///
+    /// Setting this to `true` allows you to store color values greater than 1.0, at the cost
+    /// of some extra video RAM usage.
+    pub fn hdr(&mut self, enabled: bool) -> &mut CanvasBuilder {
+        self.hdr = enabled;
+        self
+    }
+
     /// Builds the canvas.
     ///
     /// # Errors
@@ -73,6 +84,7 @@ impl CanvasBuilder {
             ctx.graphics.default_filter_mode,
             self.samples,
             self.stencil_buffer,
+            self.hdr,
         )?;
 
         Ok(Canvas {
