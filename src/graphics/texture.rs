@@ -151,7 +151,7 @@ impl Texture {
         data: &[u8],
         filter_mode: FilterMode,
     ) -> Result<Texture> {
-        let handle = device.new_texture(width, height, filter_mode)?;
+        let handle = device.new_texture(width, height, filter_mode, false)?;
 
         device.set_texture_data(&handle, data, 0, 0, width, height)?;
 
