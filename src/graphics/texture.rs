@@ -154,7 +154,7 @@ impl Texture {
     ) -> Result<Texture> {
         let handle = device.new_texture(width, height, filter_mode)?;
 
-        device.set_texture_data(&handle, &data, 0, 0, width, height)?;
+        device.set_texture_data(&handle, data, 0, 0, width, height)?;
 
         Ok(Texture {
             data: Rc::new(TextureSharedData {
@@ -357,7 +357,7 @@ impl Texture {
         data: &[u8],
     ) -> Result {
         ctx.device
-            .set_texture_data(&self.data.handle, &data, x, y, width, height)
+            .set_texture_data(&self.data.handle, data, x, y, width, height)
     }
 
     /// Overwrites the entire texture with new RGBA pixel data.

@@ -327,7 +327,7 @@ impl AudioDevice {
         let device = rodio::default_output_device();
 
         if let Some(active_device) = &device {
-            rodio::play_raw(&active_device, Empty::new());
+            rodio::play_raw(active_device, Empty::new());
         }
 
         AudioDevice {

@@ -81,11 +81,9 @@ pub(crate) fn clear(ctx: &mut Context) {
 
     ctx.input.current_text_input = None;
 
-    for slot in &mut ctx.input.pads {
-        if let Some(pad) = slot {
-            pad.buttons_pressed.clear();
-            pad.buttons_released.clear();
-        }
+    for pad in ctx.input.pads.iter_mut().flatten() {
+        pad.buttons_pressed.clear();
+        pad.buttons_released.clear();
     }
 }
 
