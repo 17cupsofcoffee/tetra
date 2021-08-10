@@ -429,7 +429,7 @@ fn parse_attributes(input: &str) -> Result<BmFontAttributes<'_>> {
             attributes.insert(key, value);
 
             // Skip past the closing '"', and any trailing whitespace.
-            remaining = &next[1..].trim_start();
+            remaining = next[1..].trim_start();
         } else {
             // Find the end of the value by searching for whitespace.
             // If we don't find it, this must be the end of the line.

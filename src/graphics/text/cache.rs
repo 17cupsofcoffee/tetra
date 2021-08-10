@@ -204,7 +204,7 @@ impl FontCache {
                 if let Some(quad) = self.rasterize_char(device, ch, cursor)? {
                     // Expand the cached bounds of the text geometry:
                     match &mut text_bounds {
-                        Some(existing) => *existing = quad.bounds().combine(&existing),
+                        Some(existing) => *existing = quad.bounds().combine(existing),
                         None => {
                             text_bounds.replace(quad.bounds());
                         }
