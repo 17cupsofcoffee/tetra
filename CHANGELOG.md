@@ -14,7 +14,7 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
-* Updated `glow` to 0.10.
+* Updated `glow` to 0.11.
 
 ## [0.6.5] - 2021-05-26
 
