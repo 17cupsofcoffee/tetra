@@ -10,6 +10,8 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
+* `window::set_icon` has been added, allowing for the window's icon to be changed at runtime.
+    * In general, it's preferable to set the icons via your [application's packaging](https://tetra.seventeencups.net/distributing#change-the-games-iconmetadata) - this function should only be used if the icon needs to change at runtime, or if you're feeling lazy and don't feel like setting up proper packaging.
 * An example of using ECS libraries with Tetra has been added. ([@rghartmann](https://github.com/rghartmann) in [#268](https://github.com/17cupsofcoffee/tetra/pull/268))
 
 ### Changed

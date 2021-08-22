@@ -4,7 +4,7 @@ use std::cell::Cell;
 use std::path::Path;
 use std::rc::Rc;
 
-use image::{EncodableLayout, Rgba, RgbaImage, SubImage};
+use image::{Rgba, RgbaImage, SubImage};
 
 use crate::error::{Result, TetraError};
 use crate::fs;
@@ -570,7 +570,16 @@ impl ImageData {
 
     /// Returns the image's data, as a slice of raw bytes.
     pub fn as_bytes(&self) -> &[u8] {
-        self.data.as_bytes()
+        &self.data
+    }
+
+    /// Returns the image's data, as a mutable slice of raw bytes.
+    ///
+    /// This is not currently exposed publicly, as some more thought is needed
+    /// into whether doing so would cause issues once different pixel formats
+    /// are supported.
+    pub(crate) fn as_mut_bytes(&mut self) -> &mut [u8] {
+        &mut self.data
     }
 
     /// Returns the image's underlying buffer.

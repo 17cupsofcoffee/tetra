@@ -9,6 +9,8 @@ use sdl2::event::{Event as SdlEvent, WindowEvent};
 use sdl2::haptic::Haptic;
 use sdl2::keyboard::Keycode as SdlKey;
 use sdl2::mouse::{MouseButton as SdlMouseButton, MouseWheelDirection};
+use sdl2::pixels::PixelMasks;
+use sdl2::surface::Surface;
 use sdl2::sys::SDL_HAPTIC_INFINITY;
 use sdl2::video::{
     FullscreenType, GLContext as SdlGlContext, GLProfile, SwapInterval, Window as SdlWindow,
@@ -18,7 +20,7 @@ use sdl2::{
 };
 
 use crate::error::{Result, TetraError};
-use crate::graphics;
+use crate::graphics::{self, ImageData};
 use crate::input::{self, GamepadAxis, GamepadButton, GamepadStick, Key, MouseButton};
 use crate::math::Vec2;
 use crate::{Context, ContextBuilder, Event, State};
@@ -212,6 +214,29 @@ impl Window {
         self.sdl_window
             .set_size(width as u32, height as u32)
             .map_err(|e| TetraError::FailedToChangeDisplayMode(e.to_string()))
+    }
+
+    pub fn set_icon(&mut self, data: &mut ImageData) -> Result {
+        let (width, height) = data.size();
+
+        let surface = Surface::from_data_pixelmasks(
+            data.as_mut_bytes(),
+            width as u32,
+            height as u32,
+            width as u32 * 4,
+            PixelMasks {
+                bpp: 32,
+                rmask: 0x000000FF,
+                gmask: 0x0000FF00,
+                bmask: 0x00FF0000,
+                amask: 0xFF000000,
+            },
+        )
+        .map_err(TetraError::PlatformError)?;
+
+        self.sdl_window.set_icon(surface);
+
+        Ok(())
     }
 
     pub fn is_visible(&self) -> bool {

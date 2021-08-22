@@ -1,6 +1,6 @@
-use tetra::graphics::{self, Color, DrawParams, Texture};
+use tetra::graphics::{self, Color, DrawParams, ImageData, Texture};
 use tetra::math::Vec2;
-use tetra::{Context, ContextBuilder, State};
+use tetra::{window, Context, ContextBuilder, State};
 
 struct GameState {
     texture: Texture,
@@ -8,6 +8,10 @@ struct GameState {
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
+        let mut image = ImageData::from_file("./examples/resources/player.png")?;
+
+        window::set_icon(ctx, &mut image)?;
+
         Ok(GameState {
             texture: Texture::new(ctx, "./examples/resources/player.png")?,
         })

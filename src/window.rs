@@ -1,6 +1,6 @@
 //! Functions and types relating to the game window, and the environment it is running in.
 
-use crate::{Context, Result};
+use crate::{graphics::ImageData, Context, Result};
 
 /// Quits the game, if it is currently running.
 ///
@@ -112,6 +112,23 @@ pub fn get_physical_size(ctx: &Context) -> (i32, i32) {
 /// a retina display, this can return `2.0`.
 pub fn get_dpi_scale(ctx: &Context) -> f32 {
     ctx.window.get_dpi_scale()
+}
+
+/// Sets the icon for the window.
+///
+/// Note that the preferred way of setting the icon is as part of packaging your game,
+/// as detailed in the '[Distributing](https://tetra.seventeencups.net/distributing#change-the-games-iconmetadata)'
+/// page of Tetra's documentation, as this allows for the icon to be displayed
+/// in more places (system menus, file managers, etc) and for multiple
+/// resolutions to be provided. This function is mainly useful if you
+/// wish to change the icon once the application is already running.  
+///
+/// # Errors
+///
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
+/// if the icon could not be set.
+pub fn set_icon(ctx: &mut Context, data: &mut ImageData) -> Result {
+    ctx.window.set_icon(data)
 }
 
 /// Returns whether the window is currently visible, or whether it has been hidden.
