@@ -172,6 +172,7 @@ impl Context {
 
             state.draw(self)?;
 
+            #[cfg(not(feature = "disable_auto_redraw"))]
             graphics::present(self);
 
             // This provides a sensible FPS limit when running without vsync, and

@@ -76,3 +76,9 @@ sdl2_bundled = ["sdl2/bundled"]
 
 # Links SDL2 statically (see https://hg.libsdl.org/SDL/file/default/docs/README-dynapi.md).
 sdl2_static_link = ["sdl2/static-link"]
+
+# Disables automatic drawing for each frame.
+# Even if this feature is enabled, drawing commands will still be processed.
+# but you will need to call `tetra::graphics::present` to get the actual drawing on the screen.
+# You can reduce the load of the Window Manager on your operating system by manually controlling when drawing needs to be done.
+disable_auto_redraw = []
