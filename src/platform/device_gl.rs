@@ -605,6 +605,7 @@ impl GraphicsDevice {
         width: i32,
         height: i32,
         filter_mode: FilterMode,
+        hdr: bool,
     ) -> Result<RawTexture> {
         // TODO: I don't think we need mipmaps?
         unsafe {
@@ -658,10 +659,12 @@ impl GraphicsDevice {
 
             self.clear_errors();
 
+            let internal_format = if hdr { glow::RGBA16F } else { glow::RGBA };
+
             self.state.gl.tex_image_2d(
                 glow::TEXTURE_2D,
                 0,
-                glow::RGBA as i32, // love 2 deal with legacy apis
+                internal_format as i32, // love 2 deal with legacy apis
                 width,
                 height,
                 0,
@@ -768,6 +771,7 @@ impl GraphicsDevice {
         filter_mode: FilterMode,
         samples: u8,
         with_stencil_buffer: bool,
+        hdr: bool,
     ) -> Result<RawCanvasWithAttachments> {
         unsafe {
             let previous_read = self.state.current_read_framebuffer.get();
@@ -786,7 +790,7 @@ impl GraphicsDevice {
 
             self.bind_framebuffer(Some(canvas.id));
 
-            let color = self.new_texture(width, height, filter_mode)?;
+            let color = self.new_texture(width, height, filter_mode, hdr)?;
 
             self.state.gl.framebuffer_texture_2d(
                 glow::FRAMEBUFFER,
