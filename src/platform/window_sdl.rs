@@ -7,7 +7,7 @@ use hashbrown::HashMap;
 use sdl2::controller::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, GameController};
 use sdl2::event::{Event as SdlEvent, WindowEvent};
 use sdl2::haptic::Haptic;
-use sdl2::keyboard::Scancode;
+use sdl2::keyboard::{Keycode, Scancode};
 use sdl2::mouse::{MouseButton as SdlMouseButton, MouseWheelDirection};
 use sdl2::pixels::PixelMasks;
 use sdl2::surface::Surface;
@@ -21,7 +21,7 @@ use sdl2::{
 
 use crate::error::{Result, TetraError};
 use crate::graphics::{self, ImageData};
-use crate::input::{self, GamepadAxis, GamepadButton, GamepadStick, Key, MouseButton};
+use crate::input::{self, GamepadAxis, GamepadButton, GamepadStick, Key, KeyLabel, MouseButton};
 use crate::math::Vec2;
 use crate::{Context, ContextBuilder, Event, State};
 
@@ -421,6 +421,18 @@ impl Window {
     pub fn is_key_repeat_enabled(&self) -> bool {
         self.key_repeat
     }
+
+    pub fn get_key_with_label(&self, key_label: KeyLabel) -> Option<Key> {
+        let sdl_keycode = into_sdl_keycode(key_label);
+        let sdl_scancode = Scancode::from_keycode(sdl_keycode)?;
+        from_sdl_scancode(sdl_scancode)
+    }
+
+    pub fn get_key_label(&self, key: Key) -> Option<KeyLabel> {
+        let sdl_scancode = into_sdl_scancode(key)?;
+        let sdl_keycode = Keycode::from_scancode(sdl_scancode)?;
+        from_sdl_keycode(sdl_keycode)
+    }
 }
 
 pub fn handle_events<S, E>(ctx: &mut Context, state: &mut S) -> result::Result<(), E>
@@ -473,7 +485,7 @@ where
                         }
                     }
 
-                    if let Some(key) = into_key(scancode) {
+                    if let Some(key) = from_sdl_scancode(scancode) {
                         input::set_key_down(ctx, key);
                         state.event(ctx, Event::KeyPressed { key })?;
                     }
@@ -484,7 +496,7 @@ where
                 scancode: Some(scancode),
                 ..
             } => {
-                if let Some(key) = into_key(scancode) {
+                if let Some(key) = from_sdl_scancode(scancode) {
                     // TODO: This can cause some inputs to be missed at low tick rates.
                     // Could consider buffering input releases like Otter2D does?
                     input::set_key_up(ctx, key);
@@ -695,127 +707,222 @@ fn into_mouse_button(button: SdlMouseButton) -> Option<MouseButton> {
     }
 }
 
-fn into_key(scancode: Scancode) -> Option<Key> {
-    match scancode {
-        Scancode::A => Some(Key::A),
-        Scancode::B => Some(Key::B),
-        Scancode::C => Some(Key::C),
-        Scancode::D => Some(Key::D),
-        Scancode::E => Some(Key::E),
-        Scancode::F => Some(Key::F),
-        Scancode::G => Some(Key::G),
-        Scancode::H => Some(Key::H),
-        Scancode::I => Some(Key::I),
-        Scancode::J => Some(Key::J),
-        Scancode::K => Some(Key::K),
-        Scancode::L => Some(Key::L),
-        Scancode::M => Some(Key::M),
-        Scancode::N => Some(Key::N),
-        Scancode::O => Some(Key::O),
-        Scancode::P => Some(Key::P),
-        Scancode::Q => Some(Key::Q),
-        Scancode::R => Some(Key::R),
-        Scancode::S => Some(Key::S),
-        Scancode::T => Some(Key::T),
-        Scancode::U => Some(Key::U),
-        Scancode::V => Some(Key::V),
-        Scancode::W => Some(Key::W),
-        Scancode::X => Some(Key::X),
-        Scancode::Y => Some(Key::Y),
-        Scancode::Z => Some(Key::Z),
+macro_rules! key_mappings {
+    (
+        both {
+            $($sdl_both:ident => $tetra_both:ident),*$(,)?
+        }
 
-        Scancode::Num0 => Some(Key::Num0),
-        Scancode::Num1 => Some(Key::Num1),
-        Scancode::Num2 => Some(Key::Num2),
-        Scancode::Num3 => Some(Key::Num3),
-        Scancode::Num4 => Some(Key::Num4),
-        Scancode::Num5 => Some(Key::Num5),
-        Scancode::Num6 => Some(Key::Num6),
-        Scancode::Num7 => Some(Key::Num7),
-        Scancode::Num8 => Some(Key::Num8),
-        Scancode::Num9 => Some(Key::Num9),
+        scancodes {
+            $($sdl_scancode:ident => $tetra_key:ident),*$(,)?
+        }
 
-        Scancode::F1 => Some(Key::F1),
-        Scancode::F2 => Some(Key::F2),
-        Scancode::F3 => Some(Key::F3),
-        Scancode::F4 => Some(Key::F4),
-        Scancode::F5 => Some(Key::F5),
-        Scancode::F6 => Some(Key::F6),
-        Scancode::F7 => Some(Key::F7),
-        Scancode::F8 => Some(Key::F8),
-        Scancode::F9 => Some(Key::F9),
-        Scancode::F10 => Some(Key::F10),
-        Scancode::F11 => Some(Key::F11),
-        Scancode::F12 => Some(Key::F12),
-        Scancode::F13 => Some(Key::F13),
-        Scancode::F14 => Some(Key::F14),
-        Scancode::F15 => Some(Key::F15),
-        Scancode::F16 => Some(Key::F16),
-        Scancode::F17 => Some(Key::F17),
-        Scancode::F18 => Some(Key::F18),
-        Scancode::F19 => Some(Key::F19),
-        Scancode::F20 => Some(Key::F20),
-        Scancode::F21 => Some(Key::F21),
-        Scancode::F22 => Some(Key::F22),
-        Scancode::F23 => Some(Key::F23),
-        Scancode::F24 => Some(Key::F24),
+        keycodes {
+            $($sdl_keycode:ident => $tetra_key_label:ident),*$(,)?
+        }
+    ) => {
+        fn from_sdl_scancode(scancode: Scancode) -> Option<Key> {
+            match scancode {
+                $(
+                    Scancode::$sdl_both => Some(Key::$tetra_both),
+                )*
 
-        Scancode::NumLockClear => Some(Key::NumLock),
-        Scancode::Kp1 => Some(Key::NumPad1),
-        Scancode::Kp2 => Some(Key::NumPad2),
-        Scancode::Kp3 => Some(Key::NumPad3),
-        Scancode::Kp4 => Some(Key::NumPad4),
-        Scancode::Kp5 => Some(Key::NumPad5),
-        Scancode::Kp6 => Some(Key::NumPad6),
-        Scancode::Kp7 => Some(Key::NumPad7),
-        Scancode::Kp8 => Some(Key::NumPad8),
-        Scancode::Kp9 => Some(Key::NumPad9),
-        Scancode::Kp0 => Some(Key::NumPad0),
-        Scancode::KpPlus => Some(Key::NumPadPlus),
-        Scancode::KpMinus => Some(Key::NumPadMinus),
-        Scancode::KpMultiply => Some(Key::NumPadMultiply),
-        Scancode::KpDivide => Some(Key::NumPadDivide),
-        Scancode::KpEnter => Some(Key::NumPadEnter),
+                $(
+                    Scancode::$sdl_scancode => Some(Key::$tetra_key),
+                )*
 
-        Scancode::LCtrl => Some(Key::LeftCtrl),
-        Scancode::LShift => Some(Key::LeftShift),
-        Scancode::LAlt => Some(Key::LeftAlt),
-        Scancode::RCtrl => Some(Key::RightCtrl),
-        Scancode::RShift => Some(Key::RightShift),
-        Scancode::RAlt => Some(Key::RightAlt),
+                _ => None,
+            }
+        }
 
-        Scancode::Up => Some(Key::Up),
-        Scancode::Down => Some(Key::Down),
-        Scancode::Left => Some(Key::Left),
-        Scancode::Right => Some(Key::Right),
+        fn into_sdl_scancode(key: Key) -> Option<Scancode> {
+            match key {
+                $(
+                    Key::$tetra_both => Some(Scancode::$sdl_both),
+                )*
 
-        Scancode::Grave => Some(Key::Backquote),
-        Scancode::Backslash => Some(Key::Backslash),
-        Scancode::Backspace => Some(Key::Backspace),
-        Scancode::CapsLock => Some(Key::CapsLock),
-        Scancode::Comma => Some(Key::Comma),
-        Scancode::Delete => Some(Key::Delete),
-        Scancode::End => Some(Key::End),
-        Scancode::Return => Some(Key::Enter),
-        Scancode::Equals => Some(Key::Equals),
-        Scancode::Escape => Some(Key::Escape),
-        Scancode::Home => Some(Key::Home),
-        Scancode::Insert => Some(Key::Insert),
-        Scancode::LeftBracket => Some(Key::LeftBracket),
-        Scancode::Minus => Some(Key::Minus),
-        Scancode::PageDown => Some(Key::PageDown),
-        Scancode::PageUp => Some(Key::PageUp),
-        Scancode::Pause => Some(Key::Pause),
-        Scancode::Period => Some(Key::Period),
-        Scancode::PrintScreen => Some(Key::PrintScreen),
-        Scancode::RightBracket => Some(Key::RightBracket),
-        Scancode::ScrollLock => Some(Key::ScrollLock),
-        Scancode::Semicolon => Some(Key::Semicolon),
-        Scancode::Slash => Some(Key::Slash),
-        Scancode::Space => Some(Key::Space),
-        Scancode::Tab => Some(Key::Tab),
+                $(
+                    Key::$tetra_key => Some(Scancode::$sdl_scancode),
+                )*
 
-        _ => None,
+                _ => None,
+            }
+        }
+
+        fn from_sdl_keycode(keycode: Keycode) -> Option<KeyLabel> {
+            match keycode {
+                $(
+                    Keycode::$sdl_both => Some(KeyLabel::$tetra_both),
+                )*
+
+                $(
+                    Keycode::$sdl_keycode => Some(KeyLabel::$tetra_key_label),
+                )*
+
+                _ => None,
+            }
+        }
+
+        fn into_sdl_keycode(key_label: KeyLabel) -> Keycode {
+            match key_label {
+                $(
+                    KeyLabel::$tetra_both => Keycode::$sdl_both,
+                )*
+
+                $(
+                    KeyLabel::$tetra_key_label => Keycode::$sdl_keycode,
+                )*
+            }
+        }
+
+    };
+}
+
+key_mappings! {
+    both {
+        A => A,
+        B => B,
+        C => C,
+        D => D,
+        E => E,
+        F => F,
+        G => G,
+        H => H,
+        I => I,
+        J => J,
+        K => K,
+        L => L,
+        M => M,
+        N => N,
+        O => O,
+        P => P,
+        Q => Q,
+        R => R,
+        S => S,
+        T => T,
+        U => U,
+        V => V,
+        W => W,
+        X => X,
+        Y => Y,
+        Z => Z,
+
+        Num0 => Num0,
+        Num1 => Num1,
+        Num2 => Num2,
+        Num3 => Num3,
+        Num4 => Num4,
+        Num5 => Num5,
+        Num6 => Num6,
+        Num7 => Num7,
+        Num8 => Num8,
+        Num9 => Num9,
+
+        F1 => F1,
+        F2 => F2,
+        F3 => F3,
+        F4 => F4,
+        F5 => F5,
+        F6 => F6,
+        F7 => F7,
+        F8 => F8,
+        F9 => F9,
+        F10 => F10,
+        F11 => F11,
+        F12 => F12,
+        F13 => F13,
+        F14 => F14,
+        F15 => F15,
+        F16 => F16,
+        F17 => F17,
+        F18 => F18,
+        F19 => F19,
+        F20 => F20,
+        F21 => F21,
+        F22 => F22,
+        F23 => F23,
+        F24 => F24,
+
+        NumLockClear => NumLock,
+        Kp1 => NumPad1,
+        Kp2 => NumPad2,
+        Kp3 => NumPad3,
+        Kp4 => NumPad4,
+        Kp5 => NumPad5,
+        Kp6 => NumPad6,
+        Kp7 => NumPad7,
+        Kp8 => NumPad8,
+        Kp9 => NumPad9,
+        Kp0 => NumPad0,
+        KpPlus => NumPadPlus,
+        KpMinus => NumPadMinus,
+        KpMultiply => NumPadMultiply,
+        KpDivide => NumPadDivide,
+        KpEnter => NumPadEnter,
+
+        LCtrl => LeftCtrl,
+        LShift => LeftShift,
+        LAlt => LeftAlt,
+        RCtrl => RightCtrl,
+        RShift => RightShift,
+        RAlt => RightAlt,
+
+        Up => Up,
+        Down => Down,
+        Left => Left,
+        Right => Right,
+
+        Backslash => Backslash,
+        Backspace => Backspace,
+        CapsLock => CapsLock,
+        Comma => Comma,
+        Delete => Delete,
+        End => End,
+        Return => Enter,
+        Equals => Equals,
+        Escape => Escape,
+        Home => Home,
+        Insert => Insert,
+        LeftBracket => LeftBracket,
+        Minus => Minus,
+        PageDown => PageDown,
+        PageUp => PageUp,
+        Pause => Pause,
+        Period => Period,
+        PrintScreen => PrintScreen,
+        RightBracket => RightBracket,
+        ScrollLock => ScrollLock,
+        Semicolon => Semicolon,
+        Slash => Slash,
+        Space => Space,
+        Tab => Tab,
+    }
+
+    scancodes {
+        Apostrophe => Quote,
+        Grave => Backquote,
+    }
+
+    keycodes {
+        Ampersand => Ampersand,
+        Asterisk => Asterisk,
+        At => At,
+        Backquote => Backquote,
+        Caret => Caret,
+        Colon => Colon,
+        Dollar => Dollar,
+        Quotedbl => DoubleQuote,
+        Exclaim => Exclaim,
+        Greater => GreaterThan,
+        Hash => Hash,
+        LeftParen => LeftParen,
+        Less => LessThan,
+        Percent => Percent,
+        Plus => Plus,
+        Question => Question,
+        Quote => Quote,
+        RightParen => RightParen,
+        Underscore => Underscore,
     }
 }
 
