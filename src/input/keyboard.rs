@@ -223,7 +223,7 @@ pub fn get_keys_released(ctx: &Context) -> impl Iterator<Item = &Key> {
 pub(crate) fn set_key_down(ctx: &mut Context, key: Key) -> bool {
     let was_up = ctx.input.keys_down.insert(key);
 
-    if was_up {
+    if was_up || ctx.window.is_key_repeat_enabled() {
         ctx.input.keys_pressed.insert(key);
     }
 
