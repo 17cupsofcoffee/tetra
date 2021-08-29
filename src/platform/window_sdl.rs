@@ -11,9 +11,10 @@ use sdl2::keyboard::{Keycode, Scancode};
 use sdl2::mouse::{MouseButton as SdlMouseButton, MouseWheelDirection};
 use sdl2::pixels::PixelMasks;
 use sdl2::surface::Surface;
-use sdl2::sys::SDL_HAPTIC_INFINITY;
+use sdl2::sys::{SDL_HAPTIC_INFINITY, SDL_WINDOWPOS_CENTERED_MASK};
 use sdl2::video::{
     FullscreenType, GLContext as SdlGlContext, GLProfile, SwapInterval, Window as SdlWindow,
+    WindowPos,
 };
 use sdl2::{
     EventPump, GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem,
@@ -23,6 +24,7 @@ use crate::error::{Result, TetraError};
 use crate::graphics::{self, ImageData};
 use crate::input::{self, GamepadAxis, GamepadButton, GamepadStick, Key, KeyLabel, MouseButton};
 use crate::math::Vec2;
+use crate::window::WindowPosition;
 use crate::{Context, ContextBuilder, Event, State};
 
 struct SdlController {
@@ -189,6 +191,22 @@ impl Window {
         Ok((window, gl_ctx, window_width, window_height))
     }
 
+    pub fn maximize(&mut self) {
+        self.sdl_window.maximize();
+    }
+
+    pub fn minimize(&mut self) {
+        self.sdl_window.minimize();
+    }
+
+    pub fn restore(&mut self) {
+        self.sdl_window.restore();
+    }
+
+    pub fn focus(&mut self) {
+        self.sdl_window.raise()
+    }
+
     pub fn get_window_title(&self) -> &str {
         self.sdl_window.title()
     }
@@ -214,6 +232,40 @@ impl Window {
         self.sdl_window
             .set_size(width as u32, height as u32)
             .map_err(|e| TetraError::FailedToChangeDisplayMode(e.to_string()))
+    }
+
+    pub fn set_minimum_size(&mut self, width: i32, height: i32) -> Result {
+        self.sdl_window
+            .set_minimum_size(width as u32, height as u32)
+            .map_err(|e| TetraError::PlatformError(e.to_string()))
+    }
+
+    pub fn get_minimum_size(&self) -> (i32, i32) {
+        let (width, height) = self.sdl_window.minimum_size();
+        (width as i32, height as i32)
+    }
+
+    pub fn set_maximum_size(&mut self, width: i32, height: i32) -> Result {
+        self.sdl_window
+            .set_maximum_size(width as u32, height as u32)
+            .map_err(|e| TetraError::PlatformError(e.to_string()))
+    }
+
+    pub fn get_maximum_size(&self) -> (i32, i32) {
+        let (width, height) = self.sdl_window.maximum_size();
+        (width as i32, height as i32)
+    }
+
+    pub fn set_position(&mut self, x: WindowPosition, y: WindowPosition) {
+        self.sdl_window.set_position(x.into(), y.into());
+    }
+
+    pub fn get_position(&self) -> (i32, i32) {
+        self.sdl_window.position()
+    }
+
+    pub fn set_decorated(&mut self, bordered: bool) {
+        self.sdl_window.set_bordered(bordered);
     }
 
     pub fn set_icon(&mut self, data: &mut ImageData) -> Result {
@@ -973,6 +1025,20 @@ impl From<SdlGamepadAxis> for GamepadAxis {
             SdlGamepadAxis::RightX => GamepadAxis::RightStickX,
             SdlGamepadAxis::RightY => GamepadAxis::RightStickY,
             SdlGamepadAxis::TriggerRight => GamepadAxis::RightTrigger,
+        }
+    }
+}
+
+#[doc(hidden)]
+impl From<WindowPosition> for WindowPos {
+    fn from(pos: WindowPosition) -> Self {
+        // This is a bit of a hack to work around the fact that sdl2-rs doesn't
+        // expose 'SDL_WINDOWPOS_CENTERED_DISPLAY' at all.
+        match pos {
+            WindowPosition::Centered(display_index) => {
+                WindowPos::Positioned((SDL_WINDOWPOS_CENTERED_MASK | display_index as u32) as i32)
+            }
+            WindowPosition::Positioned(value) => WindowPos::Positioned(value),
         }
     }
 }

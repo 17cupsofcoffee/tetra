@@ -12,6 +12,7 @@ This project adheres to Semantic Versioning.
 
 * `window::set_icon` has been added, allowing for the window's icon to be changed at runtime.
     * In general, it's preferable to set the icons via your [application's packaging](https://tetra.seventeencups.net/distributing#change-the-games-iconmetadata) - this function should only be used if the icon needs to change at runtime, or if you're feeling lazy and don't feel like setting up proper packaging.
+* Various utility functions have been added to the `window` module, allowing for control over window positioning and size. ([@Tairesh](https://github.com/Tairesh) in [#278](https://github.com/17cupsofcoffee/tetra/pull/278))
 * An example of using ECS libraries with Tetra has been added. ([@rghartmann](https://github.com/rghartmann) in [#268](https://github.com/17cupsofcoffee/tetra/pull/268))
 * A `KeyLabel` type has been added, which represents how keys are labelled in the current keyboard layout.
 * `input::get_key_with_label` and `input::get_key_label` have been added, so that keys can be mapped to and from the current system keyboard layout.
