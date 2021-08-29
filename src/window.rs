@@ -1,6 +1,7 @@
 //! Functions and types relating to the game window, and the environment it is running in.
 
 use crate::{graphics::ImageData, Context, Result};
+pub use sdl2::video::WindowPos;
 
 /// Quits the game, if it is currently running.
 ///
@@ -361,4 +362,82 @@ pub fn set_key_repeat_enabled(ctx: &mut Context, key_repeat_enabled: bool) {
 /// continuously while the key is held down.
 pub fn is_key_repeat_enabled(ctx: &Context) -> bool {
     ctx.window.is_key_repeat_enabled()
+}
+
+/// Makes the window as large as possible
+pub fn maximize(ctx: &mut Context) {
+    ctx.window.maximize();
+}
+
+/// Minimizes the window to an iconic representation
+pub fn minimize(ctx: &mut Context) {
+    ctx.window.minimize();
+}
+
+/// Restores the size and position of a minimized or maximized window
+pub fn restore(ctx: &mut Context) {
+    ctx.window.restore();
+}
+
+/// Raises the window above other windows and set the input focus
+pub fn raise(ctx: &mut Context) {
+    ctx.window.raise();
+}
+
+/// Sets the minimum size of the window's client area
+///
+/// # Errors
+///
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
+/// if it isn't supported on current platform
+pub fn set_minimum_size(ctx: &mut Context, width: u32, height: u32) -> Result {
+    ctx.window.set_minimum_size(width, height)
+}
+
+/// Gets the minimum size of the window's client area.
+pub fn get_minimum_sie(ctx: &Context) -> (u32, u32) {
+    ctx.window.get_minimum_size()
+}
+
+/// Sets the maximum size of the window's client area.
+///
+/// # Errors
+///
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
+/// if it isn't supported on current platform
+pub fn set_maximum_size(ctx: &mut Context, width: u32, height: u32) -> Result {
+    ctx.window.set_maximum_size(width, height)
+}
+
+/// Gets the maximum size of the window's client area.
+pub fn get_maximum_sie(ctx: &Context) -> (u32, u32) {
+    ctx.window.get_maximum_size()
+}
+
+/// Sets the border state of the window.
+pub fn set_bordered(ctx: &mut Context, bordered: bool) {
+    ctx.window.set_bordered(bordered);
+}
+
+/// Gets the size of the window's borders (decorations) around the client area.
+///
+/// # Errors
+///
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
+/// if the window has not yet been decorated by the display server (for example, immediately after
+/// creating). It is recommended that you wait at least until the window has been presented and
+/// composited, so that the window system has a chance to decorate the window and provide the border
+/// dimensions to SDL.
+pub fn get_border_size(ctx: &Context) -> Result<(u16, u16, u16, u16)> {
+    ctx.window.get_border_size()
+}
+
+/// Sets position for the window
+pub fn set_position(ctx: &mut Context, x: WindowPos, y: WindowPos) {
+    ctx.window.set_position(x, y);
+}
+
+/// Gets the position of the window.
+pub fn get_position(ctx: &Context) -> (i32, i32) {
+    ctx.window.get_position()
 }

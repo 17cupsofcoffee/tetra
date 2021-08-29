@@ -14,6 +14,7 @@ use sdl2::surface::Surface;
 use sdl2::sys::SDL_HAPTIC_INFINITY;
 use sdl2::video::{
     FullscreenType, GLContext as SdlGlContext, GLProfile, SwapInterval, Window as SdlWindow,
+    WindowPos,
 };
 use sdl2::{
     EventPump, GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem,
@@ -420,6 +421,60 @@ impl Window {
 
     pub fn is_key_repeat_enabled(&self) -> bool {
         self.key_repeat
+    }
+
+    pub fn maximize(&mut self) {
+        self.sdl_window.maximize();
+    }
+
+    pub fn minimize(&mut self) {
+        self.sdl_window.minimize();
+    }
+
+    pub fn restore(&mut self) {
+        self.sdl_window.restore();
+    }
+
+    pub fn raise(&mut self) {
+        self.sdl_window.raise()
+    }
+
+    pub fn set_minimum_size(&mut self, width: u32, height: u32) -> Result {
+        self.sdl_window
+            .set_minimum_size(width, height)
+            .map_err(|e| TetraError::PlatformError(e.to_string()))
+    }
+
+    pub fn get_minimum_size(&self) -> (u32, u32) {
+        self.sdl_window.minimum_size()
+    }
+
+    pub fn set_maximum_size(&mut self, width: u32, height: u32) -> Result {
+        self.sdl_window
+            .set_maximum_size(width, height)
+            .map_err(|e| TetraError::PlatformError(e.to_string()))
+    }
+
+    pub fn get_maximum_size(&self) -> (u32, u32) {
+        self.sdl_window.maximum_size()
+    }
+
+    pub fn set_bordered(&mut self, bordered: bool) {
+        self.sdl_window.set_bordered(bordered);
+    }
+
+    pub fn get_border_size(&self) -> Result<(u16, u16, u16, u16)> {
+        self.sdl_window
+            .border_size()
+            .map_err(TetraError::PlatformError)
+    }
+
+    pub fn set_position(&mut self, x: WindowPos, y: WindowPos) {
+        self.sdl_window.set_position(x, y);
+    }
+
+    pub fn get_position(&self) -> (i32, i32) {
+        self.sdl_window.position()
     }
 }
 
