@@ -13,9 +13,13 @@ This project adheres to Semantic Versioning.
 * `window::set_icon` has been added, allowing for the window's icon to be changed at runtime.
     * In general, it's preferable to set the icons via your [application's packaging](https://tetra.seventeencups.net/distributing#change-the-games-iconmetadata) - this function should only be used if the icon needs to change at runtime, or if you're feeling lazy and don't feel like setting up proper packaging.
 * An example of using ECS libraries with Tetra has been added. ([@rghartmann](https://github.com/rghartmann) in [#268](https://github.com/17cupsofcoffee/tetra/pull/268))
+* A `KeyLabel` type has been added, which represents how keys are labelled in the current keyboard layout.
+* `input::get_key_with_label` and `input::get_key_label` have been added, so that keys can be mapped to and from the current system keyboard layout.
 
 ### Changed
 
+* `Key` now represents the physical position of a key, rather than how it is labelled. This allows for non-QWERTY keyboard layouts to be supported without extra work on the developer's part.
+* `KeyModifier` now implements `Display`.
 * Updated `glow` to 0.11.
 
 ## [0.6.5] - 2021-05-26
