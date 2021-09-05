@@ -21,6 +21,9 @@ This project adheres to Semantic Versioning.
 
 * `Key` now represents the physical position of a key, rather than how it is labelled. This allows for non-QWERTY keyboard layouts to be supported without extra work on the developer's part.
 * `KeyModifier` now implements `Display`.
+* The `ContextBuilder::key_repeat` setting now applies to the input polling APIs as well as events. ([@Tairesh](https://github.com/Tairesh) in [#279](https://github.com/17cupsofcoffee/tetra/pull/279))
+    * This is in order to make the API more consistent - now, whenever there is an `Event::KeyPressed`, it is guarenteed to also be returned via `is_key_pressed` and `get_keys_pressed`.
+    * The behaviour with `key_repeat` turned off is unchanged.
 * Updated `glow` to 0.11.
 
 ## [0.6.5] - 2021-05-26
