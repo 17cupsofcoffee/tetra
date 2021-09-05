@@ -651,7 +651,7 @@ pub fn get_key_label(ctx: &Context, physical_key: Key) -> Option<KeyLabel> {
 pub(crate) fn set_key_down(ctx: &mut Context, key: Key) -> bool {
     let was_up = ctx.input.keys_down.insert(key);
 
-    if was_up {
+    if was_up || ctx.window.is_key_repeat_enabled() {
         ctx.input.keys_pressed.insert(key);
     }
 
