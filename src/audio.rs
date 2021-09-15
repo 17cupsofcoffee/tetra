@@ -33,10 +33,12 @@ use crate::Context;
 ///
 /// # Performance
 ///
-/// Creating a `Sound` is a fairly cheap operation, as the data is not decoded until playback begins.
+/// When you create an instance of `Sound`, the audio data is loaded into memory. It is not
+/// decoded until playback begins.
 ///
-/// Cloning a `Sound` is a very cheap operation, as the underlying data is shared between the
-/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
+/// You can clone a sound cheaply, as it is [reference-counted](https://doc.rust-lang.org/std/rc/struct.Rc.html)
+/// internally. The underlying data will be shared by all of the clones (and, by extension,
+/// all of the `SoundInstance`s created from them).
 ///
 /// # Examples
 ///

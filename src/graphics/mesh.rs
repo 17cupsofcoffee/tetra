@@ -1,4 +1,11 @@
 //! Functions and types relating to meshes and shape drawing.
+//!
+//! # Performance
+//!
+//! This module gives you very low level control over the geometry that you're rendering - while that's useful,
+//! it requires you to be a bit more careful about performance than other areas of Tetra's API. Ensure that you
+//! read the docs for the various buffer/mesh types to understand their performance characteristics before
+//! using them.
 
 pub use lyon_tessellation::path::builder::BorderRadii;
 
@@ -99,13 +106,13 @@ impl VertexWinding {
 ///
 /// # Performance
 ///
-/// Creating a `VertexBuffer` is a relatively expensive operation. If you can, store them in your
-/// [`State`](crate::State) struct rather than recreating them each frame.
+/// When you create or modify a vertex buffer, you are effectively 'uploading' data to the GPU, which
+/// can be relatively slow. You should try to minimize how often you do this - for example, if a piece
+/// of geometry does not change from frame to frame, reuse the buffer instead of recreating it.
 ///
-/// Cloning a `VertexBuffer` is a very cheap operation, as the underlying data is shared between the
-/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
-/// This does mean, however, that updating a `VertexBuffer` will also update any other clones of
-/// that `VertexBuffer`.
+/// You can clone a vertex buffer cheaply, as it is a [reference-counted](https://doc.rust-lang.org/std/rc/struct.Rc.html)
+/// handle to a GPU resource. However, this does mean that modifying a buffer (e.g.
+/// calling `set_data`) will also affect any clones that exist of it.
 ///
 #[derive(Clone, Debug, PartialEq)]
 pub struct VertexBuffer {
@@ -182,13 +189,13 @@ impl VertexBuffer {
 ///
 /// # Performance
 ///
-/// Creating an `IndexBuffer` is a relatively expensive operation. If you can, store them in your
-/// [`State`](crate::State) struct rather than recreating them each frame.
+/// When you create or modify an index buffer, you are effectively 'uploading' data to the GPU, which
+/// can be relatively slow. You should try to minimize how often you do this - for example, if a piece
+/// of geometry does not change from frame to frame, reuse the buffer instead of recreating it.
 ///
-/// Cloning an `IndexBuffer` is a very cheap operation, as the underlying data is shared between the
-/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
-/// This does mean, however, that updating an `IndexBuffer` will also update any other clones of
-/// that `IndexBuffer`.
+/// You can clone a vertex buffer cheaply, as it is a [reference-counted](https://doc.rust-lang.org/std/rc/struct.Rc.html)
+/// handle to a GPU resource. However, this does mean that modifying a buffer (e.g.
+/// calling `set_data`) will also affect any clones that exist of it.
 #[derive(Clone, Debug, PartialEq)]
 pub struct IndexBuffer {
     handle: Rc<RawIndexBuffer>,
@@ -270,17 +277,15 @@ pub enum ShapeStyle {
 /// Without a texture set, the mesh will be drawn in white - the `color` attribute on the [vertex data](Vertex) or
 /// [`DrawParams`] can be used to change this.
 ///
-/// Note that, unlike quad rendering via [`Texture`], mesh rendering is not batched by default - each time you
-/// draw the mesh will result in a seperate draw call.
-///
 /// # Performance
 ///
-/// Creating or cloning a `Mesh` is a very cheap operation, as meshes are effectively just collections
-/// of resources that live on the GPU. The only expensive part is the creation of the buffers/textures,
-/// which can be done ahead of time.
+/// Creating or cloning a mesh is a very cheap operation, as they are effectively just bundles
+/// of resources that live on the GPU (such as buffers and textures). However, creating or
+/// modifying those underlying resources may be slow - make sure you read the docs for
+/// each type to understand their performance characteristics.
 ///
-/// Note that cloned meshes do not share data, so updating one instance of a mesh will not affect
-/// other instances.
+/// Note that, unlike most rendering in Tetra, mesh rendering is *not* batched by default - each time you
+/// draw the mesh will result in a seperate draw call.
 ///
 /// # Examples
 ///

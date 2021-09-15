@@ -49,13 +49,12 @@ impl PartialEq for TextureSharedData {
 ///
 /// # Performance
 ///
-/// Creating a `Texture` is a relatively expensive operation. If you can, store them in your
-/// [`State`](crate::State) struct rather than recreating them each frame.
+/// Creating a texture is quite an expensive operation, as it involves 'uploading' the texture
+/// data to the GPU. Try to reuse textures, rather than recreating them every frame.
 ///
-/// Cloning a `Texture` is a very cheap operation, as the underlying data is shared between the
-/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
-/// This does mean, however, that updating a `Texture` (for example, changing its filter mode) will also
-/// update any other clones of that `Texture`.
+/// You can clone a texture cheaply, as it is a [reference-counted](https://doc.rust-lang.org/std/rc/struct.Rc.html)
+/// handle to a GPU resource. However, this does mean that modifying a texture (e.g.
+/// setting the filter mode) will also affect any clones that exist of it.
 ///
 /// # Examples
 ///
@@ -462,11 +461,6 @@ impl NineSlice {
 /// | ICO | `texture_ico` | No |
 /// | PNM | `texture_pnm` | No |
 /// | DDS/DXT | `texture_dds` | No |
-///
-/// # Performance
-///
-/// Creating or cloning an `ImageData` is a relatively expensive operation. If you can, store them in your
-/// [`State`](crate::State) struct rather than recreating them each frame.
 #[derive(Debug, Clone)]
 pub struct ImageData {
     data: RgbaImage,

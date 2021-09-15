@@ -95,13 +95,16 @@ impl CanvasBuilder {
 ///
 /// # Performance
 ///
-/// Creating a `Canvas` is a relatively expensive operation. If you can, store them in your
-/// [`State`](crate::State) struct rather than recreating them each frame.
+/// Creating a canvas is quite an expensive operation. Try to reuse them, rather
+/// than recreating them every frame.
 ///
-/// Cloning a `Canvas` is a very cheap operation, as the underlying data is shared between the
-/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
-/// This does mean, however, that updating a `Canvas` (for example, changing its filter mode) will also
-/// update any other clones of that `Canvas`.
+/// Switching which canvas you are rendering to can be also be slow, as it requires flushing
+/// any pending draw calls to the GPU. It's usually a good idea to do your rendering
+/// to a canvas all in one go, if you can.
+///
+/// You can clone a canvas cheaply, as it is a [reference-counted](https://doc.rust-lang.org/std/rc/struct.Rc.html)
+/// handle to a GPU resource. However, this does mean that modifying a canvas (e.g.
+/// drawing to it) will also affect any clones that exist of it.
 ///
 /// # Examples
 ///

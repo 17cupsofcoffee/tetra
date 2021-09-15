@@ -84,13 +84,12 @@ impl PartialEq for ShaderSharedData {
 ///
 /// # Performance
 ///
-/// Creating a `Shader` is a relatively expensive operation. If you can, store them in your
-/// [`State`](crate::State) struct rather than recreating them each frame.
+/// Creating a shader is quite an expensive operation, as it involves parsing and validating the GLSL code.
+/// Try to reuse shaders, rather than recreating them every frame.
 ///
-/// Cloning a `Shader` is a very cheap operation, as the underlying data is shared between the
-/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
-/// This does mean, however, that updating a `Shader` (for example, setting a uniform) will also
-/// update any other clones of that `Shader`.
+/// You can clone a shader cheaply, as it is a [reference-counted](https://doc.rust-lang.org/std/rc/struct.Rc.html)
+/// handle to a GPU resource. However, this does mean that modifying a shader (e.g.
+/// setting a uniform) will also affect any clones that exist of it.
 ///
 /// # Examples
 ///

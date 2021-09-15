@@ -27,13 +27,13 @@ use super::FilterMode;
 ///
 /// # Performance
 ///
-/// Creating a `Font` is a relatively expensive operation. If you can, store them in your `State`
-/// struct rather than recreating them each frame.
+/// Loading a font is quite an expensive operation, as it involves parsing the font itself and
+/// creating a cache on the GPU for the rendered characters. Try to reuse fonts, rather than
+/// recreating them every frame.
 ///
-/// Cloning a `Font` is a very cheap operation, as the underlying data is shared between the
-/// original instance and the clone via [reference-counting](https://doc.rust-lang.org/std/rc/struct.Rc.html).
-/// This does mean, however, that updating a `Font` (for example, changing its filter mode) will also
-/// update any other clones of that `Font`.
+/// You can clone a font cheaply, as it is [reference-counted](https://doc.rust-lang.org/std/rc/struct.Rc.html)
+/// internally. However, this does mean that modifying a font (e.g. setting the
+/// filter mode) will also affect any clones that exist of it.
 ///
 /// # Examples
 ///
@@ -157,11 +157,10 @@ impl Debug for Font {
 ///
 /// # Performance
 ///
-/// The layout of the text is cached after the first time it is calculated, making subsequent
-/// rendering of the text much faster.
-///
-/// Cloning a `Text` is a fairly expensive operation, as it creates an entirely new copy of the
-/// object with its own cache.
+/// The layout and geometry of the text is cached after the first time it is
+/// calculated, making subsequent renders much faster. If your text stays
+/// the same from frame to frame, reusing the `Text` object will be much
+/// faster than recreating it.
 ///
 /// # Examples
 ///
