@@ -26,6 +26,10 @@ This project adheres to Semantic Versioning.
     * The behaviour with `key_repeat` turned off is unchanged.
 * Updated `glow` to 0.11.
 
+### Fixed
+
+* Fixed an issue where the blend mode was getting set on the GPU even when it hadn't changed.
+
 ## [0.6.5] - 2021-05-26
 
 ### Added 

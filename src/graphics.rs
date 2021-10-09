@@ -213,8 +213,9 @@ pub fn set_blend_mode(ctx: &mut Context, blend_mode: BlendMode) {
     if blend_mode != ctx.graphics.blend_mode {
         flush(ctx);
         ctx.graphics.blend_mode = blend_mode;
+
+        ctx.device.set_blend_mode(blend_mode);
     }
-    ctx.device.set_blend_mode(blend_mode);
 }
 
 /// Resets the blend mode to the default.
