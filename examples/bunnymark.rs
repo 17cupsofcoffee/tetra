@@ -38,7 +38,7 @@ struct GameState {
     texture: Texture,
     bunnies: Vec<Bunny>,
 
-    click_timer: i32,
+    spawn_timer: i32,
 }
 
 impl GameState {
@@ -56,22 +56,22 @@ impl GameState {
             texture,
             bunnies,
 
-            click_timer: 0,
+            spawn_timer: 0,
         })
     }
 }
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        if self.click_timer > 0 {
-            self.click_timer -= 1;
+        if self.spawn_timer > 0 {
+            self.spawn_timer -= 1;
         }
 
-        if input::is_mouse_button_down(ctx, MouseButton::Left) && self.click_timer == 0 {
+        if input::is_mouse_button_down(ctx, MouseButton::Left) && self.spawn_timer == 0 {
             for _ in 0..INITIAL_BUNNIES {
                 self.bunnies.push(Bunny::new(&mut self.rng));
             }
-            self.click_timer = 10;
+            self.spawn_timer = 10;
         }
 
         for bunny in &mut self.bunnies {
