@@ -629,6 +629,8 @@ pub fn get_keys_released(ctx: &Context) -> impl Iterator<Item = &Key> {
 ///
 /// If the label is not present in the current keyboard layout, this function will
 /// return `None`.
+///
+/// To convert in the opposite direction (`Key` to `KeyLabel`), use [`get_key_label`].
 pub fn get_key_with_label(ctx: &Context, key_label: KeyLabel) -> Option<Key> {
     ctx.window.get_key_with_label(key_label)
 }
@@ -640,10 +642,12 @@ pub fn get_key_with_label(ctx: &Context, key_label: KeyLabel) -> Option<Key> {
 ///
 /// * QWERTY: `Some(KeyLabel::Q)`
 /// * AZERTY: `Some(KeyLabel::A)`
-/// * DVORAK: `Some(KeyLabel::Quote)`
+/// * Dvorak: `Some(KeyLabel::Quote)`
 ///
 /// If the key cannot be mapped to the current keyboard layout, this function will
 /// return `None`.
+///
+/// To convert in the opposite direction (`KeyLabel` to `Key`), use [`get_key_with_label`].
 pub fn get_key_label(ctx: &Context, physical_key: Key) -> Option<KeyLabel> {
     ctx.window.get_key_label(physical_key)
 }
