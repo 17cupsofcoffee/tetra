@@ -237,7 +237,7 @@ pub enum Key {
 /// A key, as represented by the current system keyboard layout.
 ///
 /// This type represents keys based on how they are labelled and what character they generate.
-/// For example, `KeyLabel::A` is the the key to the right of the Caps Lock on a QWERTY keyboard,
+/// For example, `KeyLabel::A` is the key to the right of the Caps Lock on a QWERTY keyboard,
 /// whereas it is the key to the right of Tab on an AZERTY keyboard.
 ///
 /// The main use case for `KeyLabel` is when you need to display a key name to the player
