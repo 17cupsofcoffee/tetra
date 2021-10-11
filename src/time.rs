@@ -46,8 +46,32 @@ pub enum Timestep {
     Variable,
 }
 
+pub(crate) struct FpsTracker {
+    buffer: VecDeque<f64>,
+}
+
+impl FpsTracker {
+    fn new() -> FpsTracker {
+        FpsTracker {
+            buffer: VecDeque::with_capacity(200),
+        }
+    }
+
+    pub(crate) fn push(&mut self, frame_time: Duration) {
+        if self.buffer.len() == 200 {
+            self.buffer.pop_front();
+        }
+
+        self.buffer.push_back(frame_time.as_secs_f64());
+    }
+
+    fn get_fps(&self) -> f64 {
+        1.0 / (self.buffer.iter().sum::<f64>() / self.buffer.len() as f64)
+    }
+}
+
 pub(crate) struct TimeContext {
-    pub(crate) fps_tracker: VecDeque<f64>,
+    pub(crate) fps_tracker: FpsTracker,
     pub(crate) ticks_per_second: Option<f64>,
     pub(crate) tick_rate: Option<Duration>,
     pub(crate) delta_time: Duration,
@@ -56,11 +80,6 @@ pub(crate) struct TimeContext {
 
 impl TimeContext {
     pub(crate) fn new(timestep: Timestep) -> TimeContext {
-        // We fill the buffer with values so that the FPS counter doesn't jitter
-        // at startup.
-        let mut fps_tracker = VecDeque::with_capacity(200);
-        fps_tracker.resize(200, 1.0 / 60.0);
-
         let ticks_per_second = match timestep {
             Timestep::Fixed(tps) => Some(tps),
             Timestep::Variable => None,
@@ -72,7 +91,7 @@ impl TimeContext {
         };
 
         TimeContext {
-            fps_tracker,
+            fps_tracker: FpsTracker::new(),
             ticks_per_second,
             tick_rate,
             delta_time: Duration::from_secs(0),
@@ -169,5 +188,5 @@ pub fn set_timestep(ctx: &mut Context, timestep: Timestep) {
 
 /// Returns the current frame rate, averaged out over the last 200 frames.
 pub fn get_fps(ctx: &Context) -> f64 {
-    1.0 / (ctx.time.fps_tracker.iter().sum::<f64>() / ctx.time.fps_tracker.len() as f64)
+    ctx.time.fps_tracker.get_fps()
 }

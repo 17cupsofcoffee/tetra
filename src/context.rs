@@ -140,10 +140,7 @@ impl Context {
             let diff_time = curr_time - last_time;
             last_time = curr_time;
 
-            // Since we fill the buffer when we create the context, we can cycle it
-            // here and it shouldn't reallocate.
-            self.time.fps_tracker.pop_front();
-            self.time.fps_tracker.push_back(diff_time.as_secs_f64());
+            self.time.fps_tracker.push(diff_time);
 
             platform::handle_events(self, state)?;
 
