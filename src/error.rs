@@ -1,5 +1,6 @@
 //! Functions and types relating to error handling.
 
+use std::borrow::Cow;
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::io;
@@ -8,7 +9,7 @@ use std::result;
 
 use image::ImageError;
 
-use lyon_tessellation::TessellationError;
+use lyon_tessellation::{InternalError, TessellationError};
 
 #[cfg(feature = "audio")]
 use rodio::decoder::DecoderError;
@@ -78,13 +79,15 @@ pub enum TetraError {
 impl Display for TetraError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            TetraError::PlatformError(_) => write!(f, "An error was thrown by the platform"),
+            TetraError::PlatformError(msg) => {
+                write!(f, "An error was thrown by the platform: {}", msg)
+            }
             TetraError::FailedToLoadAsset { path, .. } => {
                 write!(f, "Failed to load asset from {}", path.to_string_lossy())
             }
             TetraError::InvalidColor => write!(f, "Invalid color"),
             TetraError::InvalidTexture(_) => write!(f, "Invalid texture data"),
-            TetraError::InvalidShader(_) => write!(f, "Invalid shader source"),
+            TetraError::InvalidShader(msg) => write!(f, "Invalid shader source: {}", msg),
             TetraError::InvalidFont => write!(f, "Invalid font data"),
             #[cfg(feature = "audio")]
             TetraError::InvalidSound(_) => write!(f, "Invalid sound data"),
@@ -93,10 +96,16 @@ impl Display for TetraError {
                 "Not enough data was provided to fill a buffer - expected {}, found {}.",
                 expected, actual
             ),
-            TetraError::FailedToChangeDisplayMode(_) => write!(f, "Failed to change display mode"),
+            TetraError::FailedToChangeDisplayMode(msg) => {
+                write!(f, "Failed to change display mode: {}", msg)
+            }
             TetraError::NoAudioDevice => write!(f, "No audio device available for playback"),
-            TetraError::TessellationError(_) => {
-                write!(f, "An error occurred while tessellating a shape")
+            TetraError::TessellationError(e) => {
+                write!(
+                    f,
+                    "An error occurred while tessellating a shape: {}",
+                    tess_error_description(e)
+                )
             }
         }
     }
@@ -121,5 +130,29 @@ impl Error for TetraError {
             // so we can't :(
             TetraError::TessellationError(_) => None,
         }
+    }
+}
+
+fn tess_error_description(err: &TessellationError) -> Cow<'static, str> {
+    match err {
+        TessellationError::UnsupportedParamater => Cow::Borrowed("unsupported parameter"),
+        TessellationError::InvalidVertex => Cow::Borrowed("invalid vertex"),
+        TessellationError::TooManyVertices => Cow::Borrowed("too many vertices"),
+        TessellationError::Internal(internal_err) => match internal_err {
+            InternalError::IncorrectActiveEdgeOrder(code) => {
+                Cow::Owned(format!("incorrect active edge order {}", code))
+            }
+            InternalError::InsufficientNumberOfSpans => {
+                Cow::Borrowed("insufficient number of spans")
+            }
+            InternalError::InsufficientNumberOfEdges => {
+                Cow::Borrowed("insufficient number of edges")
+            }
+            InternalError::MergeVertexOutside => Cow::Borrowed("merge vertex outside"),
+            InternalError::InvalidNumberOfEdgesBelowVertex => {
+                Cow::Borrowed("invalid number of edges below vertex")
+            }
+            InternalError::ErrorCode(code) => Cow::Owned(format!("error code {}", code)),
+        },
     }
 }

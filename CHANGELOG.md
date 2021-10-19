@@ -14,6 +14,10 @@ This project adheres to Semantic Versioning.
     * Previously, the whole buffer would be initialized to 60fps, with the intent being that the initial output would be less jittery. However, this didn't actually help that much, and it didn't work well if the monitor wasn't vsync-ed to 60hz.
 * Updated `sdl2` to 0.35.
 
+### Fixed
+
+* The `Display` implementation for `TetraError` now includes extra details for errors that don't have a `source`.
+
 ## [0.6.6] - 2021-10-10
 
 ### Added
