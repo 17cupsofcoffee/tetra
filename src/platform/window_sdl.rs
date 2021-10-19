@@ -644,10 +644,10 @@ where
             SdlEvent::ControllerButtonDown { which, button, .. } => {
                 if let Some(slot) = ctx.window.controllers.get(&which).map(|c| c.slot) {
                     if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
-                        let button = button.into();
-
-                        pad.set_button_down(button);
-                        state.event(ctx, Event::GamepadButtonPressed { id: slot, button })?;
+                        if let Some(button) = into_gamepad_button(button) {
+                            pad.set_button_down(button);
+                            state.event(ctx, Event::GamepadButtonPressed { id: slot, button })?;
+                        }
                     }
                 }
             }
@@ -655,12 +655,12 @@ where
             SdlEvent::ControllerButtonUp { which, button, .. } => {
                 if let Some(slot) = ctx.window.controllers.get(&which).map(|c| c.slot) {
                     if let Some(pad) = input::get_gamepad_mut(ctx, slot) {
-                        let button = button.into();
-
-                        // TODO: This can cause some inputs to be missed at low tick rates.
-                        // Could consider buffering input releases like Otter2D does?
-                        pad.set_button_up(button);
-                        state.event(ctx, Event::GamepadButtonReleased { id: slot, button })?;
+                        if let Some(button) = into_gamepad_button(button) {
+                            // TODO: This can cause some inputs to be missed at low tick rates.
+                            // Could consider buffering input releases like Otter2D does?
+                            pad.set_button_up(button);
+                            state.event(ctx, Event::GamepadButtonReleased { id: slot, button })?;
+                        }
                     }
                 }
             }
@@ -978,29 +978,26 @@ key_mappings! {
     }
 }
 
-#[doc(hidden)]
-impl From<SdlGamepadButton> for GamepadButton {
-    fn from(button: SdlGamepadButton) -> GamepadButton {
-        match button {
-            SdlGamepadButton::A => GamepadButton::A,
-            SdlGamepadButton::B => GamepadButton::B,
-            SdlGamepadButton::X => GamepadButton::X,
-            SdlGamepadButton::Y => GamepadButton::Y,
-            SdlGamepadButton::DPadUp => GamepadButton::Up,
-            SdlGamepadButton::DPadDown => GamepadButton::Down,
-            SdlGamepadButton::DPadLeft => GamepadButton::Left,
-            SdlGamepadButton::DPadRight => GamepadButton::Right,
-            SdlGamepadButton::LeftShoulder => GamepadButton::LeftShoulder,
-            SdlGamepadButton::LeftStick => GamepadButton::LeftStick,
-            SdlGamepadButton::RightShoulder => GamepadButton::RightShoulder,
-            SdlGamepadButton::RightStick => GamepadButton::RightStick,
-            SdlGamepadButton::Start => GamepadButton::Start,
-            SdlGamepadButton::Back => GamepadButton::Back,
-            SdlGamepadButton::Guide => GamepadButton::Guide,
-        }
+fn into_gamepad_button(button: SdlGamepadButton) -> Option<GamepadButton> {
+    match button {
+        SdlGamepadButton::A => Some(GamepadButton::A),
+        SdlGamepadButton::B => Some(GamepadButton::B),
+        SdlGamepadButton::X => Some(GamepadButton::X),
+        SdlGamepadButton::Y => Some(GamepadButton::Y),
+        SdlGamepadButton::DPadUp => Some(GamepadButton::Up),
+        SdlGamepadButton::DPadDown => Some(GamepadButton::Down),
+        SdlGamepadButton::DPadLeft => Some(GamepadButton::Left),
+        SdlGamepadButton::DPadRight => Some(GamepadButton::Right),
+        SdlGamepadButton::LeftShoulder => Some(GamepadButton::LeftShoulder),
+        SdlGamepadButton::LeftStick => Some(GamepadButton::LeftStick),
+        SdlGamepadButton::RightShoulder => Some(GamepadButton::RightShoulder),
+        SdlGamepadButton::RightStick => Some(GamepadButton::RightStick),
+        SdlGamepadButton::Start => Some(GamepadButton::Start),
+        SdlGamepadButton::Back => Some(GamepadButton::Back),
+        SdlGamepadButton::Guide => Some(GamepadButton::Guide),
+        _ => None,
     }
 }
-
 #[doc(hidden)]
 impl From<GamepadAxis> for SdlGamepadAxis {
     fn from(axis: GamepadAxis) -> SdlGamepadAxis {
