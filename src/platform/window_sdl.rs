@@ -6,19 +6,16 @@ use glow::Context as GlowContext;
 use hashbrown::HashMap;
 use sdl2::controller::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, GameController};
 use sdl2::event::{Event as SdlEvent, WindowEvent};
-use sdl2::haptic::Haptic;
 use sdl2::keyboard::{Keycode, Scancode};
 use sdl2::mouse::{MouseButton as SdlMouseButton, MouseWheelDirection};
 use sdl2::pixels::PixelMasks;
 use sdl2::surface::Surface;
-use sdl2::sys::{SDL_HAPTIC_INFINITY, SDL_WINDOWPOS_CENTERED_MASK};
+use sdl2::sys::SDL_WINDOWPOS_CENTERED_MASK;
 use sdl2::video::{
     FullscreenType, GLContext as SdlGlContext, GLProfile, SwapInterval, Window as SdlWindow,
     WindowPos,
 };
-use sdl2::{
-    EventPump, GameControllerSubsystem, HapticSubsystem, JoystickSubsystem, Sdl, VideoSubsystem,
-};
+use sdl2::{EventPump, GameControllerSubsystem, JoystickSubsystem, Sdl, VideoSubsystem};
 
 use crate::error::{Result, TetraError};
 use crate::graphics::{self, ImageData};
@@ -28,11 +25,9 @@ use crate::window::WindowPosition;
 use crate::{Context, ContextBuilder, Event, State};
 
 struct SdlController {
-    // NOTE: The SDL docs say to close the haptic device before the joystick, so
-    // I've ordered the fields accordingly.
-    haptic: Option<Haptic>,
     controller: GameController,
     slot: usize,
+    supports_rumble: bool,
 }
 
 pub struct Window {
@@ -43,7 +38,6 @@ pub struct Window {
     video_sys: VideoSubsystem,
     controller_sys: GameControllerSubsystem,
     _joystick_sys: JoystickSubsystem,
-    haptic_sys: HapticSubsystem,
     _gl_sys: SdlGlContext,
 
     controllers: HashMap<u32, SdlController>,
@@ -60,7 +54,6 @@ impl Window {
         let video_sys = sdl.video().map_err(TetraError::PlatformError)?;
         let joystick_sys = sdl.joystick().map_err(TetraError::PlatformError)?;
         let controller_sys = sdl.game_controller().map_err(TetraError::PlatformError)?;
-        let haptic_sys = sdl.haptic().map_err(TetraError::PlatformError)?;
 
         sdl2::hint::set("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
 
@@ -178,7 +171,6 @@ impl Window {
             video_sys,
             controller_sys,
             _joystick_sys: joystick_sys,
-            haptic_sys,
             _gl_sys: gl_sys,
 
             controllers: HashMap::new(),
@@ -427,30 +419,35 @@ impl Window {
     }
 
     pub fn is_gamepad_vibration_supported(&self, platform_id: u32) -> bool {
-        self.controllers[&platform_id].haptic.is_some()
+        self.controllers
+            .get(&platform_id)
+            .map(|c| c.supports_rumble)
+            .unwrap_or(false)
     }
 
     pub fn set_gamepad_vibration(&mut self, platform_id: u32, strength: f32) {
-        self.start_gamepad_vibration(platform_id, strength, SDL_HAPTIC_INFINITY);
+        self.start_gamepad_vibration(platform_id, strength, 0);
     }
 
     pub fn start_gamepad_vibration(&mut self, platform_id: u32, strength: f32, duration: u32) {
-        if let Some(haptic) = self
+        if let Some(controller) = self
             .controllers
             .get_mut(&platform_id)
-            .and_then(|c| c.haptic.as_mut())
+            .map(|c| &mut c.controller)
         {
-            haptic.rumble_play(strength, duration);
+            let int_strength = ((u16::MAX as f32) * strength) as u16;
+
+            let _ = controller.set_rumble(int_strength, int_strength, duration);
         }
     }
 
     pub fn stop_gamepad_vibration(&mut self, platform_id: u32) {
-        if let Some(haptic) = self
+        if let Some(controller) = self
             .controllers
             .get_mut(&platform_id)
-            .and_then(|c| c.haptic.as_mut())
+            .map(|c| &mut c.controller)
         {
-            haptic.rumble_stop();
+            let _ = controller.set_rumble(0, 0, 0);
         }
     }
 
@@ -607,22 +604,23 @@ where
             }
 
             SdlEvent::ControllerDeviceAdded { which, .. } => {
-                let controller = ctx
+                let mut controller = ctx
                     .window
                     .controller_sys
                     .open(which)
                     .map_err(|e| TetraError::PlatformError(e.to_string()))?;
 
-                let haptic = ctx.window.haptic_sys.open_from_joystick_id(which).ok();
                 let id = controller.instance_id();
                 let slot = input::add_gamepad(ctx, id);
+
+                let supports_rumble = controller.set_rumble(0, 0, 0).is_ok();
 
                 ctx.window.controllers.insert(
                     id,
                     SdlController {
                         controller,
-                        haptic,
                         slot,
+                        supports_rumble,
                     },
                 );
 

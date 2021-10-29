@@ -177,6 +177,10 @@ impl State for GameState {
             self.left_stick = input::get_gamepad_stick_position(ctx, 0, GamepadStick::LeftStick);
             self.right_stick = input::get_gamepad_stick_position(ctx, 0, GamepadStick::RightStick);
 
+            if input::get_gamepad_buttons_pressed(ctx, 0).count() > 0 {
+                input::start_gamepad_vibration(ctx, 0, 1.0, 0);
+            }
+
             self.axis_info.set_content(format!(
                 "Gamepad: {}\nLeft Stick: ({}, {}) | Right Stick: ({}, {}) | Left Trigger: {} | Right Trigger: {}",
                 input::get_gamepad_name(ctx, 0).unwrap(),

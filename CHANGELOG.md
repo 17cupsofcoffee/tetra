@@ -10,6 +10,7 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
+* The backend for gamepad vibration has been rewritten, and now supports a wider range of controllers (including DualShock 4).
 * `time::get_fps` no longer pre-fills the buffer it uses for averaging the FPS at startup.
     * Previously, the whole buffer would be initialized to 60fps, with the intent being that the initial output would be less jittery. However, this didn't actually help that much, and it didn't work well if the monitor wasn't vsync-ed to 60hz.
 * Updated `sdl2` to 0.35.
