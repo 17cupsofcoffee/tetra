@@ -257,6 +257,11 @@ impl ContextBuilder {
 
     /// Enables or disables vsync.
     ///
+    /// Setting this flag does not guarantee that the requested vsync mode will be used -
+    /// some platforms do not support vsync, and others *enforce* vsync. If you want to
+    /// find out which vsync mode was actually chosen, you can call
+    /// [`window::is_vsync_enabled`](crate::window::is_vsync_enabled).
+    ///
     /// Defaults to `true`.
     pub fn vsync(&mut self, vsync: bool) -> &mut ContextBuilder {
         self.vsync = vsync;

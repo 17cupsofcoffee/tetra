@@ -18,6 +18,7 @@ This project adheres to Semantic Versioning.
 ### Fixed
 
 * The `Display` implementation for `TetraError` now includes extra details for errors that don't have a `source`.
+* Games will no longer fail to start on platforms that do not support setting vsync on or off.
 
 ## [0.6.6] - 2021-10-10
 

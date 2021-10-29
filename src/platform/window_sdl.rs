@@ -155,13 +155,11 @@ impl Window {
             GlowContext::from_loader_function(|s| video_sys.gl_get_proc_address(s) as *const _)
         };
 
-        video_sys
-            .gl_set_swap_interval(if settings.vsync {
-                SwapInterval::VSync
-            } else {
-                SwapInterval::Immediate
-            })
-            .map_err(TetraError::FailedToChangeDisplayMode)?;
+        let _ = video_sys.gl_set_swap_interval(if settings.vsync {
+            SwapInterval::VSync
+        } else {
+            SwapInterval::Immediate
+        });
 
         let window = Window {
             sdl,
