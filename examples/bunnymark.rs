@@ -3,7 +3,7 @@
 use rand::rngs::ThreadRng;
 use rand::{self, Rng};
 use tetra::graphics::{self, Color, Texture};
-use tetra::input::{self, MouseButton};
+use tetra::input::{self, Key, MouseButton};
 use tetra::math::Vec2;
 use tetra::time;
 use tetra::window;
@@ -38,6 +38,7 @@ struct GameState {
     texture: Texture,
     bunnies: Vec<Bunny>,
 
+    auto_spawn: bool,
     spawn_timer: i32,
 }
 
@@ -56,6 +57,7 @@ impl GameState {
             texture,
             bunnies,
 
+            auto_spawn: false,
             spawn_timer: 0,
         })
     }
@@ -67,7 +69,14 @@ impl State for GameState {
             self.spawn_timer -= 1;
         }
 
-        if input::is_mouse_button_down(ctx, MouseButton::Left) && self.spawn_timer == 0 {
+        if input::is_key_pressed(ctx, Key::A) {
+            self.auto_spawn = !self.auto_spawn;
+        }
+
+        let should_spawn = self.spawn_timer == 0
+            && (input::is_mouse_button_down(ctx, MouseButton::Left) || self.auto_spawn);
+
+        if should_spawn {
             for _ in 0..INITIAL_BUNNIES {
                 self.bunnies.push(Bunny::new(&mut self.rng));
             }

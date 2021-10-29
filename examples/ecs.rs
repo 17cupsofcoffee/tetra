@@ -10,7 +10,7 @@ use rand::rngs::StdRng;
 use rand::{self, Rng, SeedableRng};
 
 use tetra::graphics::{self, Color, Texture};
-use tetra::input::{self, MouseButton};
+use tetra::input::{self, Key, MouseButton};
 use tetra::math::Vec2;
 use tetra::time;
 use tetra::window;
@@ -26,7 +26,8 @@ struct Position(Vec2<f32>);
 struct Velocity(Vec2<f32>);
 
 struct Input {
-    spawn: bool,
+    clicked: bool,
+    auto_spawn: bool,
 }
 
 struct SpawnTimer(i32);
@@ -49,7 +50,7 @@ fn spawn_bunnies(
         *spawn_timer -= 1;
     }
 
-    if input.spawn && *spawn_timer == 0 {
+    if *spawn_timer == 0 && (input.clicked || input.auto_spawn) {
         for _ in 0..INITIAL_BUNNIES {
             cmd.push(create_bunny(rng));
         }
@@ -108,7 +109,10 @@ impl GameState {
         let mut resources = Resources::default();
 
         resources.insert(rng);
-        resources.insert(Input { spawn: false });
+        resources.insert(Input {
+            clicked: false,
+            auto_spawn: false,
+        });
         resources.insert(SpawnTimer(0));
 
         Ok(GameState {
@@ -140,7 +144,11 @@ impl State for GameState {
 
         {
             let mut input = self.resources.get_mut::<Input>().unwrap();
-            input.spawn = input::is_mouse_button_down(ctx, MouseButton::Left);
+            input.clicked = input::is_mouse_button_down(ctx, MouseButton::Left);
+
+            if input::is_key_pressed(ctx, Key::A) {
+                input.auto_spawn = !input.auto_spawn;
+            }
         }
 
         self.schedule.execute(&mut self.world, &mut self.resources);
