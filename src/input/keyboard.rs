@@ -258,7 +258,7 @@ impl Key {
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
 /// can be enabled via the `serde_support` feature.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, EnumIter)]
 #[cfg_attr(
     feature = "serde_support",
     derive(serde::Serialize, serde::Deserialize)
@@ -401,6 +401,13 @@ pub enum KeyLabel {
     Space,
     Tab,
     Underscore,
+}
+
+impl KeyLabel {
+    /// Returns an iterator that enumerates all key labels.
+    pub fn all() -> KeyLabelIter {
+        Self::iter()
+    }
 }
 
 impl Display for KeyLabel {
