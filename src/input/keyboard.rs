@@ -1,4 +1,6 @@
 use std::fmt::{self, Display, Formatter};
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
 use crate::Context;
 
@@ -21,7 +23,7 @@ use crate::Context;
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
 /// can be enabled via the `serde_support` feature.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, EnumIter)]
 #[cfg_attr(
     feature = "serde_support",
     derive(serde::Serialize, serde::Deserialize)
@@ -232,6 +234,13 @@ pub enum Key {
         note = "`Key` now represents the physical position of a key, independent of the current keyboard layout, so this variant is no longer valid. To represent the key that is labelled with this character, use `KeyLabel`."
     )]
     Underscore,
+}
+
+impl Key {
+    /// Returns an iterator that enumerates all keys.
+    pub fn all() -> KeyIter {
+        Self::iter()
+    }
 }
 
 /// A key, as represented by the current system keyboard layout.

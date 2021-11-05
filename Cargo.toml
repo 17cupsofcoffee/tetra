@@ -24,6 +24,9 @@ xi-unicode = "0.3.0"
 bytemuck = "1.5.0"
 num-traits = "0.2.14"
 lyon_tessellation = "0.17.4"
+strum = "0.22"
+strum_macros = "0.22"
+
 
 [dev-dependencies]
 rand = "0.8.0"
