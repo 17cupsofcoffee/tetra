@@ -17,6 +17,7 @@ This project adheres to Semantic Versioning.
 
 ### Fixed
 
+* Tetra no longer fails to compile when built in a project with `edition = "2021"` or `resolver = "2"` in the Cargo.toml.
 * The `Display` implementation for `TetraError` now includes extra details for errors that don't have a `source`.
 * Games will no longer fail to start on platforms that do not support setting vsync on or off.
 

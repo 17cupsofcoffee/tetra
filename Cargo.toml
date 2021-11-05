@@ -25,6 +25,9 @@ bytemuck = "1.5.0"
 num-traits = "0.2.14"
 lyon_tessellation = "0.17.4"
 
+# Workaround for https://github.com/17cupsofcoffee/tetra/issues/294
+winapi = { version = "0.3", features = ["errhandlingapi"] }
+
 [dev-dependencies]
 rand = "0.8.0"
 anyhow = "1.0.33"
