@@ -6,6 +6,13 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Changed
+
+* `KeyModifier`'s behaviour has been reverted to be layout-based rather than position-based.
+    * This better matches the expected behaviour for keyboard shortcuts (which is the primary use case for this type), and the behaviour of the underlying platform code.
+
 ## [0.6.7] - 2021-11-05
 
 ### Changed
