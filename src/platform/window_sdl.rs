@@ -6,7 +6,7 @@ use glow::Context as GlowContext;
 use hashbrown::HashMap;
 use sdl2::controller::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, GameController};
 use sdl2::event::{Event as SdlEvent, WindowEvent};
-use sdl2::keyboard::{Keycode, Scancode};
+use sdl2::keyboard::{Keycode, Mod, Scancode};
 use sdl2::mouse::{MouseButton as SdlMouseButton, MouseWheelDirection};
 use sdl2::pixels::PixelMasks;
 use sdl2::surface::Surface;
@@ -19,7 +19,9 @@ use sdl2::{EventPump, GameControllerSubsystem, JoystickSubsystem, Sdl, VideoSubs
 
 use crate::error::{Result, TetraError};
 use crate::graphics::{self, ImageData};
-use crate::input::{self, GamepadAxis, GamepadButton, GamepadStick, Key, KeyLabel, MouseButton};
+use crate::input::{
+    self, GamepadAxis, GamepadButton, GamepadStick, Key, KeyLabel, KeyModifierState, MouseButton,
+};
 use crate::math::Vec2;
 use crate::window::WindowPosition;
 use crate::{Context, ContextBuilder, Event, State};
@@ -523,9 +525,12 @@ where
             SdlEvent::KeyDown {
                 scancode: Some(scancode),
                 repeat,
+                keymod,
                 ..
             } => {
                 if !repeat || ctx.window.is_key_repeat_enabled() {
+                    input::set_key_modifier_state(ctx, from_sdl_keymod(keymod));
+
                     if let Scancode::Escape = scancode {
                         if ctx.quit_on_escape {
                             ctx.running = false;
@@ -541,8 +546,11 @@ where
 
             SdlEvent::KeyUp {
                 scancode: Some(scancode),
+                keymod,
                 ..
             } => {
+                input::set_key_modifier_state(ctx, from_sdl_keymod(keymod));
+
                 if let Some(key) = from_sdl_scancode(scancode) {
                     // TODO: This can cause some inputs to be missed at low tick rates.
                     // Could consider buffering input releases like Otter2D does?
@@ -971,6 +979,14 @@ key_mappings! {
         Quote => Quote,
         RightParen => RightParen,
         Underscore => Underscore,
+    }
+}
+
+fn from_sdl_keymod(keymod: Mod) -> KeyModifierState {
+    KeyModifierState {
+        ctrl: keymod.intersects(Mod::LCTRLMOD | Mod::RCTRLMOD),
+        alt: keymod.intersects(Mod::LALTMOD | Mod::RALTMOD),
+        shift: keymod.intersects(Mod::LSHIFTMOD | Mod::RSHIFTMOD),
     }
 }
 

@@ -536,8 +536,14 @@ impl Display for KeyLabel {
 
 /// A key modifier on the keyboard.
 ///
-/// These mainly consist of keys that have duplicates in multiple places on the keyboard, such as
-/// Control and Shift.
+/// This is primarily useful for creating native-style keyboard shortcuts.
+///
+/// This type and the associated functions take into account the user's keyboard layout (and
+/// any OS-level key mappings). Therefore, the behaviour should match what the user expects
+/// for their system.
+///
+/// For keyboard mappings that are based on position rather than layout, consider using
+/// [`Key`] instead.
 ///
 /// # Serde
 ///
@@ -569,6 +575,13 @@ impl Display for KeyModifier {
     }
 }
 
+#[derive(Default, Debug)]
+pub(crate) struct KeyModifierState {
+    pub ctrl: bool,
+    pub alt: bool,
+    pub shift: bool,
+}
+
 /// Returns true if the specified key is currently down.
 pub fn is_key_down(ctx: &Context, key: Key) -> bool {
     ctx.input.keys_down.contains(&key)
@@ -591,16 +604,20 @@ pub fn is_key_released(ctx: &Context, key: Key) -> bool {
 
 /// Returns true if the specified key modifier is currently down.
 pub fn is_key_modifier_down(ctx: &Context, key_modifier: KeyModifier) -> bool {
-    let (a, b) = get_modifier_keys(key_modifier);
-
-    is_key_down(ctx, a) || is_key_down(ctx, b)
+    match key_modifier {
+        KeyModifier::Ctrl => ctx.input.key_modifier_state.ctrl,
+        KeyModifier::Alt => ctx.input.key_modifier_state.alt,
+        KeyModifier::Shift => ctx.input.key_modifier_state.shift,
+    }
 }
 
 /// Returns true if the specified key modifier is currently up.
 pub fn is_key_modifier_up(ctx: &Context, key_modifier: KeyModifier) -> bool {
-    let (a, b) = get_modifier_keys(key_modifier);
-
-    is_key_up(ctx, a) && is_key_up(ctx, b)
+    match key_modifier {
+        KeyModifier::Ctrl => !ctx.input.key_modifier_state.ctrl,
+        KeyModifier::Alt => !ctx.input.key_modifier_state.alt,
+        KeyModifier::Shift => !ctx.input.key_modifier_state.shift,
+    }
 }
 
 /// Returns an iterator of the keys that are currently down.
@@ -672,10 +689,6 @@ pub(crate) fn set_key_up(ctx: &mut Context, key: Key) -> bool {
     was_down
 }
 
-pub(crate) fn get_modifier_keys(key_modifier: KeyModifier) -> (Key, Key) {
-    match key_modifier {
-        KeyModifier::Ctrl => (Key::LeftCtrl, Key::RightCtrl),
-        KeyModifier::Alt => (Key::LeftAlt, Key::RightAlt),
-        KeyModifier::Shift => (Key::LeftShift, Key::RightShift),
-    }
+pub(crate) fn set_key_modifier_state(ctx: &mut Context, state: KeyModifierState) {
+    ctx.input.key_modifier_state = state;
 }

@@ -41,6 +41,8 @@ pub(crate) struct InputContext {
     keys_pressed: HashSet<Key>,
     keys_released: HashSet<Key>,
 
+    key_modifier_state: KeyModifierState,
+
     mouse_buttons_down: HashSet<MouseButton>,
     mouse_buttons_pressed: HashSet<MouseButton>,
     mouse_buttons_released: HashSet<MouseButton>,
@@ -58,6 +60,8 @@ impl InputContext {
             keys_down: HashSet::new(),
             keys_pressed: HashSet::new(),
             keys_released: HashSet::new(),
+
+            key_modifier_state: KeyModifierState::default(),
 
             mouse_buttons_down: HashSet::new(),
             mouse_buttons_pressed: HashSet::new(),
