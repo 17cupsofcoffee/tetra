@@ -193,7 +193,7 @@ impl VertexBuffer {
 /// can be relatively slow. You should try to minimize how often you do this - for example, if a piece
 /// of geometry does not change from frame to frame, reuse the buffer instead of recreating it.
 ///
-/// You can clone a vertex buffer cheaply, as it is a [reference-counted](https://doc.rust-lang.org/std/rc/struct.Rc.html)
+/// You can clone an index buffer cheaply, as it is a [reference-counted](https://doc.rust-lang.org/std/rc/struct.Rc.html)
 /// handle to a GPU resource. However, this does mean that modifying a buffer (e.g.
 /// calling `set_data`) will also affect any clones that exist of it.
 #[derive(Clone, Debug, PartialEq)]
