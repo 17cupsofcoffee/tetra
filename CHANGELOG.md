@@ -8,11 +8,16 @@ This project adheres to Semantic Versioning.
 
 ## [0.7] - 2021-??-??
 
+### Added
+
 ### Changed
 
 * **Breaking:** This crate now uses Rust 2021, and therefore requires at least Rust 1.56.
 * **Breaking:** Most enums in the API are now marked as `non_exhaustive`, and so must have a wildcard arm when matching on them.
     * This is to make it so adding a new enum variant is not a breaking change in the future.
+* **Breaking:** `BlendMode` and `BlendAlphaMode` have been replaced with `BlendState`, `BlendFactor` and `BlendOperation`, which give you much lower-level control of how colors are blended.
+    * As such, `graphics::set_blend_mode` and `graphics::reset_blend_mode` have been renamed to `graphics::set_blend_state` and `graphics::reset_blend_state` respectively.
+    * The old presets for blending behaviour are still available as `const` constructors on `BlendState`, so you should be able to migrate without any changes in behaviour.
 * `KeyModifier`'s behaviour has been reverted to be layout-based rather than position-based.
     * This better matches the expected behaviour for keyboard shortcuts (which is the primary use case for this type), and the behaviour of the underlying platform code.
 
