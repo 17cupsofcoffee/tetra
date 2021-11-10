@@ -6,9 +6,12 @@ use std::slice;
 use glow::{Context as GlowContext, HasContext, PixelPackData, PixelUnpackData};
 
 use crate::error::{Result, TetraError};
-use crate::graphics::{BlendModeEquation, mesh::{BufferUsage, Vertex, VertexWinding}, StencilState, StencilTest};
 use crate::graphics::{
-    BlendAlphaMode, BlendMode, Color, FilterMode, GraphicsDeviceInfo, StencilAction,
+    mesh::{BufferUsage, Vertex, VertexWinding},
+    StencilState, StencilTest
+};
+use crate::graphics::{
+    BlendModeEquation, BlendAlphaMode, BlendMode, Color, FilterMode, GraphicsDeviceInfo, StencilAction,
 };
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
