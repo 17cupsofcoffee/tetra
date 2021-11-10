@@ -11,7 +11,7 @@ use crate::graphics::{
     StencilState, StencilTest
 };
 use crate::graphics::{
-    BlendModeEquation, BlendAlphaMode, BlendMode, Color, FilterMode, GraphicsDeviceInfo, StencilAction,
+    BlendEquation, BlendAlphaMode, BlendMode, Color, FilterMode, GraphicsDeviceInfo, StencilAction,
 };
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
@@ -1213,9 +1213,9 @@ impl BlendMode {
             BlendMode::Multiply => glow::FUNC_ADD,
             BlendMode::Custom { equation,.. } => {
                 match equation{
-                    BlendModeEquation::Add => glow::FUNC_ADD,
-                    BlendModeEquation::Subtract => glow::FUNC_SUBTRACT,
-                    BlendModeEquation::ReverseSubtract => glow::FUNC_REVERSE_SUBTRACT
+                    BlendEquation::Add => glow::FUNC_ADD,
+                    BlendEquation::Subtract => glow::FUNC_SUBTRACT,
+                    BlendEquation::ReverseSubtract => glow::FUNC_REVERSE_SUBTRACT
                 }
             }
         }
