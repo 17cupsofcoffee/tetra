@@ -478,7 +478,7 @@ impl Window {
     }
 
     pub fn get_key_label(&self, key: Key) -> Option<KeyLabel> {
-        let sdl_scancode = into_sdl_scancode(key)?;
+        let sdl_scancode = into_sdl_scancode(key);
         let sdl_keycode = Keycode::from_scancode(sdl_scancode)?;
         from_sdl_keycode(sdl_keycode)
     }
@@ -791,17 +791,15 @@ macro_rules! key_mappings {
             }
         }
 
-        fn into_sdl_scancode(key: Key) -> Option<Scancode> {
+        fn into_sdl_scancode(key: Key) -> Scancode {
             match key {
                 $(
-                    Key::$tetra_both => Some(Scancode::$sdl_both),
+                    Key::$tetra_both => Scancode::$sdl_both,
                 )*
 
                 $(
-                    Key::$tetra_key => Some(Scancode::$sdl_scancode),
+                    Key::$tetra_key => Scancode::$sdl_scancode,
                 )*
-
-                _ => None,
             }
         }
 
