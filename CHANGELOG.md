@@ -14,6 +14,13 @@ This project adheres to Semantic Versioning.
 * `KeyModifier`'s behaviour has been reverted to be layout-based rather than position-based.
     * This better matches the expected behaviour for keyboard shortcuts (which is the primary use case for this type), and the behaviour of the underlying platform code.
 
+### Removed
+
+* **Breaking:** `Canvas::multisampled` has been removed - use `Canvas::builder` instead.
+* **Breaking:** `ImageData::from_rgba` has been removed - use `ImageData::from_rgba8` instead.
+* **Breaking:** `BmFontBuilder::with_page_rgba` has been removed - use `BmFontBuilder::with_page_rgba8` instead.
+* `Key`s that don't represent a physical position on the keyboard have been removed - you should either switch to the `Key` for the position you want, or switch to `KeyLabel` if you still want to use the system keyboard layout.
+
 ## [0.6.7] - 2021-11-05
 
 ### Changed

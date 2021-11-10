@@ -136,29 +136,6 @@ impl Canvas {
         CanvasBuilder::new(width, height)
     }
 
-    /// Creates a new canvas, with the specified level of multisample anti-aliasing.
-    ///
-    /// The number of samples that can be used varies between graphics cards - `2`, `4` and `8` are reasonably
-    /// well supported. When set to `0` (the default), no multisampling will be used.
-    ///
-    /// # Resolving
-    ///
-    /// In order to actually display a multisampled canvas, it first has to be downsampled (or 'resolved'). This is
-    /// done automatically once you switch to a different canvas/the backbuffer. Until this step takes place,
-    /// your rendering will *not* be reflected in the canvas' underlying [`texture`](Self::texture) (and by
-    /// extension, in the output of [`draw`](Self::draw) and [`get_data`](Self::get_data)).
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
-    #[deprecated(since = "0.6.4", note = "use Canvas::builder instead")]
-    pub fn multisampled(ctx: &mut Context, width: i32, height: i32, samples: u8) -> Result<Canvas> {
-        CanvasBuilder::new(width, height)
-            .samples(samples)
-            .build(ctx)
-    }
-
     /// Draws the canvas to the screen (or to another canvas, if one is enabled).
     pub fn draw<P>(&self, ctx: &mut Context, params: P)
     where

@@ -537,15 +537,6 @@ impl ImageData {
         Ok(ImageData { data: image })
     }
 
-    #[allow(missing_docs)]
-    #[deprecated(since = "0.6.4", note = "renamed to from_rgba8 for consistency")]
-    pub fn from_rgba<D>(width: i32, height: i32, data: D) -> Result<ImageData>
-    where
-        D: Into<Vec<u8>>,
-    {
-        ImageData::from_rgba8(width, height, data)
-    }
-
     /// Returns the width of the image.
     pub fn width(&self) -> i32 {
         self.data.width() as i32

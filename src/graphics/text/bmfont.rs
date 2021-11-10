@@ -188,21 +188,6 @@ impl BmFontBuilder {
         Ok(self)
     }
 
-    #[allow(missing_docs)]
-    #[deprecated(since = "0.6.4", note = "renamed to with_page_rgba8 for consistency")]
-    pub fn with_page_rgba<D>(
-        self,
-        id: u32,
-        width: i32,
-        height: i32,
-        data: D,
-    ) -> Result<BmFontBuilder>
-    where
-        D: Into<Vec<u8>>,
-    {
-        self.with_page_rgba8(id, width, height, data)
-    }
-
     /// Builds the font.
     ///
     /// Any pages that have not had their images manually set will be loaded from the path
