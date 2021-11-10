@@ -1,18 +1,19 @@
 use crate::math::Vec2;
 use crate::Context;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(
-    feature = "serde_support",
-    derive(serde::Serialize, serde::Deserialize)
-)]
-#[allow(missing_docs)]
 /// A button on a mouse.
 ///
 /// # Serde
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
 /// can be enabled via the `serde_support` feature.
+#[non_exhaustive]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(
+    feature = "serde_support",
+    derive(serde::Serialize, serde::Deserialize)
+)]
+#[allow(missing_docs)]
 pub enum MouseButton {
     Left,
     Middle,

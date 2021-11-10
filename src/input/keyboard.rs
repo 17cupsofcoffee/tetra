@@ -21,6 +21,7 @@ use crate::Context;
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
 /// can be enabled via the `serde_support` feature.
+#[non_exhaustive]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(
     feature = "serde_support",
@@ -163,13 +164,13 @@ pub enum Key {
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
 /// can be enabled via the `serde_support` feature.
+#[non_exhaustive]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(
     feature = "serde_support",
     derive(serde::Serialize, serde::Deserialize)
 )]
 #[allow(missing_docs)]
-#[non_exhaustive]
 pub enum KeyLabel {
     A,
     B,
@@ -463,6 +464,7 @@ impl Display for KeyLabel {
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
 /// can be enabled via the `serde_support` feature.
+#[non_exhaustive]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(
     feature = "serde_support",

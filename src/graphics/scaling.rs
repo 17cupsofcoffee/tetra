@@ -209,6 +209,7 @@ fn unproject_impl(screen_pos: f32, rect_pos: f32, rect_size: f32, real_size: f32
 }
 
 /// Algorithms that can be used to scale the game's screen.
+#[non_exhaustive]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ScalingMode {
     /// The game will always be displayed at its native resolution, with no scaling applied.

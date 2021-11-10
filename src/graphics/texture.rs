@@ -381,6 +381,7 @@ impl Texture {
 /// Filtering algorithms that can be used when scaling an image.
 ///
 /// Tetra currently defaults to using `Nearest` for all newly created textures.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FilterMode {
     /// Nearest-neighbor interpolation. This preserves hard edges and details, but may look pixelated.

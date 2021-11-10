@@ -536,6 +536,7 @@ pub(crate) fn ortho(width: f32, height: f32, flipped: bool) -> Mat4<f32> {
 /// For modes where the alpha component of the color can affect the output, an
 /// additional [`BlendAlphaMode`] parameter is provided, which determines if
 /// the colour should be multiplied by its alpha before blending.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BlendMode {
     /// The alpha of the drawn content will determine its opacity.
@@ -563,6 +564,7 @@ impl Default for BlendMode {
 }
 
 /// How to treat alpha values when blending colors.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BlendAlphaMode {
     /// The RGB components of the color are multiplied by the alpha component before
@@ -588,6 +590,7 @@ impl Default for BlendAlphaMode {
 
 /// The test for whether a pixel is visible when using
 /// a stencil.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum StencilTest {
     /// The pixel is never visible.
@@ -630,6 +633,7 @@ pub enum StencilTest {
 }
 
 /// How drawing operations should modify the stencil buffer.
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum StencilAction {
     /// Drawing operations will not modify the stencil buffer.

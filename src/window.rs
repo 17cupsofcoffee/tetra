@@ -442,8 +442,8 @@ pub fn is_key_repeat_enabled(ctx: &Context) -> bool {
 }
 
 /// Represents the position of a window on the screen.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum WindowPosition {
     /// Positions the window at the given screen co-ordinate.
     ///
