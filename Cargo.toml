@@ -2,7 +2,7 @@
 name = "tetra"
 description = "A simple 2D game framework written in Rust"
 version = "0.6.7"
-edition = "2018"
+edition = "2021"
 authors = ["Joe Clay <27cupsofcoffee@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/17cupsofcoffee/tetra"

@@ -6,10 +6,11 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
-## [Upcoming]
+## [0.7] - 2021-??-??
 
 ### Changed
 
+* **Breaking:** This crate now uses Rust 2021, and therefore requires at least Rust 1.56.
 * `KeyModifier`'s behaviour has been reverted to be layout-based rather than position-based.
     * This better matches the expected behaviour for keyboard shortcuts (which is the primary use case for this type), and the behaviour of the underlying platform code.
 
