@@ -642,7 +642,7 @@ impl ImageData {
     /// Multiplies the RGB components of each pixel by the alpha component.
     ///
     /// This can be useful when working with
-    /// [premultiplied alpha blending](super::BlendAlphaMode::Premultiplied).
+    /// [premultiplied alpha blending](super::BlendState::alpha).
     pub fn premultiply(&mut self) {
         self.transform(|_, color| color.to_premultiplied())
     }

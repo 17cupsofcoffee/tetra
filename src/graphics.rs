@@ -57,7 +57,7 @@ pub(crate) struct GraphicsContext {
     vertex_data: Vec<Vertex>,
     element_count: usize,
 
-    blend_mode: BlendMode,
+    blend_state: BlendState,
 }
 
 impl GraphicsContext {
@@ -109,7 +109,7 @@ impl GraphicsContext {
             vertex_data: Vec::with_capacity(MAX_VERTICES),
             element_count: 0,
 
-            blend_mode: BlendMode::default(),
+            blend_state: BlendState::default(),
         })
     }
 }
@@ -205,22 +205,22 @@ pub(crate) fn set_texture_ex(ctx: &mut Context, texture: Option<&Texture>) {
     }
 }
 
-/// Sets the blend mode used for future drawing operations.
+/// Sets the blend state used for future drawing operations.
 ///
-/// The blend mode will be used to determine how drawn content will be blended
+/// The blend state will be used to determine how drawn content will be blended
 /// with the screen (or with a [`Canvas`], if one is active).
-pub fn set_blend_mode(ctx: &mut Context, blend_mode: BlendMode) {
-    if blend_mode != ctx.graphics.blend_mode {
+pub fn set_blend_state(ctx: &mut Context, blend_state: BlendState) {
+    if blend_state != ctx.graphics.blend_state {
         flush(ctx);
-        ctx.graphics.blend_mode = blend_mode;
+        ctx.graphics.blend_state = blend_state;
 
-        ctx.device.set_blend_mode(blend_mode);
+        ctx.device.set_blend_state(blend_state);
     }
 }
 
 /// Resets the blend mode to the default.
-pub fn reset_blend_mode(ctx: &mut Context) {
-    set_blend_mode(ctx, Default::default());
+pub fn reset_blend_state(ctx: &mut Context) {
+    set_blend_state(ctx, Default::default());
 }
 
 /// Sets the shader that is currently being used for rendering.
@@ -525,64 +525,311 @@ pub(crate) fn ortho(width: f32, height: f32, flipped: bool) -> Mat4<f32> {
     })
 }
 
-// blend mode logic is taken from LÖVE:
-// https://github.com/love2d/love/blob/master/src/modules/graphics/opengl/Graphics.cpp#L1234
-
-/// The different ways of blending colors.
-///
-/// The active blend mode will be used to determine how drawn content will be blended
-/// with the screen (or with a [`Canvas`], if one is active).
-///
-/// For modes where the alpha component of the color can affect the output, an
-/// additional [`BlendAlphaMode`] parameter is provided, which determines if
-/// the colour should be multiplied by its alpha before blending.
+/// Defines a formula for blending two color or alpha values.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum BlendMode {
-    /// The alpha of the drawn content will determine its opacity.
+pub enum BlendOperation {
+    /// Blends by adding the source and the destination together.
     ///
-    /// This is the default behaviour.
-    Alpha(BlendAlphaMode),
+    /// `(srcValue * srcBlendFactor) + (dstValue * dstBlendFactor)`
+    Add,
 
-    /// The pixel colors of the drawn content will be added to the pixel colors
-    /// already in the target. The target's alpha will not be affected.
-    Add(BlendAlphaMode),
+    /// Blends by subtracting the destination from the source.
+    ///
+    /// `(srcValue * srcBlendFactor) - (dstValue * dstBlendFactor)`
+    Subtract,
 
-    /// The pixel colors of the drawn content will be subtracted from the pixel colors
-    /// already in the target. The target's alpha will not be affected.
-    Subtract(BlendAlphaMode),
+    /// Blends by subtracting the source from the destination.
+    ///
+    /// `(dstValue * dstBlendFactor) - (srcValue * srcBlendFactor)`
+    ReverseSubtract,
 
-    /// The pixel colors of the drawn content will be multiplied with the pixel colors
-    /// already in the target. The alpha component will also be multiplied.
-    Multiply,
+    /// Blends by picking the minimum of the source and destination.
+    ///
+    /// `min((srcValue * srcBlendFactor), (dstValue * dstBlendFactor))`
+    Min,
+
+    /// Blends by picking the maximum of the source and destination.
+    ///
+    /// `max((srcValue * srcBlendFactor), (dstValue * dstBlendFactor))`
+    Max,
 }
 
-impl Default for BlendMode {
-    fn default() -> BlendMode {
-        BlendMode::Alpha(BlendAlphaMode::Multiply)
+/// Defines a multiplier that will be applied to a color or alpha value before blending it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BlendFactor {
+    /// Each component will be multiplied by zero.
+    ///
+    /// * Color: `r * 0`, `g * 0`, `b * 0`
+    /// * Alpha: `a * 0`
+    Zero,
+
+    /// Each component will be multiplied by one.
+    ///
+    /// * Color: `r * 1`, `g * 1`, `b * 1`
+    /// * Alpha: `a * 1`
+    One,
+
+    /// Each component will be multiplied by the source value
+    /// (color or alpha, depending on the context).
+    ///
+    /// * Color: `r * srcR`, `g * srcG`, `b * srcB`
+    /// * Alpha: `a * srcA`
+    Src,
+
+    /// Each component will be multiplied by the inverse of the source value
+    /// (color or alpha, depending on the context).
+    ///
+    /// * Color: `r * (1 - srcR)`, `g * (1 - srcG`, `b * (1 - srcB)`
+    /// * Alpha: `a * (1 - srcA)`
+    OneMinusSrc,
+
+    /// Each component will be multiplied by the source alpha value.
+    /// * Color: `r * srcA`, `g * srcA`, `b * srcA`
+    /// * Alpha: `a * srcA`
+    SrcAlpha,
+
+    /// Each component will be multiplied by the inverse of the source alpha value.
+    /// * Color: `r * (1 - srcA)`, `g * (1 - srcA)`, `b * (1 - srcA)`
+    /// * Alpha: `a * (1 - srcA)`
+    OneMinusSrcAlpha,
+
+    /// Each component will be multiplied by the destination value
+    /// (color or alpha, depending on the context).
+    ///
+    /// * Color: `r * dstR`, `g * dstG`, `b * dstB`
+    /// * Alpha: `a * dstA`
+    Dst,
+
+    /// Each component will be multiplied by the inverse of the destination value
+    /// (color or alpha, depending on the context).
+    ///
+    /// * Color: `r * (1 - dstR)`, `g * (1 - dstG)`, `b * (1 - dstB)`
+    /// * Alpha: `a * (1 - dstA)`
+    OneMinusDst,
+
+    /// Each component will be multiplied by the destination alpha value.
+    ///
+    /// * Color: `r * dstA`, `g * dstA`, `b * dstA`
+    /// * Alpha: `a * dstA`
+    DstAlpha,
+
+    /// Each component will be multiplied by the inverse of the destination alpha value.
+    ///
+    /// * Color: `r * (1 - dstA)`, `g * (1 - dstA)`, `b * (1 - dstA)`
+    /// * Alpha: `a * dstA`
+    OneMinusDstAlpha,
+
+    /// Each component will be multiplied by either the source alpha value, or its inverse,
+    /// whichever is greater.
+    ///
+    /// When applied to an alpha value, this acts the same as [`BlendFactor::One`].
+    ///
+    /// * Color: `r * min(dstA, 1 - dstA)`, `g * min(dstA, 1 - dstA)`, `b * min(dstA, 1 - dstA)`
+    /// * Alpha: `a * 1`
+    SrcAlphaSaturated,
+
+    /// Each component will be multiplied by a constant value.
+    ///
+    /// The means of setting this constant is not yet exposed in Tetra - please create
+    /// an issue or a PR if you need to use this!
+    ///
+    /// * Color: `r * c`, `g * c`, `b * c`
+    /// * Alpha: `a * c`
+    Constant,
+
+    /// Each component will be multiplied by the inverse of a constant value.
+    ///
+    /// The means of setting this constant is not yet exposed in Tetra - please create
+    /// an issue or a PR if you need to use this!
+    ///
+    /// * Color: `r * (1 - c)`, `g * (1 - c)`, `b * (1 - c)`
+    /// * Alpha: `a * (1 - c)`
+    OneMinusConstant,
+}
+
+/// Defines how colors should be blended when drawing to the screen.
+///
+/// The blend state can be changed by calling [`set_blend_state`] or
+/// [`reset_blend_state`].
+///
+/// There are constructors for the most common configurations, but
+/// if you know what you're doing, you can set each part of the
+/// blend config manually via the fields on this struct.
+///
+/// ## What is blending?
+///
+/// Blending is how we determine the result of drawing one color on top
+/// of another one. This is what lets you (among other things) draw
+/// semi-transparent objects and see their colors mix together!
+///
+/// There are two steps to blending:
+///
+/// * First, the source and destination colors are factored
+///   (or in simpler terms, multiplied) by values. This determines
+///   how much the source and destination contribute to the final
+///   output. The RGB and alpha components of each color can have
+///   different factors applied.
+/// * Then, an operation (aka a function or an equation) is performed
+///   on the two factored values. Again, the RGB and alpha components
+///   can be combined via two different operations.
+///
+/// This is all quite abstract, so here's an example of how the default
+/// alpha blending `BlendState` works:
+///
+/// * We try to draw the color `(1.0, 0.2, 0.2, 0.5)` on top of the color
+///   `(0.2, 1.0, 0.2, 1.0)`, which requires a blend to take place.
+/// * The RGB components of the source color are factored by the alpha of the
+///   source color, which gives `(0.5, 0.1, 0.1, 0.5)`. The alpha component
+///   is left as it is.
+/// * The entire destination color is factored by the alpha of the source
+///   color, which gives `(0.25, 0.05, 0.05, 0.5)`.
+/// * The 'add' operation is applied to the two colors, giving us
+///   `(0.75, 0.15, 0.15, 1.0)` as the final color.
+///
+/// Notice that the resulting color is fully opaque and is made up of 50%
+/// of the source RGB, and 50% of the destination RGB - which is exactly
+/// what we'd expect when we're drawing something that's 50% transparent!
+///
+/// For a more in-depth explanation of blending, see this page on
+/// [Learn OpenGL](https://learnopengl.com/Advanced-OpenGL/Blending).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct BlendState {
+    /// The operation that should be applied to the RGB components of
+    /// the source and destination colors.
+    pub color_operation: BlendOperation,
+
+    /// The factor that should be applied to the RGB components of
+    /// the source color.
+    pub color_src: BlendFactor,
+
+    /// The factor that should be applied to the RGB components of
+    /// the destination color.
+    pub color_dst: BlendFactor,
+
+    /// The operation that should be applied to the alpha components of
+    /// the source and destination colors.
+    pub alpha_operation: BlendOperation,
+
+    /// The factor that should be applied to the alpha component of
+    /// the source color.
+    pub alpha_src: BlendFactor,
+
+    /// The factor that should be applied to the alpha component of
+    /// the destination color.
+    pub alpha_dst: BlendFactor,
+}
+
+impl BlendState {
+    /// The alpha of the drawn content will determine its opacity.
+    ///
+    /// If `premultiplied` is `false`, the RGB components of the color
+    /// will be multiplied by the alpha component before blending with
+    /// the target. If it is `true`, this step will be skipped, and
+    /// you will need to do it yourself (e.g. in your own code, or
+    /// your asset pipeline).
+    ///
+    /// For more information on premultiplied alpha, and why you might
+    /// want to use it, see [these blog posts](https://shawnhargreaves.com/blogindex.html#premultipliedalpha).
+    pub const fn alpha(premultiplied: bool) -> BlendState {
+        let color_src = if premultiplied {
+            BlendFactor::One
+        } else {
+            BlendFactor::SrcAlpha
+        };
+
+        BlendState {
+            color_operation: BlendOperation::Add,
+            color_src,
+            color_dst: BlendFactor::OneMinusSrcAlpha,
+
+            alpha_operation: BlendOperation::Add,
+            alpha_src: BlendFactor::One,
+            alpha_dst: BlendFactor::OneMinusSrcAlpha,
+        }
+    }
+
+    /// The pixel colors of the drawn content will be added to the pixel colors
+    /// already in the target.
+    ///
+    /// The target's alpha will not be affected.
+    ///
+    /// If `premultiplied` is `false`, the RGB components of the color
+    /// will be multiplied by the alpha component before blending with
+    /// the target. If it is `true`, this step will be skipped, and
+    /// you will need to do it yourself (e.g. in your own code, or
+    /// your asset pipeline).
+    ///
+    /// For more information on premultiplied alpha, and why you might
+    /// want to use it, see [these blog posts](https://shawnhargreaves.com/blogindex.html#premultipliedalpha).
+    pub const fn add(premultiplied: bool) -> BlendState {
+        let color_src = if premultiplied {
+            BlendFactor::One
+        } else {
+            BlendFactor::SrcAlpha
+        };
+
+        BlendState {
+            color_operation: BlendOperation::Add,
+            color_src,
+            color_dst: BlendFactor::One,
+
+            alpha_operation: BlendOperation::Add,
+            alpha_src: BlendFactor::Zero,
+            alpha_dst: BlendFactor::One,
+        }
+    }
+
+    /// The pixel colors of the drawn content will be subtracted from the pixel colors
+    /// already in the target.
+    ///
+    /// The target's alpha will not be affected.
+    ///
+    /// If `premultiplied` is `false`, the RGB components of the color
+    /// will be multiplied by the alpha component before blending with
+    /// the target. If it is `true`, this step will be skipped, and
+    /// you will need to do it yourself (e.g. in your own code, or
+    /// your asset pipeline).
+    ///
+    /// For more information on premultiplied alpha, and why you might
+    /// want to use it, see [these blog posts](https://shawnhargreaves.com/blogindex.html#premultipliedalpha).
+    pub const fn subtract(premultiplied: bool) -> BlendState {
+        let color_src = if premultiplied {
+            BlendFactor::One
+        } else {
+            BlendFactor::SrcAlpha
+        };
+
+        BlendState {
+            color_operation: BlendOperation::ReverseSubtract,
+            color_src,
+            color_dst: BlendFactor::One,
+
+            alpha_operation: BlendOperation::ReverseSubtract,
+            alpha_src: BlendFactor::Zero,
+            alpha_dst: BlendFactor::One,
+        }
+    }
+
+    /// The pixel colors of the drawn content will be multiplied with the pixel colors
+    /// already in the target.
+    ///
+    /// The alpha component will also be multiplied.
+    pub const fn multiply() -> BlendState {
+        BlendState {
+            color_operation: BlendOperation::Add,
+            color_src: BlendFactor::Dst,
+            color_dst: BlendFactor::Zero,
+
+            alpha_operation: BlendOperation::Add,
+            alpha_src: BlendFactor::Dst,
+            alpha_dst: BlendFactor::Zero,
+        }
     }
 }
 
-/// How to treat alpha values when blending colors.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum BlendAlphaMode {
-    /// The RGB components of the color are multiplied by the alpha component before
-    /// blending with the target.
-    ///
-    /// This is the default behaviour.
-    Multiply,
-
-    /// The RGB components of the color are *not* multiplied by the alpha component before
-    /// blending with the target.
-    ///
-    /// For this mode to work correctly, you must have multiplied the RGB components of
-    /// the colour by the alpha component at some previous point in time (e.g. in your
-    /// code, or in your asset pipeline).
-    Premultiplied,
-}
-
-impl Default for BlendAlphaMode {
-    fn default() -> BlendAlphaMode {
-        BlendAlphaMode::Multiply
+impl Default for BlendState {
+    fn default() -> Self {
+        BlendState::alpha(false)
     }
 }
 

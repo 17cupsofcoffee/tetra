@@ -8,8 +8,13 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added
+
 ### Changed
 
+* **Breaking:** This crate now uses Rust 2021, and therefore requires at least Rust 1.56.
+* **Breaking:** Most enums in the API are now marked as `non_exhaustive`, and so must have a wildcard arm when matching on them.
+    * This is to make it so adding a new enum variant is not a breaking change in the future.
 * `KeyModifier`'s behaviour has been reverted to be layout-based rather than position-based.
     * This better matches the expected behaviour for keyboard shortcuts (which is the primary use case for this type), and the behaviour of the underlying platform code.
 

@@ -11,7 +11,7 @@ use crate::graphics::{
     StencilState, StencilTest,
 };
 use crate::graphics::{
-    BlendAlphaMode, BlendMode, Color, FilterMode, GraphicsDeviceInfo, StencilAction,
+    BlendFactor, BlendOperation, BlendState, Color, FilterMode, GraphicsDeviceInfo, StencilAction,
 };
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
@@ -588,14 +588,18 @@ impl GraphicsDevice {
         }
     }
 
-    pub fn set_blend_mode(&mut self, blend_mode: BlendMode) {
+    pub fn set_blend_state(&mut self, blend_state: BlendState) {
         unsafe {
-            self.state.gl.blend_equation(blend_mode.equation());
+            self.state.gl.blend_equation_separate(
+                blend_state.color_operation.as_gl_enum(),
+                blend_state.alpha_operation.as_gl_enum(),
+            );
+
             self.state.gl.blend_func_separate(
-                blend_mode.src_rgb(),
-                blend_mode.dst_rgb(),
-                blend_mode.src_alpha(),
-                blend_mode.dst_alpha(),
+                blend_state.color_src.as_gl_enum(),
+                blend_state.color_dst.as_gl_enum(),
+                blend_state.alpha_src.as_gl_enum(),
+                blend_state.alpha_dst.as_gl_enum(),
             );
         }
     }
@@ -1208,63 +1212,6 @@ impl From<FilterMode> for i32 {
 }
 
 #[doc(hidden)]
-impl BlendMode {
-    pub(crate) fn equation(&self) -> u32 {
-        match self {
-            BlendMode::Alpha(_) => glow::FUNC_ADD,
-            BlendMode::Add(_) => glow::FUNC_ADD,
-            BlendMode::Subtract(_) => glow::FUNC_REVERSE_SUBTRACT,
-            BlendMode::Multiply => glow::FUNC_ADD,
-        }
-    }
-
-    pub(crate) fn src_rgb(&self) -> u32 {
-        match self {
-            BlendMode::Alpha(blend_alpha) => match blend_alpha {
-                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
-                BlendAlphaMode::Premultiplied => glow::ONE,
-            },
-            BlendMode::Add(blend_alpha) => match blend_alpha {
-                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
-                BlendAlphaMode::Premultiplied => glow::ONE,
-            },
-            BlendMode::Subtract(blend_alpha) => match blend_alpha {
-                BlendAlphaMode::Multiply => glow::SRC_ALPHA,
-                BlendAlphaMode::Premultiplied => glow::ONE,
-            },
-            BlendMode::Multiply => glow::DST_COLOR,
-        }
-    }
-
-    pub(crate) fn src_alpha(&self) -> u32 {
-        match self {
-            BlendMode::Alpha(_) => glow::ONE,
-            BlendMode::Add(_) => glow::ZERO,
-            BlendMode::Subtract(_) => glow::ZERO,
-            BlendMode::Multiply => glow::DST_COLOR,
-        }
-    }
-
-    pub(crate) fn dst_rgb(&self) -> u32 {
-        match self {
-            BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
-            BlendMode::Add(_) => glow::ONE,
-            BlendMode::Subtract(_) => glow::ONE,
-            BlendMode::Multiply => glow::ZERO,
-        }
-    }
-
-    pub(crate) fn dst_alpha(&self) -> u32 {
-        match self {
-            BlendMode::Alpha(_) => glow::ONE_MINUS_SRC_ALPHA,
-            BlendMode::Add(_) => glow::ONE,
-            BlendMode::Subtract(_) => glow::ONE,
-            BlendMode::Multiply => glow::ZERO,
-        }
-    }
-}
-
-#[doc(hidden)]
 impl StencilTest {
     pub(crate) fn as_gl_enum(self) -> u32 {
         match self {
@@ -1276,6 +1223,38 @@ impl StencilTest {
             StencilTest::GreaterThan => glow::GREATER,
             StencilTest::GreaterThanOrEqualTo => glow::GEQUAL,
             StencilTest::Always => glow::ALWAYS,
+        }
+    }
+}
+
+impl BlendOperation {
+    pub(crate) fn as_gl_enum(self) -> u32 {
+        match self {
+            BlendOperation::Add => glow::FUNC_ADD,
+            BlendOperation::Subtract => glow::FUNC_SUBTRACT,
+            BlendOperation::ReverseSubtract => glow::FUNC_REVERSE_SUBTRACT,
+            BlendOperation::Min => glow::MIN,
+            BlendOperation::Max => glow::MAX,
+        }
+    }
+}
+
+impl BlendFactor {
+    pub(crate) fn as_gl_enum(self) -> u32 {
+        match self {
+            BlendFactor::Zero => glow::ZERO,
+            BlendFactor::One => glow::ONE,
+            BlendFactor::Src => glow::SRC_COLOR,
+            BlendFactor::OneMinusSrc => glow::ONE_MINUS_SRC_COLOR,
+            BlendFactor::SrcAlpha => glow::SRC_ALPHA,
+            BlendFactor::OneMinusSrcAlpha => glow::ONE_MINUS_SRC_ALPHA,
+            BlendFactor::Dst => glow::DST_COLOR,
+            BlendFactor::OneMinusDst => glow::ONE_MINUS_DST_COLOR,
+            BlendFactor::DstAlpha => glow::DST_ALPHA,
+            BlendFactor::OneMinusDstAlpha => glow::ONE_MINUS_DST_ALPHA,
+            BlendFactor::SrcAlphaSaturated => glow::SRC_ALPHA_SATURATE,
+            BlendFactor::Constant => glow::CONSTANT_COLOR,
+            BlendFactor::OneMinusConstant => glow::ONE_MINUS_CONSTANT_COLOR,
         }
     }
 }
