@@ -49,6 +49,7 @@ impl State for GameState {
                 ScalingMode::ShowAllPixelPerfect => ScalingMode::Crop,
                 ScalingMode::Crop => ScalingMode::CropPixelPerfect,
                 ScalingMode::CropPixelPerfect => ScalingMode::Fixed,
+                _ => ScalingMode::Fixed,
             };
 
             self.set_mode(next);
