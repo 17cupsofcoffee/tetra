@@ -6,10 +6,7 @@ use std::slice;
 use glow::{Context as GlowContext, HasContext, PixelPackData, PixelUnpackData};
 
 use crate::error::{Result, TetraError};
-use crate::graphics::{
-    mesh::{BufferUsage, Vertex, VertexWinding},
-    StencilState, StencilTest,
-};
+use crate::graphics::{BlendModeEquation, mesh::{BufferUsage, Vertex, VertexWinding}, StencilState, StencilTest};
 use crate::graphics::{
     BlendAlphaMode, BlendMode, Color, FilterMode, GraphicsDeviceInfo, StencilAction,
 };
@@ -1211,6 +1208,13 @@ impl BlendMode {
             BlendMode::Add(_) => glow::FUNC_ADD,
             BlendMode::Subtract(_) => glow::FUNC_REVERSE_SUBTRACT,
             BlendMode::Multiply => glow::FUNC_ADD,
+            BlendMode::Custom { equation,.. } => {
+                match equation{
+                    BlendModeEquation::Add => glow::FUNC_ADD,
+                    BlendModeEquation::Subtract => glow::FUNC_SUBTRACT,
+                    BlendModeEquation::ReverseSubtract => glow::FUNC_REVERSE_SUBTRACT
+                }
+            }
         }
     }
 
@@ -1229,6 +1233,7 @@ impl BlendMode {
                 BlendAlphaMode::Premultiplied => glow::ONE,
             },
             BlendMode::Multiply => glow::DST_COLOR,
+            BlendMode::Custom {src_rgb,..} => src_rgb.as_glow(),
         }
     }
 
@@ -1238,6 +1243,7 @@ impl BlendMode {
             BlendMode::Add(_) => glow::ZERO,
             BlendMode::Subtract(_) => glow::ZERO,
             BlendMode::Multiply => glow::DST_COLOR,
+            BlendMode::Custom {src_alpha,..} => src_alpha.as_glow(),
         }
     }
 
@@ -1247,6 +1253,8 @@ impl BlendMode {
             BlendMode::Add(_) => glow::ONE,
             BlendMode::Subtract(_) => glow::ONE,
             BlendMode::Multiply => glow::ZERO,
+            BlendMode::Custom {dst_rgb,..} => dst_rgb.as_glow(),
+
         }
     }
 
@@ -1256,6 +1264,7 @@ impl BlendMode {
             BlendMode::Add(_) => glow::ONE,
             BlendMode::Subtract(_) => glow::ONE,
             BlendMode::Multiply => glow::ZERO,
+            BlendMode::Custom {dst_alpha,..} => dst_alpha.as_glow(),
         }
     }
 }

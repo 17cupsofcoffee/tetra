@@ -547,6 +547,24 @@ pub enum BlendMode {
     /// already in the target. The target's alpha will not be affected.
     Add(BlendAlphaMode),
 
+    /// Custom blend mode
+    Custom{
+        /// The blending equation to use to compute the value.
+        equation: BlendModeEquation,
+
+        /// The multiplier applied to the color from the shader.
+        src_rgb: BlendModeCustomParam,
+
+        /// The multiplier applied to the alpha value from the shader
+        src_alpha: BlendModeCustomParam,
+
+        /// The multiplier applied to the color already present on the destination
+        dst_rgb: BlendModeCustomParam,
+
+        /// The multiplier applied to the alpha value already present on the destination
+        dst_alpha: BlendModeCustomParam,
+    },
+
     /// The pixel colors of the drawn content will be subtracted from the pixel colors
     /// already in the target. The target's alpha will not be affected.
     Subtract(BlendAlphaMode),
@@ -559,6 +577,48 @@ pub enum BlendMode {
 impl Default for BlendMode {
     fn default() -> BlendMode {
         BlendMode::Alpha(BlendAlphaMode::Multiply)
+    }
+}
+
+/// BlendMode equation to use in `BlendMode::Custom`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BlendModeEquation{
+    /// The source and destination colors are added to each other.
+   Add,
+
+   /// Subtracts the destination from the source.
+   Subtract,
+
+   /// Subtracts the source from the destination.
+   ReverseSubtract
+}
+
+/// BlendMode param to use in `BlendMode::Custom`
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(missing_docs)]
+pub enum BlendModeCustomParam{
+    One, Zero,
+    SrcAlpha, SrcColor,
+    DstAlpha, DstColor,
+    OneMinusSrcAlpha, OneMinusDstAlpha,
+    OneMinusSrcColor, OneMinusDstColor
+}
+
+#[doc(hidden)]
+impl BlendModeCustomParam{
+    pub (crate) fn as_glow(self)-> u32{
+       match self{
+           BlendModeCustomParam::One => glow::ONE,
+           BlendModeCustomParam::Zero => glow::ZERO,
+           BlendModeCustomParam::SrcAlpha => glow::SRC_ALPHA,
+           BlendModeCustomParam::SrcColor => glow::SRC_COLOR,
+           BlendModeCustomParam::DstAlpha => glow::DST_ALPHA,
+           BlendModeCustomParam::DstColor => glow::DST_COLOR,
+           BlendModeCustomParam::OneMinusSrcAlpha => glow::ONE_MINUS_SRC_ALPHA,
+           BlendModeCustomParam::OneMinusDstAlpha => glow::ONE_MINUS_DST_ALPHA,
+           BlendModeCustomParam::OneMinusSrcColor => glow::ONE_MINUS_SRC_COLOR,
+           BlendModeCustomParam::OneMinusDstColor => glow::ONE_MINUS_DST_COLOR,
+       }
     }
 }
 
