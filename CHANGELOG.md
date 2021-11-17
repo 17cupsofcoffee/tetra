@@ -13,6 +13,10 @@ This project adheres to Semantic Versioning.
 * `KeyModifier`'s behaviour has been reverted to be layout-based rather than position-based.
     * This better matches the expected behaviour for keyboard shortcuts (which is the primary use case for this type), and the behaviour of the underlying platform code.
 
+### Fixed
+
+* `Shader::from_vertex_string` and `Shader::from_fragment_string` no longer have an unused type parameter. ([@LiquidityC](https://github.com/LiquidityC) in [#301](https://github.com/17cupsofcoffee/tetra/pull/301))
+
 ## [0.6.7] - 2021-11-05
 
 ### Changed
