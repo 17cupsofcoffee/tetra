@@ -69,6 +69,7 @@ unsafe impl Zeroable for Vertex {}
 /// The expected usage of a GPU buffer.
 ///
 /// The GPU may optionally use this to optimize data storage and access.
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum BufferUsage {
     /// The buffer's data is not expected to change after creation.
     Static,

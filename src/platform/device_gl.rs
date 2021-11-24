@@ -125,7 +125,7 @@ impl GraphicsDevice {
 
     pub fn front_face(&mut self, front_face: VertexWinding) {
         unsafe {
-            self.state.gl.front_face(front_face.into());
+            self.state.gl.front_face(front_face.to_gl_enum());
         }
     }
 
@@ -163,10 +163,10 @@ impl GraphicsDevice {
 
             self.state
                 .gl
-                .stencil_op(glow::KEEP, glow::KEEP, state.action.as_gl_enum());
+                .stencil_op(glow::KEEP, glow::KEEP, state.action.to_gl_enum());
 
             self.state.gl.stencil_func(
-                state.test.as_gl_enum(),
+                state.test.to_gl_enum(),
                 state.reference_value.into(),
                 state.read_mask.into(),
             );
@@ -210,9 +210,11 @@ impl GraphicsDevice {
 
             self.clear_errors();
 
-            self.state
-                .gl
-                .buffer_data_size(glow::ARRAY_BUFFER, buffer.size() as i32, usage.into());
+            self.state.gl.buffer_data_size(
+                glow::ARRAY_BUFFER,
+                buffer.size() as i32,
+                usage.to_gl_enum(),
+            );
 
             if let Some(e) = self.get_error() {
                 return Err(TetraError::PlatformError(format_gl_error(
@@ -309,7 +311,7 @@ impl GraphicsDevice {
             self.state.gl.buffer_data_size(
                 glow::ELEMENT_ARRAY_BUFFER,
                 buffer.size() as i32,
-                usage.into(),
+                usage.to_gl_enum(),
             );
 
             if let Some(e) = self.get_error() {
@@ -591,15 +593,15 @@ impl GraphicsDevice {
     pub fn set_blend_state(&mut self, blend_state: BlendState) {
         unsafe {
             self.state.gl.blend_equation_separate(
-                blend_state.color_operation.as_gl_enum(),
-                blend_state.alpha_operation.as_gl_enum(),
+                blend_state.color_operation.to_gl_enum(),
+                blend_state.alpha_operation.to_gl_enum(),
             );
 
             self.state.gl.blend_func_separate(
-                blend_state.color_src.as_gl_enum(),
-                blend_state.color_dst.as_gl_enum(),
-                blend_state.alpha_src.as_gl_enum(),
-                blend_state.alpha_dst.as_gl_enum(),
+                blend_state.color_src.to_gl_enum(),
+                blend_state.color_dst.to_gl_enum(),
+                blend_state.alpha_src.to_gl_enum(),
+                blend_state.alpha_dst.to_gl_enum(),
             );
         }
     }
@@ -631,13 +633,13 @@ impl GraphicsDevice {
             self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,
                 glow::TEXTURE_MIN_FILTER,
-                filter_mode.into(),
+                filter_mode.to_gl_enum() as i32,
             );
 
             self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,
                 glow::TEXTURE_MAG_FILTER,
-                filter_mode.into(),
+                filter_mode.to_gl_enum() as i32,
             );
 
             self.state.gl.tex_parameter_i32(
@@ -750,13 +752,13 @@ impl GraphicsDevice {
             self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,
                 glow::TEXTURE_MIN_FILTER,
-                filter_mode.into(),
+                filter_mode.to_gl_enum() as i32,
             );
 
             self.state.gl.tex_parameter_i32(
                 glow::TEXTURE_2D,
                 glow::TEXTURE_MAG_FILTER,
-                filter_mode.into(),
+                filter_mode.to_gl_enum() as i32,
             );
         }
     }
@@ -1177,9 +1179,9 @@ impl Drop for GraphicsDevice {
 }
 
 #[doc(hidden)]
-impl From<BufferUsage> for u32 {
-    fn from(buffer_usage: BufferUsage) -> u32 {
-        match buffer_usage {
+impl BufferUsage {
+    fn to_gl_enum(self) -> u32 {
+        match self {
             BufferUsage::Static => glow::STATIC_DRAW,
             BufferUsage::Dynamic => glow::DYNAMIC_DRAW,
             BufferUsage::Stream => glow::STREAM_DRAW,
@@ -1188,9 +1190,9 @@ impl From<BufferUsage> for u32 {
 }
 
 #[doc(hidden)]
-impl From<VertexWinding> for u32 {
-    fn from(front_face: VertexWinding) -> u32 {
-        match front_face {
+impl VertexWinding {
+    fn to_gl_enum(self) -> u32 {
+        match self {
             VertexWinding::Clockwise => glow::CW,
             VertexWinding::CounterClockwise => glow::CCW,
         }
@@ -1198,18 +1200,18 @@ impl From<VertexWinding> for u32 {
 }
 
 #[doc(hidden)]
-impl From<FilterMode> for i32 {
-    fn from(filter_mode: FilterMode) -> i32 {
-        match filter_mode {
-            FilterMode::Nearest => glow::NEAREST as i32,
-            FilterMode::Linear => glow::LINEAR as i32,
+impl FilterMode {
+    fn to_gl_enum(self) -> u32 {
+        match self {
+            FilterMode::Nearest => glow::NEAREST,
+            FilterMode::Linear => glow::LINEAR,
         }
     }
 }
 
 #[doc(hidden)]
 impl StencilTest {
-    pub(crate) fn as_gl_enum(self) -> u32 {
+    fn to_gl_enum(self) -> u32 {
         match self {
             StencilTest::Never => glow::NEVER,
             StencilTest::LessThan => glow::LESS,
@@ -1223,8 +1225,9 @@ impl StencilTest {
     }
 }
 
+#[doc(hidden)]
 impl BlendOperation {
-    pub(crate) fn as_gl_enum(self) -> u32 {
+    fn to_gl_enum(self) -> u32 {
         match self {
             BlendOperation::Add => glow::FUNC_ADD,
             BlendOperation::Subtract => glow::FUNC_SUBTRACT,
@@ -1235,8 +1238,9 @@ impl BlendOperation {
     }
 }
 
+#[doc(hidden)]
 impl BlendFactor {
-    pub(crate) fn as_gl_enum(self) -> u32 {
+    fn to_gl_enum(self) -> u32 {
         match self {
             BlendFactor::Zero => glow::ZERO,
             BlendFactor::One => glow::ONE,
@@ -1257,7 +1261,7 @@ impl BlendFactor {
 
 #[doc(hidden)]
 impl StencilAction {
-    pub(crate) fn as_gl_enum(self) -> u32 {
+    fn to_gl_enum(self) -> u32 {
         match self {
             StencilAction::Keep => glow::KEEP,
             StencilAction::Zero => glow::ZERO,
