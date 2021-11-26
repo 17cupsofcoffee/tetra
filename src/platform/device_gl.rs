@@ -12,6 +12,7 @@ use crate::graphics::{
 };
 use crate::graphics::{
     BlendFactor, BlendOperation, BlendState, Color, FilterMode, GraphicsDeviceInfo, StencilAction,
+    TextureFormat,
 };
 use crate::math::{Mat2, Mat3, Mat4, Vec2, Vec3, Vec4};
 
@@ -610,6 +611,7 @@ impl GraphicsDevice {
         &mut self,
         width: i32,
         height: i32,
+        format: TextureFormat,
         filter_mode: FilterMode,
     ) -> Result<RawTexture> {
         // TODO: I don't think we need mipmaps?
@@ -626,6 +628,7 @@ impl GraphicsDevice {
                 id,
                 width,
                 height,
+                format,
             };
 
             self.bind_default_texture(Some(texture.id));
@@ -667,12 +670,12 @@ impl GraphicsDevice {
             self.state.gl.tex_image_2d(
                 glow::TEXTURE_2D,
                 0,
-                glow::RGBA as i32, // love 2 deal with legacy apis
+                format.to_gl_internal_format() as i32,
                 width,
                 height,
                 0,
-                glow::RGBA,
-                glow::UNSIGNED_BYTE,
+                format.to_gl_format(),
+                format.to_gl_data_type(),
                 None,
             );
 
@@ -701,7 +704,7 @@ impl GraphicsDevice {
             "tried to write outside of texture bounds"
         );
 
-        let expected = (width * height * 4) as usize;
+        let expected = (width * height) as usize * texture.format.channels();
         let actual = data.len();
 
         if expected > actual {
@@ -710,7 +713,15 @@ impl GraphicsDevice {
 
         self.bind_default_texture(Some(texture.id));
 
+        let alignment = texture.format.to_gl_alignment();
+
         unsafe {
+            if alignment != 4 {
+                self.state
+                    .gl
+                    .pixel_store_i32(glow::UNPACK_ALIGNMENT, alignment)
+            }
+
             self.state.gl.tex_sub_image_2d(
                 glow::TEXTURE_2D,
                 0,
@@ -718,10 +729,15 @@ impl GraphicsDevice {
                 y,
                 width,
                 height,
-                glow::RGBA,
-                glow::UNSIGNED_BYTE,
+                texture.format.to_gl_format(),
+                texture.format.to_gl_data_type(),
                 PixelUnpackData::Slice(data),
-            )
+            );
+
+            // Revert back to a sensible default.
+            if alignment != 4 {
+                self.state.gl.pixel_store_i32(glow::UNPACK_ALIGNMENT, 4)
+            }
         }
 
         Ok(())
@@ -792,7 +808,7 @@ impl GraphicsDevice {
 
             self.bind_framebuffer(Some(canvas.id));
 
-            let color = self.new_texture(width, height, filter_mode)?;
+            let color = self.new_texture(width, height, TextureFormat::Rgba8, filter_mode)?;
 
             self.state.gl.framebuffer_texture_2d(
                 glow::FRAMEBUFFER,
@@ -1210,6 +1226,41 @@ impl FilterMode {
 }
 
 #[doc(hidden)]
+impl TextureFormat {
+    fn to_gl_format(self) -> u32 {
+        match self {
+            TextureFormat::Rgba8 => glow::RGBA,
+            TextureFormat::R8 => glow::RED,
+            TextureFormat::Rg8 => glow::RG,
+        }
+    }
+
+    fn to_gl_internal_format(self) -> u32 {
+        match self {
+            TextureFormat::Rgba8 => glow::RGBA8,
+            TextureFormat::R8 => glow::R8,
+            TextureFormat::Rg8 => glow::RG8,
+        }
+    }
+
+    fn to_gl_data_type(self) -> u32 {
+        match self {
+            TextureFormat::Rgba8 => glow::UNSIGNED_BYTE,
+            TextureFormat::R8 => glow::UNSIGNED_BYTE,
+            TextureFormat::Rg8 => glow::UNSIGNED_BYTE,
+        }
+    }
+
+    fn to_gl_alignment(self) -> i32 {
+        match self {
+            TextureFormat::Rgba8 => 4,
+            TextureFormat::R8 => 1,
+            TextureFormat::Rg8 => 2,
+        }
+    }
+}
+
+#[doc(hidden)]
 impl StencilTest {
     fn to_gl_enum(self) -> u32 {
         match self {
@@ -1392,6 +1443,7 @@ pub struct RawTexture {
 
     width: i32,
     height: i32,
+    format: TextureFormat,
 }
 
 impl RawTexture {
@@ -1401,6 +1453,10 @@ impl RawTexture {
 
     pub fn height(&self) -> i32 {
         self.height
+    }
+
+    pub fn format(&self) -> TextureFormat {
+        self.format
     }
 }
 

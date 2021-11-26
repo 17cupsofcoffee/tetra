@@ -79,8 +79,14 @@ impl GraphicsContext {
 
         device.set_index_buffer_data(&index_buffer, &indices, 0);
 
-        let default_texture =
-            Texture::with_device(device, 1, 1, &[255, 255, 255, 255], FilterMode::Nearest)?;
+        let default_texture = Texture::with_device(
+            device,
+            1,
+            1,
+            &[255, 255, 255, 255],
+            TextureFormat::Rgba8,
+            FilterMode::Nearest,
+        )?;
 
         let default_filter_mode = FilterMode::Nearest;
 

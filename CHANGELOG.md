@@ -10,11 +10,18 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
+* `Texture`s can now be created with different underlying formats.
+
 ### Changed
 
 * **Breaking:** This crate now uses Rust 2021, and therefore requires at least Rust 1.56.
 * **Breaking:** Most enums in the API are now marked as `non_exhaustive`, and so must have a wildcard arm when matching on them.
     * This is to make it so adding a new enum variant is not a breaking change in the future.
+* **Breaking:** The naming scheme for various constructors has been changed to be more consistent/simple:
+    * `new` usually involves loading from a file path (as this is the most common use-case).
+    * `from_data` loads from raw data, without any specific file-type encoding (e.g. RGBA8 pixels).
+    * `from_encoded` loads from encoded data in a supported file format (e.g. PNG).
+    * This applies to `Texture`, `ImageData` and `BmFontBuilder`.
 * **Breaking:** `BlendMode` and `BlendAlphaMode` have been replaced with `BlendState`, `BlendFactor` and `BlendOperation`, which give you much lower-level control of how colors are blended.
     * As such, `graphics::set_blend_mode` and `graphics::reset_blend_mode` have been renamed to `graphics::set_blend_state` and `graphics::reset_blend_state` respectively.
     * The old presets for blending behaviour are still available as `const` constructors on `BlendState`, so you should be able to migrate without any changes in behaviour.
@@ -24,8 +31,9 @@ This project adheres to Semantic Versioning.
 ### Removed
 
 * **Breaking:** `Canvas::multisampled` has been removed - use `Canvas::builder` instead.
-* **Breaking:** `ImageData::from_rgba` has been removed - use `ImageData::from_rgba8` instead.
-* **Breaking:** `BmFontBuilder::with_page_rgba` has been removed - use `BmFontBuilder::with_page_rgba8` instead.
+* **Breaking:** `Texture::from_rgba` has been removed - use `Texture::from_data` instead.
+* **Breaking:** `ImageData::from_rgba` has been removed - use `ImageData::from_data` instead.
+* **Breaking:** `BmFontBuilder::with_page_rgba` has been removed - use `BmFontBuilder::with_page_data` instead.
 * `Key`s that don't represent a physical position on the keyboard have been removed - you should either switch to the `Key` for the position you want, or switch to `KeyLabel` if you still want to use the system keyboard layout.
 
 ## [0.6.7] - 2021-11-05

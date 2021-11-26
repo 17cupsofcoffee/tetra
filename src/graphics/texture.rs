@@ -79,8 +79,38 @@ impl Texture {
     where
         P: AsRef<Path>,
     {
-        let data = ImageData::from_file(path)?;
+        let data = ImageData::new(path)?;
         Texture::from_image_data(ctx, &data)
+    }
+
+    /// Creates a new texture from a slice of pixel data.
+    ///
+    /// This is useful if you wish to create a texture at runtime.
+    ///
+    /// This method requires you to provide enough data to fill the texture.
+    /// If you provide too little data, an error will be returned.
+    /// If you provide too much data, it will be truncated.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::PlatformError`] will be returned if the underlying graphics API encounters an error.
+    /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
+    /// the texture. This is to prevent the graphics API from trying to read uninitialized memory.
+    pub fn from_data(
+        ctx: &mut Context,
+        width: i32,
+        height: i32,
+        format: TextureFormat,
+        data: &[u8],
+    ) -> Result<Texture> {
+        Texture::with_device(
+            &mut ctx.device,
+            width,
+            height,
+            data,
+            format,
+            ctx.graphics.default_filter_mode,
+        )
     }
 
     /// Creates a new texture from a slice of data, encoded in one of Tetra's supported
@@ -98,8 +128,8 @@ impl Texture {
     ///
     /// * [`TetraError::PlatformError`] will be returned if the underlying graphics API encounters an error.
     /// * [`TetraError::InvalidTexture`] will be returned if the texture data was invalid.
-    pub fn from_file_data(ctx: &mut Context, data: &[u8]) -> Result<Texture> {
-        let data = ImageData::from_file_data(data)?;
+    pub fn from_encoded(ctx: &mut Context, data: &[u8]) -> Result<Texture> {
+        let data = ImageData::from_encoded(data)?;
         Texture::from_image_data(ctx, &data)
     }
 
@@ -109,29 +139,12 @@ impl Texture {
     ///
     /// * [`TetraError::PlatformError`] will be returned if the underlying graphics API encounters an error.
     pub fn from_image_data(ctx: &mut Context, data: &ImageData) -> Result<Texture> {
-        Texture::from_rgba(ctx, data.width(), data.height(), data.as_bytes())
-    }
-
-    /// Creates a new texture from a slice of RGBA pixel data.
-    ///
-    /// This is useful if you wish to create a texture at runtime.
-    ///
-    /// This method requires you to provide enough data to fill the texture.
-    /// If you provide too little data, an error will be returned.
-    /// If you provide too much data, it will be truncated.
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::PlatformError`] will be returned if the underlying graphics API encounters an error.
-    /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
-    /// the texture. This is to prevent the graphics API from trying to read uninitialized memory.
-    pub fn from_rgba(ctx: &mut Context, width: i32, height: i32, data: &[u8]) -> Result<Texture> {
-        Texture::with_device(
-            &mut ctx.device,
-            width,
-            height,
-            data,
-            ctx.graphics.default_filter_mode,
+        Texture::from_data(
+            ctx,
+            data.width(),
+            data.height(),
+            TextureFormat::Rgba8,
+            data.as_bytes(),
         )
     }
 
@@ -149,9 +162,10 @@ impl Texture {
         width: i32,
         height: i32,
         data: &[u8],
+        format: TextureFormat,
         filter_mode: FilterMode,
     ) -> Result<Texture> {
-        let handle = device.new_texture(width, height, filter_mode)?;
+        let handle = device.new_texture(width, height, format, filter_mode)?;
 
         device.set_texture_data(&handle, data, 0, 0, width, height)?;
 
@@ -173,7 +187,14 @@ impl Texture {
         // for now.
         let data = vec![0; (width * height * 4) as usize];
 
-        Texture::with_device(device, width, height, &data, filter_mode)
+        Texture::with_device(
+            device,
+            width,
+            height,
+            &data,
+            TextureFormat::Rgba8,
+            filter_mode,
+        )
     }
 
     /// Draws the texture to the screen (or to a canvas, if one is enabled).
@@ -303,6 +324,11 @@ impl Texture {
         (self.data.handle.width(), self.data.handle.height())
     }
 
+    /// Returns the data format of the texture.
+    pub fn format(&self) -> TextureFormat {
+        self.data.handle.format()
+    }
+
     /// Returns the filter mode being used by the texture.
     pub fn filter_mode(&self) -> FilterMode {
         self.data.filter_mode.get()
@@ -325,7 +351,7 @@ impl Texture {
         let (width, height) = self.size();
         let buffer = ctx.device.get_texture_data(&self.data.handle);
 
-        ImageData::from_rgba8(width, height, buffer).expect("buffer should be exact size for image")
+        ImageData::from_data(width, height, buffer).expect("buffer should be exact size for image")
     }
 
     /// Writes RGBA pixel data to a specified region of the texture.
@@ -375,6 +401,30 @@ impl Texture {
     pub fn replace_data(&self, ctx: &mut Context, data: &[u8]) -> Result {
         let (width, height) = self.size();
         self.set_data(ctx, 0, 0, width, height, data)
+    }
+}
+
+/// In-memory data formats for textures.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TextureFormat {
+    /// Unsigned 32-bit RGBA data, with 8 bits per channel.
+    Rgba8,
+
+    /// Unsigned 8-bit red channel data.
+    R8,
+
+    /// Unsigned 16-bit red and green channel data, with 8 bits per channel.
+    Rg8,
+}
+
+impl TextureFormat {
+    /// Returns the number of channels that the format has.
+    pub fn channels(self) -> usize {
+        match self {
+            TextureFormat::Rgba8 => 4,
+            TextureFormat::R8 => 1,
+            TextureFormat::Rg8 => 2,
+        }
     }
 }
 
@@ -476,34 +526,13 @@ impl ImageData {
     ///
     /// * [`TetraError::FailedToLoadAsset`] will be returned if the file could not be loaded.
     /// * [`TetraError::InvalidTexture`] will be returned if the image data was invalid.
-    pub fn from_file<P>(path: P) -> Result<ImageData>
+    pub fn new<P>(path: P) -> Result<ImageData>
     where
         P: AsRef<Path>,
     {
         Ok(ImageData {
             data: fs::read_to_image(path)?.into_rgba8(),
         })
-    }
-
-    /// Decodes image data that is encoded in one of Tetra's supported
-    /// file formats (except for TGA).
-    ///
-    /// This is useful in combination with [`include_bytes`](std::include_bytes), as it
-    /// allows you to include your image data directly in the binary.
-    ///
-    /// The format will be determined based on the 'magic bytes' at the beginning of the
-    /// data. Note that TGA files do not have recognizable magic bytes, so this function
-    /// will not recognize them.
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::InvalidTexture`] will be returned if the image data was invalid.
-    pub fn from_file_data(data: &[u8]) -> Result<ImageData> {
-        let image = image::load_from_memory(data)
-            .map_err(TetraError::InvalidTexture)?
-            .into_rgba8();
-
-        Ok(ImageData { data: image })
     }
 
     /// Creates an `ImageData` from raw RGBA8 data.
@@ -520,10 +549,12 @@ impl ImageData {
     ///
     /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
     /// the image.
-    pub fn from_rgba8<D>(width: i32, height: i32, data: D) -> Result<ImageData>
+    pub fn from_data<D>(width: i32, height: i32, data: D) -> Result<ImageData>
     where
         D: Into<Vec<u8>>,
     {
+        // TODO: Add texture format support before 0.7 release
+
         let data = data.into();
 
         let expected = (width * height * 4) as usize;
@@ -534,6 +565,27 @@ impl ImageData {
         }
 
         let image = RgbaImage::from_vec(width as u32, height as u32, data).unwrap();
+
+        Ok(ImageData { data: image })
+    }
+
+    /// Decodes image data that is encoded in one of Tetra's supported
+    /// file formats (except for TGA).
+    ///
+    /// This is useful in combination with [`include_bytes`](std::include_bytes), as it
+    /// allows you to include your image data directly in the binary.
+    ///
+    /// The format will be determined based on the 'magic bytes' at the beginning of the
+    /// data. Note that TGA files do not have recognizable magic bytes, so this function
+    /// will not recognize them.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::InvalidTexture`] will be returned if the image data was invalid.
+    pub fn from_encoded(data: &[u8]) -> Result<ImageData> {
+        let image = image::load_from_memory(data)
+            .map_err(TetraError::InvalidTexture)?
+            .into_rgba8();
 
         Ok(ImageData { data: image })
     }

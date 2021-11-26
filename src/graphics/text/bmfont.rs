@@ -132,7 +132,33 @@ impl BmFontBuilder {
     where
         P: AsRef<Path>,
     {
-        self.pages.insert(id, ImageData::from_file(path)?);
+        self.pages.insert(id, ImageData::new(path)?);
+
+        Ok(self)
+    }
+
+    /// Sets the image for the specified page of the font, using RGBA8 data.
+    ///
+    /// This will override the path specified in the font itself.
+    ///
+    /// # Errors
+    ///
+    /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
+    ///   the texture.
+    pub fn with_page_data<D>(
+        mut self,
+        id: u32,
+        width: i32,
+        height: i32,
+        data: D,
+    ) -> Result<BmFontBuilder>
+    where
+        D: Into<Vec<u8>>,
+    {
+        // TODO: Add texture format support before 0.7 release
+
+        self.pages
+            .insert(id, ImageData::from_data(width, height, data)?);
 
         Ok(self)
     }
@@ -149,8 +175,8 @@ impl BmFontBuilder {
     /// # Errors
     ///
     /// * [`TetraError::InvalidTexture`] will be returned if the image data was invalid.
-    pub fn with_page_file_data(mut self, id: u32, data: &[u8]) -> Result<BmFontBuilder> {
-        self.pages.insert(id, ImageData::from_file_data(data)?);
+    pub fn with_page_encoded(mut self, id: u32, data: &[u8]) -> Result<BmFontBuilder> {
+        self.pages.insert(id, ImageData::from_encoded(data)?);
 
         Ok(self)
     }
@@ -162,30 +188,6 @@ impl BmFontBuilder {
         self.pages.insert(id, data);
 
         self
-    }
-
-    /// Sets the image for the specified page of the font, using RGBA8 data.
-    ///
-    /// This will override the path specified in the font itself.
-    ///
-    /// # Errors
-    ///
-    /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
-    ///   the texture.
-    pub fn with_page_rgba8<D>(
-        mut self,
-        id: u32,
-        width: i32,
-        height: i32,
-        data: D,
-    ) -> Result<BmFontBuilder>
-    where
-        D: Into<Vec<u8>>,
-    {
-        self.pages
-            .insert(id, ImageData::from_rgba8(width, height, data)?);
-
-        Ok(self)
     }
 
     /// Builds the font.
@@ -264,7 +266,7 @@ impl BmFontRasterizer {
                             .ok_or(TetraError::InvalidFont)?
                             .join(file);
 
-                        pages.insert(id, ImageData::from_file(file_path)?);
+                        pages.insert(id, ImageData::new(file_path)?);
                     }
                 }
 
