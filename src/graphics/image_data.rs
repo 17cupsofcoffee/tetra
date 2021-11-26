@@ -205,3 +205,182 @@ impl ImageData {
         self.transform(|_, color| color.to_premultiplied())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn region_rgba() {
+        let image = ImageData::from_data(
+            2,
+            2,
+            vec![
+                0x00, 0x01, 0x02, 0x03, // Pixel 1
+                0x04, 0x05, 0x06, 0x07, // Pixel 2
+                0x08, 0x09, 0x0A, 0x0B, // Pixel 3
+                0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
+            ],
+        )
+        .unwrap();
+
+        let left = image.region(Rectangle::new(0, 0, 1, 2));
+
+        assert_eq!(
+            left.as_bytes(),
+            &vec![
+                0x00, 0x01, 0x02, 0x03, // Pixel 1
+                0x08, 0x09, 0x0A, 0x0B, // Pixel 3
+            ]
+        );
+
+        let right = image.region(Rectangle::new(1, 0, 1, 2));
+
+        assert_eq!(
+            right.as_bytes(),
+            &vec![
+                0x04, 0x05, 0x06, 0x07, // Pixel 2
+                0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
+            ]
+        );
+
+        let top = image.region(Rectangle::new(0, 0, 2, 1));
+
+        assert_eq!(
+            top.as_bytes(),
+            &vec![
+                0x00, 0x01, 0x02, 0x03, // Pixel 1
+                0x04, 0x05, 0x06, 0x07, // Pixel 2
+            ]
+        );
+
+        let bottom = image.region(Rectangle::new(0, 1, 2, 1));
+
+        assert_eq!(
+            bottom.as_bytes(),
+            &vec![
+                0x08, 0x09, 0x0A, 0x0B, // Pixel 3
+                0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
+            ]
+        );
+    }
+
+    #[test]
+    fn get_pixel_color_rgba() {
+        let image = ImageData::from_data(
+            2,
+            2,
+            vec![
+                0x00, 0x01, 0x02, 0x03, // Pixel 1
+                0x04, 0x05, 0x06, 0x07, // Pixel 2
+                0x08, 0x09, 0x0A, 0x0B, // Pixel 3
+                0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
+            ],
+        )
+        .unwrap();
+
+        assert_eq!(
+            image.get_pixel_color(Vec2::new(0, 0)),
+            Color::rgba8(0x00, 0x01, 0x02, 0x03)
+        );
+
+        assert_eq!(
+            image.get_pixel_color(Vec2::new(1, 0)),
+            Color::rgba8(0x04, 0x05, 0x06, 0x07)
+        );
+
+        assert_eq!(
+            image.get_pixel_color(Vec2::new(0, 1)),
+            Color::rgba8(0x08, 0x09, 0x0A, 0x0B)
+        );
+
+        assert_eq!(
+            image.get_pixel_color(Vec2::new(1, 1)),
+            Color::rgba8(0x0C, 0x0D, 0x0E, 0x0F)
+        );
+    }
+
+    #[test]
+    fn set_pixel_color_rgba() {
+        let mut image = ImageData::from_data(
+            2,
+            2,
+            vec![
+                0x00, 0x01, 0x02, 0x03, // Pixel 1
+                0x04, 0x05, 0x06, 0x07, // Pixel 2
+                0x08, 0x09, 0x0A, 0x0B, // Pixel 3
+                0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
+            ],
+        )
+        .unwrap();
+
+        image.set_pixel_color(Vec2::new(0, 0), Color::rgba8(0x0F, 0x0E, 0x0D, 0x0C));
+        image.set_pixel_color(Vec2::new(1, 0), Color::rgba8(0x0B, 0x0A, 0x09, 0x08));
+        image.set_pixel_color(Vec2::new(0, 1), Color::rgba8(0x07, 0x06, 0x05, 0x04));
+        image.set_pixel_color(Vec2::new(1, 1), Color::rgba8(0x03, 0x02, 0x01, 0x00));
+
+        assert_eq!(
+            image.as_bytes(),
+            &vec![
+                0x0F, 0x0E, 0x0D, 0x0C, // Pixel 1
+                0x0B, 0x0A, 0x09, 0x08, // Pixel 2
+                0x07, 0x06, 0x05, 0x04, // Pixel 3
+                0x03, 0x02, 0x01, 0x00, // Pixel 4
+            ]
+        );
+    }
+
+    #[test]
+    fn transform_rgba() {
+        let mut image = ImageData::from_data(
+            2,
+            2,
+            vec![
+                0x00, 0x01, 0x02, 0x03, // Pixel 1
+                0x04, 0x05, 0x06, 0x07, // Pixel 2
+                0x08, 0x09, 0x0A, 0x0B, // Pixel 3
+                0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
+            ],
+        )
+        .unwrap();
+
+        image.transform(|_, c| c + Color::rgba8(1, 1, 1, 1));
+
+        assert_eq!(
+            image.as_bytes(),
+            &vec![
+                0x01, 0x02, 0x03, 0x04, // Pixel 1
+                0x05, 0x06, 0x07, 0x08, // Pixel 2
+                0x09, 0x0A, 0x0B, 0x0C, // Pixel 3
+                0x0D, 0x0E, 0x0F, 0x10, // Pixel 4
+            ]
+        );
+    }
+
+    #[test]
+    fn premultiply_rgba() {
+        let mut image = ImageData::from_data(
+            2,
+            2,
+            vec![
+                0x00, 0x66, 0xCC, 0x00, // Pixel 1
+                0x00, 0x66, 0xCC, 0x66, // Pixel 2
+                0x00, 0x66, 0xCC, 0xCC, // Pixel 3
+                0x00, 0x66, 0xCC, 0xFF, // Pixel 4
+            ],
+        )
+        .unwrap();
+
+        image.premultiply();
+
+        assert_eq!(
+            image.as_bytes(),
+            &vec![
+                0x00, 0x00, 0x00, 0x00, // Pixel 1
+                0x00, 0x28, 0x51, 0x66, // Pixel 2
+                0x00, 0x51, 0xA3, 0xCC, // Pixel 3
+                0x00, 0x66, 0xCC, 0xFF, // Pixel 4
+            ]
+        );
+    }
+}
