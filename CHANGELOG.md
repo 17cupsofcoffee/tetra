@@ -10,7 +10,7 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
-* `Texture`s can now be created with different underlying formats.
+* `Texture` and `ImageData` can now be created with different underlying data formats.
 
 ### Changed
 
@@ -21,7 +21,7 @@ This project adheres to Semantic Versioning.
     * `new` usually involves loading from a file path (as this is the most common use-case).
     * `from_data` loads from raw data, without any specific file-type encoding (e.g. RGBA8 pixels).
     * `from_encoded` loads from encoded data in a supported file format (e.g. PNG).
-    * This applies to `Texture`, `ImageData` and `BmFontBuilder`.
+    * This applies to `Texture`, `ImageData`, `Sound` and `BmFontBuilder`.
 * **Breaking:** `BlendMode` and `BlendAlphaMode` have been replaced with `BlendState`, `BlendFactor` and `BlendOperation`, which give you much lower-level control of how colors are blended.
     * As such, `graphics::set_blend_mode` and `graphics::reset_blend_mode` have been renamed to `graphics::set_blend_state` and `graphics::reset_blend_state` respectively.
     * The old presets for blending behaviour are still available as `const` constructors on `BlendState`, so you should be able to migrate without any changes in behaviour.

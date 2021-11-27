@@ -20,9 +20,11 @@ use crate::Context;
 /// to 'fire and forget' a sound, you can discard it - the sound will
 /// continue playing regardless.
 ///
-/// # Supported Formats
+/// # Supported File Formats
 ///
-/// Various file formats are supported, and can be enabled or disabled via Cargo features:
+/// Audio can be decoded from various common file formats via the [`new`](Sound::new)
+/// and [`from_encoded`](Sound::from_encoded) constructors. Individual
+/// decoders can be enabled or disabled via Cargo feature flags.
 ///
 /// | Format | Cargo feature | Enabled by default? |
 /// |-|-|-|
@@ -75,7 +77,7 @@ impl Sound {
     ///
     /// Note that the data is not decoded until playback begins, so this function will not
     /// validate that the data being read is formatted correctly.
-    pub fn from_file_data(data: &[u8]) -> Sound {
+    pub fn from_encoded(data: &[u8]) -> Sound {
         Sound { data: data.into() }
     }
 

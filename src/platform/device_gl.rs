@@ -704,8 +704,7 @@ impl GraphicsDevice {
             "tried to write outside of texture bounds"
         );
 
-        // TODO: channels != size, this is wrong
-        let expected = (width * height) as usize * texture.format.channels();
+        let expected = width as usize * height as usize * texture.format.stride();
         let actual = data.len();
 
         if expected > actual {

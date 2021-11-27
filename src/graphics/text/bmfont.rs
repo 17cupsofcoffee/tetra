@@ -6,7 +6,7 @@ use std::str::FromStr;
 use hashbrown::HashMap;
 
 use crate::graphics::text::cache::{RasterizedGlyph, Rasterizer};
-use crate::graphics::{ImageData, Rectangle};
+use crate::graphics::{ImageData, Rectangle, TextureFormat};
 use crate::math::Vec2;
 use crate::{fs, Context};
 use crate::{Result, TetraError};
@@ -137,7 +137,7 @@ impl BmFontBuilder {
         Ok(self)
     }
 
-    /// Sets the image for the specified page of the font, using RGBA8 data.
+    /// Sets the image for the specified page of the font, using raw pixel data.
     ///
     /// This will override the path specified in the font itself.
     ///
@@ -150,15 +150,14 @@ impl BmFontBuilder {
         id: u32,
         width: i32,
         height: i32,
+        format: TextureFormat,
         data: D,
     ) -> Result<BmFontBuilder>
     where
         D: Into<Vec<u8>>,
     {
-        // TODO: Add texture format support before 0.7 release
-
         self.pages
-            .insert(id, ImageData::from_data(width, height, data)?);
+            .insert(id, ImageData::from_data(width, height, format, data)?);
 
         Ok(self)
     }
