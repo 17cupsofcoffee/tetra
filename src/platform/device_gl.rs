@@ -746,14 +746,15 @@ impl GraphicsDevice {
     pub fn get_texture_data(&mut self, texture: &RawTexture) -> Vec<u8> {
         self.bind_default_texture(Some(texture.id));
 
-        let mut buffer = vec![0; (texture.width * texture.height * 4) as usize];
+        let mut buffer =
+            vec![0; (texture.width * texture.height) as usize * texture.format.stride()];
 
         unsafe {
             self.state.gl.get_tex_image(
                 glow::TEXTURE_2D,
                 0,
-                glow::RGBA,
-                glow::UNSIGNED_BYTE,
+                texture.format.to_gl_format(),
+                texture.format.to_gl_data_type(),
                 PixelPackData::Slice(&mut buffer),
             );
         }

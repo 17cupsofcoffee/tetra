@@ -356,13 +356,15 @@ impl Texture {
     /// This can be useful if you need to do some image processing on the CPU,
     /// or if you want to output the image data somewhere. This is a fairly
     /// slow operation, so avoid doing it too often!
+    ///
+    /// The returned [`ImageData`] will have the same format as the texture itself.
     pub fn get_data(&self, ctx: &mut Context) -> ImageData {
-        // TODO: Should this allow copying to a different format?
+        // TODO: Should there be a version of this that converts to a different format?
 
         let (width, height) = self.size();
         let buffer = ctx.device.get_texture_data(&self.data.handle);
 
-        ImageData::from_data(width, height, TextureFormat::Rgba8, buffer)
+        ImageData::from_data(width, height, self.format(), buffer)
             .expect("buffer should be exact size for image")
     }
 
