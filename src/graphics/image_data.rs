@@ -1,5 +1,7 @@
 use std::path::Path;
 
+use half::f16;
+
 use crate::error::{Result, TetraError};
 use crate::fs;
 use crate::graphics::{Color, Rectangle, Texture, TextureFormat};
@@ -240,16 +242,21 @@ impl ImageData {
             "position was out of bounds"
         );
 
+        let data = &self.data[idx..idx + self.format.stride()];
+
         match self.format {
-            TextureFormat::Rgba8 => Color::rgba8(
-                self.data[idx],
-                self.data[idx + 1],
-                self.data[idx + 2],
-                self.data[idx + 3],
-            ),
-            TextureFormat::R8 => Color::rgba8(self.data[idx], 0, 0, 255),
-            TextureFormat::Rg8 => Color::rgba8(self.data[idx], self.data[idx + 1], 0, 255),
-            TextureFormat::Rgba16F => unimplemented!(), // TODO
+            TextureFormat::Rgba8 => Color::rgba8(data[0], data[1], data[2], data[3]),
+            TextureFormat::R8 => Color::rgba8(data[0], 0, 0, 255),
+            TextureFormat::Rg8 => Color::rgba8(data[0], data[1], 0, 255),
+            TextureFormat::Rgba16F => {
+                let f16_data: &[f16] = bytemuck::cast_slice(data);
+                Color::rgba(
+                    f16_data[0].to_f32(),
+                    f16_data[1].to_f32(),
+                    f16_data[2].to_f32(),
+                    f16_data[3].to_f32(),
+                )
+            }
         }
     }
 
@@ -271,19 +278,34 @@ impl ImageData {
             "position was out of bounds"
         );
 
-        let data: [u8; 4] = color.into();
+        let target = &mut self.data[idx..idx + self.format.stride()];
 
         match self.format {
             TextureFormat::Rgba8 => {
-                self.data[idx..=idx + 3].copy_from_slice(&data);
+                let byte_data: [u8; 4] = color.into();
+
+                target.copy_from_slice(&byte_data);
             }
             TextureFormat::R8 => {
-                self.data[idx] = data[0];
+                let byte_data: [u8; 4] = color.into();
+
+                target[0] = byte_data[0];
             }
             TextureFormat::Rg8 => {
-                self.data[idx..=idx + 1].copy_from_slice(&data[..=1]);
+                let byte_data: [u8; 4] = color.into();
+
+                target.copy_from_slice(&byte_data[..=1]);
             }
-            TextureFormat::Rgba16F => unimplemented!(), // TODO
+            TextureFormat::Rgba16F => {
+                let f16_data = [
+                    f16::from_f32(color.r),
+                    f16::from_f32(color.g),
+                    f16::from_f32(color.b),
+                    f16::from_f32(color.a),
+                ];
+
+                target.copy_from_slice(bytemuck::cast_slice(&f16_data));
+            }
         }
     }
 
@@ -343,27 +365,36 @@ impl ImageData {
 mod tests {
     use super::*;
 
+    /// Utility for defining f16 test data.
+    macro_rules! f16_vec {
+        (
+            $($num:literal),* $(,)?
+        ) => {
+            vec![$(f16::from_f32($num)),*]
+        };
+    }
+
     fn region_test(
         format: TextureFormat,
-        input: Vec<u8>,
-        expected_left: Vec<u8>,
-        expected_right: Vec<u8>,
-        expected_top: Vec<u8>,
-        expected_bottom: Vec<u8>,
+        input: &[u8],
+        expected_left: &[u8],
+        expected_right: &[u8],
+        expected_top: &[u8],
+        expected_bottom: &[u8],
     ) {
         let image = ImageData::from_data(2, 2, format, input).unwrap();
 
         let left = image.region(Rectangle::new(0, 0, 1, 2));
-        assert_eq!(left.as_bytes(), &expected_left);
+        assert_eq!(left.as_bytes(), expected_left);
 
         let right = image.region(Rectangle::new(1, 0, 1, 2));
-        assert_eq!(right.as_bytes(), &expected_right);
+        assert_eq!(right.as_bytes(), expected_right);
 
         let top = image.region(Rectangle::new(0, 0, 2, 1));
-        assert_eq!(top.as_bytes(), &expected_top);
+        assert_eq!(top.as_bytes(), expected_top);
 
         let bottom = image.region(Rectangle::new(0, 1, 2, 1));
-        assert_eq!(bottom.as_bytes(), &expected_bottom);
+        assert_eq!(bottom.as_bytes(), expected_bottom);
     }
 
     #[test]
@@ -371,29 +402,29 @@ mod tests {
         region_test(
             TextureFormat::Rgba8,
             // Input
-            vec![
+            &[
                 0x00, 0x01, 0x02, 0x03, // Pixel 1
                 0x04, 0x05, 0x06, 0x07, // Pixel 2
                 0x08, 0x09, 0x0A, 0x0B, // Pixel 3
                 0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
             ],
             // Left
-            vec![
+            &[
                 0x00, 0x01, 0x02, 0x03, // Pixel 1
                 0x08, 0x09, 0x0A, 0x0B, // Pixel 3
             ],
             // Right
-            vec![
+            &[
                 0x04, 0x05, 0x06, 0x07, // Pixel 2
                 0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
             ],
             // Top
-            vec![
+            &[
                 0x00, 0x01, 0x02, 0x03, // Pixel 1
                 0x04, 0x05, 0x06, 0x07, // Pixel 2
             ],
             // Bottom
-            vec![
+            &[
                 0x08, 0x09, 0x0A, 0x0B, // Pixel 3
                 0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
             ],
@@ -405,29 +436,29 @@ mod tests {
         region_test(
             TextureFormat::R8,
             // Input
-            vec![
+            &[
                 0x00, // Pixel 1
                 0x04, // Pixel 2
                 0x08, // Pixel 3
                 0x0C, // Pixel 4
             ],
             // Left
-            vec![
+            &[
                 0x00, // Pixel 1
                 0x08, // Pixel 3
             ],
             // Right
-            vec![
+            &[
                 0x04, // Pixel 2
                 0x0C, // Pixel 4
             ],
             // Top
-            vec![
+            &[
                 0x00, // Pixel 1
                 0x04, // Pixel 2
             ],
             // Bottom
-            vec![
+            &[
                 0x08, // Pixel 3
                 0x0C, // Pixel 4
             ],
@@ -439,29 +470,29 @@ mod tests {
         region_test(
             TextureFormat::Rg8,
             // Input
-            vec![
+            &[
                 0x00, 0x01, // Pixel 1
                 0x04, 0x05, // Pixel 2
                 0x08, 0x09, // Pixel 3
                 0x0C, 0x0D, // Pixel 4
             ],
             // Left
-            vec![
+            &[
                 0x00, 0x01, // Pixel 1
                 0x08, 0x09, // Pixel 3
             ],
             // Right
-            vec![
+            &[
                 0x04, 0x05, // Pixel 2
                 0x0C, 0x0D, // Pixel 4
             ],
             // Top
-            vec![
+            &[
                 0x00, 0x01, // Pixel 1
                 0x04, 0x05, // Pixel 2
             ],
             // Bottom
-            vec![
+            &[
                 0x08, 0x09, // Pixel 3
                 0x0C, 0x0D, // Pixel 4
             ],
@@ -470,7 +501,7 @@ mod tests {
 
     fn get_pixel_color_test(
         format: TextureFormat,
-        input: Vec<u8>,
+        input: &[u8],
         tl: Color,
         tr: Color,
         bl: Color,
@@ -488,7 +519,7 @@ mod tests {
     fn get_pixel_color_rgba8() {
         get_pixel_color_test(
             TextureFormat::Rgba8,
-            vec![
+            &[
                 0x00, 0x01, 0x02, 0x03, // Pixel 1
                 0x04, 0x05, 0x06, 0x07, // Pixel 2
                 0x08, 0x09, 0x0A, 0x0B, // Pixel 3
@@ -505,7 +536,7 @@ mod tests {
     fn get_pixel_color_r8() {
         get_pixel_color_test(
             TextureFormat::R8,
-            vec![
+            &[
                 0x00, // Pixel 1
                 0x04, // Pixel 2
                 0x08, // Pixel 3
@@ -522,7 +553,7 @@ mod tests {
     fn get_pixel_color_rg8() {
         get_pixel_color_test(
             TextureFormat::Rg8,
-            vec![
+            &[
                 0x00, 0x01, // Pixel 1
                 0x04, 0x05, // Pixel 2
                 0x08, 0x09, // Pixel 3
@@ -535,13 +566,39 @@ mod tests {
         );
     }
 
-    fn set_pixel_color_test(format: TextureFormat, input: Vec<u8>, output: Vec<u8>) {
-        let mut image = ImageData::from_data(2, 2, format, input).unwrap();
+    #[test]
+    fn get_pixel_color_rgba16f() {
+        let float_data = f16_vec![
+            0.0, 1.0, 2.0, 3.0, // Pixel 1
+            4.0, 5.0, 6.0, 7.0, // Pixel 2
+            8.0, 9.0, 10.0, 11.0, // Pixel 3
+            12.0, 13.0, 14.0, 15.0, // Pixel 4
+        ];
 
-        image.set_pixel_color(Vec2::new(0, 0), Color::rgba8(0x0F, 0x0E, 0x0D, 0x0C));
-        image.set_pixel_color(Vec2::new(1, 0), Color::rgba8(0x0B, 0x0A, 0x09, 0x08));
-        image.set_pixel_color(Vec2::new(0, 1), Color::rgba8(0x07, 0x06, 0x05, 0x04));
-        image.set_pixel_color(Vec2::new(1, 1), Color::rgba8(0x03, 0x02, 0x01, 0x00));
+        get_pixel_color_test(
+            TextureFormat::Rgba16F,
+            bytemuck::cast_slice(&float_data),
+            Color::rgba(0.0, 1.0, 2.0, 3.0),
+            Color::rgba(4.0, 5.0, 6.0, 7.0),
+            Color::rgba(8.0, 9.0, 10.0, 11.0),
+            Color::rgba(12.0, 13.0, 14.0, 15.0),
+        );
+    }
+
+    fn set_pixel_color_test(
+        format: TextureFormat,
+        tl: Color,
+        tr: Color,
+        bl: Color,
+        br: Color,
+        output: &[u8],
+    ) {
+        let mut image = ImageData::from_data(2, 2, format, vec![0; 4 * format.stride()]).unwrap();
+
+        image.set_pixel_color(Vec2::new(0, 0), tl);
+        image.set_pixel_color(Vec2::new(1, 0), tr);
+        image.set_pixel_color(Vec2::new(0, 1), bl);
+        image.set_pixel_color(Vec2::new(1, 1), br);
 
         assert_eq!(image.as_bytes(), output);
     }
@@ -550,13 +607,11 @@ mod tests {
     fn set_pixel_color_rgba8() {
         set_pixel_color_test(
             TextureFormat::Rgba8,
-            vec![
-                0x00, 0x01, 0x02, 0x03, // Pixel 1
-                0x04, 0x05, 0x06, 0x07, // Pixel 2
-                0x08, 0x09, 0x0A, 0x0B, // Pixel 3
-                0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
-            ],
-            vec![
+            Color::rgba8(0x0F, 0x0E, 0x0D, 0x0C),
+            Color::rgba8(0x0B, 0x0A, 0x09, 0x08),
+            Color::rgba8(0x07, 0x06, 0x05, 0x04),
+            Color::rgba8(0x03, 0x02, 0x01, 0x00),
+            &[
                 0x0F, 0x0E, 0x0D, 0x0C, // Pixel 1
                 0x0B, 0x0A, 0x09, 0x08, // Pixel 2
                 0x07, 0x06, 0x05, 0x04, // Pixel 3
@@ -569,13 +624,11 @@ mod tests {
     fn set_pixel_color_r8() {
         set_pixel_color_test(
             TextureFormat::R8,
-            vec![
-                0x00, // Pixel 1
-                0x04, // Pixel 2
-                0x08, // Pixel 3
-                0x0C, // Pixel 4
-            ],
-            vec![
+            Color::rgba8(0x0F, 0x0E, 0x0D, 0x0C),
+            Color::rgba8(0x0B, 0x0A, 0x09, 0x08),
+            Color::rgba8(0x07, 0x06, 0x05, 0x04),
+            Color::rgba8(0x03, 0x02, 0x01, 0x00),
+            &[
                 0x0F, // Pixel 1
                 0x0B, // Pixel 2
                 0x07, // Pixel 3
@@ -588,13 +641,11 @@ mod tests {
     fn set_pixel_color_rg8() {
         set_pixel_color_test(
             TextureFormat::Rg8,
-            vec![
-                0x00, 0x01, // Pixel 1
-                0x04, 0x05, // Pixel 2
-                0x08, 0x09, // Pixel 3
-                0x0C, 0x0D, // Pixel 4
-            ],
-            vec![
+            Color::rgba8(0x0F, 0x0E, 0x0D, 0x0C),
+            Color::rgba8(0x0B, 0x0A, 0x09, 0x08),
+            Color::rgba8(0x07, 0x06, 0x05, 0x04),
+            Color::rgba8(0x03, 0x02, 0x01, 0x00),
+            &[
                 0x0F, 0x0E, // Pixel 1
                 0x0B, 0x0A, // Pixel 2
                 0x07, 0x06, // Pixel 3
@@ -603,25 +654,44 @@ mod tests {
         );
     }
 
-    fn transform_test(format: TextureFormat, input: Vec<u8>, output: Vec<u8>) {
+    #[test]
+    fn set_pixel_color_rgba16f() {
+        let output = f16_vec![
+            15.0, 14.0, 13.0, 12.0, // Pixel 1
+            11.0, 10.0, 9.0, 8.0, // Pixel 2
+            7.0, 6.0, 5.0, 4.0, // Pixel 3
+            3.0, 2.0, 1.0, 0.0, // Pixel 4
+        ];
+
+        set_pixel_color_test(
+            TextureFormat::Rgba16F,
+            Color::rgba(15.0, 14.0, 13.0, 12.0),
+            Color::rgba(11.0, 10.0, 9.0, 8.0),
+            Color::rgba(7.0, 6.0, 5.0, 4.0),
+            Color::rgba(3.0, 2.0, 1.0, 0.0),
+            bytemuck::cast_slice(&output),
+        );
+    }
+
+    fn transform_test(format: TextureFormat, input: &[u8], output: &[u8]) {
         let mut image = ImageData::from_data(2, 2, format, input).unwrap();
 
         image.transform(|_, c| c + Color::rgba8(1, 1, 1, 1));
 
-        assert_eq!(image.as_bytes(), &output);
+        assert_eq!(image.as_bytes(), output);
     }
 
     #[test]
     fn transform_rgba8() {
         transform_test(
             TextureFormat::Rgba8,
-            vec![
+            &[
                 0x00, 0x01, 0x02, 0x03, // Pixel 1
                 0x04, 0x05, 0x06, 0x07, // Pixel 2
                 0x08, 0x09, 0x0A, 0x0B, // Pixel 3
                 0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
             ],
-            vec![
+            &[
                 0x01, 0x02, 0x03, 0x04, // Pixel 1
                 0x05, 0x06, 0x07, 0x08, // Pixel 2
                 0x09, 0x0A, 0x0B, 0x0C, // Pixel 3
@@ -634,13 +704,13 @@ mod tests {
     fn transform_r8() {
         transform_test(
             TextureFormat::R8,
-            vec![
+            &[
                 0x00, // Pixel 1
                 0x04, // Pixel 2
                 0x08, // Pixel 3
                 0x0C, // Pixel 4
             ],
-            vec![
+            &[
                 0x01, // Pixel 1
                 0x05, // Pixel 2
                 0x09, // Pixel 3
@@ -653,13 +723,13 @@ mod tests {
     fn transform_rg8() {
         transform_test(
             TextureFormat::Rg8,
-            vec![
+            &[
                 0x00, 0x01, // Pixel 1
                 0x04, 0x05, // Pixel 2
                 0x08, 0x09, // Pixel 3
                 0x0C, 0x0D, // Pixel 4
             ],
-            vec![
+            &[
                 0x01, 0x02, // Pixel 1
                 0x05, 0x06, // Pixel 2
                 0x09, 0x0A, // Pixel 3
@@ -668,7 +738,7 @@ mod tests {
         );
     }
 
-    fn premultiply_test(format: TextureFormat, input: Vec<u8>, output: Vec<u8>) {
+    fn premultiply_test(format: TextureFormat, input: &[u8], output: &[u8]) {
         let mut image = ImageData::from_data(2, 2, format, input).unwrap();
 
         image.premultiply();
@@ -680,13 +750,13 @@ mod tests {
     fn premultiply_rgba8() {
         premultiply_test(
             TextureFormat::Rgba8,
-            vec![
+            &[
                 0x00, 0x66, 0xCC, 0x00, // Pixel 1
                 0x00, 0x66, 0xCC, 0x66, // Pixel 2
                 0x00, 0x66, 0xCC, 0xCC, // Pixel 3
                 0x00, 0x66, 0xCC, 0xFF, // Pixel 4
             ],
-            vec![
+            &[
                 0x00, 0x00, 0x00, 0x00, // Pixel 1
                 0x00, 0x28, 0x51, 0x66, // Pixel 2
                 0x00, 0x51, 0xA3, 0xCC, // Pixel 3
@@ -699,13 +769,13 @@ mod tests {
     fn premultiply_r8() {
         premultiply_test(
             TextureFormat::R8,
-            vec![
+            &[
                 0x01, // Pixel 1
                 0x02, // Pixel 2
                 0x03, // Pixel 3
                 0x04, // Pixel 4
             ],
-            vec![
+            &[
                 0x01, // Pixel 1
                 0x02, // Pixel 2
                 0x03, // Pixel 3
@@ -718,13 +788,13 @@ mod tests {
     fn premultiply_rg8() {
         premultiply_test(
             TextureFormat::Rg8,
-            vec![
+            &[
                 0x01, 0x01, // Pixel 1
                 0x02, 0x02, // Pixel 2
                 0x03, 0x03, // Pixel 3
                 0x04, 0x04, // Pixel 4
             ],
-            vec![
+            &[
                 0x01, 0x01, // Pixel 1
                 0x02, 0x02, // Pixel 2
                 0x03, 0x03, // Pixel 3
