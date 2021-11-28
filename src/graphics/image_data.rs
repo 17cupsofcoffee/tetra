@@ -243,21 +243,7 @@ impl ImageData {
         );
 
         let data = &self.data[idx..idx + self.format.stride()];
-
-        match self.format {
-            TextureFormat::Rgba8 => Color::rgba8(data[0], data[1], data[2], data[3]),
-            TextureFormat::R8 => Color::rgba8(data[0], 0, 0, 255),
-            TextureFormat::Rg8 => Color::rgba8(data[0], data[1], 0, 255),
-            TextureFormat::Rgba16F => {
-                let f16_data: &[f16] = bytemuck::cast_slice(data);
-                Color::rgba(
-                    f16_data[0].to_f32(),
-                    f16_data[1].to_f32(),
-                    f16_data[2].to_f32(),
-                    f16_data[3].to_f32(),
-                )
-            }
-        }
+        read_color(self.format, data)
     }
 
     /// Sets the color of the pixel at the specified location.
@@ -279,34 +265,7 @@ impl ImageData {
         );
 
         let target = &mut self.data[idx..idx + self.format.stride()];
-
-        match self.format {
-            TextureFormat::Rgba8 => {
-                let byte_data: [u8; 4] = color.into();
-
-                target.copy_from_slice(&byte_data);
-            }
-            TextureFormat::R8 => {
-                let byte_data: [u8; 4] = color.into();
-
-                target[0] = byte_data[0];
-            }
-            TextureFormat::Rg8 => {
-                let byte_data: [u8; 4] = color.into();
-
-                target.copy_from_slice(&byte_data[..=1]);
-            }
-            TextureFormat::Rgba16F => {
-                let f16_data = [
-                    f16::from_f32(color.r),
-                    f16::from_f32(color.g),
-                    f16::from_f32(color.b),
-                    f16::from_f32(color.a),
-                ];
-
-                target.copy_from_slice(bytemuck::cast_slice(&f16_data));
-            }
-        }
+        write_color(self.format, color, target);
     }
 
     /// Transforms the image data by applying a function to each pixel.
@@ -324,28 +283,9 @@ impl ImageData {
             let x = i % self.width;
             let y = i / self.width;
 
-            // TODO: This won't be right for packed formats
-            let color = Color::rgba8(
-                data[0],
-                data.get(1).copied().unwrap_or(0),
-                data.get(2).copied().unwrap_or(0),
-                data.get(3).copied().unwrap_or(255),
-            );
-
-            let output: [u8; 4] = func(Vec2::new(x as i32, y as i32), color).into();
-
-            match self.format {
-                TextureFormat::Rgba8 => {
-                    data.copy_from_slice(&output);
-                }
-                TextureFormat::R8 => {
-                    data[0] = output[0];
-                }
-                TextureFormat::Rg8 => {
-                    data.copy_from_slice(&output[..=1]);
-                }
-                TextureFormat::Rgba16F => unimplemented!(), // TODO
-            }
+            let color = read_color(self.format, data);
+            let output = func(Vec2::new(x as i32, y as i32), color);
+            write_color(self.format, output, data);
         }
     }
 
@@ -361,6 +301,53 @@ impl ImageData {
     }
 }
 
+fn read_color(format: TextureFormat, data: &[u8]) -> Color {
+    match format {
+        TextureFormat::Rgba8 => Color::rgba8(data[0], data[1], data[2], data[3]),
+        TextureFormat::R8 => Color::rgba8(data[0], 0, 0, 255),
+        TextureFormat::Rg8 => Color::rgba8(data[0], data[1], 0, 255),
+        TextureFormat::Rgba16F => {
+            let f16_data: &[f16] = bytemuck::cast_slice(data);
+            Color::rgba(
+                f16_data[0].to_f32(),
+                f16_data[1].to_f32(),
+                f16_data[2].to_f32(),
+                f16_data[3].to_f32(),
+            )
+        }
+    }
+}
+
+fn write_color(format: TextureFormat, color: Color, target: &mut [u8]) {
+    match format {
+        TextureFormat::Rgba8 => {
+            let byte_data: [u8; 4] = color.into();
+
+            target.copy_from_slice(&byte_data);
+        }
+        TextureFormat::R8 => {
+            let byte_data: [u8; 4] = color.into();
+
+            target[0] = byte_data[0];
+        }
+        TextureFormat::Rg8 => {
+            let byte_data: [u8; 4] = color.into();
+
+            target.copy_from_slice(&byte_data[..=1]);
+        }
+        TextureFormat::Rgba16F => {
+            let f16_data = [
+                f16::from_f32(color.r),
+                f16::from_f32(color.g),
+                f16::from_f32(color.b),
+                f16::from_f32(color.a),
+            ];
+
+            target.copy_from_slice(bytemuck::cast_slice(&f16_data));
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -371,6 +358,12 @@ mod tests {
             $($num:literal),* $(,)?
         ) => {
             vec![$(f16::from_f32($num)),*]
+        };
+
+        (
+            $num:literal; $size:literal
+        ) => {
+            vec![f16::from_f32($num); $size]
         };
     }
 
@@ -673,10 +666,10 @@ mod tests {
         );
     }
 
-    fn transform_test(format: TextureFormat, input: &[u8], output: &[u8]) {
+    fn transform_test(format: TextureFormat, input: &[u8], add: Color, output: &[u8]) {
         let mut image = ImageData::from_data(2, 2, format, input).unwrap();
 
-        image.transform(|_, c| c + Color::rgba8(1, 1, 1, 1));
+        image.transform(|_, c| c + add);
 
         assert_eq!(image.as_bytes(), output);
     }
@@ -691,6 +684,7 @@ mod tests {
                 0x08, 0x09, 0x0A, 0x0B, // Pixel 3
                 0x0C, 0x0D, 0x0E, 0x0F, // Pixel 4
             ],
+            Color::rgba8(1, 1, 1, 1),
             &[
                 0x01, 0x02, 0x03, 0x04, // Pixel 1
                 0x05, 0x06, 0x07, 0x08, // Pixel 2
@@ -710,6 +704,7 @@ mod tests {
                 0x08, // Pixel 3
                 0x0C, // Pixel 4
             ],
+            Color::rgba8(1, 1, 1, 1),
             &[
                 0x01, // Pixel 1
                 0x05, // Pixel 2
@@ -729,12 +724,27 @@ mod tests {
                 0x08, 0x09, // Pixel 3
                 0x0C, 0x0D, // Pixel 4
             ],
+            Color::rgba8(1, 1, 1, 1),
             &[
                 0x01, 0x02, // Pixel 1
                 0x05, 0x06, // Pixel 2
                 0x09, 0x0A, // Pixel 3
                 0x0D, 0x0E, // Pixel 4
             ],
+        );
+    }
+
+    #[test]
+    fn transform_rgba16f() {
+        // TODO: May want to revisit this once decision has been made on saturating color ops
+        let input = f16_vec![0.0; 16];
+        let output = f16_vec![1.0; 16];
+
+        transform_test(
+            TextureFormat::Rgba16F,
+            bytemuck::cast_slice(&input),
+            Color::rgba(1.0, 1.0, 1.0, 1.0),
+            bytemuck::cast_slice(&output),
         );
     }
 
@@ -800,6 +810,31 @@ mod tests {
                 0x03, 0x03, // Pixel 3
                 0x04, 0x04, // Pixel 4
             ],
+        );
+    }
+
+    #[test]
+    fn premultiply_rgba16f() {
+        // TODO: May want to revisit this once decision has been made on saturating color ops
+
+        let input = f16_vec![
+            0.0, 0.25, 0.75, 0.0, // Pixel 1
+            0.0, 0.25, 0.75, 0.25, // Pixel 2
+            0.0, 0.25, 0.75, 0.75, // Pixel 3
+            0.0, 0.25, 0.75, 1.0, // Pixel 4
+        ];
+
+        let output = f16_vec![
+            0.0, 0.0, 0.0, 0.0, // Pixel 1
+            0.0, 0.0625, 0.1875, 0.25, // Pixel 2
+            0.0, 0.1875, 0.5625, 0.75, // Pixel 3
+            0.0, 0.25, 0.75, 1.0, // Pixel 4
+        ];
+
+        premultiply_test(
+            TextureFormat::Rgba16F,
+            bytemuck::cast_slice(&input),
+            bytemuck::cast_slice(&output),
         );
     }
 }
