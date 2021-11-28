@@ -10,7 +10,7 @@ This project adheres to Semantic Versioning.
 
 ### Added
 
-* `Texture` and `ImageData` can now be created with different underlying data formats.
+* `Texture`, `Canvas` and `ImageData` can now be created with different underlying data formats.
 
 ### Changed
 

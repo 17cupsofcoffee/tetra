@@ -787,6 +787,7 @@ impl GraphicsDevice {
         &mut self,
         width: i32,
         height: i32,
+        format: TextureFormat,
         filter_mode: FilterMode,
         samples: u8,
         with_stencil_buffer: bool,
@@ -808,7 +809,7 @@ impl GraphicsDevice {
 
             self.bind_framebuffer(Some(canvas.id));
 
-            let color = self.new_texture(width, height, TextureFormat::Rgba8, filter_mode)?;
+            let color = self.new_texture(width, height, format, filter_mode)?;
 
             self.state.gl.framebuffer_texture_2d(
                 glow::FRAMEBUFFER,
@@ -823,7 +824,8 @@ impl GraphicsDevice {
             let actual_samples = u8::min(samples, self.state.max_samples);
 
             let multisample_color = if actual_samples > 0 {
-                let renderbuffer = self.new_color_renderbuffer(width, height, actual_samples)?;
+                let renderbuffer =
+                    self.new_color_renderbuffer(width, height, format, actual_samples)?;
 
                 self.state.gl.framebuffer_renderbuffer(
                     glow::FRAMEBUFFER,
@@ -923,9 +925,10 @@ impl GraphicsDevice {
         &mut self,
         width: i32,
         height: i32,
+        format: TextureFormat,
         samples: u8,
     ) -> Result<RawRenderbuffer> {
-        self.new_renderbuffer(width, height, glow::RGBA, samples)
+        self.new_renderbuffer(width, height, format.to_gl_internal_format(), samples)
     }
 
     pub fn new_depth_stencil_renderbuffer(

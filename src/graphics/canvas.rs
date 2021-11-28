@@ -5,7 +5,7 @@ use crate::graphics::{DrawParams, FilterMode, Texture};
 use crate::platform::{RawCanvas, RawRenderbuffer};
 use crate::Context;
 
-use super::ImageData;
+use super::{ImageData, TextureFormat};
 
 /// A builder for creating advanced canvas configurations.
 ///
@@ -16,13 +16,13 @@ use super::ImageData;
 pub struct CanvasBuilder {
     width: i32,
     height: i32,
+    texture_format: TextureFormat,
     samples: u8,
     stencil_buffer: bool,
 }
 
 impl CanvasBuilder {
-    /// Creates a new canvas builder, which can be used to create a canvas with multisampling and/or
-    /// additional buffers.
+    /// Creates a new canvas builder.
     ///
     /// You can also use [`Canvas::builder`] as a shortcut for this, if you want
     /// to avoid the extra import.
@@ -30,9 +30,18 @@ impl CanvasBuilder {
         CanvasBuilder {
             width,
             height,
+            texture_format: TextureFormat::Rgba8,
             samples: 0,
             stencil_buffer: false,
         }
+    }
+
+    /// Sets the format that should be used for the canvas' underlying [`Texture`].
+    ///
+    /// Defaults to [`TextureFormat::Rgba8`].
+    pub fn texture_format(&mut self, format: TextureFormat) -> &mut CanvasBuilder {
+        self.texture_format = format;
+        self
     }
 
     /// Sets the level of multisample anti-aliasing to use.
@@ -70,6 +79,7 @@ impl CanvasBuilder {
         let attachments = ctx.device.new_canvas(
             self.width,
             self.height,
+            self.texture_format,
             ctx.graphics.default_filter_mode,
             self.samples,
             self.stencil_buffer,
@@ -120,7 +130,11 @@ pub struct Canvas {
 }
 
 impl Canvas {
-    /// Creates a new canvas, with the default settings (no multisampling, no additional buffers).
+    /// Creates a new canvas, with the default settings:
+    ///
+    /// * No multisampling
+    /// * No additional buffers
+    /// * [`TextureFormat::Rgba8`] is used for the underlying texture
     ///
     /// # Errors
     ///
@@ -130,8 +144,8 @@ impl Canvas {
         CanvasBuilder::new(width, height).build(ctx)
     }
 
-    /// Creates a new canvas builder, which can be used to create a canvas with multisampling and/or
-    /// additional buffers.
+    /// Creates a new canvas builder, which can be used to create a canvas with more advanced
+    /// configurations, such as multisampling or stencil buffers.
     pub fn builder(width: i32, height: i32) -> CanvasBuilder {
         CanvasBuilder::new(width, height)
     }
