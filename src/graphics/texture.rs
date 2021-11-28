@@ -423,6 +423,7 @@ impl Texture {
 
 /// In-memory data formats for textures.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum TextureFormat {
     /// Unsigned 32-bit RGBA data, with 8 bits per channel.
     Rgba8,
