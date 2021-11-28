@@ -425,14 +425,19 @@ impl Texture {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum TextureFormat {
-    /// Unsigned 32-bit RGBA data, with 8 bits per channel.
+    /// RGBA data, with 8 bits per channel (32 bits per pixel).
+    ///
+    /// This is the default texture format.
     Rgba8,
 
-    /// Unsigned 8-bit red channel data.
+    /// Red channel data (8 bits per pixel).
     R8,
 
-    /// Unsigned 16-bit red and green channel data, with 8 bits per channel.
+    /// Red and green channel data, with 8 bits per channel (16 bits per pixel).
     Rg8,
+
+    /// Floating point RGBA data, with 16 bits per channel (64 bits per pixel).
+    Rgba16F,
 }
 
 impl TextureFormat {
@@ -442,6 +447,7 @@ impl TextureFormat {
             TextureFormat::Rgba8 => 4,
             TextureFormat::R8 => 1,
             TextureFormat::Rg8 => 2,
+            TextureFormat::Rgba16F => 4,
         }
     }
 
@@ -453,6 +459,7 @@ impl TextureFormat {
             TextureFormat::Rgba8 => 4,
             TextureFormat::R8 => 1,
             TextureFormat::Rg8 => 2,
+            TextureFormat::Rgba16F => 8,
         }
     }
 }

@@ -1236,6 +1236,7 @@ impl TextureFormat {
             TextureFormat::Rgba8 => glow::RGBA,
             TextureFormat::R8 => glow::RED,
             TextureFormat::Rg8 => glow::RG,
+            TextureFormat::Rgba16F => glow::RGBA,
         }
     }
 
@@ -1244,6 +1245,7 @@ impl TextureFormat {
             TextureFormat::Rgba8 => glow::RGBA8,
             TextureFormat::R8 => glow::R8,
             TextureFormat::Rg8 => glow::RG8,
+            TextureFormat::Rgba16F => glow::RGBA16F,
         }
     }
 
@@ -1252,6 +1254,7 @@ impl TextureFormat {
             TextureFormat::Rgba8 => glow::UNSIGNED_BYTE,
             TextureFormat::R8 => glow::UNSIGNED_BYTE,
             TextureFormat::Rg8 => glow::UNSIGNED_BYTE,
+            TextureFormat::Rgba16F => glow::HALF_FLOAT,
         }
     }
 
@@ -1260,6 +1263,7 @@ impl TextureFormat {
             TextureFormat::Rgba8 => 4,
             TextureFormat::R8 => 1,
             TextureFormat::Rg8 => 2,
+            TextureFormat::Rgba16F => 8,
         }
     }
 }

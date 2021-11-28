@@ -249,6 +249,7 @@ impl ImageData {
             ),
             TextureFormat::R8 => Color::rgba8(self.data[idx], 0, 0, 255),
             TextureFormat::Rg8 => Color::rgba8(self.data[idx], self.data[idx + 1], 0, 255),
+            TextureFormat::Rgba16F => unimplemented!(), // TODO
         }
     }
 
@@ -282,6 +283,7 @@ impl ImageData {
             TextureFormat::Rg8 => {
                 self.data[idx..=idx + 1].copy_from_slice(&data[..=1]);
             }
+            TextureFormat::Rgba16F => unimplemented!(), // TODO
         }
     }
 
@@ -320,6 +322,7 @@ impl ImageData {
                 TextureFormat::Rg8 => {
                     data.copy_from_slice(&output[..=1]);
                 }
+                TextureFormat::Rgba16F => unimplemented!(), // TODO
             }
         }
     }
