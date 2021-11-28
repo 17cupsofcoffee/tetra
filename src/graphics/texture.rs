@@ -366,7 +366,9 @@ impl Texture {
             .expect("buffer should be exact size for image")
     }
 
-    /// Writes RGBA pixel data to a specified region of the texture.
+    /// Writes pixel data to a specified region of the texture.
+    ///
+    /// The data will be interpreted based on the [`TextureFormat`] of the texture.
     ///
     /// This method requires you to provide enough data to fill the target rectangle.
     /// If you provide too little data, an error will be returned.

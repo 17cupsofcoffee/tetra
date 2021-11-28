@@ -198,7 +198,10 @@ impl Canvas {
         self.texture.get_data(ctx)
     }
 
-    /// Writes RGBA pixel data to a specified region of the canvas.
+    /// Writes pixel data to a specified region of the canvas.
+    ///
+    /// The data will be interpreted based on the [`TextureFormat`] of the canvas'
+    /// underlying texture.
     ///
     /// This method requires you to provide enough data to fill the target rectangle.
     /// If you provide too little data, an error will be returned.
@@ -228,7 +231,10 @@ impl Canvas {
         self.texture.set_data(ctx, x, y, width, height, data)
     }
 
-    /// Overwrites the entire canvas with new RGBA pixel data.
+    /// Overwrites the entire canvas with new pixel data.
+    ///
+    /// The data will be interpreted based on the [`TextureFormat`] of the canvas'
+    /// underlying texture.
     ///
     /// This method requires you to provide enough data to fill the canvas.
     /// If you provide too little data, an error will be returned.
