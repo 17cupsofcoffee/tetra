@@ -23,6 +23,20 @@ pub use crate::graphics::text::bmfont::BmFontBuilder;
 
 use super::FilterMode;
 
+/// Different ways that font textures can be generated.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum FontTextureStyle {
+    /// An RGBA texture will be used, with the RGB channels set to 1.0, and
+    /// the alpha channels set to the amount of coverage.
+    Normal,
+
+    /// An RGBA texture will be used, with all channels set to the amount
+    /// of coverage. This will require the [`BlendState`](crate::graphics::BlendState)
+    /// to be configured for premultiplied alpha.
+    Premultiplied,
+}
+
 /// A font with an associated size, cached on the GPU.
 ///
 /// # Performance

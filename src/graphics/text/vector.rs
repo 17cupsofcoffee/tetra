@@ -7,7 +7,7 @@ use ab_glyph::{Font as AbFont, FontRef, FontVec, PxScale, ScaleFont};
 use crate::error::{Result, TetraError};
 use crate::fs;
 use crate::graphics::text::cache::{FontCache, RasterizedGlyph, Rasterizer};
-use crate::graphics::text::Font;
+use crate::graphics::text::{Font, FontTextureStyle};
 use crate::graphics::Rectangle;
 use crate::math::Vec2;
 use crate::Context;
@@ -15,13 +15,14 @@ use crate::Context;
 pub(crate) struct VectorRasterizer<F> {
     font: Rc<F>,
     scale: PxScale,
+    texture_type: FontTextureStyle,
 }
 
 impl<F> VectorRasterizer<F>
 where
     F: AbFont,
 {
-    pub fn new(font: Rc<F>, size: f32) -> VectorRasterizer<F> {
+    pub fn new(font: Rc<F>, size: f32, texture_type: FontTextureStyle) -> VectorRasterizer<F> {
         let scale_factor = font
             .units_per_em()
             .map(|units_per_em| font.height_unscaled() / units_per_em)
@@ -30,7 +31,11 @@ where
         let px_size = size * scale_factor;
         let scale = PxScale::from(px_size);
 
-        VectorRasterizer { font, scale }
+        VectorRasterizer {
+            font,
+            scale,
+            texture_type,
+        }
     }
 }
 
@@ -49,7 +54,12 @@ where
             let mut data = Vec::new();
 
             outline.draw(|_, _, v| {
-                data.extend_from_slice(&[255, 255, 255, (v * 255.0) as u8]);
+                let coverage = (v * 255.0) as u8;
+
+                data.extend_from_slice(&match self.texture_type {
+                    FontTextureStyle::Normal => [255, 255, 255, coverage],
+                    FontTextureStyle::Premultiplied => [coverage, coverage, coverage, coverage],
+                });
             });
 
             let bounds = outline.px_bounds();
@@ -126,6 +136,7 @@ enum VectorFontData {
 #[derive(Debug, Clone)]
 pub struct VectorFontBuilder {
     data: VectorFontData,
+    texture_style: FontTextureStyle,
 }
 
 impl VectorFontBuilder {
@@ -144,6 +155,7 @@ impl VectorFontBuilder {
 
         Ok(VectorFontBuilder {
             data: VectorFontData::Owned(Rc::new(font)),
+            texture_style: FontTextureStyle::Normal,
         })
     }
 
@@ -157,7 +169,14 @@ impl VectorFontBuilder {
 
         Ok(VectorFontBuilder {
             data: VectorFontData::Slice(Rc::new(font)),
+            texture_style: FontTextureStyle::Normal,
         })
+    }
+
+    /// Sets which style of texture data should be generated for this font.
+    pub fn texture_style(&mut self, texture_style: FontTextureStyle) -> &mut VectorFontBuilder {
+        self.texture_style = texture_style;
+        self
     }
 
     /// Creates a `Font` with the given size.
@@ -168,8 +187,16 @@ impl VectorFontBuilder {
     ///   could not be created.
     pub fn with_size(&self, ctx: &mut Context, size: f32) -> Result<Font> {
         let rasterizer: Box<dyn Rasterizer> = match &self.data {
-            VectorFontData::Owned(f) => Box::new(VectorRasterizer::new(Rc::clone(f), size)),
-            VectorFontData::Slice(f) => Box::new(VectorRasterizer::new(Rc::clone(f), size)),
+            VectorFontData::Owned(f) => Box::new(VectorRasterizer::new(
+                Rc::clone(f),
+                size,
+                self.texture_style,
+            )),
+            VectorFontData::Slice(f) => Box::new(VectorRasterizer::new(
+                Rc::clone(f),
+                size,
+                self.texture_style,
+            )),
         };
 
         let cache = FontCache::new(

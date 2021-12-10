@@ -11,6 +11,7 @@ This project adheres to Semantic Versioning.
 ### Added
 
 * `Texture`, `Canvas` and `ImageData` can now be created with different underlying data formats.
+* Vector fonts can now be generated with premultiplied alpha.
 
 ### Changed
 
