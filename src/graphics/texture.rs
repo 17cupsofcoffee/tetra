@@ -441,20 +441,8 @@ pub enum TextureFormat {
 }
 
 impl TextureFormat {
-    /// Returns the number of channels that the format has.
-    pub fn channels(self) -> usize {
-        match self {
-            TextureFormat::Rgba8 => 4,
-            TextureFormat::R8 => 1,
-            TextureFormat::Rg8 => 2,
-            TextureFormat::Rgba16F => 4,
-        }
-    }
-
     /// Returns the number of bytes per pixel for this format.
-    ///
-    /// TODO: Should this be public?
-    pub(crate) fn stride(self) -> usize {
+    pub fn stride(self) -> usize {
         match self {
             TextureFormat::Rgba8 => 4,
             TextureFormat::R8 => 1,
