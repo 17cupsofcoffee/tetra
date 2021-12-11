@@ -1,4 +1,4 @@
-use crate::graphics::{FilterMode, Texture};
+use crate::graphics::{FilterMode, Rectangle, Texture};
 use crate::platform::GraphicsDevice;
 use crate::{Context, Result};
 
@@ -19,8 +19,6 @@ pub struct ShelfPacker {
 }
 
 impl ShelfPacker {
-    const PADDING: i32 = 1;
-
     /// Creates a new `ShelfPacker`.
     pub fn new(
         device: &mut GraphicsDevice,
@@ -36,7 +34,7 @@ impl ShelfPacker {
                 filter_mode,
             )?,
             shelves: Vec::new(),
-            next_y: Self::PADDING,
+            next_y: 0,
         })
     }
 
@@ -68,7 +66,7 @@ impl ShelfPacker {
         )?;
 
         self.shelves.clear();
-        self.next_y = Self::PADDING;
+        self.next_y = 0;
 
         Ok(())
     }
@@ -82,12 +80,23 @@ impl ShelfPacker {
         data: &[u8],
         width: i32,
         height: i32,
-    ) -> Option<(i32, i32)> {
-        let space = self.find_space(width, height);
+        padding: i32,
+    ) -> Option<Rectangle<i32>> {
+        let padded_width = width + padding * 2;
+        let padded_height = height + padding * 2;
 
-        if let Some((x, y)) = space {
+        let space = self.find_space(padded_width, padded_height);
+
+        if let Some(s) = space {
             device
-                .set_texture_data(&self.texture.data.handle, data, x, y, width, height)
+                .set_texture_data(
+                    &self.texture.data.handle,
+                    data,
+                    s.x + padding,
+                    s.y + padding,
+                    width,
+                    height,
+                )
                 .expect("glyph packer should never write out of bounds");
         }
 
@@ -98,36 +107,41 @@ impl ShelfPacker {
     /// and returns the position.
     ///
     /// If it would not fit into the remaining space, `None` will be returned.
-    fn find_space(&mut self, source_width: i32, source_height: i32) -> Option<(i32, i32)> {
+    fn find_space(&mut self, source_width: i32, source_height: i32) -> Option<Rectangle<i32>> {
         let texture_width = self.texture.width();
         let texture_height = self.texture.height();
 
         self.shelves
             .iter_mut()
             .find(|shelf| {
-                shelf.height >= source_height
-                    && texture_width - shelf.current_x - Self::PADDING >= source_width
+                shelf.height >= source_height && texture_width - shelf.current_x >= source_width
             })
             .map(|shelf| {
                 // Use existing shelf:
                 let position = (shelf.current_x, shelf.start_y);
-                shelf.current_x += source_width + Self::PADDING;
-                position
+                shelf.current_x += source_width;
+
+                Rectangle::new(position.0, position.1, source_width, source_height)
             })
             .or_else(|| {
                 if self.next_y + source_height < texture_height {
                     // Create new shelf:
-                    let position = (Self::PADDING, self.next_y);
+                    let position = (0, self.next_y);
 
                     self.shelves.push(Shelf {
-                        current_x: source_width + Self::PADDING * 2,
+                        current_x: source_width,
                         start_y: self.next_y,
                         height: source_height,
                     });
 
-                    self.next_y += source_height + Self::PADDING;
+                    self.next_y += source_height;
 
-                    Some(position)
+                    Some(Rectangle::new(
+                        position.0,
+                        position.1,
+                        source_width,
+                        source_height,
+                    ))
                 } else {
                     // Won't fit:
                     None
