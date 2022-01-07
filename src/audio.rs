@@ -6,8 +6,8 @@ use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use rodio::source::{Buffered, Empty};
-use rodio::{Decoder, Device as RodioDevice, Sample, Source};
+use rodio::source::Buffered;
+use rodio::{Decoder, OutputStream, OutputStreamHandle, PlayError, Sample, Source};
 
 use crate::error::{Result, TetraError};
 use crate::fs;
@@ -321,21 +321,27 @@ impl AudioControls {
     }
 }
 
+struct AudioStream {
+    _stream: OutputStream,
+    handle: OutputStreamHandle,
+}
+
 pub(crate) struct AudioDevice {
-    device: Option<RodioDevice>,
+    stream: Option<AudioStream>,
     master_volume: Arc<AtomicU32>,
 }
 
 impl AudioDevice {
     pub(crate) fn new() -> AudioDevice {
-        let device = rodio::default_output_device();
+        let stream_and_handle = OutputStream::try_default();
 
-        if let Some(active_device) = &device {
-            rodio::play_raw(active_device, Empty::new());
-        }
+        let stream = match stream_and_handle {
+            Ok((_stream, handle)) => Some(AudioStream { _stream, handle }),
+            Err(_) => None,
+        };
 
         AudioDevice {
-            device,
+            stream,
             master_volume: Arc::new(AtomicU32::new(1.0f32.to_bits())),
         }
     }
@@ -387,10 +393,15 @@ impl AudioDevice {
             speed,
         };
 
-        rodio::play_raw(
-            self.device.as_ref().ok_or(TetraError::NoAudioDevice)?,
-            source.convert_samples(),
-        );
+        let stream = self.stream.as_ref().ok_or(TetraError::NoAudioDevice)?;
+
+        stream
+            .handle
+            .play_raw(source.convert_samples())
+            .map_err(|e| match e {
+                PlayError::DecoderError(e) => TetraError::InvalidSound(e),
+                PlayError::NoDevice => TetraError::NoAudioDevice,
+            })?;
 
         Ok(controls)
     }

@@ -27,12 +27,13 @@ This project adheres to Semantic Versioning.
 * **Breaking:** `BlendMode` and `BlendAlphaMode` have been replaced with `BlendState`, `BlendFactor` and `BlendOperation`, which give you much lower-level control of how colors are blended.
     * As such, `graphics::set_blend_mode` and `graphics::reset_blend_mode` have been renamed to `graphics::set_blend_state` and `graphics::reset_blend_state` respectively.
     * The old presets for blending behaviour are still available as `const` constructors on `BlendState`, so you should be able to migrate without any changes in behaviour.
+* **Breaking:** Updated `vek` to 0.15.
+* **Breaking:** Updated `rodio` to 0.14.
 * `Color` operations are no longer saturating.
     * This is so that HDR colors can be represented without data loss.
 * `KeyModifier`'s behaviour has been reverted to be layout-based rather than position-based.
     * This better matches the expected behaviour for keyboard shortcuts (which is the primary use case for this type), and the behaviour of the underlying platform code.
 * The transparent padding between font glyphs is now incorporated into the rendered quads. This prevents texture filtering/anti-aliasing from cutting off unnaturally at the edges.
-* Updated `vek` to 0.15.
 
 ### Removed
 
