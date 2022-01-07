@@ -43,6 +43,10 @@ This project adheres to Semantic Versioning.
 * **Breaking:** `BmFontBuilder::with_page_rgba` has been removed - use `BmFontBuilder::with_page_data` instead.
 * `Key`s that don't represent a physical position on the keyboard have been removed - you should either switch to the `Key` for the position you want, or switch to `KeyLabel` if you still want to use the system keyboard layout.
 
+### Fixed
+
+* `Shader::from_vertex_string` and `Shader::from_fragment_string` no longer have an unused type parameter. ([@LiquidityC](https://github.com/LiquidityC) in [#301](https://github.com/17cupsofcoffee/tetra/pull/301))
+
 ## [0.6.7] - 2021-11-05
 
 ### Changed

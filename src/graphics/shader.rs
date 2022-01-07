@@ -195,7 +195,7 @@ impl Shader {
     /// underlying graphics API encounters an error.
     /// * [`TetraError::InvalidShader`](crate::TetraError::InvalidShader) will be returned if the
     /// shader could not be compiled.
-    pub fn from_vertex_string<P>(ctx: &mut Context, shader: &str) -> Result<Shader> {
+    pub fn from_vertex_string(ctx: &mut Context, shader: &str) -> Result<Shader> {
         Shader::with_device(&mut ctx.device, shader, DEFAULT_FRAGMENT_SHADER)
     }
 
@@ -209,7 +209,7 @@ impl Shader {
     /// underlying graphics API encounters an error.
     /// * [`TetraError::InvalidShader`](crate::TetraError::InvalidShader) will be returned if the
     /// shader could not be compiled.
-    pub fn from_fragment_string<P>(ctx: &mut Context, shader: &str) -> Result<Shader> {
+    pub fn from_fragment_string(ctx: &mut Context, shader: &str) -> Result<Shader> {
         Shader::with_device(&mut ctx.device, DEFAULT_VERTEX_SHADER, shader)
     }
 
