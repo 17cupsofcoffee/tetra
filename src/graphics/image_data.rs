@@ -180,8 +180,11 @@ impl ImageData {
     ///
     /// This will copy the data into a new buffer - as such, calling this function
     /// can be expensive!
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if you try to read outside of the image's bounds.
     pub fn region(&self, region: Rectangle<i32>) -> ImageData {
-        // TODO: Should this just crop the region if it goes out of bounds?
         assert!(
             region.x >= 0
                 && region.y >= 0
@@ -736,9 +739,19 @@ mod tests {
 
     #[test]
     fn transform_rgba16f() {
-        // TODO: May want to revisit this once decision has been made on saturating color ops
-        let input = f16_vec![0.0; 16];
-        let output = f16_vec![1.0; 16];
+        let input = f16_vec![
+            0.0, 1.0, 2.0, 3.0, // Pixel 1
+            4.0, 5.0, 6.0, 7.0, // Pixel 2
+            8.0, 9.0, 10.0, 11.0, // Pixel 3
+            12.0, 13.0, 14.0, 15.0 // Pixel 4
+        ];
+
+        let output = f16_vec![
+            1.0, 2.0, 3.0, 4.0, // Pixel 1
+            5.0, 6.0, 7.0, 8.0, // Pixel 2
+            9.0, 10.0, 11.0, 12.0, // Pixel 3
+            13.0, 14.0, 15.0, 16.0 // Pixel 4
+        ];
 
         transform_test(
             TextureFormat::Rgba16F,
@@ -815,8 +828,6 @@ mod tests {
 
     #[test]
     fn premultiply_rgba16f() {
-        // TODO: May want to revisit this once decision has been made on saturating color ops
-
         let input = f16_vec![
             0.0, 0.25, 0.75, 0.0, // Pixel 1
             0.0, 0.25, 0.75, 0.25, // Pixel 2

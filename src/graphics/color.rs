@@ -7,13 +7,14 @@ use crate::math::Vec4;
 
 /// An RGBA color.
 ///
-/// The components are stored as [`f32`] values in the range of `0.0` to `1.0`.
+/// The components are stored as [`f32`] values, which will generally be
+/// in the range of `0.0` to `1.0`.
+///
 /// If your data is made up of bytes or hex values, this type provides
 /// constructors that will carry out the conversion for you.
 ///
 /// The [`std` arithmetic traits](std::ops) are implemented for this type, which allows you to
-/// add/subtract/multiply/divide colors. These are implemented as saturating
-/// operations (i.e. the values will always remain between `0.0` and `1.0`).
+/// add/subtract/multiply/divide colors.
 ///
 /// # Serde
 ///
@@ -141,6 +142,16 @@ impl Color {
         Self { a, ..self }
     }
 
+    /// Returns the color with all components clamped between 0.0 and 1.0.
+    pub fn clamp(self) -> Self {
+        Color {
+            r: clamp_f32(self.r),
+            g: clamp_f32(self.g),
+            b: clamp_f32(self.b),
+            a: clamp_f32(self.a),
+        }
+    }
+
     /// Returns the color with the RGB components multiplied by the alpha component.
     ///
     /// This can be useful when working with
@@ -176,6 +187,10 @@ impl Color {
     pub const BLUE: Color = Color::rgb(0.0, 0.0, 1.0);
 }
 
+fn clamp_f32(val: f32) -> f32 {
+    f32::min(f32::max(0.0, val), 1.0)
+}
+
 impl From<Color> for Vec4<f32> {
     fn from(color: Color) -> Vec4<f32> {
         Vec4::new(color.r, color.g, color.b, color.a)
@@ -202,11 +217,13 @@ impl From<[f32; 4]> for Color {
 
 impl From<Color> for [u8; 4] {
     fn from(color: Color) -> Self {
+        let clamped = color.clamp();
+
         [
-            (color.r * 255.0) as u8,
-            (color.g * 255.0) as u8,
-            (color.b * 255.0) as u8,
-            (color.a * 255.0) as u8,
+            (clamped.r * 255.0) as u8,
+            (clamped.g * 255.0) as u8,
+            (clamped.b * 255.0) as u8,
+            (clamped.a * 255.0) as u8,
         ]
     }
 }
@@ -221,10 +238,10 @@ impl Add for Color {
     type Output = Color;
 
     fn add(mut self, rhs: Self) -> Self::Output {
-        self.r = clamp(self.r + rhs.r);
-        self.g = clamp(self.g + rhs.g);
-        self.b = clamp(self.b + rhs.b);
-        self.a = clamp(self.a + rhs.a);
+        self.r += rhs.r;
+        self.g += rhs.g;
+        self.b += rhs.b;
+        self.a += rhs.a;
 
         self
     }
@@ -234,10 +251,10 @@ impl Add<f32> for Color {
     type Output = Color;
 
     fn add(mut self, rhs: f32) -> Self::Output {
-        self.r = clamp(self.r + rhs);
-        self.g = clamp(self.g + rhs);
-        self.b = clamp(self.b + rhs);
-        self.a = clamp(self.a + rhs);
+        self.r += rhs;
+        self.g += rhs;
+        self.b += rhs;
+        self.a += rhs;
 
         self
     }
@@ -245,19 +262,19 @@ impl Add<f32> for Color {
 
 impl AddAssign for Color {
     fn add_assign(&mut self, rhs: Self) {
-        self.r = clamp(self.r + rhs.r);
-        self.g = clamp(self.g + rhs.g);
-        self.b = clamp(self.b + rhs.b);
-        self.a = clamp(self.a + rhs.a);
+        self.r += rhs.r;
+        self.g += rhs.g;
+        self.b += rhs.b;
+        self.a += rhs.a;
     }
 }
 
 impl AddAssign<f32> for Color {
     fn add_assign(&mut self, rhs: f32) {
-        self.r = clamp(self.r + rhs);
-        self.g = clamp(self.g + rhs);
-        self.b = clamp(self.b + rhs);
-        self.a = clamp(self.a + rhs);
+        self.r += rhs;
+        self.g += rhs;
+        self.b += rhs;
+        self.a += rhs;
     }
 }
 
@@ -265,10 +282,10 @@ impl Sub for Color {
     type Output = Color;
 
     fn sub(mut self, rhs: Self) -> Self::Output {
-        self.r = clamp(self.r - rhs.r);
-        self.g = clamp(self.g - rhs.g);
-        self.b = clamp(self.b - rhs.b);
-        self.a = clamp(self.a - rhs.a);
+        self.r -= rhs.r;
+        self.g -= rhs.g;
+        self.b -= rhs.b;
+        self.a -= rhs.a;
 
         self
     }
@@ -278,10 +295,10 @@ impl Sub<f32> for Color {
     type Output = Color;
 
     fn sub(mut self, rhs: f32) -> Self::Output {
-        self.r = clamp(self.r - rhs);
-        self.g = clamp(self.g - rhs);
-        self.b = clamp(self.b - rhs);
-        self.a = clamp(self.a - rhs);
+        self.r -= rhs;
+        self.g -= rhs;
+        self.b -= rhs;
+        self.a -= rhs;
 
         self
     }
@@ -289,19 +306,19 @@ impl Sub<f32> for Color {
 
 impl SubAssign for Color {
     fn sub_assign(&mut self, rhs: Self) {
-        self.r = clamp(self.r - rhs.r);
-        self.g = clamp(self.g - rhs.g);
-        self.b = clamp(self.b - rhs.b);
-        self.a = clamp(self.a - rhs.a);
+        self.r -= rhs.r;
+        self.g -= rhs.g;
+        self.b -= rhs.b;
+        self.a -= rhs.a;
     }
 }
 
 impl SubAssign<f32> for Color {
     fn sub_assign(&mut self, rhs: f32) {
-        self.r = clamp(self.r - rhs);
-        self.g = clamp(self.g - rhs);
-        self.b = clamp(self.b - rhs);
-        self.a = clamp(self.a - rhs);
+        self.r -= rhs;
+        self.g -= rhs;
+        self.b -= rhs;
+        self.a -= rhs;
     }
 }
 
@@ -309,10 +326,10 @@ impl Mul for Color {
     type Output = Color;
 
     fn mul(mut self, rhs: Self) -> Self::Output {
-        self.r = clamp(self.r * rhs.r);
-        self.g = clamp(self.g * rhs.g);
-        self.b = clamp(self.b * rhs.b);
-        self.a = clamp(self.a * rhs.a);
+        self.r *= rhs.r;
+        self.g *= rhs.g;
+        self.b *= rhs.b;
+        self.a *= rhs.a;
 
         self
     }
@@ -322,10 +339,10 @@ impl Mul<f32> for Color {
     type Output = Color;
 
     fn mul(mut self, rhs: f32) -> Self::Output {
-        self.r = clamp(self.r * rhs);
-        self.g = clamp(self.g * rhs);
-        self.b = clamp(self.b * rhs);
-        self.a = clamp(self.a * rhs);
+        self.r *= rhs;
+        self.g *= rhs;
+        self.b *= rhs;
+        self.a *= rhs;
 
         self
     }
@@ -333,19 +350,19 @@ impl Mul<f32> for Color {
 
 impl MulAssign for Color {
     fn mul_assign(&mut self, rhs: Self) {
-        self.r = clamp(self.r * rhs.r);
-        self.g = clamp(self.g * rhs.g);
-        self.b = clamp(self.b * rhs.b);
-        self.a = clamp(self.a * rhs.a);
+        self.r *= rhs.r;
+        self.g *= rhs.g;
+        self.b *= rhs.b;
+        self.a *= rhs.a;
     }
 }
 
 impl MulAssign<f32> for Color {
     fn mul_assign(&mut self, rhs: f32) {
-        self.r = clamp(self.r * rhs);
-        self.g = clamp(self.g * rhs);
-        self.b = clamp(self.b * rhs);
-        self.a = clamp(self.a * rhs);
+        self.r *= rhs;
+        self.g *= rhs;
+        self.b *= rhs;
+        self.a *= rhs;
     }
 }
 
@@ -353,10 +370,10 @@ impl Div for Color {
     type Output = Color;
 
     fn div(mut self, rhs: Self) -> Self::Output {
-        self.r = clamp(self.r / rhs.r);
-        self.g = clamp(self.g / rhs.g);
-        self.b = clamp(self.b / rhs.b);
-        self.a = clamp(self.a / rhs.a);
+        self.r /= rhs.r;
+        self.g /= rhs.g;
+        self.b /= rhs.b;
+        self.a /= rhs.a;
 
         self
     }
@@ -366,10 +383,10 @@ impl Div<f32> for Color {
     type Output = Color;
 
     fn div(mut self, rhs: f32) -> Self::Output {
-        self.r = clamp(self.r / rhs);
-        self.g = clamp(self.g / rhs);
-        self.b = clamp(self.b / rhs);
-        self.a = clamp(self.a / rhs);
+        self.r /= rhs;
+        self.g /= rhs;
+        self.b /= rhs;
+        self.a /= rhs;
 
         self
     }
@@ -377,24 +394,20 @@ impl Div<f32> for Color {
 
 impl DivAssign for Color {
     fn div_assign(&mut self, rhs: Self) {
-        self.r = clamp(self.r / rhs.r);
-        self.g = clamp(self.g / rhs.g);
-        self.b = clamp(self.b / rhs.b);
-        self.a = clamp(self.a / rhs.a);
+        self.r /= rhs.r;
+        self.g /= rhs.g;
+        self.b /= rhs.b;
+        self.a /= rhs.a;
     }
 }
 
 impl DivAssign<f32> for Color {
     fn div_assign(&mut self, rhs: f32) {
-        self.r = clamp(self.r / rhs);
-        self.g = clamp(self.g / rhs);
-        self.b = clamp(self.b / rhs);
-        self.a = clamp(self.a / rhs);
+        self.r = self.r / rhs;
+        self.g = self.g / rhs;
+        self.b = self.b / rhs;
+        self.a = self.a / rhs;
     }
-}
-
-fn clamp(val: f32) -> f32 {
-    f32::min(f32::max(0.0, val), 1.0)
 }
 
 #[cfg(test)]
