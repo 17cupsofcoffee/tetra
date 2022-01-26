@@ -28,7 +28,8 @@ This project adheres to Semantic Versioning.
     * As such, `graphics::set_blend_mode` and `graphics::reset_blend_mode` have been renamed to `graphics::set_blend_state` and `graphics::reset_blend_state` respectively.
     * The old presets for blending behaviour are still available as `const` constructors on `BlendState`, so you should be able to migrate without any changes in behaviour.
 * **Breaking:** Updated `vek` to 0.15.
-* **Breaking:** Updated `rodio` to 0.14.
+* **Breaking:** Updated `rodio` to 0.15.
+* Updated `hashbrown` to 0.12.
 * `Color` operations are no longer saturating.
     * This is so that HDR colors can be represented without data loss.
 * `KeyModifier`'s behaviour has been reverted to be layout-based rather than position-based.
