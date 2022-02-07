@@ -25,8 +25,8 @@ type VertexArrayId = <GlowContext as HasContext>::VertexArray;
 type UniformLocation = <GlowContext as HasContext>::UniformLocation;
 
 #[derive(Debug)]
-struct GraphicsState {
-    gl: GlowContext,
+pub(crate) struct GraphicsState {
+    pub(crate) gl: GlowContext,
 
     current_vertex_buffer: Cell<Option<BufferId>>,
     current_index_buffer: Cell<Option<BufferId>>,
@@ -43,7 +43,7 @@ struct GraphicsState {
 }
 
 pub struct GraphicsDevice {
-    state: Rc<GraphicsState>,
+    pub(crate) state: Rc<GraphicsState>,
 }
 
 impl GraphicsDevice {

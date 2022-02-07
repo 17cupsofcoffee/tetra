@@ -11,6 +11,9 @@ use crate::{Result, State, TetraError};
 #[cfg(feature = "audio")]
 use crate::audio::AudioDevice;
 
+#[cfg(feature = "experimental_imgui")]
+use crate::experimental_imgui::ImGuiContext;
+
 /// A struct containing all of the 'global' state within the framework.
 pub struct Context {
     pub(crate) window: Window,
@@ -20,6 +23,8 @@ pub struct Context {
     pub(crate) graphics: GraphicsContext,
     pub(crate) input: InputContext,
     pub(crate) time: TimeContext,
+    #[cfg(feature = "experimental_imgui")]
+    pub(crate) imgui: ImGuiContext,
 
     pub(crate) running: bool,
     pub(crate) quit_on_escape: bool,
@@ -46,6 +51,8 @@ impl Context {
         let graphics = GraphicsContext::new(&mut device, window_width, window_height)?;
         let input = InputContext::new();
         let time = TimeContext::new(settings.timestep);
+        #[cfg(feature = "experimental_imgui")]
+        let imgui = crate::experimental_imgui::ImGuiContext::new();
 
         Ok(Context {
             window,
@@ -56,6 +63,8 @@ impl Context {
             graphics,
             input,
             time,
+            #[cfg(feature = "experimental_imgui")]
+            imgui,
 
             running: false,
             quit_on_escape: settings.quit_on_escape,
@@ -168,6 +177,13 @@ impl Context {
             }
 
             state.draw(self)?;
+
+            #[cfg(feature = "experimental_imgui")] {
+                // #todo(pku-nekomaru) error handling of these calls
+                let ui = self.imgui.frame_begin(&self.window, &self.device.state.gl);
+                state.draw_imgui(ui);
+                self.imgui.frame_end(&self.device.state.gl);
+            }
 
             graphics::present(self);
 

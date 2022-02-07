@@ -34,9 +34,9 @@ struct SdlController {
 
 pub struct Window {
     sdl: Sdl,
-    sdl_window: SdlWindow,
+    pub(crate) sdl_window: SdlWindow,
 
-    event_pump: EventPump,
+    pub(crate) event_pump: EventPump,
     video_sys: VideoSubsystem,
     controller_sys: GameControllerSubsystem,
     _joystick_sys: JoystickSubsystem,
@@ -61,7 +61,13 @@ impl Window {
 
         let gl_attr = video_sys.gl_attr();
 
-        gl_attr.set_context_profile(GLProfile::Core);
+        gl_attr.set_context_profile(
+            if cfg!(feature = "experimental_imgui") {
+                GLProfile::Compatibility
+            }
+            else {
+                GLProfile::Core
+            });
         gl_attr.set_context_version(3, 2);
         gl_attr.set_red_size(8);
         gl_attr.set_green_size(8);
@@ -490,6 +496,8 @@ where
     E: From<TetraError>,
 {
     while let Some(event) = ctx.window.event_pump.poll_event() {
+        #[cfg(feature = "experimental_imgui")]
+        if ctx.imgui.handle_event(&event) { continue; }
         match event {
             SdlEvent::Quit { .. } => ctx.running = false, // TODO: Add a way to override this
 
