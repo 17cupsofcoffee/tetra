@@ -25,8 +25,8 @@ type VertexArrayId = <GlowContext as HasContext>::VertexArray;
 type UniformLocation = <GlowContext as HasContext>::UniformLocation;
 
 #[derive(Debug)]
-pub(crate) struct GraphicsState {
-    pub(crate) gl: GlowContext,
+struct GraphicsState {
+    gl: GlowContext,
 
     current_vertex_buffer: Cell<Option<BufferId>>,
     current_index_buffer: Cell<Option<BufferId>>,
@@ -43,7 +43,7 @@ pub(crate) struct GraphicsState {
 }
 
 pub struct GraphicsDevice {
-    pub(crate) state: Rc<GraphicsState>,
+    state: Rc<GraphicsState>,
 }
 
 impl GraphicsDevice {
@@ -112,6 +112,10 @@ impl GraphicsDevice {
                     .get_parameter_string(glow::SHADING_LANGUAGE_VERSION),
             }
         }
+    }
+
+    pub(crate) fn get_gl_context(&self) -> &GlowContext {
+        &self.state.gl
     }
 
     pub fn clear(&mut self, color: Color) {

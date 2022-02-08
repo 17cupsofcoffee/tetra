@@ -50,14 +50,11 @@ impl ImGuiContext {
 
     pub fn draw<F, E>(
         &mut self,
-        window: &crate::platform::Window,
-        gl: &glow::Context,
+        window      : &sdl2::video::Window,
+        event_pump  : &sdl2::EventPump,
+        gl          : &glow::Context,
         func: F) where F: FnOnce(&mut imgui::Ui) -> Result<(), E> {
-        self.platform.prepare_frame(
-            & mut self.imgui,
-            & window.sdl_window,
-            & window.event_pump);
-        
+        self.platform.prepare_frame(& mut self.imgui, window, event_pump);
         if self.first_frame {
             self.first_frame = false;
             let mut texture_map = imgui_glow_renderer::SimpleTextureMap::default();

@@ -180,8 +180,9 @@ impl Context {
 
             #[cfg(feature = "experimental_imgui")]
             self.imgui.draw(
-                &self.window,
-                &self.device.state.gl,
+                &self.window.sdl_window,
+                &self.window.event_pump,
+                self.device.get_gl_context(),
                 |ui| state.draw_imgui(ui));
 
             graphics::present(self);
