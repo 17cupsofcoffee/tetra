@@ -36,6 +36,7 @@ pub trait State<E = TetraError> {
         Ok(())
     }
 
+    /// Called when it is time for making imgui calls.
     #[cfg(feature = "experimental_imgui")]
     fn draw_imgui(&mut self, ui: &mut imgui::Ui) -> Result<(), E> {
         Ok(())

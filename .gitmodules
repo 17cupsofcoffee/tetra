@@ -1,3 +1,0 @@
-[submodule "packages/imgui-rs"]
-    path = packages/imgui-rs
-    url = https://github.com/imgui-rs/imgui-rs

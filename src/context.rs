@@ -178,12 +178,11 @@ impl Context {
 
             state.draw(self)?;
 
-            #[cfg(feature = "experimental_imgui")] {
-                // #todo(pku-nekomaru) error handling of these calls
-                let ui = self.imgui.frame_begin(&self.window, &self.device.state.gl);
-                state.draw_imgui(ui);
-                self.imgui.frame_end(&self.device.state.gl);
-            }
+            #[cfg(feature = "experimental_imgui")]
+            self.imgui.draw(
+                &self.window,
+                &self.device.state.gl,
+                |ui| state.draw_imgui(ui));
 
             graphics::present(self);
 

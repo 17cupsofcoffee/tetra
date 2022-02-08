@@ -48,7 +48,11 @@ impl ImGuiContext {
         }
     }
 
-    pub fn frame_begin(&mut self, window: &crate::platform::Window, gl: &glow::Context) -> &mut imgui::Ui {
+    pub fn draw<F, E>(
+        &mut self,
+        window: &crate::platform::Window,
+        gl: &glow::Context,
+        func: F) where F: FnOnce(&mut imgui::Ui) -> Result<(), E> {
         self.platform.prepare_frame(
             & mut self.imgui,
             & window.sdl_window,
@@ -63,16 +67,13 @@ impl ImGuiContext {
                     & mut self.imgui,
                     & mut texture_map, true).unwrap());
         }
-        self.imgui.frame()
-    }
-
-    pub fn frame_end(&mut self, gl: &glow::Context) -> Result<(), imgui_glow_renderer::RenderError> {
-        let draw_data = self.imgui.render();
+        let mut ui = self.imgui.frame();
+        func(&mut ui).ok();
+        let draw_data = ui.render();
         self.imgui_renderer.as_mut().unwrap().render(
             gl,
             & self.imgui_renderer_texture_map,
             draw_data
         ).unwrap();
-        Ok(())
     }
 }
