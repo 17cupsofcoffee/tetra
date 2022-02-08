@@ -114,6 +114,10 @@ impl GraphicsDevice {
         }
     }
 
+    pub(crate) fn get_gl_context(&self) -> &GlowContext {
+        &self.state.gl
+    }
+
     pub fn clear(&mut self, color: Color) {
         unsafe {
             self.state

@@ -73,7 +73,14 @@ pub mod math;
 mod platform;
 pub mod time;
 pub mod window;
+#[cfg(feature = "experimental_imgui")]
+mod experimental_imgui;
+#[cfg(feature = "experimental_imgui")]
+mod experimental_imgui_sdl2_support;
 
 pub use crate::context::{Context, ContextBuilder};
 pub use crate::error::{Result, TetraError};
 pub use crate::lifecycle::{Event, State};
+
+#[cfg(feature = "experimental_imgui")]
+pub use imgui;

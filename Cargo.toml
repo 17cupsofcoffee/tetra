@@ -14,7 +14,7 @@ categories = ["game-engines"]
 [dependencies]
 sdl2 = "0.35.0"
 rodio = { version = "0.15.0", optional = true, default-features = false }
-glow = "0.11.0"
+glow = "0.10.0"
 image = { version = "0.23.12", default-features = false }
 vek = { version = "0.15.4", default-features = false }
 hashbrown = "0.12.0"
@@ -25,6 +25,8 @@ bytemuck = "1.5.0"
 num-traits = "0.2.14"
 lyon_tessellation = "0.17.4"
 half = { version = "1.8", features = ["bytemuck"] }
+imgui = { version = "0.8.2", optional = true }
+imgui-glow-renderer = { version = "0.8.2", optional = true }
 
 [dev-dependencies]
 rand = "0.8.0"
@@ -77,3 +79,5 @@ sdl2_bundled = ["sdl2/bundled"]
 
 # Links SDL2 statically (see https://hg.libsdl.org/SDL/file/default/docs/README-dynapi.md).
 sdl2_static_link = ["sdl2/static-link"]
+
+experimental_imgui = ["imgui", "imgui-glow-renderer"]
