@@ -38,7 +38,7 @@ For more information, see [this blog post](https://www.seventeencups.net/posts/t
 To add Tetra to your project, add the following line to your `Cargo.toml` file:
 
 ```toml
-tetra = "0.7.0-alpha1"
+tetra = "0.7"
 ```
 
 You will also need to install the SDL2 native libraries - full details are provided in the [documentation](https://tetra.seventeencups.net/installation).
