@@ -1,5 +1,6 @@
 //! Functions and types relating to animations.
 
+use std::ops::Not;
 use std::time::Duration;
 
 use crate::graphics::texture::Texture;
@@ -85,7 +86,7 @@ impl Animation {
     pub fn advance_by(&mut self, duration: Duration) {
         self.timer += duration;
 
-        let frames_remaining = self.current_frame < self.frames.len() - 1;
+        let frames_remaining = self.has_frames_remaining();
 
         if frames_remaining || self.repeating {
             while self.timer >= self.frame_length {
@@ -198,5 +199,17 @@ impl Animation {
     /// skip frames.
     pub fn set_current_frame_time(&mut self, duration: Duration) {
         self.timer = duration;
+    }
+
+    /// Returns true if this animation will no longer advance.
+    ///
+    /// Will always be false for repeating animations.
+    pub fn is_finished(&self) -> bool {
+        self.repeating.not() && self.has_frames_remaining().not()
+    }
+
+    /// Returns true if there are any frames remaining in the current cycle.
+    pub fn has_frames_remaining(&self) -> bool {
+        self.current_frame < self.frames.len() - 1
     }
 }
