@@ -1,5 +1,6 @@
 //! Functions and types relating to animations.
 
+use std::ops::Not;
 use std::time::Duration;
 
 use crate::graphics::texture::Texture;
@@ -198,5 +199,15 @@ impl Animation {
     /// skip frames.
     pub fn set_current_frame_time(&mut self, duration: Duration) {
         self.timer = duration;
+    }
+
+    /// Returns true if this animation will no longer advance.
+    pub fn is_finished(&self) -> bool {
+        self.repeating.not() && self.frames_remaining() == 0
+    }
+
+    /// How many frames are remaining in the current cycle.
+    fn frames_remaining(&self) -> usize {
+        self.current_frame < self.frames.len() - 1
     }
 }
