@@ -23,6 +23,7 @@ pub struct Context {
 
     pub(crate) running: bool,
     pub(crate) quit_on_escape: bool,
+    pub(crate) fps_limit: bool,
 }
 
 impl Context {
@@ -59,6 +60,8 @@ impl Context {
 
             running: false,
             quit_on_escape: settings.quit_on_escape,
+
+            fps_limit: settings.fps_limit
         })
     }
 
@@ -173,7 +176,9 @@ impl Context {
 
             // This provides a sensible FPS limit when running without vsync, and
             // avoids CPU usage skyrocketing on some systems.
-            thread::sleep(Duration::from_millis(1));
+            if self.fps_limit {
+                thread::sleep(Duration::from_millis(1));
+            }
         }
 
         Ok(())
@@ -217,6 +222,7 @@ pub struct ContextBuilder {
     pub(crate) grab_mouse: bool,
     pub(crate) relative_mouse_mode: bool,
     pub(crate) quit_on_escape: bool,
+    pub(crate) fps_limit: bool,
     pub(crate) debug_info: bool,
 }
 
@@ -265,6 +271,18 @@ impl ContextBuilder {
     /// Defaults to `true`.
     pub fn vsync(&mut self, vsync: bool) -> &mut ContextBuilder {
         self.vsync = vsync;
+        self
+    }
+
+    /// Enables or disables the 1000 FPS limit.
+    ///
+    /// The framework will sleep for 1 millisecond on the main thread if this flag is set to true
+    /// to provide a sensible FPS limit when running without vsync, and to avoid CPU usage
+    /// skyrocketing on some systems.
+    ///
+    /// Defaults to `true`.
+    pub fn fps_limit(&mut self, fps_limit: bool) -> &mut ContextBuilder {
+        self.fps_limit = fps_limit;
         self
     }
 
@@ -470,6 +488,7 @@ impl Default for ContextBuilder {
             grab_mouse: false,
             relative_mouse_mode: false,
             quit_on_escape: false,
+            fps_limit: true,
             debug_info: false,
         }
     }
