@@ -1,6 +1,5 @@
 //! Functions and types relating to animations.
 
-use std::ops::Not;
 use std::time::Duration;
 
 use crate::graphics::texture::Texture;
@@ -205,7 +204,7 @@ impl Animation {
     ///
     /// Will always be false for repeating animations.
     pub fn is_finished(&self) -> bool {
-        self.repeating.not() && self.has_frames_remaining().not()
+        !self.repeating && !self.has_frames_remaining()
     }
 
     /// Returns true if there are any frames remaining in the current cycle.
