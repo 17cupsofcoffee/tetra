@@ -11,7 +11,7 @@ This project adheres to Semantic Versioning.
 ### Added
 
 * `Animation` now has `is_finished` and `has_frames_remaining` utility methods. ([@vrmiguel](https://github.com/vrmiguel) in [#315](https://github.com/17cupsofcoffee/tetra/pull/315))
-* `ContextBuilder` now has a `fps_limit` option, while allows users to disable the built-in FPS capping behaviour. ([@fililip](https://github.com/fililip) in [#321](https://github.com/17cupsofcoffee/tetra/pull/321))
+* `ContextBuilder` now has a `fps_limit` option, which allows users to disable the built-in FPS capping behaviour. ([@fililip](https://github.com/fililip) in [#321](https://github.com/17cupsofcoffee/tetra/pull/321))
 
 ## [0.7.0] - 2022-03-23
 
