@@ -1,11 +1,11 @@
 //! Functions and types relating to screen scaling.
 
+use crate::Context;
 use crate::error::Result;
 use crate::graphics::{self, Canvas, DrawParams, Rectangle};
 use crate::input;
 use crate::math::Vec2;
 use crate::window;
-use crate::Context;
 
 /// A wrapper for a [`Canvas`] that handles scaling the image to fit the screen.
 ///
@@ -19,6 +19,8 @@ pub struct ScreenScaler {
     canvas: Canvas,
     mode: ScalingMode,
     screen_rect: Rectangle,
+    inner_width: i32,
+    inner_height: i32,
     outer_width: i32,
     outer_height: i32,
 }
@@ -42,6 +44,8 @@ impl ScreenScaler {
             canvas,
             mode,
             screen_rect,
+            inner_width,
+            inner_height,
             outer_width,
             outer_height,
         })
@@ -100,6 +104,29 @@ impl ScreenScaler {
                 outer_height,
             );
         }
+    }
+
+    /// Returns the scaler's outer size  (i.e. the size of the box that the screen will be scaled to
+    /// fit within).  
+    /// The format is (width, height).
+    pub fn outer_size(&self) -> (i32, i32) {
+        (self.outer_width, self.outer_height)
+    }
+
+    /// Returns the scaler's inner size (i.e. the logical screen size).  
+    /// The format is (width, height).
+    pub fn inner_size(&self) -> (i32, i32) {
+        (self.inner_width, self.inner_height)
+    }
+
+    /// Returns the optimal scale factor for the current `ScalingMode` and configured sizes.  
+    /// This can be used for simple use cases where scaling by [canvas](Self::canvas) is not
+    /// feasible (e.g. 3rd party UI libraries).
+    pub fn scale_factor(&self) -> f32 {
+        f32::min(
+            self.screen_rect.width as f32 / self.inner_width as f32,
+            self.screen_rect.height as f32 / self.inner_height as f32,
+        )
     }
 
     /// Returns a reference to the canvas that is being scaled.
