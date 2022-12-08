@@ -23,7 +23,7 @@ ab_glyph = { version = "0.2.2", optional = true }
 xi-unicode = "0.3.0"
 bytemuck = "1.5.0"
 num-traits = "0.2.14"
-lyon_tessellation = "0.17.4"
+lyon_tessellation = "1.0.7"
 half = { version = "1.8", features = ["bytemuck"] }
 
 [dev-dependencies]
