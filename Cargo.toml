@@ -24,7 +24,7 @@ xi-unicode = "0.3.0"
 bytemuck = "1.5.0"
 num-traits = "0.2.14"
 lyon_tessellation = "0.17.4"
-half = { version = "1.8", features = ["bytemuck"] }
+half = { version = "2.2", features = ["bytemuck"] }
 
 [dev-dependencies]
 rand = "0.8.0"
