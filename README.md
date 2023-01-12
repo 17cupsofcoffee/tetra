@@ -1,6 +1,6 @@
 # Tetra
 
-[![Build Status](https://img.shields.io/github/workflow/status/17cupsofcoffee/tetra/CI%20Build/main)](https://github.com/17cupsofcoffee/tetra/actions?query=branch%3Amain)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/17cupsofcoffee/tetra/ci.yml?branch=main)](https://github.com/17cupsofcoffee/tetra/actions?query=branch%3Amain)
 [![Crates.io](https://img.shields.io/crates/v/tetra.svg)](https://crates.io/crates/tetra)
 [![Documentation](https://docs.rs/tetra/badge.svg)](https://docs.rs/tetra)
 [![License](https://img.shields.io/crates/l/tetra.svg)](LICENSE)
