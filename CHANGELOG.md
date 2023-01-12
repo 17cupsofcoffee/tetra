@@ -22,6 +22,7 @@ This project adheres to Semantic Versioning.
 * **Breaking:** Updated `lyon_tessellation` to 1.0.
 * Updated `half` to 2.1.
 * Updated `hashbrown` to 0.13.
+* Various types now implement `Eq` as well as `PartialEq`.
 
 ## [0.7.0] - 2022-03-23
 

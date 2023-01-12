@@ -1,11 +1,11 @@
 //! Functions and types relating to screen scaling.
 
-use crate::Context;
 use crate::error::Result;
 use crate::graphics::{self, Canvas, DrawParams, Rectangle};
 use crate::input;
 use crate::math::Vec2;
 use crate::window;
+use crate::Context;
 
 /// A wrapper for a [`Canvas`] that handles scaling the image to fit the screen.
 ///
@@ -237,7 +237,7 @@ fn unproject_impl(screen_pos: f32, rect_pos: f32, rect_size: f32, real_size: f32
 
 /// Algorithms that can be used to scale the game's screen.
 #[non_exhaustive]
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ScalingMode {
     /// The game will always be displayed at its native resolution, with no scaling applied.
     /// If the window is bigger than the native resolution, letterboxing will be applied.

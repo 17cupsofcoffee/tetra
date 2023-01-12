@@ -387,7 +387,7 @@ impl BmFontAttributes<'_> {
 
 fn parse_tag(input: &str) -> (&str, &str) {
     let trimmed = input.trim_start();
-    let tag_end = trimmed.find(' ').unwrap_or_else(|| trimmed.len());
+    let tag_end = trimmed.find(' ').unwrap_or(trimmed.len());
     trimmed.split_at(tag_end)
 }
 
@@ -419,7 +419,7 @@ fn parse_attributes(input: &str) -> Result<BmFontAttributes<'_>> {
         } else {
             // Find the end of the value by searching for whitespace.
             // If we don't find it, this must be the end of the line.
-            let value_end = remaining.find(' ').unwrap_or_else(|| remaining.len());
+            let value_end = remaining.find(' ').unwrap_or(remaining.len());
             let (value, next) = remaining.split_at(value_end);
 
             attributes.insert(key, value);

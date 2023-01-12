@@ -46,7 +46,7 @@ use crate::Context;
 ///
 /// The [`audio`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/audio.rs)
 /// example demonstrates how to play several different kinds of sound.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Sound {
     pub(crate) data: Arc<[u8]>,
 }
@@ -231,7 +231,7 @@ impl SoundInstance {
 }
 
 /// The states that playback of a [`SoundInstance`] can be in.
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum SoundState {
     /// The sound is currently playing.
     ///
