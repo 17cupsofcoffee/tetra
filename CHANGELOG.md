@@ -16,6 +16,13 @@ This project adheres to Semantic Versioning.
 * `ScreenScaler` now has `scale_factor` and sizing utility methods. ([@timerertim](https://github.com/timerertim)
   in [#327](https://github.com/17cupsofcoffee/tetra/pull/327))
 
+### Changed
+
+* **Breaking:** Updated `rodio` to 0.16.
+* **Breaking:** Updated `lyon_tessellation` to 1.0.
+* Updated `half` to 2.1.
+* Updated `hashbrown` to 0.13.
+
 ## [0.7.0] - 2022-03-23
 
 ### Added

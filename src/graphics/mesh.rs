@@ -12,9 +12,8 @@ pub use lyon_tessellation::path::builder::BorderRadii;
 use std::rc::Rc;
 
 use bytemuck::{Pod, Zeroable};
-use lyon_tessellation::geom::euclid::{Point2D, Size2D};
-use lyon_tessellation::math::{Angle, Point, Rect, Vector};
-use lyon_tessellation::path::builder::{Build, PathBuilder};
+use lyon_tessellation::geom::euclid::Point2D;
+use lyon_tessellation::math::{Angle, Box2D, Point, Vector};
 use lyon_tessellation::path::{Polygon, Winding};
 use lyon_tessellation::{
     BuffersBuilder, FillOptions, FillTessellator, FillVertex, FillVertexConstructor, StrokeOptions,
@@ -629,10 +628,10 @@ impl From<VertexBuffer> for Mesh {
     }
 }
 
-fn to_lyon_rect(rectangle: Rectangle) -> Rect {
-    Rect::new(
+fn to_box2d(rectangle: Rectangle) -> Box2D {
+    Box2D::new(
         Point2D::new(rectangle.x, rectangle.y),
-        Size2D::new(rectangle.width, rectangle.height),
+        Point2D::new(rectangle.right(), rectangle.bottom()),
     )
 }
 
@@ -704,7 +703,7 @@ impl GeometryBuilder {
                 let options = FillOptions::default();
                 let mut tessellator = FillTessellator::new();
                 tessellator
-                    .tessellate_rectangle(&to_lyon_rect(rectangle), &options, &mut builder)
+                    .tessellate_rectangle(&to_box2d(rectangle), &options, &mut builder)
                     .map_err(TetraError::TessellationError)?;
             }
 
@@ -712,7 +711,7 @@ impl GeometryBuilder {
                 let options = StrokeOptions::default().with_line_width(width);
                 let mut tessellator = StrokeTessellator::new();
                 tessellator
-                    .tessellate_rectangle(&to_lyon_rect(rectangle), &options, &mut builder)
+                    .tessellate_rectangle(&to_box2d(rectangle), &options, &mut builder)
                     .map_err(TetraError::TessellationError)?;
             }
         }
@@ -739,7 +738,7 @@ impl GeometryBuilder {
                 let options = FillOptions::default();
                 let mut tessellator = FillTessellator::new();
                 let mut builder = tessellator.builder(&options, &mut builder);
-                builder.add_rounded_rectangle(&to_lyon_rect(rectangle), &radii, Winding::Positive);
+                builder.add_rounded_rectangle(&to_box2d(rectangle), &radii, Winding::Positive);
                 builder.build().map_err(TetraError::TessellationError)?;
             }
 
@@ -747,7 +746,7 @@ impl GeometryBuilder {
                 let options = StrokeOptions::default().with_line_width(width);
                 let mut tessellator = StrokeTessellator::new();
                 let mut builder = tessellator.builder(&options, &mut builder);
-                builder.add_rounded_rectangle(&to_lyon_rect(rectangle), &radii, Winding::Positive);
+                builder.add_rounded_rectangle(&to_box2d(rectangle), &radii, Winding::Positive);
                 builder.build().map_err(TetraError::TessellationError)?;
             }
         }

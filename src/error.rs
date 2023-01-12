@@ -1,6 +1,5 @@
 //! Functions and types relating to error handling.
 
-use std::borrow::Cow;
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::io;
@@ -9,7 +8,7 @@ use std::result;
 
 use image::ImageError;
 
-use lyon_tessellation::{InternalError, TessellationError};
+use lyon_tessellation::TessellationError;
 
 #[cfg(feature = "audio")]
 use rodio::decoder::DecoderError;
@@ -100,12 +99,8 @@ impl Display for TetraError {
                 write!(f, "Failed to change display mode: {}", msg)
             }
             TetraError::NoAudioDevice => write!(f, "No audio device available for playback"),
-            TetraError::TessellationError(e) => {
-                write!(
-                    f,
-                    "An error occurred while tessellating a shape: {}",
-                    tess_error_description(e)
-                )
+            TetraError::TessellationError(_) => {
+                write!(f, "An error occurred while tessellating a shape")
             }
         }
     }
@@ -125,34 +120,7 @@ impl Error for TetraError {
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,
             TetraError::FailedToChangeDisplayMode(_) => None,
-
-            // This should return the inner error, but Lyon doesn't implement Error for some reason,
-            // so we can't :(
-            TetraError::TessellationError(_) => None,
+            TetraError::TessellationError(reason) => Some(reason),
         }
-    }
-}
-
-fn tess_error_description(err: &TessellationError) -> Cow<'static, str> {
-    match err {
-        TessellationError::UnsupportedParamater => Cow::Borrowed("unsupported parameter"),
-        TessellationError::InvalidVertex => Cow::Borrowed("invalid vertex"),
-        TessellationError::TooManyVertices => Cow::Borrowed("too many vertices"),
-        TessellationError::Internal(internal_err) => match internal_err {
-            InternalError::IncorrectActiveEdgeOrder(code) => {
-                Cow::Owned(format!("incorrect active edge order {}", code))
-            }
-            InternalError::InsufficientNumberOfSpans => {
-                Cow::Borrowed("insufficient number of spans")
-            }
-            InternalError::InsufficientNumberOfEdges => {
-                Cow::Borrowed("insufficient number of edges")
-            }
-            InternalError::MergeVertexOutside => Cow::Borrowed("merge vertex outside"),
-            InternalError::InvalidNumberOfEdgesBelowVertex => {
-                Cow::Borrowed("invalid number of edges below vertex")
-            }
-            InternalError::ErrorCode(code) => Cow::Owned(format!("error code {}", code)),
-        },
     }
 }
