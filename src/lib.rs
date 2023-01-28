@@ -5,6 +5,12 @@
 //! * [API Docs](https://docs.rs/tetra)
 //! * [FAQ](https://tetra.seventeencups.net/FAQ)
 //!
+//! ## Status
+//!
+//! Tetra is no longer being actively developed, as of January 2022. Bug fixes and dependency updates may still happen from time to time, but no new features are planned. Feature PRs may be accepted, as long as they do not come with a large maintainence burden - please open an issue/discussion thread if you're thinking about making any large changes!
+//!
+//! For more information, see [this blog post](https://www.seventeencups.net/posts/three-years-of-tetra/).
+//!
 //! ## Features
 //!
 //! * XNA/MonoGame-inspired API
