@@ -14,7 +14,7 @@ categories = ["game-engines"]
 [dependencies]
 sdl2 = "0.35.0"
 rodio = { version = "0.16.0", optional = true, default-features = false }
-glow = "0.11.0"
+glow = "0.12.0"
 image = { version = "0.24.1", default-features = false }
 vek = { version = "0.15.4", default-features = false }
 hashbrown = "0.13.1"
