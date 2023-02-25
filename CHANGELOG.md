@@ -18,7 +18,7 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
-* **Breaking:** Updated `rodio` to 0.17.
+* **Breaking:** Updated `rodio` to 0.16.
 * **Breaking:** Updated `lyon_tessellation` to 1.0.
 * Updated `half` to 2.1.
 * Updated `hashbrown` to 0.13.
