@@ -15,6 +15,7 @@ This project adheres to Semantic Versioning.
   behaviour. ([@fililip](https://github.com/fililip) in [#321](https://github.com/17cupsofcoffee/tetra/pull/321))
 * `ScreenScaler` now has `scale_factor` and sizing utility methods. ([@timerertim](https://github.com/timerertim)
   in [#327](https://github.com/17cupsofcoffee/tetra/pull/327))
+* `ScreenScaler` now has a `from_canvas` constructor. This can be used for greater control over the canvas that is used for scaling.
 
 ### Changed
 

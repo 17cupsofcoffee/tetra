@@ -51,6 +51,30 @@ impl ScreenScaler {
         })
     }
 
+    /// Returns a new `ScreenScaler`, using the given canvas for drawing.
+    /// The mode will determine how the image is scaled to fit the screen.
+    pub fn from_canvas(
+        canvas: Canvas,
+        outer_width: i32,
+        outer_height: i32,
+        mode: ScalingMode,
+    ) -> Result<ScreenScaler> {
+        let (inner_width, inner_height) = canvas.size();
+
+        let screen_rect =
+            get_screen_rect(mode, inner_width, inner_height, outer_width, outer_height);
+
+        Ok(ScreenScaler {
+            canvas,
+            mode,
+            screen_rect,
+            inner_width,
+            inner_height,
+            outer_width,
+            outer_height,
+        })
+    }
+
     /// Returns a new `ScreenScaler`, with the specified inner width and height, and the outer
     /// size set to the current dimensions of the window.
     pub fn with_window_size(
