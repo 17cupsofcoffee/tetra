@@ -1,5 +1,5 @@
 use crate::graphics::Color;
-use crate::math::{Mat4, Vec2, Vec3};
+use crate::math::{Mat4, Vec2, Vec3, Vec4};
 
 /// Parameters that can be manipulated when drawing an object.
 ///
@@ -21,6 +21,12 @@ pub struct DrawParams {
     /// a 16x16 image and set the origin to [8.0, 8.0], subsequent transformations will be performed
     /// relative to the center of the image.
     pub origin: Vec2<f32>,
+
+    /// The UV offset of the graphic. Defaults to `(0.0, 0.0, 1.0, 1.0)` (top left to bottom right).
+    ///
+    /// This parameter determines how the graphic's texture should be offset on its surface
+    /// to allow spritesheets.
+    pub texture_offset: Vec4<f32>,
 
     /// The rotation of the graphic, in radians. Defaults to `0.0`.
     pub rotation: f32,
@@ -50,6 +56,12 @@ impl DrawParams {
     /// Sets the origin of the graphic.
     pub fn origin(mut self, origin: Vec2<f32>) -> DrawParams {
         self.origin = origin;
+        self
+    }
+
+    /// Sets the texture offset of the graphic.
+    pub fn texture_offset(mut self, texture_offset: Vec4<f32>) -> DrawParams {
+        self.texture_offset = texture_offset;
         self
     }
 
@@ -84,6 +96,7 @@ impl Default for DrawParams {
             position: Vec2::new(0.0, 0.0),
             scale: Vec2::new(1.0, 1.0),
             origin: Vec2::new(0.0, 0.0),
+            texture_offset: Vec4::new(0.0, 0.0, 1.0, 1.0),
             rotation: 0.0,
             color: Color::WHITE,
         }

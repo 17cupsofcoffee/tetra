@@ -220,10 +220,10 @@ impl Texture {
             0.0,
             self.width() as f32,
             self.height() as f32,
-            0.0,
-            0.0,
-            1.0,
-            1.0,
+            params.texture_offset.x,
+            params.texture_offset.y,
+            params.texture_offset.z,
+            params.texture_offset.w,
             &params,
         );
     }
