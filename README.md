@@ -14,9 +14,11 @@ Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event hand
 
 ## Status
 
-Tetra is no longer being actively developed, as of January 2022. Bug fixes and dependency updates may still happen from time to time, but no new features are planned. Feature PRs may be accepted, as long as they do not come with a large maintainence burden - please open an issue/discussion thread if you're thinking about making any large changes!
+Tetra is being passively maintained, [as of January 2022](https://www.seventeencups.net/posts/three-years-of-tetra/).
 
-For more information, see [this blog post](https://www.seventeencups.net/posts/three-years-of-tetra/).
+No new features are planned, but occasional bugfix updates may still be released from time to time. PRs may be accepted if they don't have a large maintainence burden.
+
+If you're looking for a similar framework that's more actively developed, try [macroquad](https://github.com/not-fl3/macroquad) or [GGEZ](https://github.com/ggez/ggez/). Alternatively, you can try [nova](https://github.com/17cupsofcoffee/nova), my spiritual successor to this library (much smaller scope, still very experimental).
 
 ## Features
 
