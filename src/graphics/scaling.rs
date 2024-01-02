@@ -148,8 +148,8 @@ impl ScreenScaler {
     /// feasible (e.g. 3rd party UI libraries).
     pub fn scale_factor(&self) -> f32 {
         f32::min(
-            self.screen_rect.width as f32 / self.inner_width as f32,
-            self.screen_rect.height as f32 / self.inner_height as f32,
+            self.screen_rect.width / self.inner_width as f32,
+            self.screen_rect.height / self.inner_height as f32,
         )
     }
 

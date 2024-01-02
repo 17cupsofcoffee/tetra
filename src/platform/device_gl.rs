@@ -1555,7 +1555,7 @@ impl Drop for RawRenderbuffer {
 unsafe fn cast_slice_assume_aligned<A, B>(a: &[A]) -> &[B] {
     slice::from_raw_parts(
         a.as_ptr() as *const B,
-        a.len() * mem::size_of::<A>() / mem::size_of::<B>(),
+        mem::size_of_val(a) / mem::size_of::<B>(),
     )
 }
 
