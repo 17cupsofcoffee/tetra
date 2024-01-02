@@ -6,6 +6,15 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Changed
+
+* **Breaking:** Updated `vek` to 0.16.
+* Updated `sdl2` to 0.36.
+* Updated `glow` to 0.13.
+* Updated `hashbrown` to 0.14.
+
 ## [0.8.0] - 2023-03-17
 
 ### Added

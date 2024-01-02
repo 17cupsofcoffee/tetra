@@ -268,7 +268,7 @@ impl Window {
             width as u32,
             height as u32,
             width as u32 * 4,
-            PixelMasks {
+            &PixelMasks {
                 bpp: 32,
                 rmask: 0x000000FF,
                 gmask: 0x0000FF00,
