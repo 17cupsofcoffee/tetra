@@ -13,7 +13,7 @@ categories = ["game-engines"]
 
 [dependencies]
 sdl2 = "0.36.0"
-rodio = { version = "0.17.1", optional = true, default-features = false }
+rodio = { version = "0.17.3", optional = true, default-features = false }
 glow = "0.13.0"
 image = { version = "0.24.1", default-features = false }
 vek = { version = "0.16.1", default-features = false }
