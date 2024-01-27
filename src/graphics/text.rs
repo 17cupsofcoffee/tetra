@@ -7,7 +7,7 @@ mod packer;
 mod vector;
 
 use std::cell::RefCell;
-use std::fmt::{self, Debug, Formatter};
+use std::fmt::{self, Alignment, Debug, Formatter};
 use std::path::Path;
 use std::rc::Rc;
 
@@ -235,6 +235,46 @@ impl Text {
             .geometry
             .as_ref()
             .expect("geometry should have been generated");
+
+        graphics::set_texture(ctx, texture);
+        let (texture_width, texture_height) = texture.size();
+
+        for quad in &geometry.quads {
+            graphics::push_quad(
+                ctx,
+                quad.position.x,
+                quad.position.y,
+                quad.position.x + quad.region.width,
+                quad.position.y + quad.region.height,
+                quad.region.x / (texture_width as f32),
+                quad.region.y / (texture_height as f32),
+                quad.region.right() / (texture_width as f32),
+                quad.region.bottom() / (texture_height as f32),
+                &params,
+            );
+        }
+    }
+
+    /// Same as draw but with alignment option.
+    pub fn draw_align<P>(&mut self, ctx: &mut Context, params: P, align: Alignment)
+    where
+        P: Into<DrawParams>,
+    {
+        self.update_geometry(ctx);
+
+        let data = self.font.data.borrow();
+        let texture = data.texture();
+        let geometry = self
+            .geometry
+            .as_ref()
+            .expect("geometry should have been generated");
+
+        let mut params = params.into();
+        params.position.x -= match align {
+            Alignment::Left => 0.0,
+            Alignment::Center => geometry.bounds.unwrap().width / 2.0,
+            Alignment::Right => geometry.bounds.unwrap().width,
+        };
 
         graphics::set_texture(ctx, texture);
         let (texture_width, texture_height) = texture.size();
