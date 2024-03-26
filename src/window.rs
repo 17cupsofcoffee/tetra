@@ -34,6 +34,11 @@ pub fn focus(ctx: &mut Context) {
     ctx.window.focus();
 }
 
+/// Gets the display's refresh rate.
+pub fn get_refresh_rate(ctx: &Context) -> Result<i32> {
+    ctx.window.get_refresh_rate()
+}
+
 /// Gets the current title of the window.
 pub fn get_title(ctx: &Context) -> &str {
     ctx.window.get_window_title()
