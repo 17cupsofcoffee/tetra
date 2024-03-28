@@ -1,8 +1,3 @@
----
-id: 03-adding-a-ball
-description: Part three of a tutorial on how to build a simple Pong clone with Tetra.
----
-
 # Adding a Ball
 
 In the [previous chapter](./02-adding-the-paddles.md), we added paddles to the game - but they've got nothing to hit! Let's finish things off.
