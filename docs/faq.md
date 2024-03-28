@@ -14,7 +14,7 @@ It's possible to have your project automatically compile SDL2 from source as par
 
 ```toml
 [dependencies.tetra]
-version = "0.7"
+version = "0.8"
 features = ["sdl2_bundled"]
 ```
 
@@ -26,7 +26,7 @@ If you want to avoid your users having to install SDL2 themselves (or you having
 
 ```toml
 [dependencies.tetra]
-version = "0.7"
+version = "0.8"
 features = ["sdl2_static_link"]
 ```
 
@@ -50,11 +50,11 @@ Yes - since 0.5.8, `Mesh` has constructors for basic shapes and there is a `Geom
 
 Note that primitive shape drawing currently isn't batched, so drawing too many generated shapes at once may be slow.
 
-If that's all too complicated and you just want to draw simple rectangles, you could also [create a solid colored `Texture`](https://docs.rs/tetra/0.7.0/tetra/graphics/struct.Texture.html#method.from_data) and then draw that. If you create a 1x1 solid white texture, you can use the `scale` and `color` `DrawParams` to draw multiple rectangles of varying sizes/colors/transparencies in a single draw call.
+If that's all too complicated and you just want to draw simple rectangles, you could also [create a solid colored `Texture`](https://docs.rs/tetra/0.8/tetra/graphics/struct.Texture.html#method.from_data) and then draw that. If you create a 1x1 solid white texture, you can use the `scale` and `color` `DrawParams` to draw multiple rectangles of varying sizes/colors/transparencies in a single draw call.
 
 ### Does Tetra support high-DPI rendering?
 
-Tetra added basic support for high-DPI rendering in 0.5.4, which can be enabled via [`ContextBuilder::high_dpi`](https://docs.rs/tetra/0.7/tetra/struct.ContextBuilder.html#method.high_dpi). You may also need some platform-specific configuration/packaging - see the docs for `ContextBuilder::high_dpi` for more info.
+Tetra added basic support for high-DPI rendering in 0.5.4, which can be enabled via [`ContextBuilder::high_dpi`](https://docs.rs/tetra/0.8/tetra/struct.ContextBuilder.html#method.high_dpi). You may also need some platform-specific configuration/packaging - see the docs for `ContextBuilder::high_dpi` for more info.
 
 ## Performance
 

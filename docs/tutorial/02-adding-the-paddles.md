@@ -19,10 +19,10 @@ Create a folder called `resources` in your project directory, and save this imag
 
 ![Player 1 sprite](./images/player1.png)
 
-> [!INFO]
+> [!NOTE]
 > The naming of this folder isn't something that's enforced by Tetra - structure your projects however you'd like!
 
-To add this image to our game, we can use our first new type of the chapter: [`Texture`](https://docs.rs/tetra/0.7/tetra/graphics/struct.Texture.html). This represents a piece of image data that has been loaded into graphics memory.
+To add this image to our game, we can use our first new type of the chapter: [`Texture`](https://docs.rs/tetra/0.8/tetra/graphics/struct.Texture.html). This represents a piece of image data that has been loaded into graphics memory.
 
 Since we want our texture to stay loaded until the game closes, let's add it as a field in our `GameState` struct:
 
@@ -32,7 +32,7 @@ struct GameState {
 }
 ```
 
-We can then use [`Texture::new`](https://docs.rs/tetra/0.7/tetra/graphics/struct.Texture.html#method.new) to load the sprite and populate that field:
+We can then use [`Texture::new`](https://docs.rs/tetra/0.8/tetra/graphics/struct.Texture.html#method.new) to load the sprite and populate that field:
 
 ```rust
 fn main() -> tetra::Result {
@@ -50,7 +50,7 @@ Notice that we're now using the previously unnamed parameter that's passed to th
 
 Try running the game now - if all is well, it should start up just like it did last chapter. If you get an error message, check that you've entered the image's path correctly!
 
-> [!INFO]
+> [!NOTE]
 > A `Texture` is effectively just an ID number under the hood. This means that they are very lightweight and cheap to clone - don't tie yourself in knots trying to pass references to them around your application!
 >
 > The same is true for quite a few other types in Tetra - check the API documentation for more info.
@@ -106,7 +106,7 @@ fn main() -> tetra::Result {
 }
 ```
 
-> [!INFO]
+> [!NOTE]
 > The `i32` casts look a bit silly, but for most of the places we'll be using the constants, it'll be easier to have them as floating point numbers.
 
 With that bit of housekeeping out of the way, let's finally draw something!
@@ -129,10 +129,10 @@ fn draw(&mut self, ctx: &mut Context) -> tetra::Result {
 
 This will draw the texture to the screen at position `16.0, 16.0`.
 
-> [!INFO]
-> If you look at the docs for [`Texture::draw`](https://docs.rs/tetra/0.7/tetra/graphics/struct.Texture.html#method.draw), you'll notice that the type of the second parameter is actually `Into<DrawParams>`, not `Vec2`.
+> [!NOTE]
+> If you look at the docs for [`Texture::draw`](https://docs.rs/tetra/0.8/tetra/graphics/struct.Texture.html#method.draw), you'll notice that the type of the second parameter is actually `Into<DrawParams>`, not `Vec2`.
 >
-> When you pass in a `Vec2`, it is automatically converted into a [`DrawParams`](https://docs.rs/tetra/0.7/tetra/graphics/struct.DrawParams.html) struct with the `position` parameter set. If you want to change other parameters, such as the rotation, color or scale, you can construct your own `DrawParams` instead, using `DrawParams::new`.
+> When you pass in a `Vec2`, it is automatically converted into a [`DrawParams`](https://docs.rs/tetra/0.8/tetra/graphics/struct.DrawParams.html) struct with the `position` parameter set. If you want to change other parameters, such as the rotation, color or scale, you can construct your own `DrawParams` instead, using `DrawParams::new`.
 
 ## Reacting to Input
 
@@ -187,14 +187,14 @@ While we _could_ do this in our `draw` method, this is a bad idea for several re
 - Mixing up our game logic and our rendering logic isn't great seperation of concerns.
 - The `draw` method does not get called at a consistent rate - the timing can fluctuate depending on the speed of the system the game is being run on, leading to subtle differences in behaviour. This is fine for drawing, but definitely not for physics!
 
-Instead, it's time for us to add another method to our [`State`](https://docs.rs/tetra/0.7/tetra/trait.State.html) implementation. The [`update`](https://docs.rs/tetra/0.7/tetra/trait.State.html#method.update) method is called 60 times a second, regardless of how fast the game as a whole is running. This means that even if rendering slows to a crawl, you can still be confident that the code in that method is deterministic.
+Instead, it's time for us to add another method to our [`State`](https://docs.rs/tetra/0.8/tetra/trait.State.html) implementation. The [`update`](https://docs.rs/tetra/0.8/tetra/trait.State.html#method.update) method is called 60 times a second, regardless of how fast the game as a whole is running. This means that even if rendering slows to a crawl, you can still be confident that the code in that method is deterministic.
 
-> [!INFO]
+> [!NOTE]
 > This 'fixed-rate update, variable-rate rendering' style of game loop is best explained by Glenn Fiedler's classic '[Fix Your Timestep](https://gafferongames.com/post/fix_your_timestep/)' blog post. If you've used the `FixedUpdate` method in Unity, this should feel pretty familiar!
 >
-> If you want to change the rate at which updates happen, or switch to a more traditional 'lockstep' game loop, you can do this via the [`timestep` parameter on `ContextBuilder`](https://docs.rs/tetra/0.7/tetra/struct.ContextBuilder.html#method.timestep).
+> If you want to change the rate at which updates happen, or switch to a more traditional 'lockstep' game loop, you can do this via the [`timestep` parameter on `ContextBuilder`](https://docs.rs/tetra/0.8/tetra/struct.ContextBuilder.html#method.timestep).
 
-Inside the `update` method, we can use the functions exposed by the [`input`](https://docs.rs/tetra/0.7/tetra/input/index.html) module in order to check the state of the keyboard:
+Inside the `update` method, we can use the functions exposed by the [`input`](https://docs.rs/tetra/0.8/tetra/input/index.html) module in order to check the state of the keyboard:
 
 ```rust
 // Inside `impl State for GameState`:
@@ -237,7 +237,7 @@ impl Entity {
 }
 ```
 
-> [!INFO]
+> [!NOTE]
 > It's worth mentioning at this point: this isn't the only way of structuring a game in Rust!
 >
 > The language lends itself very well to 'data-driven' design patterns, such as [entity component systems](https://en.wikipedia.org/wiki/Entity_component_system), and you'll definitely want to investigate these concepts if you start writing a bigger game. For now though, let's keep things as simple as possible!

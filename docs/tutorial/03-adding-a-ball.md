@@ -157,7 +157,7 @@ if paddle_hit.is_some() {
 }
 ```
 
-> [!INFO]
+> [!NOTE]
 > Storing the identity of the paddle that got hit is redundant right now, but we'll use it later!
 
 > [!WARNING]
@@ -210,7 +210,7 @@ if let Some(paddle) = paddle_hit {
 }
 ```
 
-> [!INFO]
+> [!NOTE]
 > I'll admit, it's a little bit wasteful to calculate the X center as well, but I'm aiming for code clarity over maximum efficiency. Besides, it's a Pong clone, not Crysis!
 
 Now the player has some agency over where the ball goes - too much agency, as it turns out, as they can just send it flying off the top of the screen! A little bit more code at the end of `update` will fix that:

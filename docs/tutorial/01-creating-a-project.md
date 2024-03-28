@@ -19,7 +19,7 @@ Next, add Tetra as a dependency in the newly-generated `Cargo.toml`:
 
 ```toml
 [dependencies]
-tetra = "0.7"
+tetra = "0.8"
 ```
 
 > [!WARNING]
@@ -38,9 +38,9 @@ With that, we're ready to start developing our game! Let's take a closer look at
 
 ## Creating a Context
 
-[`Context`](https://docs.rs/tetra/0.7/tetra/struct.Context.html) is a struct that holds all of the 'global' state managed by the framework, such as window settings and connections to the graphics/audio/input hardware. Any function in Tetra's API that requires access to this state will take a reference to a `Context` as the first parameter, so you won't get very far without one!
+[`Context`](https://docs.rs/tetra/0.8/tetra/struct.Context.html) is a struct that holds all of the 'global' state managed by the framework, such as window settings and connections to the graphics/audio/input hardware. Any function in Tetra's API that requires access to this state will take a reference to a `Context` as the first parameter, so you won't get very far without one!
 
-To build our game's `Context`, we can use the descriptively-named [`ContextBuilder`](https://docs.rs/tetra/0.7/tetra/struct.ContextBuilder.html) struct:
+To build our game's `Context`, we can use the descriptively-named [`ContextBuilder`](https://docs.rs/tetra/0.8/tetra/struct.ContextBuilder.html) struct:
 
 ```rust
 fn main() {
@@ -52,8 +52,8 @@ fn main() {
 
 This creates a `Context` that is configured to display a window with the title 'Pong', sized at 640 by 480 pixels, which will automatically close when the player presses the escape key.
 
-> [!INFO]
-> To see what other options can be set on a `Context`, and what the default settings are, take a look at the API documentation for [`ContextBuilder`](https://docs.rs/tetra/0.7/tetra/struct.ContextBuilder.html).
+> [!NOTE]
+> To see what other options can be set on a `Context`, and what the default settings are, take a look at the API documentation for [`ContextBuilder`](https://docs.rs/tetra/0.8/tetra/struct.ContextBuilder.html).
 
 If you `cargo run` your project from the command line now, you may be confused, as nothing will appear to happen. This is because we're not actually starting a game loop yet - `main` just returns straight away after the `Context` is created!
 
@@ -61,9 +61,9 @@ To fix this, we'll need to implement `State`.
 
 ## Defining Some State
 
-[`State`](https://docs.rs/tetra/0.7/tetra/trait.State.html) is a trait exposed by Tetra, which is implemented for the type that stores your game's state. It exposes various methods that will be called during the game loop, and you can override these in order to define your game's behaviour.
+[`State`](https://docs.rs/tetra/0.8/tetra/trait.State.html) is a trait exposed by Tetra, which is implemented for the type that stores your game's state. It exposes various methods that will be called during the game loop, and you can override these in order to define your game's behaviour.
 
-> [!INFO]
+> [!NOTE]
 > This trait fulfils a similar purpose to the `Game` base class in XNA, or the `ApplicationListener` interface in LibGDX.
 
 For now, we don't need to store data or override any of the default behaviour, so we can just use an empty struct and implementation:
@@ -76,7 +76,7 @@ impl State for GameState {}
 
 ## Running the Game Loop
 
-Now that we have a `State`, we're ready to start the game loop! To do this, call the [`run`](https://docs.rs/tetra/0.7/tetra/struct.Context.html#method.run) method on `Context`, passing in a closure that constructs your `State` struct:
+Now that we have a `State`, we're ready to start the game loop! To do this, call the [`run`](https://docs.rs/tetra/0.8/tetra/struct.Context.html#method.run) method on `Context`, passing in a closure that constructs your `State` struct:
 
 ```rust
 fn main() -> tetra::Result {
@@ -89,13 +89,13 @@ fn main() -> tetra::Result {
 
 There's a few things you should pay attention to here:
 
-- The return type of `main` has been changed to [`tetra::Result`](https://docs.rs/tetra/0.7/tetra/error/type.Result.html).
+- The return type of `main` has been changed to [`tetra::Result`](https://docs.rs/tetra/0.8/tetra/error/type.Result.html).
 - A [`?` operator](https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html#a-shortcut-for-propagating-errors-the--operator) has been added to the end of `build`.
 - There is no semi-colon after `run`, so its output will be returned from `main`.
 
 `build` will return an error if the context fails to be constructed, and `run` will return any errors you throw during the game loop. By using the `?` operator, we can propagate these errors up and out of `main`. Rust will then automatically print out the error message to the terminal, which is handy when debugging.
 
-> [!INFO]
+> [!NOTE]
 > Returning `Result` from `main` is nice for prototyping, but doesn't give you much control over how the error gets reported. If you want to customize this, you can always `match` on the result of `build` and/or `run`.
 
 You may also notice that the closure takes a parameter, which we're currently ignoring - we'll look at what that's for next chapter.
@@ -106,7 +106,7 @@ If you run `cargo run` from your terminal now, you should finally see a  window 
 
 Our goal for this chapter was to set up our project, and we've done that! A black window isn't very interesting, though, so let's finish by changing the background color to something a bit more inspiring.
 
-To do this, we'll implement one of the `State` trait methods. [`draw`](https://docs.rs/tetra/0.7/tetra/trait.State.html#method.draw) is called by Tetra whenever it is time for the engine to draw a new frame. We can call [`tetra::graphics::clear`](https://docs.rs/tetra/0.7/tetra/graphics/fn.clear.html) inside this method to clear the window to a plain color:
+To do this, we'll implement one of the `State` trait methods. [`draw`](https://docs.rs/tetra/0.8/tetra/trait.State.html#method.draw) is called by Tetra whenever it is time for the engine to draw a new frame. We can call [`tetra::graphics::clear`](https://docs.rs/tetra/0.8/tetra/graphics/fn.clear.html) inside this method to clear the window to a plain color:
 
 ```rust
 impl State for GameState {
