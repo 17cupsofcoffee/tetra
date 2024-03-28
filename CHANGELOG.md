@@ -8,6 +8,10 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added
+
+* The `window::get_refresh_rate` function was added, allowing you to check the current display's refresh rate. ([@fililip](https://github.com/fililip) in [#345](https://github.com/17cupsofcoffee/tetra/pull/345))
+
 ### Changed
 
 * **Breaking:** Updated `vek` to 0.16.
