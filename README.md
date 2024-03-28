@@ -7,10 +7,12 @@
 
 Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event handling and OpenGL 3.2+ for rendering.
 
-* [Website](https://tetra.seventeencups.net)
-* [Tutorial](https://tetra.seventeencups.net/tutorial)
 * [API Docs](https://docs.rs/tetra)
-* [FAQ](https://tetra.seventeencups.net/FAQ)
+* [Installation Guide](/docs/installation.md)
+* [Distribution Guide](/docs/distributing.md)
+* [Examples](/docs/examples.md)
+* [Tutorial](/docs/tutorial/)
+* [FAQ](/docs/faq.md)
 
 ## Status
 
