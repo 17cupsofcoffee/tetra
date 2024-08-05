@@ -43,7 +43,7 @@ pub enum FontTextureStyle {
 ///
 /// Loading a font is quite an expensive operation, as it involves parsing the font itself and
 /// creating a cache on the GPU for the rendered characters. Try to reuse fonts, rather than
-/// recreating them every frame.
+/// creating multiple instances or recreating them every frame.
 ///
 /// You can clone a font cheaply, as it is [reference-counted](https://doc.rust-lang.org/std/rc/struct.Rc.html)
 /// internally. However, this does mean that modifying a font (e.g. setting the
@@ -53,6 +53,9 @@ pub enum FontTextureStyle {
 ///
 /// The [`text`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/text.rs)
 /// example demonstrates how to load a font and then draw some text.
+///
+/// The [`text_perf`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/text_perf.rs)
+/// example demonstrates how to reuse a font for better performance.
 #[derive(Clone)]
 pub struct Font {
     data: Rc<RefCell<FontCache>>,
