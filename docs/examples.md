@@ -33,5 +33,6 @@ You can also click on the name of the example below to view the source code.
 | [`events`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/events.rs) | Input | Shows what events can be fired by the engine. |
 | [`error_handling`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/error_handling.rs) | Error Handling | Demonstrates how custom error types and error reporting crates can be used in a Tetra game. | 
 | [`bunnymark`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/bunnymark.rs) | Benchmark | Benchmarks rendering performance by rendering lots of bunnies. |
+| [`text_perf`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/text_perf.rs) | Graphics | Shows best practices for rendering text efficiently in Tetra. |
 | [`ecs`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/ecs.rs) | Integration | Demonstrates how ECS (entity component system) libraries can be used with Tetra. |
 | [`tetras`](https://github.com/17cupsofcoffee/tetra/blob/main/examples/tetras.rs) | Game | A full example game (which is entirely legally distinct from a certain other block-based puzzle game *cough*). |
