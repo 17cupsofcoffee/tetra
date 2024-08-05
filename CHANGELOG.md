@@ -14,9 +14,11 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
-* **Breaking:** Updated `vek` to 0.16.
-* Updated `sdl2` to 0.36.
-* Updated `glow` to 0.13.
+* **Breaking:** Updated `vek` to 0.17.
+* **Breaking:** Updated `rodio` to 0.19.
+* **Breaking:** Updated `image` to 0.25.
+* Updated `sdl2` to 0.37.
+* Updated `glow` to 0.14.
 * Updated `hashbrown` to 0.14.
 
 ## [0.8.0] - 2023-03-17
