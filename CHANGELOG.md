@@ -11,6 +11,7 @@ This project adheres to Semantic Versioning.
 ### Added
 
 * The `window::get_refresh_rate` function was added, allowing you to check the current display's refresh rate. ([@fililip](https://github.com/fililip) in [#345](https://github.com/17cupsofcoffee/tetra/pull/345))
+* A new example was added, showing how to efficiently re-use a loaded font across multiple pieces of text. ([@brettchalupa](https://github.com/brettchalupa) in [#348](https://github.com/17cupsofcoffee/tetra/pull/348))
 
 ### Changed
 
