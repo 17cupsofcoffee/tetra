@@ -70,7 +70,7 @@ texture_dds = ["image/dds"]
 texture_tga = ["image/tga"]
 
 # Enables support for serialization/deserialization via Serde.
-serde_support = ["serde", "vek/serde"]
+serde = ["dep:serde", "vek/serde"]
 
 # Compiles SDL2 from source (see https://github.com/Rust-SDL2/rust-sdl2#bundled-feature).
 sdl2_bundled = ["sdl2/bundled"]

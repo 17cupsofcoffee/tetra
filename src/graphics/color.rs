@@ -19,11 +19,11 @@ use crate::math::Vec4;
 /// # Serde
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
-/// can be enabled via the `serde_support` feature.
+/// can be enabled via the `serde` feature.
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq)]
 #[cfg_attr(
-    feature = "serde_support",
+    feature = "serde",
     derive(serde::Serialize, serde::Deserialize)
 )]
 pub struct Color {

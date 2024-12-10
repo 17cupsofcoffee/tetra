@@ -9,10 +9,10 @@ use crate::math::Vec2;
 /// # Serde
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
-/// can be enabled via the `serde_support` feature.
+/// can be enabled via the `serde` feature.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, Hash)]
 #[cfg_attr(
-    feature = "serde_support",
+    feature = "serde",
     derive(serde::Serialize, serde::Deserialize)
 )]
 pub struct Rectangle<T = f32> {

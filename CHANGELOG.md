@@ -15,6 +15,7 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
+* **Breaking:** The `serde_support` feature was renamed to `serde`.
 * **Breaking:** Updated `vek` to 0.17.
 * **Breaking:** Updated `rodio` to 0.20.
 * **Breaking:** Updated `image` to 0.25.

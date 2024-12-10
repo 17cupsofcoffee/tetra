@@ -61,7 +61,7 @@ impl Context {
             running: false,
             quit_on_escape: settings.quit_on_escape,
 
-            fps_limit: settings.fps_limit
+            fps_limit: settings.fps_limit,
         })
     }
 
@@ -190,7 +190,7 @@ impl Context {
 /// # Serde
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
-/// can be enabled via the `serde_support` feature.
+/// can be enabled via the `serde` feature.
 ///
 /// Note that the available settings could change between releases of
 /// Tetra (semver permitting). If you need a config file schema that will
@@ -198,10 +198,7 @@ impl Context {
 /// it to Tetra's API, rather than relying on `ContextBuilder` to not
 /// change.
 #[derive(Debug, Clone)]
-#[cfg_attr(
-    feature = "serde_support",
-    derive(serde::Serialize, serde::Deserialize)
-)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ContextBuilder {
     pub(crate) title: String,
     pub(crate) window_width: i32,

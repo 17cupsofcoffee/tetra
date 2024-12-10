@@ -20,13 +20,10 @@ use crate::Context;
 /// # Serde
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
-/// can be enabled via the `serde_support` feature.
+/// can be enabled via the `serde` feature.
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(
-    feature = "serde_support",
-    derive(serde::Serialize, serde::Deserialize)
-)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[allow(missing_docs)]
 pub enum Key {
     A,
@@ -163,13 +160,10 @@ pub enum Key {
 /// # Serde
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
-/// can be enabled via the `serde_support` feature.
+/// can be enabled via the `serde` feature.
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(
-    feature = "serde_support",
-    derive(serde::Serialize, serde::Deserialize)
-)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[allow(missing_docs)]
 pub enum KeyLabel {
     A,
@@ -463,13 +457,10 @@ impl Display for KeyLabel {
 /// # Serde
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
-/// can be enabled via the `serde_support` feature.
+/// can be enabled via the `serde` feature.
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(
-    feature = "serde_support",
-    derive(serde::Serialize, serde::Deserialize)
-)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[allow(missing_docs)]
 pub enum KeyModifier {
     Ctrl,
