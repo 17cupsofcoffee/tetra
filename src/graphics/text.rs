@@ -72,9 +72,9 @@ impl Font {
     /// # Errors
     ///
     /// * [`TetraError::FailedToLoadAsset`](crate::TetraError::FailedToLoadAsset) will be returned
-    /// if the file could not be loaded.
+    ///   if the file could not be loaded.
     /// * [`TetraError::InvalidFont`](crate::TetraError::InvalidFont) will be returned if the font
-    /// data was invalid.
+    ///   data was invalid.
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the GPU cache for the font
     ///   could not be created.
     #[cfg(feature = "font_ttf")]
@@ -98,9 +98,9 @@ impl Font {
     /// # Errors
     ///
     /// * [`TetraError::InvalidFont`](crate::TetraError::InvalidFont) will be returned if the font
-    /// data was invalid.
+    ///   data was invalid.
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the GPU cache for the font
-    /// could not be created.
+    ///   could not be created.
     #[cfg(feature = "font_ttf")]
     pub fn from_vector_file_data(
         ctx: &mut Context,
@@ -137,11 +137,11 @@ impl Font {
     /// # Errors
     ///
     /// * [`TetraError::FailedToLoadAsset`](crate::TetraError::FailedToLoadAsset) will be returned
-    /// if the font or the associated images could not be loaded.
+    ///   if the font or the associated images could not be loaded.
     /// * [`TetraError::InvalidFont`](crate::TetraError::InvalidFont) will be returned if the font
-    /// data was invalid.
+    ///   data was invalid.
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the GPU cache for the font
-    /// could not be created.
+    ///   could not be created.
     pub fn bmfont<P>(ctx: &mut Context, path: P) -> Result<Font>
     where
         P: AsRef<Path>,

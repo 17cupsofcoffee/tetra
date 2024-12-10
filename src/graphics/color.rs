@@ -22,10 +22,7 @@ use crate::math::Vec4;
 /// can be enabled via the `serde` feature.
 #[repr(C)]
 #[derive(Debug, Default, Copy, Clone, PartialEq)]
-#[cfg_attr(
-    feature = "serde",
-    derive(serde::Serialize, serde::Deserialize)
-)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Color {
     /// The red component of the color.
     pub r: f32,
@@ -188,7 +185,7 @@ impl Color {
 }
 
 fn clamp_f32(val: f32) -> f32 {
-    f32::min(f32::max(0.0, val), 1.0)
+    val.clamp(0.0, 1.0)
 }
 
 impl From<Color> for Vec4<f32> {
@@ -544,9 +541,9 @@ mod tests {
     }
 
     fn same_color(a: Color, b: Color) -> bool {
-        (a.r - b.r).abs() < std::f32::EPSILON
-            && (a.g - b.g).abs() < std::f32::EPSILON
-            && (a.b - b.b).abs() < std::f32::EPSILON
-            && (a.a - b.a).abs() < std::f32::EPSILON
+        (a.r - b.r).abs() < f32::EPSILON
+            && (a.g - b.g).abs() < f32::EPSILON
+            && (a.b - b.b).abs() < f32::EPSILON
+            && (a.a - b.a).abs() < f32::EPSILON
     }
 }

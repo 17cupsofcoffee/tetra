@@ -11,13 +11,10 @@ use crate::Context;
 /// # Serde
 ///
 /// Serialization and deserialization of this type (via [Serde](https://serde.rs/))
-/// can be enabled via the `serde_support` feature.
+/// can be enabled via the `serde` feature.
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone)]
-#[cfg_attr(
-    feature = "serde_support",
-    derive(serde::Serialize, serde::Deserialize)
-)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Timestep {
     /// In fixed timestep mode, updates will happen at a consistent rate (the `f64` value in the enum
     /// variant representing the number of times per second), while rendering will happen as fast as

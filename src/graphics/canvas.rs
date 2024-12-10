@@ -74,7 +74,7 @@ impl CanvasBuilder {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn build(&self, ctx: &mut Context) -> Result<Canvas> {
         let attachments = ctx.device.new_canvas(
             self.width,
@@ -139,7 +139,7 @@ impl Canvas {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn new(ctx: &mut Context, width: i32, height: i32) -> Result<Canvas> {
         CanvasBuilder::new(width, height).build(ctx)
     }
@@ -213,8 +213,8 @@ impl Canvas {
     /// # Errors
     ///
     /// * [`TetraError::NotEnoughData`](crate::TetraError::NotEnoughData) will be returned
-    /// if not enough data is provided to fill the target rectangle. This is to prevent
-    /// the graphics API from trying to read uninitialized memory.
+    ///   if not enough data is provided to fill the target rectangle. This is to prevent
+    ///   the graphics API from trying to read uninitialized memory.
     ///
     /// # Panics
     ///
@@ -246,8 +246,8 @@ impl Canvas {
     /// # Errors
     ///
     /// * [`TetraError::NotEnoughData`](crate::TetraError::NotEnoughData) will be returned
-    /// if not enough data is provided to fill the target rectangle. This is to prevent
-    /// the graphics API from trying to read uninitialized memory.
+    ///   if not enough data is provided to fill the target rectangle. This is to prevent
+    ///   the graphics API from trying to read uninitialized memory.
     pub fn replace_data(&self, ctx: &mut Context, data: &[u8]) -> Result {
         self.texture.replace_data(ctx, data)
     }

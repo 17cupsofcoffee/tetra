@@ -107,11 +107,11 @@ impl Shader {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the
-    /// underlying graphics API encounters an error.
+    ///   underlying graphics API encounters an error.
     /// * [`TetraError::FailedToLoadAsset`](crate::TetraError::FailedToLoadAsset) will be returned
-    /// if the files could not be loaded.
+    ///   if the files could not be loaded.
     /// * [`TetraError::InvalidShader`](crate::TetraError::InvalidShader) will be returned if the
-    /// shader could not be compiled.
+    ///   shader could not be compiled.
     pub fn new<P>(ctx: &mut Context, vertex_path: P, fragment_path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
@@ -130,11 +130,11 @@ impl Shader {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the
-    /// underlying graphics API encounters an error.
+    ///   underlying graphics API encounters an error.
     /// * [`TetraError::FailedToLoadAsset`](crate::TetraError::FailedToLoadAsset) will be returned
-    /// if the file could not be loaded.
+    ///   if the file could not be loaded.
     /// * [`TetraError::InvalidShader`](crate::TetraError::InvalidShader) will be returned if the
-    /// shader could not be compiled.
+    ///   shader could not be compiled.
     pub fn from_vertex_file<P>(ctx: &mut Context, path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
@@ -153,11 +153,11 @@ impl Shader {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the
-    /// underlying graphics API encounters an error.
+    ///   underlying graphics API encounters an error.
     /// * [`TetraError::FailedToLoadAsset`](crate::TetraError::FailedToLoadAsset) will be returned
-    /// if the file could not be loaded.
+    ///   if the file could not be loaded.
     /// * [`TetraError::InvalidShader`](crate::TetraError::InvalidShader) will be returned if the
-    /// shader could not be compiled.
+    ///   shader could not be compiled.
     pub fn from_fragment_file<P>(ctx: &mut Context, path: P) -> Result<Shader>
     where
         P: AsRef<Path>,
@@ -174,9 +174,9 @@ impl Shader {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the
-    /// underlying graphics API encounters an error.
+    ///   underlying graphics API encounters an error.
     /// * [`TetraError::InvalidShader`](crate::TetraError::InvalidShader) will be returned if the
-    /// shader could not be compiled.
+    ///   shader could not be compiled.
     pub fn from_string(
         ctx: &mut Context,
         vertex_shader: &str,
@@ -192,9 +192,9 @@ impl Shader {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the
-    /// underlying graphics API encounters an error.
+    ///   underlying graphics API encounters an error.
     /// * [`TetraError::InvalidShader`](crate::TetraError::InvalidShader) will be returned if the
-    /// shader could not be compiled.
+    ///   shader could not be compiled.
     pub fn from_vertex_string(ctx: &mut Context, shader: &str) -> Result<Shader> {
         Shader::with_device(&mut ctx.device, shader, DEFAULT_FRAGMENT_SHADER)
     }
@@ -206,9 +206,9 @@ impl Shader {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the
-    /// underlying graphics API encounters an error.
+    ///   underlying graphics API encounters an error.
     /// * [`TetraError::InvalidShader`](crate::TetraError::InvalidShader) will be returned if the
-    /// shader could not be compiled.
+    ///   shader could not be compiled.
     pub fn from_fragment_string(ctx: &mut Context, shader: &str) -> Result<Shader> {
         Shader::with_device(&mut ctx.device, DEFAULT_VERTEX_SHADER, shader)
     }

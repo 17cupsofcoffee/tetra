@@ -128,7 +128,7 @@ impl VertexBuffer {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn new(ctx: &mut Context, vertices: &[Vertex]) -> Result<VertexBuffer> {
         VertexBuffer::with_usage(ctx, vertices, BufferUsage::Dynamic)
     }
@@ -140,7 +140,7 @@ impl VertexBuffer {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn with_usage(
         ctx: &mut Context,
         vertices: &[Vertex],
@@ -210,7 +210,7 @@ impl IndexBuffer {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn new(ctx: &mut Context, indices: &[u32]) -> Result<IndexBuffer> {
         IndexBuffer::with_usage(ctx, indices, BufferUsage::Dynamic)
     }
@@ -222,7 +222,7 @@ impl IndexBuffer {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn with_usage(
         ctx: &mut Context,
         indices: &[u32],
@@ -512,9 +512,9 @@ impl Mesh {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn rectangle(ctx: &mut Context, style: ShapeStyle, rectangle: Rectangle) -> Result<Mesh> {
         GeometryBuilder::new()
             .rectangle(style, rectangle)?
@@ -529,9 +529,9 @@ impl Mesh {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn rounded_rectangle(
         ctx: &mut Context,
         style: ShapeStyle,
@@ -551,9 +551,9 @@ impl Mesh {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn circle(
         ctx: &mut Context,
         style: ShapeStyle,
@@ -573,9 +573,9 @@ impl Mesh {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn ellipse(
         ctx: &mut Context,
         style: ShapeStyle,
@@ -595,9 +595,9 @@ impl Mesh {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn polygon(ctx: &mut Context, style: ShapeStyle, points: &[Vec2<f32>]) -> Result<Mesh> {
         GeometryBuilder::new()
             .polygon(style, points)?
@@ -612,9 +612,9 @@ impl Mesh {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn polyline(ctx: &mut Context, stroke_width: f32, points: &[Vec2<f32>]) -> Result<Mesh> {
         GeometryBuilder::new()
             .polyline(stroke_width, points)?
@@ -690,7 +690,7 @@ impl GeometryBuilder {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     pub fn rectangle(
         &mut self,
         style: ShapeStyle,
@@ -724,7 +724,7 @@ impl GeometryBuilder {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     pub fn rounded_rectangle(
         &mut self,
         style: ShapeStyle,
@@ -759,7 +759,7 @@ impl GeometryBuilder {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     pub fn circle(
         &mut self,
         style: ShapeStyle,
@@ -806,7 +806,7 @@ impl GeometryBuilder {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     pub fn ellipse(
         &mut self,
         style: ShapeStyle,
@@ -857,7 +857,7 @@ impl GeometryBuilder {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     pub fn polygon(
         &mut self,
         style: ShapeStyle,
@@ -903,7 +903,7 @@ impl GeometryBuilder {
     /// # Errors
     ///
     /// * [`TetraError::TessellationError`](crate::TetraError::TessellationError) will be returned if the shape
-    /// could not be turned into vertex data.
+    ///   could not be turned into vertex data.
     pub fn polyline(
         &mut self,
         stroke_width: f32,
@@ -971,7 +971,7 @@ impl GeometryBuilder {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn build_buffers(&self, ctx: &mut Context) -> Result<(VertexBuffer, IndexBuffer)> {
         Ok((
             VertexBuffer::new(ctx, &self.data.vertices)?,
@@ -986,7 +986,7 @@ impl GeometryBuilder {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned if the underlying
-    /// graphics API encounters an error.
+    ///   graphics API encounters an error.
     pub fn build_mesh(&self, ctx: &mut Context) -> Result<Mesh> {
         let (vertex_buffer, index_buffer) = self.build_buffers(ctx)?;
 

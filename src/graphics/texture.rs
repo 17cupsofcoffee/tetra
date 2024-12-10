@@ -74,11 +74,11 @@ impl Texture {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
-    /// if the underlying graphics API encounters an error.
+    ///   if the underlying graphics API encounters an error.
     /// * [`TetraError::FailedToLoadAsset`](crate::TetraError::FailedToLoadAsset) will be
-    /// returned if the file could not be loaded.
+    ///   returned if the file could not be loaded.
     /// * [`TetraError::InvalidTexture`](crate::TetraError::InvalidTexture) will be returned
-    /// if the texture data was invalid.
+    ///   if the texture data was invalid.
     pub fn new<P>(ctx: &mut Context, path: P) -> Result<Texture>
     where
         P: AsRef<Path>,
@@ -98,10 +98,10 @@ impl Texture {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
-    /// if the underlying graphics API encounters an error.
+    ///   if the underlying graphics API encounters an error.
     /// * [`TetraError::NotEnoughData`](crate::TetraError::NotEnoughData) will be returned
-    /// if not enough data is provided to fill the texture. This is to prevent the
-    /// graphics API from trying to read uninitialized memory.
+    ///   if not enough data is provided to fill the texture. This is to prevent the
+    ///   graphics API from trying to read uninitialized memory.
     pub fn from_data(
         ctx: &mut Context,
         width: i32,
@@ -133,9 +133,9 @@ impl Texture {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be
-    /// returned if the underlying graphics API encounters an error.
+    ///   returned if the underlying graphics API encounters an error.
     /// * [`TetraError::InvalidTexture`](crate::TetraError::InvalidTexture) will be
-    /// returned if the texture data was invalid.
+    ///   returned if the texture data was invalid.
     pub fn from_encoded(ctx: &mut Context, data: &[u8]) -> Result<Texture> {
         let data = ImageData::from_encoded(data)?;
         Texture::from_image_data(ctx, &data)
@@ -146,7 +146,7 @@ impl Texture {
     /// # Errors
     ///
     /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
-    /// if the underlying graphics API encounters an error.
+    ///   if the underlying graphics API encounters an error.
     pub fn from_image_data(ctx: &mut Context, data: &ImageData) -> Result<Texture> {
         Texture::from_data(
             ctx,
@@ -382,8 +382,8 @@ impl Texture {
     /// # Errors
     ///
     /// * [`TetraError::NotEnoughData`](crate::TetraError::NotEnoughData) will be returned if
-    /// not enough data is provided to fill the target rectangle. This is to prevent the
-    /// graphics API from trying to read uninitialized memory.
+    ///   not enough data is provided to fill the target rectangle. This is to prevent the
+    ///   graphics API from trying to read uninitialized memory.
     ///
     /// # Panics
     ///
@@ -413,8 +413,8 @@ impl Texture {
     /// # Errors
     ///
     /// * [`TetraError::NotEnoughData`](crate::TetraError::NotEnoughData) will be returned if not
-    /// enough data is provided to fill the texture. This is to prevent the graphics API from
-    /// trying to read uninitialized memory.
+    ///   enough data is provided to fill the texture. This is to prevent the graphics API from
+    ///   trying to read uninitialized memory.
     pub fn replace_data(&self, ctx: &mut Context, data: &[u8]) -> Result {
         let (width, height) = self.size();
         self.set_data(ctx, 0, 0, width, height, data)

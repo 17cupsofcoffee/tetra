@@ -77,7 +77,7 @@ impl ImageData {
     /// # Errors
     ///
     /// * [`TetraError::NotEnoughData`] will be returned if not enough data is provided to fill
-    /// the image.
+    ///   the image.
     pub fn from_data<D>(
         width: i32,
         height: i32,
