@@ -20,7 +20,7 @@ This project adheres to Semantic Versioning.
 * **Breaking:** Updated `rodio` to 0.20.
 * **Breaking:** Updated `image` to 0.25.
 * Updated `sdl2` to 0.37.
-* Updated `glow` to 0.15.
+* Updated `glow` to 0.16.
 * Updated `hashbrown` to 0.15.
 
 ## [0.8.0] - 2023-03-17

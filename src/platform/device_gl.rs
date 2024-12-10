@@ -676,7 +676,7 @@ impl GraphicsDevice {
                 0,
                 format.to_gl_format(),
                 format.to_gl_data_type(),
-                None,
+                PixelUnpackData::Slice(None),
             );
 
             if let Some(e) = self.get_error() {
@@ -731,7 +731,7 @@ impl GraphicsDevice {
                 height,
                 texture.format.to_gl_format(),
                 texture.format.to_gl_data_type(),
-                PixelUnpackData::Slice(data),
+                PixelUnpackData::Slice(Some(data)),
             );
 
             // Revert back to a sensible default.
@@ -755,7 +755,7 @@ impl GraphicsDevice {
                 0,
                 texture.format.to_gl_format(),
                 texture.format.to_gl_data_type(),
-                PixelPackData::Slice(&mut buffer),
+                PixelPackData::Slice(Some(&mut buffer)),
             );
         }
 
