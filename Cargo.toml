@@ -27,9 +27,9 @@ lyon_tessellation = "1.0.7"
 half = { version = "2.1.0", features = ["bytemuck"] }
 
 [dev-dependencies]
-rand = "0.8.0"
+rand = "0.9.1"
 anyhow = "1.0.33"
-legion = "0.4.0"
+hecs = "0.10.5"
 
 [features]
 default = [

@@ -23,8 +23,8 @@ struct Bunny {
 
 impl Bunny {
     fn new(rng: &mut ThreadRng) -> Bunny {
-        let x_vel = rng.gen::<f32>() * 5.0;
-        let y_vel = (rng.gen::<f32>() * 5.0) - 2.5;
+        let x_vel = rng.random::<f32>() * 5.0;
+        let y_vel = (rng.random::<f32>() * 5.0) - 2.5;
 
         Bunny {
             position: Vec2::new(0.0, 0.0),
@@ -44,7 +44,7 @@ struct GameState {
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<GameState> {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         let texture = Texture::new(ctx, "./examples/resources/wabbit_alpha.png")?;
         let mut bunnies = Vec::with_capacity(INITIAL_BUNNIES);
 
@@ -99,8 +99,8 @@ impl State for GameState {
                 bunny.velocity.y *= -0.8;
                 bunny.position.y = MAX_Y;
 
-                if self.rng.gen::<bool>() {
-                    bunny.velocity.y -= 3.0 + (self.rng.gen::<f32>() * 4.0);
+                if self.rng.random::<bool>() {
+                    bunny.velocity.y -= 3.0 + (self.rng.random::<f32>() * 4.0);
                 }
             } else if bunny.position.y < 0.0 {
                 bunny.velocity.y = 0.0;

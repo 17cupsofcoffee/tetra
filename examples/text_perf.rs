@@ -7,7 +7,7 @@
 //
 // Press SPACE to create more `Text` instances.
 
-use rand::distributions::{Distribution, Uniform};
+use rand::distr::{Distribution, Uniform};
 use rand::rngs::ThreadRng;
 use tetra::graphics::text::{Font, Text};
 use tetra::graphics::{self, Color};
@@ -31,9 +31,9 @@ impl GameState {
         let mut state = GameState {
             texts: vec![],
             font: Font::vector(ctx, "./examples/resources/DejaVuSansMono.ttf", 16.0)?,
-            rng: rand::thread_rng(),
-            x_between: Uniform::from(0..WIDTH),
-            y_between: Uniform::from(0..HEIGHT),
+            rng: rand::rng(),
+            x_between: Uniform::try_from(0..WIDTH).unwrap(),
+            y_between: Uniform::try_from(0..HEIGHT).unwrap(),
         };
 
         state.add_texts();

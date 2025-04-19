@@ -234,7 +234,7 @@ struct Block {
 
 impl Block {
     fn new() -> Block {
-        let shape = match rand::thread_rng().gen_range(0..7) {
+        let shape = match rand::rng().random_range(0..7) {
             0 => BlockShape::I,
             1 => BlockShape::J,
             2 => BlockShape::L,
