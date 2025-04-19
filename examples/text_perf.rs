@@ -58,7 +58,7 @@ impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
         tetra::window::set_title(
             ctx,
-            &format!(
+            format!(
                 "Text Perf ({} texts, {:.0} FPS)",
                 self.texts.len(),
                 tetra::time::get_fps(ctx)

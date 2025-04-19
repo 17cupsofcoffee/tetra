@@ -120,7 +120,7 @@ impl State for GameState {
 
         window::set_title(
             ctx,
-            &format!(
+            format!(
                 "BunnyMark - {} bunnies - {:.0} FPS",
                 self.bunnies.len(),
                 time::get_fps(ctx)

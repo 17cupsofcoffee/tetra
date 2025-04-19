@@ -372,7 +372,7 @@ impl UniformValue for Texture {
 }
 
 /// Any type that can be passed by value to a shader can also be passed by reference.
-impl<'a, T> UniformValue for &'a T
+impl<T> UniformValue for &T
 where
     T: UniformValue,
 {
