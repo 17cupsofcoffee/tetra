@@ -124,7 +124,7 @@ pub enum Event {
         ///
         /// Positive values correspond to scrolling up/right, negative values correspond to scrolling
         /// down/left.
-        amount: Vec2<i32>,
+        amount: Vec2<f32>,
     },
 
     /// A gamepad was connected to the system.

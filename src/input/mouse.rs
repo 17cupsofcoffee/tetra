@@ -41,12 +41,12 @@ pub fn is_mouse_button_released(ctx: &Context, button: MouseButton) -> bool {
 
 /// Returns true if the user scrolled up since the last update.
 pub fn is_mouse_scrolled_up(ctx: &Context) -> bool {
-    get_mouse_wheel_movement(ctx).y > 0
+    get_mouse_wheel_movement(ctx).y > 0.0
 }
 
 /// Returns true if the user scrolled down since the last update.
 pub fn is_mouse_scrolled_down(ctx: &Context) -> bool {
-    get_mouse_wheel_movement(ctx).y < 0
+    get_mouse_wheel_movement(ctx).y < 0.0
 }
 
 /// Get the X co-ordinate of the mouse.
@@ -71,7 +71,7 @@ pub fn get_mouse_position(ctx: &Context) -> Vec2<f32> {
 ///
 /// Positive values correspond to scrolling up/right, negative values correspond to scrolling
 /// down/left.
-pub fn get_mouse_wheel_movement(ctx: &Context) -> Vec2<i32> {
+pub fn get_mouse_wheel_movement(ctx: &Context) -> Vec2<f32> {
     ctx.input.mouse_wheel_movement
 }
 
@@ -99,6 +99,6 @@ pub(crate) fn set_mouse_position(ctx: &mut Context, position: Vec2<f32>) {
     ctx.input.mouse_position = position;
 }
 
-pub(crate) fn apply_mouse_wheel_movement(ctx: &mut Context, wheel_movement: Vec2<i32>) {
+pub(crate) fn apply_mouse_wheel_movement(ctx: &mut Context, wheel_movement: Vec2<f32>) {
     ctx.input.mouse_wheel_movement += wheel_movement;
 }

@@ -5,7 +5,7 @@
 [![Documentation](https://docs.rs/tetra/badge.svg)](https://docs.rs/tetra)
 [![License](https://img.shields.io/crates/l/tetra.svg)](LICENSE)
 
-Tetra is a simple 2D game framework written in Rust. It uses SDL2 for event handling and OpenGL 3.2+ for rendering.
+Tetra is a simple 2D game framework written in Rust. It uses SDL for event handling and OpenGL 3.2+ for rendering.
 
 * [API Docs](https://docs.rs/tetra)
 * [Installation Guide](/docs/installation.md)
@@ -41,7 +41,7 @@ To add Tetra to your project, add the following line to your `Cargo.toml` file:
 tetra = "0.8"
 ```
 
-You will also need to install the SDL2 native libraries - full details are provided in the [documentation](https://tetra.seventeencups.net/installation).
+You will also need to install the SDL native libraries - full details are provided in the [documentation](/docs/installation.md).
 
 ## Examples
 
@@ -70,7 +70,7 @@ fn main() -> tetra::Result {
 
 You can see this example in action by running `cargo run --example hello_world`.
 
-The full list of examples is available [here](https://tetra.seventeencups.net/examples).
+The full list of examples is available [here](/docs/examples.md).
 
 ## Support/Feedback
 

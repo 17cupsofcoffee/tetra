@@ -35,7 +35,7 @@ pub fn focus(ctx: &mut Context) {
 }
 
 /// Gets the display's refresh rate.
-pub fn get_refresh_rate(ctx: &Context) -> Result<i32> {
+pub fn get_refresh_rate(ctx: &Context) -> Result<f32> {
     ctx.window.get_refresh_rate()
 }
 
@@ -65,7 +65,7 @@ pub fn get_width(ctx: &Context) -> i32 {
 ///
 /// # Errors
 ///
-/// * [`TetraError::FailedToChangeDisplayMode`](crate::TetraError::FailedToChangeDisplayMode)
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError)
 ///   will be returned if the game was unable to change the window size.
 pub fn set_width(ctx: &mut Context, width: i32) -> Result {
     set_size(ctx, width, ctx.window.get_window_size().1)
@@ -84,7 +84,7 @@ pub fn get_height(ctx: &Context) -> i32 {
 ///
 /// # Errors
 ///
-/// * [`TetraError::FailedToChangeDisplayMode`](crate::TetraError::FailedToChangeDisplayMode)
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError)
 ///   will be returned if the game was unable to change the window size.
 pub fn set_height(ctx: &mut Context, height: i32) -> Result {
     set_size(ctx, ctx.window.get_window_size().0, height)
@@ -103,7 +103,7 @@ pub fn get_size(ctx: &Context) -> (i32, i32) {
 ///
 /// # Errors
 ///
-/// * [`TetraError::FailedToChangeDisplayMode`](crate::TetraError::FailedToChangeDisplayMode)
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError)
 ///   will be returned if the game was unable to change the window size.
 pub fn set_size(ctx: &mut Context, width: i32, height: i32) -> Result {
     ctx.window.set_window_size(width, height)
@@ -231,14 +231,19 @@ pub fn set_visible(ctx: &mut Context, visible: bool) {
 ///
 /// # Errors
 ///
-/// * [`TetraError::FailedToChangeDisplayMode`](crate::TetraError::FailedToChangeDisplayMode)
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError)
 ///   will be returned if the game was unable to change vsync mode.
 pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
     ctx.window.set_vsync(vsync)
 }
 
 /// Returns whether or not vsync is enabled.
-pub fn is_vsync_enabled(ctx: &Context) -> bool {
+///
+/// # Errors
+///
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError)
+///   will be returned if the vsync state was inaccessible.
+pub fn is_vsync_enabled(ctx: &Context) -> Result<bool> {
     ctx.window.is_vsync_enabled()
 }
 
@@ -246,7 +251,7 @@ pub fn is_vsync_enabled(ctx: &Context) -> bool {
 ///
 /// # Errors
 ///
-/// * [`TetraError::FailedToChangeDisplayMode`](crate::TetraError::FailedToChangeDisplayMode)
+/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError)
 ///   will be returned if the game was unable to enter or exit fullscreen.
 pub fn set_fullscreen(ctx: &mut Context, fullscreen: bool) -> Result {
     ctx.window.set_fullscreen(fullscreen)
@@ -317,12 +322,7 @@ pub fn is_relative_mouse_mode(ctx: &Context) -> bool {
 }
 
 /// Gets the number of monitors connected to the device.
-///
-/// # Errors
-///
-/// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
-///   if the monitor state was inaccessible.
-pub fn get_monitor_count(ctx: &Context) -> Result<i32> {
+pub fn get_monitor_count(ctx: &Context) -> usize {
     ctx.window.get_monitor_count()
 }
 
@@ -332,7 +332,7 @@ pub fn get_monitor_count(ctx: &Context) -> Result<i32> {
 ///
 /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
 ///   if the monitor state was inaccessible.
-pub fn get_monitor_name(ctx: &Context, monitor_index: i32) -> Result<String> {
+pub fn get_monitor_name(ctx: &Context, monitor_index: usize) -> Result<String> {
     ctx.window.get_monitor_name(monitor_index)
 }
 
@@ -342,7 +342,7 @@ pub fn get_monitor_name(ctx: &Context, monitor_index: i32) -> Result<String> {
 ///
 /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
 ///   if the monitor state was inaccessible.
-pub fn get_monitor_width(ctx: &Context, monitor_index: i32) -> Result<i32> {
+pub fn get_monitor_width(ctx: &Context, monitor_index: usize) -> Result<i32> {
     get_monitor_size(ctx, monitor_index).map(|(w, _)| w)
 }
 
@@ -352,7 +352,7 @@ pub fn get_monitor_width(ctx: &Context, monitor_index: i32) -> Result<i32> {
 ///
 /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
 ///   if the monitor state was inaccessible.
-pub fn get_monitor_height(ctx: &Context, monitor_index: i32) -> Result<i32> {
+pub fn get_monitor_height(ctx: &Context, monitor_index: usize) -> Result<i32> {
     get_monitor_size(ctx, monitor_index).map(|(_, h)| h)
 }
 
@@ -362,7 +362,7 @@ pub fn get_monitor_height(ctx: &Context, monitor_index: i32) -> Result<i32> {
 ///
 /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
 ///   if the monitor state was inaccessible.
-pub fn get_monitor_size(ctx: &Context, monitor_index: i32) -> Result<(i32, i32)> {
+pub fn get_monitor_size(ctx: &Context, monitor_index: usize) -> Result<(i32, i32)> {
     ctx.window.get_monitor_size(monitor_index)
 }
 
@@ -372,7 +372,7 @@ pub fn get_monitor_size(ctx: &Context, monitor_index: i32) -> Result<(i32, i32)>
 ///
 /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError) will be returned
 ///   if the monitor state was inaccessible.
-pub fn get_current_monitor(ctx: &Context) -> Result<i32> {
+pub fn get_current_monitor(ctx: &Context) -> Result<usize> {
     ctx.window.get_current_monitor()
 }
 

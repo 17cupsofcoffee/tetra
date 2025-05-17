@@ -18,24 +18,23 @@ Note that if you're developing on Windows with the default toolchain, you'll als
 
 Tetra uses a library called SDL for windowing and input, so you will need to have its runtime and development libraries installed in order for your project to compile.
 
+Alternatively, you can have SDL automatically compile from source as part of the build process - see [Do I have to install SDL manually?](./faq.md/#do-i-have-to-install-sdl-manually) for more details. 
+
 ### Windows
 
 1. Go to [SDL's GitHub releases page](https://github.com/libsdl-org/SDL/releases) and download the version of the development libraries that corresponds to your Rust toolchain.
-    * If you're using the MSVC toolchain, download `SDL2-devel-2.xx.x-VC.zip`.
-    * If you're using the GNU toolchain, download `SDL2-devel-2.xx.x-mingw.zip`.
-2. Inside the .zip file, open the `SDL2-2.xx.x/lib/x64` folder and extract `SDL2.lib` and `SDL2.dll` to the root of your Cargo workspace.
-    * If you're on a 32-bit system, use the files in `SDL2-2.xx.x/lib/x86` instead.
+    * If you're using the MSVC toolchain, download `SDL3-devel-3.xx.x-VC.zip`.
+    * If you're using the GNU toolchain, download `SDL3-devel-2.xx.x-mingw.zip`.
+2. Inside the .zip file, open the `SDL3-3.xx.x/lib/x64` folder and extract `SDL3.lib` and `SDL3.dll` to the root of your Cargo workspace.
 
-You will also need to distribute `SDL2.dll` with your game - see the [distributing guide](./distributing.md) for more details.
-
-You can also automatically compile SDL2 from source as part of the build process - see [Do I have to install SDL manually?](./faq.md/#do-i-have-to-install-sdl-manually) for more details. 
+You will also need to distribute `SDL3.dll` with your game - see the [distributing guide](./distributing.md) for more details.
 
 ### Mac
 
 The easiest way to install SDL is via [Homebrew](http://brew.sh/):
 
 ```bash
-brew install sdl2
+brew install sdl3
 ```
 
 You will also need to add the following to your `~/.bash_profile`, if it is not already present.
@@ -56,14 +55,14 @@ The SDL development libraries are distributed through most Linux package manager
 
 ```bash
 # Ubuntu/Debian
-sudo apt install libsdl2-dev
+sudo apt install libsdl3-dev
 
 # Fedora/CentOS
-sudo yum install SDL2-devel
-
-# Arch Linux
-sudo pacman -S sdl2
+sudo yum install SDL3-devel
 ```
+
+> [!INFO]
+> SDL3 is still quite new, so your distribution may not have it yet. If this is the case, you may want to enable Tetra's option to [compile it from source](./faq.md/#do-i-have-to-install-sdl-manually).
 
 ## Installing ALSA (Linux only)
 
@@ -75,7 +74,4 @@ sudo apt install libasound2-dev
 
 # Fedora/CentOS
 sudo yum install alsa-lib-devel
-
-# Arch Linux
-sudo pacman -S alsa-lib
 ```
