@@ -43,30 +43,13 @@ You will also need to add the following to your `~/.bash_profile`, if it is not 
 export LIBRARY_PATH="$LIBRARY_PATH:/opt/homebrew/lib:/usr/local/lib"
 ```
 
-> [!WARNING]
-> If you're building your game on Catalina, make sure that you use SDL 2.0.12 or higher - there is a
-> [bug in earlier versions](https://hg.libsdl.org/SDL/rev/46b094f7d20e) which causes the OpenGL
-> viewport to not scale correctly. See [issue #147](https://github.com/17cupsofcoffee/tetra/issues/147)
-> for more information.
-
 ### Linux
 
-The SDL development libraries are distributed through most Linux package managers - here are a few examples:
-
-```bash
-# Ubuntu/Debian
-sudo apt install libsdl3-dev
-
-# Fedora/CentOS
-sudo yum install SDL3-devel
-```
-
-> [!INFO]
-> SDL3 is still quite new, so your distribution may not have it yet. If this is the case, you may want to enable Tetra's option to [compile it from source](./faq.md/#do-i-have-to-install-sdl-manually).
+The SDL development libraries are usually acquired through your Linux distribution's package manager. Unfortunately, as SDL 3 is relatively new, not every distribution has an up-to-date package yet. If you can't find one for your distro of choice, you can configure Tetra to [build SDL from source](./faq.md/#do-i-have-to-install-sdl-manually) instead.
 
 ## Installing ALSA (Linux only)
 
-On Linux, ALSA is used as the audio backend, so you will need the ALSA development libraries installed. Similar to SDL, you can find these libraries on most Linux package managers:
+On Linux, ALSA is used as the audio backend, so you will also need the ALSA development libraries installed. You can find these on most Linux package managers:
 
 ```bash
 # Ubuntu/Debian
@@ -74,4 +57,7 @@ sudo apt install libasound2-dev
 
 # Fedora/CentOS
 sudo yum install alsa-lib-devel
+
+# Arch Linux
+sudo pacman -S alsa-lib
 ```

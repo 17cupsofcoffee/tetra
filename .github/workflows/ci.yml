@@ -14,12 +14,12 @@ jobs:
     - name: Install native dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install libsdl3-dev libasound2-dev
+        sudo apt-get install libasound2-dev
     - uses: hecrj/setup-rust-action@v1
       with:
         rust-version: ${{ matrix.rust }}
     - uses: actions/checkout@v1
     - name: Build and test (all features, all targets)
-      run: cargo test
+      run: cargo test --features sdl_build_from_source
     - name: Build and test (no features, library only)
-      run: cargo test --lib --no-default-features 
+      run: cargo test --lib --no-default-features --features sdl_build_from_source
