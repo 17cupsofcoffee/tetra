@@ -13,13 +13,13 @@ This page lists some of the things that should be taken into consideration when 
 
 By default, Cargo builds projects in debug mode, with very few optimizations. When you plan on distributing your game, you should make sure to run `cargo build` with the `--release` flag, to ensure that the final executable is as optimized as possible. There are [benchmarks in the FAQ](/faq/#benchmarks) which show that this makes a significant different to the performance!
 
-### Include SDL 2.0
+### Include SDL
 
 Tetra uses a C library called SDL 2.0 to interact with platform-specific functionality (such as windowing and input). Unlike Tetra's Rust dependencies, SDL is usually dynamically linked, meaning that the library needs to be present on the end user's machine for your application to run. Therefore, it is usually good practice to bundle SDL with your game when distributing it.
 
-On Windows, the easiest way to do this is to include `SDL2.dll` in the same folder as your game's executable. You will probably have a copy of this file already if you followed the [installation guide](./installation.md), but if not, you can obtain it via the '[Runtime Binaries](https://www.libsdl.org/download-2.0.php)' section of SDL's website.
+On Windows, the easiest way to do this is to include `SDL3.dll` in the same folder as your game's executable. You will probably have a copy of this file already if you followed the [installation guide](./installation.md), but if not, you can obtain it via [SDL's GitHub releases page](https://github.com/libsdl-org/SDL/releases).
 
-Alternatively, you can choose to [statically link SDL into your game](/faq/#can-i-static-link-sdl) - however, this comes with [some tradeoffs](https://hg.libsdl.org/SDL/file/default/docs/README-dynapi.md) that need to be taken into account, so make sure you understand them before switching.
+Alternatively, you can choose to [statically link SDL into your game](/faq/#can-i-static-link-sdl) - however, this comes with [some tradeoffs](https://github.com/libsdl-org/SDL/blob/main/docs/README-dynapi.md) that need to be taken into account, so make sure you understand them before switching.
 
 ### Include Software Licenses
 

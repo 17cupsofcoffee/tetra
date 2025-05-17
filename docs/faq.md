@@ -4,33 +4,33 @@
 
 ### Will Tetra be written in pure Rust eventually?
 
-Probably not - SDL2 is a stable and well-tested foundation for building games, and it runs on basically every platform under the sun, so I'm hesitant to replace it. That's likely to remain the only non-Rust dependency, however.
+Probably not - SDL is a stable and well-tested foundation for building games, and it runs on basically every platform under the sun, so I'm hesitant to replace it. That's likely to remain the only non-Rust dependency, however.
 
 If you're looking for a similar engine that _is_ pure Rust, [GGEZ](https://github.com/ggez/ggez) and [Macroquad](https://github.com/not-fl3/macroquad) are good options.
 
 ### Do I have to install SDL manually?
 
-It's possible to have your project automatically compile SDL2 from source as part of the build process. To do so, specify your dependency on Tetra like this:
+It's possible to have your project automatically compile SDL from source as part of the build process. To do so, specify your dependency on Tetra like this:
 
 ```toml
 [dependencies.tetra]
 version = "0.8"
-features = ["sdl2_bundled"]
+features = ["sdl_build_from_source"]
 ```
 
 This is more convienent, but does however require you to have various build tools installed on your machine (e.g. a C compiler, CMake, etc). In particular, this can be a pain on Windows - hence why it's not the default!
 
 ### Can I static link SDL?
 
-If you want to avoid your users having to install SDL2 themselves (or you having to distribute it as a DLL), you can specify for it to be statically linked:
+If you want to avoid your users having to install SDL themselves (or you having to distribute it as a DLL), you can specify for it to be statically linked:
 
 ```toml
 [dependencies.tetra]
 version = "0.8"
-features = ["sdl2_static_link"]
+features = ["sdl_static_link"]
 ```
 
-This comes with some trade-offs, however - make sure you read [this document](https://hg.libsdl.org/SDL/file/default/docs/README-dynapi.md) in the SDL2 repository so that you understand what you're doing!
+This comes with some trade-offs, however - make sure you read [this document](https://github.com/libsdl-org/SDL/blob/main/docs/README-dynapi.md) in the SDL repository so that you understand what you're doing!
 
 ## Graphics
 

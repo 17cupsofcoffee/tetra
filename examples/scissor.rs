@@ -43,7 +43,7 @@ impl GameState {
 
 impl State for GameState {
     fn update(&mut self, ctx: &mut Context) -> tetra::Result {
-        self.text_pos.y += (input::get_mouse_wheel_movement(ctx).y * 8) as f32;
+        self.text_pos.y += input::get_mouse_wheel_movement(ctx).y * 8.0;
 
         if input::is_key_down(ctx, Key::W) {
             self.text_pos.y += 2.0;
