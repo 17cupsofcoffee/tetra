@@ -3,7 +3,7 @@
 First, you'll need to make sure your development environment is set up properly. There's three things that need to be installed on your machine in order to successfully compile a Tetra project:
 
 * The latest stable version of Rust
-* The SDL2 development libraries
+* The SDL development libraries
 * The ALSA development libraries (only required on Linux)
 
 There's instructions on how to set these up on the '[Installation](../installation.md)' page, so make sure you've followed through those steps before continuing!
@@ -25,7 +25,7 @@ tetra = "0.8"
 > [!WARNING]
 > If you're developing on Windows, make sure you've dropped the SDL libraries into your `pong` folder, as described in the [installation guide](../installation.md). Your game won't build or run without them!
 >
-> You will also need to distribute `SDL2.dll` with your game if you send it to someone else.
+> You will also need to distribute `SDL3.dll` with your game if you send it to someone else.
 
 Finally, let's add the imports we're going to use in this chapter to `main.rs`:
 

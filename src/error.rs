@@ -24,7 +24,6 @@ pub type Result<T = ()> = result::Result<T, TetraError>;
 #[derive(Debug)]
 pub enum TetraError {
     /// Returned when the underlying platform returns an unexpected error.
-    /// This usually isn't something your game can reasonably be expected to recover from.
     PlatformError(String),
 
     /// Returned when your game fails to load an asset. This is usually caused by an
@@ -67,14 +66,6 @@ pub enum TetraError {
     /// Returned when trying to play back audio without an available device.
     NoAudioDevice,
 
-    /// Returned when your game tried to change the display settings (e.g. fullscreen, vsync)
-    /// but was unable to do so.
-    FailedToChangeDisplayMode(String),
-
-    /// Returned when your game tried to get the display's refresh rate
-    /// but was unable to do so.
-    FailedToGetRefreshRate(String),
-
     /// Returned when a shape cannot be tessellated.
     TessellationError(TessellationError),
 }
@@ -99,12 +90,6 @@ impl Display for TetraError {
                 "Not enough data was provided to fill a buffer - expected {}, found {}.",
                 expected, actual
             ),
-            TetraError::FailedToGetRefreshRate(msg) => {
-                write!(f, "Failed to get refresh rate: {}", msg)
-            }
-            TetraError::FailedToChangeDisplayMode(msg) => {
-                write!(f, "Failed to change display mode: {}", msg)
-            }
             TetraError::NoAudioDevice => write!(f, "No audio device available for playback"),
             TetraError::TessellationError(_) => {
                 write!(f, "An error occurred while tessellating a shape")
@@ -126,8 +111,6 @@ impl Error for TetraError {
             TetraError::InvalidSound(reason) => Some(reason),
             TetraError::NotEnoughData { .. } => None,
             TetraError::NoAudioDevice => None,
-            TetraError::FailedToGetRefreshRate(_) => None,
-            TetraError::FailedToChangeDisplayMode(_) => None,
             TetraError::TessellationError(reason) => Some(reason),
         }
     }

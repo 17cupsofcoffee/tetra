@@ -47,7 +47,7 @@ pub(crate) struct InputContext {
     mouse_buttons_pressed: HashSet<MouseButton>,
     mouse_buttons_released: HashSet<MouseButton>,
     mouse_position: Vec2<f32>,
-    mouse_wheel_movement: Vec2<i32>,
+    mouse_wheel_movement: Vec2<f32>,
 
     current_text_input: Option<String>,
 

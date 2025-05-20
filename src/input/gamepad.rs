@@ -116,11 +116,14 @@ pub fn is_gamepad_connected(ctx: &Context, gamepad_id: usize) -> bool {
     get_gamepad(ctx, gamepad_id).is_some()
 }
 
-/// Returns the name of the specified gamepad, or [`None`] if it is not connected.
+/// Returns the name of the specified gamepad.
+///
+/// If the gamepad is disconnected, or if it does not have a name, this will
+/// return `None`.
 pub fn get_gamepad_name(ctx: &Context, gamepad_id: usize) -> Option<String> {
     get_gamepad(ctx, gamepad_id)
         .map(|g| g.platform_id)
-        .map(|id| ctx.window.get_gamepad_name(id))
+        .and_then(|id| ctx.window.get_gamepad_name(id))
 }
 
 /// Returns true if the specified gamepad button is currently down.
