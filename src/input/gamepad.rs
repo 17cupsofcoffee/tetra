@@ -118,7 +118,7 @@ pub fn is_gamepad_connected(ctx: &Context, gamepad_id: usize) -> bool {
 
 /// Returns the name of the specified gamepad.
 ///
-/// If the gamepad is not disconnected, or if it does not have a name, this will
+/// If the gamepad is disconnected, or if it does not have a name, this will
 /// return `None`.
 pub fn get_gamepad_name(ctx: &Context, gamepad_id: usize) -> Option<String> {
     get_gamepad(ctx, gamepad_id)
