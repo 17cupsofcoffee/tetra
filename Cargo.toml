@@ -12,7 +12,7 @@ keywords = ["game", "engine", "framework", "gamedev"]
 categories = ["game-engines"]
 
 [dependencies]
-sdl3 = "0.14.27"
+sdl3 = "0.15.1"
 rodio = { version = "0.20.1", optional = true, default-features = false }
 glow = "0.16.0"
 image = { version = "0.25.0", default-features = false }

@@ -15,6 +15,8 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
+* **Breaking:** Tetra now uses SDL3 instead of SDL2.
+    * This means that you will need to download the latest development libraries (and DLLs, on Windows) - see the installation docs for more details on how.
 * **Breaking:** Mouse wheel movement is now represented as a `Vec2<f32>` instead of a `Vec2<i32>`.
 * **Breaking:** `window::get_monitor_count` now returns a `usize` instead of a `Result<i32>`.
 * **Breaking:** Monitor indices are now `usize` rather than `i32`. 
@@ -28,7 +30,6 @@ This project adheres to Semantic Versioning.
 * **Breaking:** Updated `vek` to 0.17.
 * **Breaking:** Updated `rodio` to 0.20.
 * **Breaking:** Updated `image` to 0.25.
-* Updated `sdl2` to 0.37.
 * Updated `glow` to 0.16.
 * Updated `hashbrown` to 0.15.
 
