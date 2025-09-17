@@ -12,7 +12,7 @@ keywords = ["game", "engine", "framework", "gamedev"]
 categories = ["game-engines"]
 
 [dependencies]
-sdl2 = "0.37.0"
+sdl3 = "0.15.1"
 rodio = { version = "0.20.1", optional = true, default-features = false }
 glow = "0.16.0"
 image = { version = "0.25.0", default-features = false }
@@ -72,8 +72,8 @@ texture_tga = ["image/tga"]
 # Enables support for serialization/deserialization via Serde.
 serde = ["dep:serde", "vek/serde"]
 
-# Compiles SDL2 from source (see https://github.com/Rust-SDL2/rust-sdl2#bundled-feature).
-sdl2_bundled = ["sdl2/bundled"]
+# Compiles SDL from source (see https://github.com/maia-s/sdl3-sys-rs/tree/main/sdl3-sys#usage).
+sdl_build_from_source = ["sdl3/build-from-source"]
 
-# Links SDL2 statically (see https://hg.libsdl.org/SDL/file/default/docs/README-dynapi.md).
-sdl2_static_link = ["sdl2/static-link"]
+# Links SDL statically (see https://hg.libsdl.org/SDL/file/default/docs/README-dynapi.md).
+sdl_static_link = ["sdl3/static-link"]
