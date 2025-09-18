@@ -72,7 +72,7 @@ impl Sound {
     /// Creates a new sound from a slice of binary data, encoded in one of Tetra's supported
     /// file formats.
     ///
-    /// This is useful in combination with [`include_bytes`](std::include_bytes), as it
+    /// This is useful in combination with [`include_bytes`], as it
     /// allows you to include your audio data directly in the binary.
     ///
     /// Note that the data is not decoded until playback begins, so this function will not

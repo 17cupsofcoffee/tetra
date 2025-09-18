@@ -89,7 +89,7 @@ impl Font {
     ///
     /// TrueType and OpenType fonts are supported.
     ///
-    /// This is useful in combination with [`include_bytes`](std::include_bytes), as it
+    /// This is useful in combination with [`include_bytes`], as it
     /// allows you to include your font data directly in the binary.
     ///
     /// If you want to load multiple sizes of the same font, you can use a
