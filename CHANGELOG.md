@@ -30,6 +30,7 @@ This project adheres to Semantic Versioning.
 * **Breaking:** Updated `vek` to 0.17.
 * **Breaking:** Updated `rodio` to 0.20.
 * **Breaking:** Updated `image` to 0.25.
+* The docs for `Camera` were updated to use less confusing terminology.
 * Updated `glow` to 0.16.
 * Updated `hashbrown` to 0.16.
 

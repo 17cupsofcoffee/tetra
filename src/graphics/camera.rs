@@ -123,7 +123,23 @@ impl Camera {
         self.matrix
     }
 
-    /// Projects a point from world co-ordinates to camera co-ordinates.
+    /// Projects a point from viewport co-ordinates to world co-ordinates.
+    ///
+    /// # Examples
+    /// ```
+    /// # use tetra::graphics::Camera;
+    /// # use tetra::math::Vec2;
+    /// let camera = Camera::new(1280.0, 720.0);
+    ///
+    /// // Top-left of the viewport:
+    /// assert_eq!(camera.project(Vec2::zero()), Vec2::new(-640.0, -360.0));
+    ///
+    /// // Center of the viewport:
+    /// assert_eq!(camera.project(Vec2::new(640.0, 360.0)), Vec2::zero());
+    ///
+    /// // Bottom-right of the viewport:
+    /// assert_eq!(camera.project(Vec2::new(1280.0, 720.0)), Vec2::new(640.0, 360.0));
+    /// ```
     pub fn project(&self, point: Vec2<f32>) -> Vec2<f32> {
         let mut proj = Vec2::new(
             (point.x - self.viewport_width / 2.0) / self.scale.x,
@@ -136,7 +152,23 @@ impl Camera {
         proj
     }
 
-    /// Projects a point from camera co-ordinates to world co-ordinates.
+    /// Projects a point from world co-ordinates to viewport co-ordinates.
+    ///
+    /// # Examples
+    /// ```
+    /// # use tetra::graphics::Camera;
+    /// # use tetra::math::Vec2;
+    /// let camera = Camera::new(1280.0, 720.0);
+    ///
+    /// // Top-left of the viewport:
+    /// assert_eq!(camera.unproject(Vec2::new(-640.0, -360.0)), Vec2::zero());
+    ///
+    /// // Center of the viewport:
+    /// assert_eq!(camera.unproject(Vec2::zero()), Vec2::new(640.0, 360.0));
+    ///
+    /// // Bottom-right of the viewport:
+    /// assert_eq!(camera.unproject(Vec2::new(640.0, 360.0)), Vec2::new(1280.0, 720.0));
+    /// ```
     pub fn unproject(&self, point: Vec2<f32>) -> Vec2<f32> {
         let mut unproj = point - self.position;
         unproj.rotate_z(self.rotation);
@@ -147,7 +179,7 @@ impl Camera {
         unproj
     }
 
-    /// Returns the mouse's position in camera co-ordinates.
+    /// Returns the mouse's position, projected to world co-ordinates.
     ///
     /// This is a shortcut for calling [`project(input::get_mouse_position(ctx))`](Self::project).
     /// As such, it does not take into account any other transformations
@@ -156,7 +188,7 @@ impl Camera {
         self.project(input::get_mouse_position(ctx))
     }
 
-    /// Returns the X co-ordinate of the mouse's position in camera co-ordinates.
+    /// Returns the X co-ordinate of the mouse's position, projected to world co-ordinates.
     ///
     /// This is a shortcut for calling [`project(input::get_mouse_position(ctx)).x`](Self::project).
     /// As such, it does not take into account any other transformations
@@ -165,7 +197,7 @@ impl Camera {
         self.mouse_position(ctx).x
     }
 
-    /// Returns the Y co-ordinate of the mouse's position in camera co-ordinates.
+    /// Returns the Y co-ordinate of the mouse's position, projected to world co-ordinates.
     ///
     /// This is a shortcut for calling [`project(input::get_mouse_position(ctx)).y`](Self::project).
     /// As such, it does not take into account any other transformations
