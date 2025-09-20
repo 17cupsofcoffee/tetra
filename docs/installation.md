@@ -4,7 +4,7 @@ To get started with Tetra, you'll need several things installed, some of which a
 
 * **All platforms:**
     * The latest stable version of Rust
-    * The SDL 2.0 development libraries
+    * The SDL development libraries
 * **Linux:**
     * The ALSA development libraries
 
@@ -14,7 +14,7 @@ Installing Rust is pretty simple - just go to [the website](https://www.rust-lan
 
 Note that if you're developing on Windows with the default toolchain, you'll also need to install the [Microsoft Visual C++ Build Tools](https://www.visualstudio.com/downloads/#build-tools-for-visual-studio-2017). This is used for linking your code together.
 
-## Installing SDL 2.0
+## Installing SDL
 
 Tetra uses a library called SDL for windowing and input, so you will need to have its runtime and development libraries installed in order for your project to compile.
 

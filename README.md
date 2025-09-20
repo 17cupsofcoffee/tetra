@@ -38,7 +38,7 @@ If you're looking for a similar framework that's more actively developed, try [m
 To add Tetra to your project, add the following line to your `Cargo.toml` file:
 
 ```toml
-tetra = "0.8"
+tetra = "0.9"
 ```
 
 You will also need to install the SDL native libraries - full details are provided in the [documentation](/docs/installation.md).
