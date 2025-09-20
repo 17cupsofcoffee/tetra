@@ -21,7 +21,6 @@ This project adheres to Semantic Versioning.
 * **Breaking:** `window::get_monitor_count` now returns a `usize` instead of a `Result<i32>`.
 * **Breaking:** Monitor indices are now `usize` rather than `i32`. 
 * **Breaking:** `window::is_vsync_enabled` now returns a `Result<bool>` instead of a `bool`.
-* **Breaking:** `window::get_refresh_rate` now returns a `Result<f32>` instead of a `Result<i32>`.
 * **Breaking:** `TetraError::FailedToChangeDisplayMode` and `TetraError::FailedToGetRefreshRate` have been removed.
     * These were effectively just variations on `TetraError::PlatformError`, and it was a bit arbitary which were used where.
 * **Breaking:** The `serde_support` feature was renamed to `serde`.
