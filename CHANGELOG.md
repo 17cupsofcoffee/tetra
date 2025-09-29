@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [0.9.1] - 2025-09-29
+
+### Changed
+
+* Text input events no longer fail to fire. ([@Tairesh](https://github.com/Tairesh) in [#355](https://github.com/17cupsofcoffee/tetra/pull/355))
+
 ## [0.9.0] - 2025-09-20
 
 ### Added
@@ -935,7 +941,8 @@ for. This can be useful when implementing more complex animation behaviors. ([@V
 
 * Initial release!
 
-[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.9.0..HEAD
+[Upcoming]: https://github.com/17cupsofcoffee/tetra/compare/0.9.1..HEAD
+[0.9.1]: https://github.com/17cupsofcoffee/tetra/compare/0.9.0..0.9.1
 [0.9.0]: https://github.com/17cupsofcoffee/tetra/compare/0.8.0..0.9.0
 [0.8.0]: https://github.com/17cupsofcoffee/tetra/compare/0.7.0..0.8.0
 [0.7.0]: https://github.com/17cupsofcoffee/tetra/compare/0.6.7..0.7.0
