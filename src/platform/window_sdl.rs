@@ -151,6 +151,8 @@ impl Window {
 
         sdl.mouse().show_cursor(settings.show_mouse);
 
+        video_sys.text_input().start(&sdl_window);
+
         let window = Window {
             sdl,
             sdl_window,
