@@ -12,7 +12,7 @@ keywords = ["game", "engine", "framework", "gamedev"]
 categories = ["game-engines"]
 
 [dependencies]
-sdl3 = "0.15.1"
+sdl3 = "0.17.3"
 rodio = { version = "0.20.1", optional = true, default-features = false }
 glow = "0.16.0"
 image = { version = "0.25.0", default-features = false }
@@ -29,7 +29,7 @@ half = { version = "2.1.0", features = ["bytemuck"] }
 [dev-dependencies]
 rand = "0.9.1"
 anyhow = "1.0.33"
-hecs = "0.10.5"
+hecs = "0.11.0"
 
 [features]
 default = [

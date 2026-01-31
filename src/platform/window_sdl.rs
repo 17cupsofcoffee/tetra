@@ -6,10 +6,12 @@ use glow::Context as GlowContext;
 use hashbrown::HashMap;
 use sdl3::event::{DisplayEvent, Event as SdlEvent, WindowEvent};
 use sdl3::gamepad::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, Gamepad};
+
 use sdl3::keyboard::{Keycode, Mod, Scancode};
 use sdl3::mouse::{MouseButton as SdlMouseButton, MouseWheelDirection};
 use sdl3::pixels::PixelMasks;
 use sdl3::surface::Surface;
+use sdl3::sys::joystick::SDL_JoystickID;
 use sdl3::sys::keycode::SDL_KMOD_NONE;
 use sdl3::sys::video::SDL_WINDOWPOS_CENTERED_MASK;
 use sdl3::video::{
@@ -471,7 +473,10 @@ impl Window {
 
     pub fn get_key_with_label(&self, key_label: KeyLabel) -> Option<Key> {
         let sdl_keycode = into_sdl_keycode(key_label);
-        let sdl_scancode = Scancode::from_keycode(sdl_keycode, std::ptr::null_mut())?;
+
+        // SAFETY: A null pointer is a valid value for 'modstate'.
+        let sdl_scancode = unsafe { Scancode::from_keycode(sdl_keycode, std::ptr::null_mut())? };
+
         from_sdl_scancode(sdl_scancode)
     }
 
@@ -622,7 +627,7 @@ where
                 let mut gamepad = ctx
                     .window
                     .gamepad_sys
-                    .open(which)
+                    .open(SDL_JoystickID(which))
                     .map_err(|e| TetraError::PlatformError(e.to_string()))?;
 
                 let slot = input::add_gamepad(ctx, which);

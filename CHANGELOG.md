@@ -6,6 +6,12 @@ From 0.4.0 onwards, all breaking changes will be explicitly labelled, to make it
 
 This project adheres to Semantic Versioning.
 
+## [Upcoming]
+
+### Changed
+
+* Updated `sdl3` to `0.17.3`.
+
 ## [0.9.1] - 2025-09-29
 
 ### Changed
