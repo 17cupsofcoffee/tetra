@@ -130,7 +130,7 @@ fn spawn_bunnies(world: &mut World, res: &mut Resources) {
 }
 
 fn update_positions(world: &mut World, res: &mut Resources) {
-    for (_, (Position(position), Velocity(velocity))) in
+    for (Position(position), Velocity(velocity)) in
         world.query_mut::<(&mut Position, &mut Velocity)>()
     {
         *position += *velocity;
@@ -161,7 +161,7 @@ fn update_positions(world: &mut World, res: &mut Resources) {
 fn render_world(ctx: &mut Context, world: &World, texture: &Texture) {
     graphics::clear(ctx, Color::rgb(0.392, 0.584, 0.929));
 
-    for (_, position) in &mut world.query::<&Position>() {
+    for position in &mut world.query::<&Position>() {
         texture.draw(ctx, position.0);
     }
 }
