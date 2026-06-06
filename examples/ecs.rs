@@ -5,8 +5,8 @@
 //! should work too.
 
 use hecs::World;
-use rand::rngs::StdRng;
-use rand::{self, Rng, SeedableRng};
+use rand::rngs::{StdRng, SysRng};
+use rand::{self, RngExt, SeedableRng};
 
 use tetra::graphics::{self, Color, Texture};
 use tetra::input::{self, Key, MouseButton};
@@ -50,7 +50,7 @@ struct GameState {
 
 impl GameState {
     fn new(ctx: &mut Context) -> tetra::Result<Self> {
-        let mut rng = StdRng::from_os_rng();
+        let mut rng = StdRng::try_from_rng(&mut SysRng).unwrap();
 
         let mut world = World::default();
 

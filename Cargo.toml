@@ -12,12 +12,12 @@ keywords = ["game", "engine", "framework", "gamedev"]
 categories = ["game-engines"]
 
 [dependencies]
-sdl3 = "0.17.3"
+sdl3 = "0.18.4"
 rodio = { version = "0.20.1", optional = true, default-features = false }
-glow = "0.16.0"
+glow = "0.17.0"
 image = { version = "0.25.0", default-features = false }
 vek = { version = "0.17.0", default-features = false }
-hashbrown = "0.16.0"
+hashbrown = "0.17.1"
 serde = { version = "1.0.104", optional = true } 
 ab_glyph = { version = "0.2.2", optional = true }
 xi-unicode = "0.3.0"
@@ -27,7 +27,7 @@ lyon_tessellation = "1.0.7"
 half = { version = "2.1.0", features = ["bytemuck"] }
 
 [dev-dependencies]
-rand = "0.9.1"
+rand = "0.10.1"
 anyhow = "1.0.33"
 hecs = "0.11.0"
 

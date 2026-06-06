@@ -2,7 +2,7 @@
 // The scene stack implementation is inspired by Amethyst's state system
 // and the ggez-goodies scene stack.
 
-use rand::{self, Rng};
+use rand::{self, RngExt};
 use tetra::audio::Sound;
 use tetra::graphics::scaling::{ScalingMode, ScreenScaler};
 use tetra::graphics::text::{Font, Text, VectorFontBuilder};

@@ -1,7 +1,7 @@
 /// Based on https://github.com/openfl/openfl-samples/tree/master/demos/BunnyMark
 /// Original BunnyMark (and sprite) by Iain Lobb
 use rand::rngs::ThreadRng;
-use rand::{self, Rng};
+use rand::{self, RngExt};
 use tetra::graphics::{self, Color, Texture};
 use tetra::input::{self, Key, MouseButton};
 use tetra::math::Vec2;

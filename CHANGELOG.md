@@ -10,7 +10,9 @@ This project adheres to Semantic Versioning.
 
 ### Changed
 
-* Updated `sdl3` to `0.17.3`.
+* Updated `sdl3` to 0.18.
+* Updated `glow` to 0.17.
+* Updated `hashbrown` to 0.17.
 
 ## [0.9.1] - 2025-09-29
 
