@@ -485,6 +485,19 @@ impl Window {
         let sdl_keycode = Keycode::from_scancode(sdl_scancode, SDL_KMOD_NONE, false)?;
         from_sdl_keycode(sdl_keycode)
     }
+
+    pub fn set_text_input_enabled(&mut self, text_input_enabled: bool) {
+        let text_input = self.video_sys.text_input();
+        if text_input_enabled {
+            text_input.start(&self.sdl_window);
+        } else {
+            text_input.stop(&self.sdl_window);
+        }
+    }
+
+    pub fn is_text_input_enabled(&self) -> bool {
+        self.video_sys.text_input().is_active(&self.sdl_window)
+    }
 }
 
 pub fn handle_events<S, E>(ctx: &mut Context, state: &mut S) -> result::Result<(), E>
