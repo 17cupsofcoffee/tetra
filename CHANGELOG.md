@@ -8,6 +8,10 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
+### Added
+
+* `window::set_text_input_enabled` and `window::is_text_input_enabled` were added, allowing you to enable and disable text input events. They are currently on by default, but this may change in a future version. ([@Tairesh](https://github.com/Tairesh) in [#356](https://github.com/17cupsofcoffee/tetra/pull/356))
+
 ### Changed
 
 * Updated `sdl3` to 0.18.
