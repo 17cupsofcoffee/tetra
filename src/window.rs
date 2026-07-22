@@ -446,6 +446,21 @@ pub fn is_key_repeat_enabled(ctx: &Context) -> bool {
     ctx.window.is_key_repeat_enabled()
 }
 
+/// Sets whether or not text input is enabled.
+///
+/// When enabled, typing fires [`TextInput`](crate::Event::TextInput) events carrying the
+/// composed text (and, on platforms with an IME, activates it). When disabled, keystrokes
+/// still fire [`KeyPressed`](crate::Event::KeyPressed)/[`KeyReleased`](crate::Event::KeyReleased)
+/// but produce no `TextInput`.
+pub fn set_text_input_enabled(ctx: &mut Context, text_input_enabled: bool) {
+    ctx.window.set_text_input_enabled(text_input_enabled);
+}
+
+/// Returns whether or not text input is currently enabled.
+pub fn is_text_input_enabled(ctx: &Context) -> bool {
+    ctx.window.is_text_input_enabled()
+}
+
 /// Represents the position of a window on the screen.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
