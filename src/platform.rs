@@ -1,7 +1,8 @@
-mod device_gl;
+mod device_wgpu;
+mod glsl_compat;
 mod window_sdl;
 
-pub use device_gl::{
+pub use device_wgpu::{
     GraphicsDevice, RawCanvas, RawIndexBuffer, RawRenderbuffer, RawShader, RawTexture,
     RawVertexBuffer,
 };

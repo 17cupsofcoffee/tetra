@@ -81,7 +81,7 @@ pub enum BufferUsage {
 }
 
 /// The ordering of the vertices in a piece of geometry.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum VertexWinding {
     /// The vertices are in clockwise order.
     Clockwise,
@@ -379,13 +379,7 @@ impl Mesh {
         );
 
         ctx.device.cull_face(self.backface_culling);
-
-        // Because canvas rendering is effectively done upside-down, the winding order is the opposite
-        // of what you'd expect in that case.
-        ctx.device.front_face(match &ctx.graphics.canvas {
-            None => self.winding,
-            Some(_) => self.winding.flipped(),
-        });
+        ctx.device.front_face(self.winding);
 
         let (start, count) = match (self.draw_range, &self.index_buffer) {
             (Some(d), _) => (d.start, d.count),

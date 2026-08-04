@@ -49,6 +49,14 @@ impl PartialEq for ShaderSharedData {
 ///
 /// Shaders are written using [GLSL](https://en.wikipedia.org/wiki/OpenGL_Shading_Language).
 ///
+/// Internally, Tetra renders via [wgpu](https://wgpu.rs), and automatically translates
+/// your GLSL into a form that wgpu's shader compiler understands. This means most
+/// OpenGL-style shaders will keep working unchanged, but there are a few limitations:
+///
+/// * `uniform bool` variables are not supported (use an `int` instead).
+/// * User-defined functions with `sampler2D` parameters are not supported (sample
+///   the texture at the call site instead).
+///
 /// ## Vertex Shaders
 ///
 /// Vertex shaders take in data via three attributes:
@@ -77,10 +85,10 @@ impl PartialEq for ShaderSharedData {
 ///
 /// You can also set data into your own uniform variables via the [`set_uniform`](Shader::set_uniform) method.
 ///
-/// Bear in mind that there is a hardware-defined limit on how many uniform locations can be used
-/// per shader. OpenGL 3.0 guarantees there will be at least 1024 of these locations available,
-/// which sounds like a lot - however, some types can use up multiple locations (e.g. a `vec2`
-/// uses 2, a `mat4` uses 16, an array of 4 `mat4`s uses 64, and so on).
+/// Bear in mind that there is a hardware-defined limit on how many individual uniform variables
+/// and textures can be used per shader (on most platforms, at least 12 data uniforms and
+/// 16 textures per stage are available). If you need to pass large amounts of data to a
+/// shader, prefer arrays (e.g. `uniform vec4 u_data[256]`) over individual uniforms.
 ///
 /// # Performance
 ///

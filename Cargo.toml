@@ -12,9 +12,10 @@ keywords = ["game", "engine", "framework", "gamedev"]
 categories = ["game-engines"]
 
 [dependencies]
-sdl3 = "0.18.4"
+sdl3 = { version = "0.18.4", features = ["raw-window-handle"] }
 rodio = { version = "0.20.1", optional = true, default-features = false }
-glow = "0.17.0"
+wgpu = { version = "30.0.0", features = ["glsl", "naga-ir"] }
+pollster = "0.4.0"
 image = { version = "0.25.0", default-features = false }
 vek = { version = "0.17.0", default-features = false }
 hashbrown = "0.17.1"

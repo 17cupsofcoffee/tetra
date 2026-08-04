@@ -36,9 +36,9 @@ This comes with some trade-offs, however - make sure you read [this document](ht
 
 ### Why am I getting a black screen?
 
-Tetra currently targets OpenGL 3.2, so if your hardware does not support this, you might have trouble running games written with the framework. You can check your version of OpenGL by enabling Tetra's debug output - add `.debug_info(true)` to your `ContextBuilder`, run your game, and then look at the console.
+Tetra renders via [wgpu](https://wgpu.rs), which requires a reasonably modern graphics API (Vulkan, Metal, DirectX 12, or OpenGL ES 3 as a fallback) - if your hardware does not support any of these, you might have trouble running games written with the framework. You can check which backend and device are being used by enabling Tetra's debug output - add `.debug_info(true)` to your `ContextBuilder`, run your game, and then look at the console.
 
-If your OpenGL version is 3.2 or higher and you're still getting a black screen, that may indicate a bug - I currently only have access to a Windows machine with a reasonably modern graphics card, so it's not outside the realms of possibility that something that works for me might be broken for others! Please submit an issue, and I'll try to fix it and release a patch version.
+If a suitable backend is available and you're still getting a black screen, that may indicate a bug - I currently only have access to a Windows machine with a reasonably modern graphics card, so it's not outside the realms of possibility that something that works for me might be broken for others! Please submit an issue, and I'll try to fix it and release a patch version.
 
 ### Does Tetra support drawing custom meshes?
 
