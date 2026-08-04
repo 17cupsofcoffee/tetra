@@ -8,15 +8,19 @@ This project adheres to Semantic Versioning.
 
 ## [Upcoming]
 
-### Added
-
-* `window::set_text_input_enabled` and `window::is_text_input_enabled` were added, allowing you to enable and disable text input events. They are currently on by default, but this may change in a future version. ([@Tairesh](https://github.com/Tairesh) in [#356](https://github.com/17cupsofcoffee/tetra/pull/356))
-
 ### Changed
 
+* **Breaking:** Rendering is now implemented via [wgpu](https://wgpu.rs) instead of OpenGL.
+    * Shaders are still written in GLSL - Tetra translates them for wgpu's shader compiler
+      automatically, so most existing shaders will keep working unchanged. Note that `uniform bool`
+      and user-defined functions with `sampler2D` parameters are no longer supported.
+    * **Breaking:** The `opengl_version` and `glsl_version` fields on `GraphicsDeviceInfo` have been
+      replaced with `backend` and `driver`, as OpenGL is no longer used.
+    * `BlendState`, `BlendFactor`, `BlendOperation`, `StencilState`, `StencilTest`, `StencilAction`
+      and `VertexWinding` now implement `Hash`.
 * Updated `sdl3` to 0.18.
-* Updated `glow` to 0.17.
 * Updated `hashbrown` to 0.17.
+* Removed the `glow` dependency, and added `wgpu` and `pollster`.
 
 ## [0.9.1] - 2025-09-29
 

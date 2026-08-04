@@ -13,8 +13,11 @@ use crate::audio::AudioDevice;
 
 /// A struct containing all of the 'global' state within the framework.
 pub struct Context {
-    pub(crate) window: Window,
+    // Note: `device` must be declared before `window`, as it holds a
+    // rendering surface that has to be dropped before the window it
+    // belongs to.
     pub(crate) device: GraphicsDevice,
+    pub(crate) window: Window,
     #[cfg(feature = "audio")]
     pub(crate) audio: AudioDevice,
     pub(crate) graphics: GraphicsContext,
@@ -32,16 +35,24 @@ impl Context {
         #[cfg(feature = "audio")]
         let audio = AudioDevice::new();
 
-        let (window, gl_context, window_width, window_height) = Window::new(settings)?;
-        let mut device = GraphicsDevice::new(gl_context)?;
+        let (window, window_width, window_height) = Window::new(settings)?;
+
+        let mut device = GraphicsDevice::new(
+            window.sdl_window(),
+            window_width,
+            window_height,
+            settings.vsync,
+            settings.multisampling,
+            settings.stencil_buffer,
+        )?;
 
         if settings.debug_info {
             let device_info = device.get_info();
 
-            println!("OpenGL Vendor: {}", device_info.vendor);
-            println!("OpenGL Renderer: {}", device_info.renderer);
-            println!("OpenGL Version: {}", device_info.opengl_version);
-            println!("GLSL Version: {}", device_info.glsl_version);
+            println!("Graphics Vendor: {}", device_info.vendor);
+            println!("Graphics Renderer: {}", device_info.renderer);
+            println!("Graphics Backend: {}", device_info.backend);
+            println!("Graphics Driver: {}", device_info.driver);
         }
 
         let graphics = GraphicsContext::new(&mut device, window_width, window_height)?;
@@ -49,8 +60,8 @@ impl Context {
         let time = TimeContext::new(settings.timestep);
 
         Ok(Context {
-            window,
             device,
+            window,
 
             #[cfg(feature = "audio")]
             audio,

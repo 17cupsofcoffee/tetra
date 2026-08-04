@@ -111,7 +111,7 @@ impl GraphicsContext {
 
             canvas: None,
 
-            projection_matrix: ortho(window_width as f32, window_height as f32, false),
+            projection_matrix: ortho(window_width as f32, window_height as f32),
             transform_matrix: Mat4::identity(),
 
             vertex_data: Vec::with_capacity(MAX_VERTICES),
@@ -277,19 +277,19 @@ pub(crate) fn set_canvas_ex(ctx: &mut Context, canvas: Option<&Canvas>) {
                 let (width, height) = window::get_size(ctx);
                 let (physical_width, physical_height) = window::get_physical_size(ctx);
 
-                ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
-                ctx.device.viewport(0, 0, physical_width, physical_height);
+                ctx.graphics.projection_matrix = ortho(width as f32, height as f32);
 
                 ctx.device.set_canvas(None);
+                ctx.device.viewport(0, 0, physical_width, physical_height);
             }
 
             Some(r) => {
                 let (width, height) = r.size();
 
-                ctx.graphics.projection_matrix = ortho(width as f32, height as f32, true);
-                ctx.device.viewport(0, 0, width, height);
+                ctx.graphics.projection_matrix = ortho(width as f32, height as f32);
 
                 ctx.device.set_canvas(Some(&r.handle));
+                ctx.device.viewport(0, 0, width, height);
             }
         }
     }
@@ -331,13 +331,7 @@ pub fn flush(ctx: &mut Context) {
         );
 
         ctx.device.cull_face(true);
-
-        // Because canvas rendering is effectively done upside-down, the winding order is the opposite
-        // of what you'd expect in that case.
-        ctx.device.front_face(match &ctx.graphics.canvas {
-            None => VertexWinding::CounterClockwise,
-            Some(_) => VertexWinding::Clockwise,
-        });
+        ctx.device.front_face(VertexWinding::CounterClockwise);
 
         ctx.device.set_vertex_buffer_data(
             &ctx.graphics.vertex_buffer,
@@ -369,7 +363,7 @@ pub fn flush(ctx: &mut Context) {
 pub fn present(ctx: &mut Context) {
     flush(ctx);
 
-    ctx.window.swap_buffers();
+    ctx.device.present();
 }
 
 /// Returns the filter mode that will be used by newly created textures and canvases.
@@ -385,18 +379,18 @@ pub fn set_default_filter_mode(ctx: &mut Context, filter_mode: FilterMode) {
 /// Information about the device currently being used to render graphics.
 #[derive(Debug, Clone)]
 pub struct GraphicsDeviceInfo {
-    /// The name of the company responsible for the OpenGL implementation.
+    /// The PCI ID of the device's vendor.
     pub vendor: String,
 
     /// The name of the renderer. This usually corresponds to the name
     /// of the physical device.
     pub renderer: String,
 
-    /// The version of OpenGL that is being used.
-    pub opengl_version: String,
+    /// The graphics backend that is being used (e.g. Vulkan, Metal, DX12).
+    pub backend: String,
 
-    /// The version of GLSL that is being used.
-    pub glsl_version: String,
+    /// Information about the graphics driver that is being used.
+    pub driver: String,
 }
 
 /// Retrieves information about the device currently being used to render graphics.
@@ -440,32 +434,12 @@ pub fn reset_transform_matrix(ctx: &mut Context) {
 pub fn set_scissor(ctx: &mut Context, scissor_rect: Rectangle<i32>) {
     flush(ctx);
 
-    match &ctx.graphics.canvas {
-        None => {
-            let physical_height = window::get_physical_height(ctx);
-
-            // OpenGL uses bottom-left co-ordinates, while Tetra uses
-            // top-left co-ordinates - to present a consistent API, we
-            // flip the Y component here.
-            ctx.device.scissor(
-                scissor_rect.x,
-                physical_height - (scissor_rect.y + scissor_rect.height),
-                scissor_rect.width,
-                scissor_rect.height,
-            );
-        }
-
-        Some(_) => {
-            // Canvas rendering is effectively done upside-down, so we don't
-            // need to flip the co-ordinates here.
-            ctx.device.scissor(
-                scissor_rect.x,
-                scissor_rect.y,
-                scissor_rect.width,
-                scissor_rect.height,
-            );
-        }
-    }
+    ctx.device.scissor(
+        scissor_rect.x,
+        scissor_rect.y,
+        scissor_rect.width,
+        scissor_rect.height,
+    );
 
     ctx.device.scissor_test(true);
 }
@@ -517,24 +491,24 @@ pub(crate) fn set_viewport_size(ctx: &mut Context) {
         let (width, height) = window::get_size(ctx);
         let (physical_width, physical_height) = window::get_physical_size(ctx);
 
-        ctx.graphics.projection_matrix = ortho(width as f32, height as f32, false);
+        ctx.graphics.projection_matrix = ortho(width as f32, height as f32);
         ctx.device.viewport(0, 0, physical_width, physical_height);
     }
 }
 
-pub(crate) fn ortho(width: f32, height: f32, flipped: bool) -> Mat4<f32> {
+pub(crate) fn ortho(width: f32, height: f32) -> Mat4<f32> {
     Mat4::orthographic_rh_no(FrustumPlanes {
         left: 0.0,
         right: width,
-        bottom: if flipped { 0.0 } else { height },
-        top: if flipped { height } else { 0.0 },
+        bottom: height,
+        top: 0.0,
         near: -1.0,
         far: 1.0,
     })
 }
 
 /// Defines a formula for blending two color or alpha values.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BlendOperation {
     /// Blends by adding the source and the destination together.
     ///
@@ -563,7 +537,7 @@ pub enum BlendOperation {
 }
 
 /// Defines a multiplier that will be applied to a color or alpha value before blending it.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BlendFactor {
     /// Each component will be multiplied by zero.
     ///
@@ -700,7 +674,7 @@ pub enum BlendFactor {
 ///
 /// For a more in-depth explanation of blending, see this page on
 /// [Learn OpenGL](https://learnopengl.com/Advanced-OpenGL/Blending).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BlendState {
     /// The operation that should be applied to the RGB components of
     /// the source and destination colors.
@@ -844,7 +818,7 @@ impl Default for BlendState {
 /// The test for whether a pixel is visible when using
 /// a stencil.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum StencilTest {
     /// The pixel is never visible.
     Never,
@@ -887,7 +861,7 @@ pub enum StencilTest {
 
 /// How drawing operations should modify the stencil buffer.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum StencilAction {
     /// Drawing operations will not modify the stencil buffer.
     Keep,
@@ -924,7 +898,7 @@ pub enum StencilAction {
 }
 
 /// Represents a global stencil configuration.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct StencilState {
     /// Whether stencil testing is enabled.
     ///

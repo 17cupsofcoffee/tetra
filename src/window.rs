@@ -234,7 +234,9 @@ pub fn set_visible(ctx: &mut Context, visible: bool) {
 /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError)
 ///   will be returned if the game was unable to change vsync mode.
 pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
-    ctx.window.set_vsync(vsync)
+    ctx.device.set_vsync(vsync);
+
+    Ok(())
 }
 
 /// Returns whether or not vsync is enabled.
@@ -244,7 +246,7 @@ pub fn set_vsync(ctx: &mut Context, vsync: bool) -> Result {
 /// * [`TetraError::PlatformError`](crate::TetraError::PlatformError)
 ///   will be returned if the vsync state was inaccessible.
 pub fn is_vsync_enabled(ctx: &Context) -> Result<bool> {
-    ctx.window.is_vsync_enabled()
+    Ok(ctx.device.is_vsync_enabled())
 }
 
 /// Sets whether the window should be in fullscreen mode.
@@ -444,21 +446,6 @@ pub fn set_key_repeat_enabled(ctx: &mut Context, key_repeat_enabled: bool) {
 /// continuously while the key is held down.
 pub fn is_key_repeat_enabled(ctx: &Context) -> bool {
     ctx.window.is_key_repeat_enabled()
-}
-
-/// Sets whether or not text input is enabled.
-///
-/// When enabled, typing fires [`TextInput`](crate::Event::TextInput) events carrying the
-/// composed text (and, on platforms with an IME, activates it). When disabled, keystrokes
-/// still fire [`KeyPressed`](crate::Event::KeyPressed)/[`KeyReleased`](crate::Event::KeyReleased)
-/// but produce no `TextInput`.
-pub fn set_text_input_enabled(ctx: &mut Context, text_input_enabled: bool) {
-    ctx.window.set_text_input_enabled(text_input_enabled);
-}
-
-/// Returns whether or not text input is currently enabled.
-pub fn is_text_input_enabled(ctx: &Context) -> bool {
-    ctx.window.is_text_input_enabled()
 }
 
 /// Represents the position of a window on the screen.

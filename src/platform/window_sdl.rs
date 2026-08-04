@@ -2,7 +2,6 @@
 use std::path::PathBuf;
 use std::result;
 
-use glow::Context as GlowContext;
 use hashbrown::HashMap;
 use sdl3::event::{DisplayEvent, Event as SdlEvent, WindowEvent};
 use sdl3::gamepad::{Axis as SdlGamepadAxis, Button as SdlGamepadButton, Gamepad};
@@ -15,8 +14,7 @@ use sdl3::sys::joystick::SDL_JoystickID;
 use sdl3::sys::keycode::SDL_KMOD_NONE;
 use sdl3::sys::video::SDL_WINDOWPOS_CENTERED_MASK;
 use sdl3::video::{
-    Display, FullscreenType, GLContext as SdlGlContext, GLProfile, SwapInterval,
-    Window as SdlWindow, WindowBuildError, WindowPos,
+    Display, FullscreenType, Window as SdlWindow, WindowBuildError, WindowPos,
 };
 use sdl3::{EventPump, GamepadSubsystem, IntegerOrSdlError, Sdl, VideoSubsystem};
 
@@ -42,7 +40,6 @@ pub struct Window {
     event_pump: EventPump,
     video_sys: VideoSubsystem,
     gamepad_sys: GamepadSubsystem,
-    _gl_sys: SdlGlContext,
 
     gamepads: HashMap<u32, SdlGamepad>,
     displays: Vec<Display>,
@@ -53,32 +50,13 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(settings: &ContextBuilder) -> Result<(Window, GlowContext, i32, i32)> {
+    pub fn new(settings: &ContextBuilder) -> Result<(Window, i32, i32)> {
         let sdl = sdl3::init()?;
         let event_pump = sdl.event_pump()?;
         let video_sys = sdl.video()?;
         let gamepad_sys = sdl.gamepad()?;
 
         sdl3::hint::set("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1");
-
-        let gl_attr = video_sys.gl_attr();
-
-        gl_attr.set_context_profile(GLProfile::Core);
-        gl_attr.set_context_version(3, 2);
-        gl_attr.set_red_size(8);
-        gl_attr.set_green_size(8);
-        gl_attr.set_blue_size(8);
-        gl_attr.set_alpha_size(8);
-        gl_attr.set_double_buffer(true);
-
-        if settings.multisampling > 0 {
-            gl_attr.set_multisample_buffers(1);
-            gl_attr.set_multisample_samples(settings.multisampling);
-        }
-
-        if settings.stencil_buffer {
-            gl_attr.set_stencil_size(8);
-        }
 
         if settings.screen_saver_enabled {
             video_sys.enable_screen_saver();
@@ -94,7 +72,7 @@ impl Window {
 
         // The window starts hidden, so that it doesn't look weird if we
         // maximize/minimize/fullscreen the window after it opens.
-        window_builder.hidden().position_centered().opengl();
+        window_builder.hidden().position_centered();
 
         if settings.resizable {
             window_builder.resizable();
@@ -130,24 +108,6 @@ impl Window {
 
         let displays = video_sys.displays()?;
 
-        let gl_sys = sdl_window.gl_create_context()?;
-
-        let gl_ctx = unsafe {
-            GlowContext::from_loader_function(|s| {
-                if let Some(ptr) = video_sys.gl_get_proc_address(s) {
-                    ptr as *const _
-                } else {
-                    std::ptr::null()
-                }
-            })
-        };
-
-        let _ = video_sys.gl_set_swap_interval(if settings.vsync {
-            SwapInterval::VSync
-        } else {
-            SwapInterval::Immediate
-        });
-
         sdl.mouse()
             .set_relative_mouse_mode(&sdl_window, settings.relative_mouse_mode);
 
@@ -162,7 +122,6 @@ impl Window {
             event_pump,
             video_sys,
             gamepad_sys,
-            _gl_sys: gl_sys,
 
             gamepads: HashMap::new(),
             displays,
@@ -172,7 +131,13 @@ impl Window {
             key_repeat: settings.key_repeat,
         };
 
-        Ok((window, gl_ctx, window_width, window_height))
+        Ok((window, window_width, window_height))
+    }
+
+    /// Provides access to the underlying SDL window, so that a rendering
+    /// surface can be created from it.
+    pub fn sdl_window(&self) -> &SdlWindow {
+        &self.sdl_window
     }
 
     pub fn maximize(&mut self) {
@@ -344,25 +309,6 @@ impl Window {
         ))
     }
 
-    pub fn set_vsync(&mut self, vsync: bool) -> Result {
-        self.video_sys.gl_set_swap_interval(if vsync {
-            SwapInterval::VSync
-        } else {
-            SwapInterval::Immediate
-        })?;
-
-        Ok(())
-    }
-
-    pub fn is_vsync_enabled(&self) -> Result<bool> {
-        let vsync = self
-            .video_sys
-            .gl_get_swap_interval()
-            .map(|s| s != SwapInterval::Immediate)?;
-
-        Ok(vsync)
-    }
-
     pub fn set_fullscreen(&mut self, fullscreen: bool) -> Result {
         self.sdl_window
             .set_fullscreen(fullscreen)
@@ -416,10 +362,6 @@ impl Window {
         self.video_sys.clipboard().set_clipboard_text(text)?;
 
         Ok(())
-    }
-
-    pub fn swap_buffers(&self) {
-        self.sdl_window.gl_swap_window();
     }
 
     pub fn get_gamepad_name(&self, platform_id: u32) -> Option<String> {
@@ -485,19 +427,6 @@ impl Window {
         let sdl_keycode = Keycode::from_scancode(sdl_scancode, SDL_KMOD_NONE, false)?;
         from_sdl_keycode(sdl_keycode)
     }
-
-    pub fn set_text_input_enabled(&mut self, text_input_enabled: bool) {
-        let text_input = self.video_sys.text_input();
-        if text_input_enabled {
-            text_input.start(&self.sdl_window);
-        } else {
-            text_input.stop(&self.sdl_window);
-        }
-    }
-
-    pub fn is_text_input_enabled(&self) -> bool {
-        self.video_sys.text_input().is_active(&self.sdl_window)
-    }
 }
 
 pub fn handle_events<S, E>(ctx: &mut Context, state: &mut S) -> result::Result<(), E>
@@ -554,8 +483,8 @@ where
                 repeat,
                 keymod,
                 ..
-            } => {
-                if !repeat || ctx.window.is_key_repeat_enabled() {
+            }
+                if (!repeat || ctx.window.is_key_repeat_enabled()) => {
                     input::set_key_modifier_state(ctx, from_sdl_keymod(keymod));
 
                     if let Scancode::Escape = scancode {
@@ -569,7 +498,6 @@ where
                         state.event(ctx, Event::KeyPressed { key })?;
                     }
                 }
-            }
 
             SdlEvent::KeyUp {
                 scancode: Some(scancode),
