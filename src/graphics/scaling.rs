@@ -326,8 +326,12 @@ pub fn get_screen_rect(
                 f_outer_height / f_inner_height
             };
 
-            let screen_width = (f_inner_width * scale_factor).ceil();
-            let screen_height = (f_inner_height * scale_factor).ceil();
+            // The sizes are rounded up so that the screen fills as much of the available space as
+            // possible, without leaving a gap along the edges. However, this can push the result
+            // past the outer bounds if the ideal size is a whole number of pixels - clamping to
+            // the outer size stops the screen from being cropped in that case.
+            let screen_width = (f_inner_width * scale_factor).ceil().min(f_outer_width);
+            let screen_height = (f_inner_height * scale_factor).ceil().min(f_outer_height);
             let screen_x = ((f_outer_width - screen_width) / 2.0).ceil();
             let screen_y = ((f_outer_height - screen_height) / 2.0).ceil();
 
@@ -391,6 +395,105 @@ pub fn get_screen_rect(
                 screen_width as f32,
                 screen_height as f32,
             )
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{get_screen_rect, ScalingMode};
+    use crate::graphics::Rectangle;
+
+    fn assert_fits_in_outer_bounds(rect: Rectangle, outer_width: i32, outer_height: i32) {
+        assert!(
+            rect.x >= 0.0
+                && rect.y >= 0.0
+                && rect.right() <= outer_width as f32
+                && rect.bottom() <= outer_height as f32,
+            "screen rect {:?} is outside of the outer bounds {}x{}",
+            rect,
+            outer_width,
+            outer_height
+        );
+    }
+
+    #[test]
+    fn show_all_fits_within_outer_bounds() {
+        // Regression test: rounding the scaled size up used to push the screen outside of
+        // the outer bounds by a pixel, cropping the edges of the game, whenever the ideal
+        // size worked out as a whole number of pixels (e.g. a 320x180 screen scaled up to
+        // fit in a 1366x768 window).
+        for inner_width in 1..=32 {
+            for inner_height in 1..=32 {
+                for outer_width in 1..=64 {
+                    for outer_height in 1..=64 {
+                        let rect = get_screen_rect(
+                            ScalingMode::ShowAll,
+                            inner_width,
+                            inner_height,
+                            outer_width,
+                            outer_height,
+                        );
+
+                        assert_fits_in_outer_bounds(rect, outer_width, outer_height);
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn show_all_matches_expected_rectangles() {
+        // No scaling required.
+        assert_eq!(
+            get_screen_rect(ScalingMode::ShowAll, 640, 360, 1280, 720),
+            Rectangle::new(0.0, 0.0, 1280.0, 720.0)
+        );
+
+        // The height rounds up to 769 due to floating point error, so it has to be clamped
+        // back to the window size.
+        assert_eq!(
+            get_screen_rect(ScalingMode::ShowAll, 320, 180, 1366, 768),
+            Rectangle::new(0.0, 0.0, 1366.0, 768.0)
+        );
+
+        // The height would round up past the outer height here for the same reason.
+        assert_eq!(
+            get_screen_rect(ScalingMode::ShowAll, 1, 7, 9, 57),
+            Rectangle::new(0.0, 0.0, 9.0, 57.0)
+        );
+    }
+
+    #[test]
+    fn crop_covers_outer_bounds() {
+        for inner_width in 1..=16 {
+            for inner_height in 1..=16 {
+                for outer_width in 1..=32 {
+                    for outer_height in 1..=32 {
+                        for mode in [ScalingMode::Crop, ScalingMode::CropPixelPerfect] {
+                            let rect = get_screen_rect(
+                                mode,
+                                inner_width,
+                                inner_height,
+                                outer_width,
+                                outer_height,
+                            );
+
+                            assert!(
+                                rect.x <= 0.0
+                                    && rect.y <= 0.0
+                                    && rect.right() >= outer_width as f32
+                                    && rect.bottom() >= outer_height as f32,
+                                "{:?} screen rect {:?} does not cover the outer bounds {}x{}",
+                                mode,
+                                rect,
+                                outer_width,
+                                outer_height
+                            );
+                        }
+                    }
+                }
+            }
         }
     }
 }

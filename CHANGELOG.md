@@ -18,6 +18,10 @@ This project adheres to Semantic Versioning.
 * Updated `glow` to 0.17.
 * Updated `hashbrown` to 0.17.
 
+### Fixed
+
+* The `ShowAll` scaling mode no longer produces a screen rectangle that is larger than the window, which could crop the edges of the game by a pixel.
+
 ## [0.9.1] - 2025-09-29
 
 ### Changed
