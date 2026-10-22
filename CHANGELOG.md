@@ -11,6 +11,7 @@ This project adheres to Semantic Versioning.
 ### Added
 
 * `window::set_text_input_enabled` and `window::is_text_input_enabled` were added, allowing you to enable and disable text input events. They are currently on by default, but this may change in a future version. ([@Tairesh](https://github.com/Tairesh) in [#356](https://github.com/17cupsofcoffee/tetra/pull/356))
+* Text can be aligned when it is drawn. `HorizontalAlignment`, `VerticalAlignment`, `TextAlignment`, `Text::alignment`, `Text::set_alignment` and `Text::draw_aligned` were added. The default alignment does not move existing text. ([@1kauratus](https://github.com/1kauratus))
 
 ### Changed
 

@@ -14,6 +14,7 @@ use std::rc::Rc;
 use crate::error::Result;
 use crate::graphics::text::cache::{FontCache, TextGeometry};
 use crate::graphics::{self, DrawParams, Rectangle};
+use crate::math::Vec2;
 use crate::Context;
 
 #[cfg(feature = "font_ttf")]
@@ -170,6 +171,89 @@ impl Debug for Font {
     }
 }
 
+/// Horizontal placement of text relative to the draw position.
+///
+/// [`Left`](HorizontalAlignment::Left) keeps Tetra's existing layout origin, so
+/// text drawn before alignment existed stays where it was. [`Center`](HorizontalAlignment::Center)
+/// and [`Right`](HorizontalAlignment::Right) move the text so that the centre or
+/// right edge of its bounds sits on the draw position.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum HorizontalAlignment {
+    /// Keep the layout origin on the draw position.
+    ///
+    /// This is the historical behaviour of [`Text::draw`].
+    #[default]
+    Left,
+
+    /// Place the horizontal centre of the text bounds on the draw position.
+    Center,
+
+    /// Place the right edge of the text bounds on the draw position.
+    Right,
+}
+
+/// Vertical placement of text relative to the draw position.
+///
+/// [`Top`](VerticalAlignment::Top) keeps Tetra's existing layout origin.
+/// [`Middle`](VerticalAlignment::Middle) and [`Bottom`](VerticalAlignment::Bottom)
+/// move the text so that the centre or bottom edge of its bounds sits on the
+/// draw position.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum VerticalAlignment {
+    /// Keep the layout origin on the draw position.
+    ///
+    /// This is the historical behaviour of [`Text::draw`].
+    #[default]
+    Top,
+
+    /// Place the vertical centre of the text bounds on the draw position.
+    Middle,
+
+    /// Place the bottom edge of the text bounds on the draw position.
+    Bottom,
+}
+
+/// Controls which point of a [`Text`] object is placed at the draw position.
+///
+/// The offset is applied in local space, before scaling, rotation and translation
+/// from [`DrawParams`]. It uses the same rectangle as [`Text::get_bounds`]: the
+/// bounds of the rendered glyphs. Trailing advance after the last glyph is not
+/// included, and [`HorizontalAlignment::Left`] / [`VerticalAlignment::Top`] apply
+/// no offset at all.
+///
+/// # Examples
+///
+/// ```
+/// use tetra::graphics::text::{HorizontalAlignment, TextAlignment, VerticalAlignment};
+///
+/// let centered = TextAlignment::new(HorizontalAlignment::Center, VerticalAlignment::Middle);
+/// assert_eq!(centered.horizontal, HorizontalAlignment::Center);
+/// assert_eq!(centered.vertical, VerticalAlignment::Middle);
+/// ```
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct TextAlignment {
+    /// Where the text sits horizontally.
+    pub horizontal: HorizontalAlignment,
+
+    /// Where the text sits vertically.
+    pub vertical: VerticalAlignment,
+}
+
+impl TextAlignment {
+    /// Creates an alignment from a horizontal and a vertical component.
+    pub const fn new(
+        horizontal: HorizontalAlignment,
+        vertical: VerticalAlignment,
+    ) -> TextAlignment {
+        TextAlignment {
+            horizontal,
+            vertical,
+        }
+    }
+}
+
 /// A piece of text that can be rendered.
 ///
 /// # Performance
@@ -178,6 +262,13 @@ impl Debug for Font {
 /// calculated, making subsequent renders much faster. If your text stays
 /// the same from frame to frame, reusing the `Text` object will be much
 /// faster than recreating it.
+///
+/// # Alignment
+///
+/// Text is drawn from its layout origin by default ([`HorizontalAlignment::Left`]
+/// and [`VerticalAlignment::Top`]). Use [`set_alignment`](Text::set_alignment)
+/// to change that for every [`draw`](Text::draw), or pass an alignment to
+/// [`draw_aligned`](Text::draw_aligned) for a single call.
 ///
 /// # Examples
 ///
@@ -188,6 +279,7 @@ pub struct Text {
     content: String,
     font: Font,
     max_width: Option<f32>,
+    alignment: TextAlignment,
     geometry: Option<TextGeometry>,
 }
 
@@ -201,6 +293,7 @@ impl Text {
             content: content.into(),
             font,
             max_width: None,
+            alignment: TextAlignment::default(),
             geometry: None,
         }
     }
@@ -219,12 +312,31 @@ impl Text {
             content: content.into(),
             font,
             max_width: Some(max_width),
+            alignment: TextAlignment::default(),
             geometry: None,
         }
     }
 
     /// Draws the text to the screen (or to a canvas, if one is enabled).
+    ///
+    /// The text is shifted by the alignment set with [`set_alignment`](Self::set_alignment).
+    /// The default alignment does not move the text.
     pub fn draw<P>(&mut self, ctx: &mut Context, params: P)
+    where
+        P: Into<DrawParams>,
+    {
+        let alignment = self.alignment;
+        self.draw_aligned(ctx, params, alignment);
+    }
+
+    /// Draws the text with an alignment for this call only.
+    ///
+    /// `alignment` is the extra control requested for [`Text::draw`]: it chooses
+    /// which point of the text is placed at the [`DrawParams`] position.
+    /// [`HorizontalAlignment::Left`] and [`VerticalAlignment::Top`] match the
+    /// historical behaviour. The value stored by [`set_alignment`](Self::set_alignment)
+    /// is left unchanged.
+    pub fn draw_aligned<P>(&mut self, ctx: &mut Context, params: P, alignment: TextAlignment)
     where
         P: Into<DrawParams>,
     {
@@ -238,17 +350,26 @@ impl Text {
             .geometry
             .as_ref()
             .expect("geometry should have been generated");
+        let offset = alignment_offset(geometry.bounds, alignment);
 
         graphics::set_texture(ctx, texture);
         let (texture_width, texture_height) = texture.size();
 
         for quad in &geometry.quads {
-            graphics::push_quad(
-                ctx,
+            let (x1, y1, x2, y2) = translate_quad(
                 quad.position.x,
                 quad.position.y,
-                quad.position.x + quad.region.width,
-                quad.position.y + quad.region.height,
+                quad.region.width,
+                quad.region.height,
+                offset,
+            );
+
+            graphics::push_quad(
+                ctx,
+                x1,
+                y1,
+                x2,
+                y2,
                 quad.region.x / (texture_width as f32),
                 quad.region.y / (texture_height as f32),
                 quad.region.right() / (texture_width as f32),
@@ -314,6 +435,23 @@ impl Text {
         self.max_width = max_width;
     }
 
+    /// Gets the alignment used by [`draw`](Self::draw).
+    pub fn alignment(&self) -> TextAlignment {
+        self.alignment
+    }
+
+    /// Sets the alignment used by [`draw`](Self::draw).
+    ///
+    /// The default is [`HorizontalAlignment::Left`] and [`VerticalAlignment::Top`],
+    /// which matches the behaviour from before alignment was added.
+    ///
+    /// Alignment is applied when the text is drawn, so changing it does not
+    /// rebuild the glyph layout. Pass an alignment to [`draw_aligned`](Self::draw_aligned)
+    /// instead if only one call should use it.
+    pub fn set_alignment(&mut self, alignment: TextAlignment) {
+        self.alignment = alignment;
+    }
+
     /// Appends the given character to the end of the text.
     ///
     /// Calling this function will cause a re-layout of the text the next time it
@@ -347,7 +485,8 @@ impl Text {
     ///
     /// If the text's layout needs calculating, this method will do so.
     ///
-    /// Note that this method will not take into account the positioning applied to the text via [`DrawParams`].
+    /// Note that this method will not take into account the positioning applied to
+    /// the text via [`DrawParams`], or the offset applied by [`TextAlignment`].
     pub fn get_bounds(&mut self, ctx: &mut Context) -> Option<Rectangle> {
         self.update_geometry(ctx);
 
@@ -369,5 +508,164 @@ impl Text {
             let new_geometry = data.render(&mut ctx.device, &self.content, self.max_width);
             self.geometry = Some(new_geometry);
         }
+    }
+}
+
+/// Local-space translation that places `bounds` according to `alignment`.
+///
+/// `Left` and `Top` return zero so existing draw positions stay stable.
+/// The other variants pin the corresponding edge or centre of the bounds to
+/// the local origin. Empty text has no bounds and is not moved.
+fn alignment_offset(bounds: Option<Rectangle>, alignment: TextAlignment) -> Vec2<f32> {
+    let Some(bounds) = bounds else {
+        return Vec2::new(0.0, 0.0);
+    };
+
+    let x = match alignment.horizontal {
+        HorizontalAlignment::Left => 0.0,
+        HorizontalAlignment::Center => -(bounds.x + bounds.width / 2.0),
+        HorizontalAlignment::Right => -(bounds.x + bounds.width),
+    };
+
+    let y = match alignment.vertical {
+        VerticalAlignment::Top => 0.0,
+        VerticalAlignment::Middle => -(bounds.y + bounds.height / 2.0),
+        VerticalAlignment::Bottom => -(bounds.y + bounds.height),
+    };
+
+    Vec2::new(x, y)
+}
+
+/// Shifts a glyph quad by `offset` without changing its size.
+fn translate_quad(
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    offset: Vec2<f32>,
+) -> (f32, f32, f32, f32) {
+    (
+        x + offset.x,
+        y + offset.y,
+        x + width + offset.x,
+        y + height + offset.y,
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        alignment_offset, translate_quad, HorizontalAlignment, TextAlignment, VerticalAlignment,
+    };
+    use crate::graphics::Rectangle;
+    use crate::math::Vec2;
+
+    fn sample_bounds() -> Rectangle {
+        Rectangle::new(2.0, 4.0, 10.0, 20.0)
+    }
+
+    fn align_bounds(alignment: TextAlignment) -> Rectangle {
+        let bounds = sample_bounds();
+        let offset = alignment_offset(Some(bounds), alignment);
+        Rectangle::new(
+            bounds.x + offset.x,
+            bounds.y + offset.y,
+            bounds.width,
+            bounds.height,
+        )
+    }
+
+    #[test]
+    fn default_alignment_is_left_top() {
+        assert_eq!(
+            TextAlignment::default(),
+            TextAlignment::new(HorizontalAlignment::Left, VerticalAlignment::Top)
+        );
+    }
+
+    #[test]
+    fn left_top_preserves_existing_layout_origin() {
+        let bounds = sample_bounds();
+        let offset = alignment_offset(Some(bounds), TextAlignment::default());
+
+        assert_eq!(offset, Vec2::new(0.0, 0.0));
+        assert_eq!(align_bounds(TextAlignment::default()), bounds);
+    }
+
+    #[test]
+    fn center_places_horizontal_centre_on_the_origin() {
+        let aligned = align_bounds(TextAlignment::new(
+            HorizontalAlignment::Center,
+            VerticalAlignment::Top,
+        ));
+
+        assert_eq!(aligned.center().x, 0.0);
+        assert_eq!(aligned.y, sample_bounds().y);
+        assert_eq!(aligned.width, sample_bounds().width);
+    }
+
+    #[test]
+    fn right_places_right_edge_on_the_origin() {
+        let aligned = align_bounds(TextAlignment::new(
+            HorizontalAlignment::Right,
+            VerticalAlignment::Top,
+        ));
+
+        assert_eq!(aligned.right(), 0.0);
+        assert_eq!(aligned.y, sample_bounds().y);
+    }
+
+    #[test]
+    fn middle_places_vertical_centre_on_the_origin() {
+        let aligned = align_bounds(TextAlignment::new(
+            HorizontalAlignment::Left,
+            VerticalAlignment::Middle,
+        ));
+
+        assert_eq!(aligned.center().y, 0.0);
+        assert_eq!(aligned.x, sample_bounds().x);
+        assert_eq!(aligned.height, sample_bounds().height);
+    }
+
+    #[test]
+    fn bottom_places_bottom_edge_on_the_origin() {
+        let aligned = align_bounds(TextAlignment::new(
+            HorizontalAlignment::Left,
+            VerticalAlignment::Bottom,
+        ));
+
+        assert_eq!(aligned.bottom(), 0.0);
+        assert_eq!(aligned.x, sample_bounds().x);
+    }
+
+    #[test]
+    fn center_and_middle_are_applied_together() {
+        let aligned = align_bounds(TextAlignment::new(
+            HorizontalAlignment::Center,
+            VerticalAlignment::Middle,
+        ));
+
+        assert_eq!(aligned.center(), Vec2::new(0.0, 0.0));
+        assert_eq!(aligned.width, sample_bounds().width);
+        assert_eq!(aligned.height, sample_bounds().height);
+    }
+
+    #[test]
+    fn empty_text_is_not_moved() {
+        let offset = alignment_offset(
+            None,
+            TextAlignment::new(HorizontalAlignment::Right, VerticalAlignment::Bottom),
+        );
+
+        assert_eq!(offset, Vec2::new(0.0, 0.0));
+    }
+
+    #[test]
+    fn quad_translation_preserves_glyph_size() {
+        let (x1, y1, x2, y2) = translate_quad(2.0, 4.0, 10.0, 20.0, Vec2::new(-7.0, 3.0));
+
+        assert_eq!((x1, y1, x2, y2), (-5.0, 7.0, 5.0, 27.0));
+        assert_eq!(x2 - x1, 10.0);
+        assert_eq!(y2 - y1, 20.0);
     }
 }
